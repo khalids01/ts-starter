@@ -20,6 +20,7 @@
     "@tanstack/react-start": "^1.141.1",
     "@tanstack/router-plugin": "^1.141.1",
     "@ts-starter/auth": "workspace:*",
+    "@ts-starter/db": "workspace:*",
     "@ts-starter/env": "workspace:*",
     "better-auth": "catalog:",
     "class-variance-authority": "^0.7.1",

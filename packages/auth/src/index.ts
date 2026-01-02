@@ -22,23 +22,27 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    polar({
-      client: polarClient,
-      createCustomerOnSignUp: true,
-      enableCustomerPortal: true,
-      use: [
-        checkout({
-          products: [
-            {
-              productId: "your-product-id",
-              slug: "pro",
-            },
+    ...(env.ENABLE_POLAR
+      ? [
+        polar({
+          client: polarClient,
+          createCustomerOnSignUp: true,
+          enableCustomerPortal: true,
+          use: [
+            checkout({
+              products: [
+                {
+                  productId: "your-product-id",
+                  slug: "pro",
+                },
+              ],
+              successUrl: env.POLAR_SUCCESS_URL!,
+              authenticatedUsersOnly: true,
+            }),
+            portal(),
           ],
-          successUrl: env.POLAR_SUCCESS_URL,
-          authenticatedUsersOnly: true,
         }),
-        portal(),
-      ],
-    }),
+      ]
+      : []),
   ],
 });

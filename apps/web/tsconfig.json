@@ -22,7 +22,10 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@ts-starter/db": ["../../packages/db/src"],
+      "@ts-starter/auth": ["../../packages/auth/src"],
+      "@ts-starter/env/*": ["../../packages/env/src/*"]
     }
   }
 }
