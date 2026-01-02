@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Header from "../components/header";
 import appCss from "../index.css?url";
 import { TanstackQueryProvider } from "@/providers/tanstack-router";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 export interface RouterAppContext {}
 
@@ -39,17 +40,19 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <TanstackQueryProvider>
-          <Header />
-          <Outlet />
-        </TanstackQueryProvider>
-        <Toaster richColors />
-        <TanStackRouterDevtools position="bottom-left" />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TanstackQueryProvider>
+            <Header />
+            <Outlet />
+          </TanstackQueryProvider>
+          <Toaster richColors />
+          <TanStackRouterDevtools position="bottom-left" />
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
