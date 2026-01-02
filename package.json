@@ -30,9 +30,10 @@
     "db:migrate": "turbo -F @ts-starter/db db:migrate"
   },
   "dependencies": {
+    "@ts-starter/env": "workspace:*",
+    "axios": "^1.13.2",
     "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@ts-starter/env": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "turbo": "^2.6.3",

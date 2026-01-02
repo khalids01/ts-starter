@@ -1,10 +1,14 @@
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-
 import { Toaster } from "@/components/ui/sonner";
-
 import Header from "../components/header";
 import appCss from "../index.css?url";
+import { TanstackQueryProvider } from "@/providers/tanstack-router";
 
 export interface RouterAppContext {}
 
@@ -19,7 +23,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "My App",
+        title: "Saas Starter",
       },
     ],
     links: [
@@ -40,10 +44,10 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <div className="grid h-svh grid-rows-[auto_1fr]">
+        <TanstackQueryProvider>
           <Header />
           <Outlet />
-        </div>
+        </TanstackQueryProvider>
         <Toaster richColors />
         <TanStackRouterDevtools position="bottom-left" />
         <Scripts />
