@@ -1,5 +1,10 @@
 {
   "name": "ts-starter",
+  "author": {
+    "name": "Khalid",
+    "email": "khalidcode03@gmail.com",
+    "url": "https://github.com/khalids01"
+  },
   "private": true,
   "workspaces": {
     "packages": [
