@@ -1,0 +1,32 @@
+{
+  "name": "@ts-starter/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "devDependencies": {
+    "prisma": "^7.1.0",
+    "@types/pg": "^8.15.6",
+    "typescript": "catalog:",
+    "@ts-starter/config": "workspace:*"
+  },
+  "dependencies": {
+    "@prisma/client": "catalog:",
+    "@prisma/adapter-pg": "^7.1.0",
+    "pg": "^8.16.3",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@ts-starter/env": "workspace:*"
+  }
+}
