@@ -21,6 +21,15 @@ export const auth = betterAuth({
       httpOnly: true,
     },
   },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        input: false,
+        output: true,
+      }
+    }
+  },
   plugins: [
     ...(env.ENABLE_POLAR
       ? [

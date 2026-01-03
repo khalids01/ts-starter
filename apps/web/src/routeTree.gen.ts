@@ -9,85 +9,84 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SuccessRouteImport } from './routes/success'
 import { Route as SetupRouteImport } from './routes/setup'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
+import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
-const SuccessRoute = SuccessRouteImport.update({
-  id: '/success',
-  path: '/success',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/_public/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
+const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
+  id: '/payment/success',
+  path: '/payment/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
+  id: '/_protected/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/_auth/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
-  '/success': typeof SuccessRoute
+  '/login': typeof AuthLoginRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/payment/success': typeof PaymentSuccessRoute
+  '/': typeof PublicIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
-  '/success': typeof SuccessRoute
+  '/login': typeof AuthLoginRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/payment/success': typeof PaymentSuccessRoute
+  '/': typeof PublicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
-  '/success': typeof SuccessRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/payment/success': typeof PaymentSuccessRoute
+  '/_public/': typeof PublicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/setup' | '/success'
+  fullPaths: '/setup' | '/login' | '/dashboard' | '/payment/success' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/setup' | '/success'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/setup' | '/success'
+  to: '/setup' | '/login' | '/dashboard' | '/payment/success' | '/'
+  id:
+    | '__root__'
+    | '/setup'
+    | '/_auth/login'
+    | '/_protected/dashboard'
+    | '/payment/success'
+    | '/_public/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
-  LoginRoute: typeof LoginRoute
   SetupRoute: typeof SetupRoute
-  SuccessRoute: typeof SuccessRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  PaymentSuccessRoute: typeof PaymentSuccessRoute
+  PublicIndexRoute: typeof PublicIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/success': {
-      id: '/success'
-      path: '/success'
-      fullPath: '/success'
-      preLoaderRoute: typeof SuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/setup': {
       id: '/setup'
       path: '/setup'
@@ -95,36 +94,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment/success': {
+      id: '/payment/success'
+      path: '/payment/success'
+      fullPath: '/payment/success'
+      preLoaderRoute: typeof PaymentSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_protected/dashboard': {
+      id: '/_protected/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof ProtectedDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
-  LoginRoute: LoginRoute,
   SetupRoute: SetupRoute,
-  SuccessRoute: SuccessRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  ProtectedDashboardRoute: ProtectedDashboardRoute,
+  PaymentSuccessRoute: PaymentSuccessRoute,
+  PublicIndexRoute: PublicIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
