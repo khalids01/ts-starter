@@ -13,17 +13,19 @@
     "@elysiajs/cors": "^1.3.3",
     "@elysiajs/openapi": "^1.4.13",
     "@ts-starter/auth": "workspace:*",
+    "@ts-starter/config": "workspace:*",
     "@ts-starter/db": "workspace:*",
     "@ts-starter/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "elysia": "^1.3.21",
+    "nodemailer": "^7.0.12",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "typescript": "catalog:",
+    "@types/nodemailer": "^7.0.4",
     "tsdown": "^0.16.5",
-    "@ts-starter/config": "workspace:*"
+    "typescript": "catalog:"
   }
 }

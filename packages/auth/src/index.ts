@@ -27,7 +27,22 @@ export const auth = betterAuth({
         type: "string",
         input: false,
         output: true,
-      }
+      },
+      banned: {
+        type: "boolean",
+        input: false,
+        output: true,
+      },
+      banReason: {
+        type: "string",
+        input: false,
+        output: true,
+      },
+      archived: {
+        type: "boolean",
+        input: false,
+        output: true,
+      },
     }
   },
   plugins: [

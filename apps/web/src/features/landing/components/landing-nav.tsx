@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
-import UserMenu from "@/components/user-menu";
+import UserMenu from "@/components/core/user-menu";
 
 export const LandingNav = () => {
   const { theme, setTheme } = useTheme();

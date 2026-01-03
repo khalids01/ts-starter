@@ -15,9 +15,27 @@ model User {
   sessions      Session[]
   accounts      Account[]
   role          Role      @default(USER)
+  banned        Boolean   @default(false)
+  banReason     String?
+  archived      Boolean   @default(false)
+
+  invitations Invitation[]
 
   @@unique([email])
   @@map("user")
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String
+  role      Role     @default(USER)
+  expiresAt DateTime
+  inviterId String
+  user      User     @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  status    String   @default("pending") // pending, accepted, rejected
+  createdAt DateTime @default(now())
+
+  @@map("invitation")
 }
 
 model Session {

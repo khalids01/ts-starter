@@ -1,5 +1,9 @@
 {
   "name": "@ts-starter/config",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "exports": {
+    ".": "./src/config.ts",
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  }
 }
