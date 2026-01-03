@@ -3,11 +3,10 @@ import { auth } from "@ts-starter/auth";
 import { env } from "@ts-starter/env/server";
 import { Elysia } from "elysia";
 import { app } from "./modules/app";
+import { openapi } from '@elysiajs/openapi'
+
 
 const server = new Elysia()
-  .onRequest(({ request }) => {
-    console.log(`[Server] ${request.method} ${request.url}`);
-  })
   .use(
     cors({
       origin: env.CORS_ORIGIN,
@@ -16,6 +15,12 @@ const server = new Elysia()
       credentials: true,
     }),
   )
+  .use(openapi({
+    path: "/docs",
+  }))
+  .onRequest(({ request }) => {
+    console.log(`[Server] ${request.method} ${request.url}`);
+  })
   .all("/api/auth/*", async (context) => {
     const { request, status } = context;
     if (["POST", "GET"].includes(request.method)) {

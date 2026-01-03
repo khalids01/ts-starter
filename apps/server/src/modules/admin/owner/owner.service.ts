@@ -39,6 +39,7 @@ export class OwnerService {
             },
             data: {
                 role: "OWNER",
+                emailVerified: true
             },
         });
 
