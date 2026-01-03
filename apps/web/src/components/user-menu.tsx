@@ -14,12 +14,11 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function UserMenu() {
   const navigate = useNavigate();
   const { data: session, isPending } = authClient.useSession();
-
-  console.log(session);
 
   if (isPending) {
     return <Skeleton className="h-9 w-24" />;
@@ -40,6 +39,37 @@ export default function UserMenu() {
     );
   }
 
+  const items = [
+    {
+      label: "My Account",
+      href: "/account",
+      type: "url",
+    },
+    {
+      label: "Admin Dashboard",
+      href: "/admin/overview",
+      type: "url",
+      show:
+        (session.user as any)?.role === "ADMIN" ||
+        (session.user as any)?.role === "OWNER",
+    },
+    {
+      label: "Sign out",
+      type: "btn",
+      onClick: () => {
+        authClient.signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              navigate({
+                to: "/",
+              });
+            },
+          },
+        });
+      },
+    },
+  ];
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -47,27 +77,45 @@ export default function UserMenu() {
       >
         <User className="size-5" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent className="bg-card w-56">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => {
-              authClient.signOut({
-                fetchOptions: {
-                  onSuccess: () => {
-                    navigate({
-                      to: "/",
-                    });
-                  },
-                },
-              });
-            }}
-          >
-            Sign Out
-          </DropdownMenuItem>
+          <DropdownMenuLabel className="flex flex-col">
+            <span className="text-sm font-medium">{session.user.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {session.user.email}
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          {items.map((item) => {
+            if (item.show === false) return null;
+
+            if (item.type === "url" && item.href) {
+              return (
+                <DropdownMenuItem
+                  className={"text-base"}
+                  onClick={() => navigate({ to: item.href })}
+                  key={item.label}
+                >
+                  {item.label}
+                </DropdownMenuItem>
+              );
+            }
+
+            return (
+              <DropdownMenuItem
+                key={item.label}
+                onClick={item.onClick}
+                className={cn(
+                  item.label === "Sign out" ? "text-destructive" : "",
+                  "text-base"
+                )}
+              >
+                {item.label}
+              </DropdownMenuItem>
+            );
+          })}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
