@@ -1,5 +1,5 @@
 import { auth } from "@/modules/auth/auth.service";
-import type { Role } from "@ts-starter/db";
+import type { Role } from "@db";
 
 /**
  * Elysia beforeHandle guard to allow access only for specified roles.

@@ -19,9 +19,9 @@
     "@tanstack/react-router-with-query": "^1.130.17",
     "@tanstack/react-start": "^1.141.1",
     "@tanstack/router-plugin": "^1.141.1",
-    "@ts-starter/auth": "workspace:*",
-    "@ts-starter/db": "workspace:*",
-    "@ts-starter/env": "workspace:*",
+    "@auth": "workspace:*",
+    "@db": "workspace:*",
+    "@env": "workspace:*",
     "better-auth": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -59,6 +59,6 @@
     "web-vitals": "^5.0.3",
     "@tanstack/react-query-devtools": "^5.91.1",
     "typescript": "catalog:",
-    "@ts-starter/config": "workspace:*"
+    "@config": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import prisma from "@ts-starter/db";
+import prisma from "@db";
 
 export const ownerInfoGuard = new Elysia({ name: "ownerInfoGuard" })
     .onBeforeHandle(async ({ set }) => {

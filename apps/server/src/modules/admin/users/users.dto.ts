@@ -1,5 +1,5 @@
 import { t } from "elysia";
-import { Role } from "@ts-starter/db";
+import { Role } from "@db";
 
 export const UserRoleSchema = t.Enum(Role);
 

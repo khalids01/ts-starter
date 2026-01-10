@@ -1,8 +1,8 @@
-import prisma from "@ts-starter/db";
-import type { Role } from "@ts-starter/db";
+import prisma from "@db";
+import type { Role } from "@db";
 import { sendEmail } from "../../../email/nodemailer";
 import { invitationTemplate } from "../../../email/templates/invitation";
-import { env } from "@ts-starter/env/server";
+import { env } from "@env/server";
 
 export class UsersService {
     async listUsers(query: {

@@ -1,5 +1,5 @@
 {
-  "name": "@ts-starter/db",
+  "name": "@db",
   "type": "module",
   "exports": {
     ".": {
@@ -19,7 +19,7 @@
     "prisma": "^7.1.0",
     "@types/pg": "^8.15.6",
     "typescript": "catalog:",
-    "@ts-starter/config": "workspace:*"
+    "@config": "workspace:*"
   },
   "dependencies": {
     "@prisma/client": "catalog:",
@@ -27,6 +27,6 @@
     "pg": "^8.16.3",
     "dotenv": "catalog:",
     "zod": "catalog:",
-    "@ts-starter/env": "workspace:*"
+    "@env": "workspace:*"
   }
 }

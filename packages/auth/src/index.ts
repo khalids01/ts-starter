@@ -1,6 +1,6 @@
 import { polar, checkout, portal } from "@polar-sh/better-auth";
-import prisma from "@ts-starter/db";
-import { env } from "@ts-starter/env/server";
+import prisma from "@db";
+import { env } from "@env/server";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 

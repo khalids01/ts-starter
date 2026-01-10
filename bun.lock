@@ -5,14 +5,14 @@
     "": {
       "name": "ts-starter",
       "dependencies": {
+        "@env": "workspace:*",
         "@t3-oss/env-core": "^0.13.10",
-        "@ts-starter/env": "workspace:*",
         "axios": "^1.13.2",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@ts-starter/config": "workspace:*",
+        "@config": "workspace:*",
         "@types/bun": "catalog:",
         "turbo": "^2.6.3",
         "typescript": "catalog:",
@@ -21,12 +21,12 @@
     "apps/server": {
       "name": "server",
       "dependencies": {
+        "@auth": "workspace:*",
+        "@config": "workspace:*",
+        "@db": "workspace:*",
         "@elysiajs/cors": "^1.3.3",
         "@elysiajs/openapi": "^1.4.13",
-        "@ts-starter/auth": "workspace:*",
-        "@ts-starter/config": "workspace:*",
-        "@ts-starter/db": "workspace:*",
-        "@ts-starter/env": "workspace:*",
+        "@env": "workspace:*",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
         "elysia": "^1.3.21",
@@ -43,8 +43,11 @@
     "apps/web": {
       "name": "web",
       "dependencies": {
+        "@auth": "workspace:*",
         "@base-ui/react": "^1.0.0",
+        "@db": "workspace:*",
         "@elysiajs/eden": "^1.4.6",
+        "@env": "workspace:*",
         "@polar-sh/better-auth": "catalog:",
         "@prisma/client": "catalog:",
         "@tailwindcss/vite": "^4.1.8",
@@ -54,9 +57,6 @@
         "@tanstack/react-router-with-query": "^1.130.17",
         "@tanstack/react-start": "^1.141.1",
         "@tanstack/router-plugin": "^1.141.1",
-        "@ts-starter/auth": "workspace:*",
-        "@ts-starter/db": "workspace:*",
-        "@ts-starter/env": "workspace:*",
         "better-auth": "catalog:",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -83,11 +83,11 @@
         "zustand": "^5.0.9",
       },
       "devDependencies": {
+        "@config": "workspace:*",
         "@tanstack/react-query-devtools": "^5.91.1",
         "@tanstack/react-router-devtools": "^1.141.1",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "^16.2.0",
-        "@ts-starter/config": "workspace:*",
         "@types/react": "19.2.7",
         "@types/react-dom": "19.2.3",
         "@vitejs/plugin-react": "^5.0.4",
@@ -98,44 +98,44 @@
       },
     },
     "packages/auth": {
-      "name": "@ts-starter/auth",
+      "name": "@auth",
       "dependencies": {
+        "@db": "workspace:*",
+        "@env": "workspace:*",
         "@polar-sh/better-auth": "catalog:",
         "@polar-sh/sdk": "^0.34.16",
-        "@ts-starter/db": "workspace:*",
-        "@ts-starter/env": "workspace:*",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@ts-starter/config": "workspace:*",
+        "@config": "workspace:*",
         "typescript": "catalog:",
       },
     },
     "packages/config": {
-      "name": "@ts-starter/config",
+      "name": "@config",
       "version": "0.0.0",
     },
     "packages/db": {
-      "name": "@ts-starter/db",
+      "name": "@db",
       "dependencies": {
+        "@env": "workspace:*",
         "@prisma/adapter-pg": "^7.1.0",
         "@prisma/client": "catalog:",
-        "@ts-starter/env": "workspace:*",
         "dotenv": "catalog:",
         "pg": "^8.16.3",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@ts-starter/config": "workspace:*",
+        "@config": "workspace:*",
         "@types/pg": "^8.15.6",
         "prisma": "^7.1.0",
         "typescript": "catalog:",
       },
     },
     "packages/env": {
-      "name": "@ts-starter/env",
+      "name": "@env",
       "version": "0.0.0",
       "dependencies": {
         "@t3-oss/env-core": "^0.13.1",
@@ -143,7 +143,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@ts-starter/config": "workspace:*",
+        "@config": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
       },
@@ -162,6 +162,8 @@
     "@antfu/ni": ["@antfu/ni@25.0.0", "", { "dependencies": { "ansis": "^4.0.0", "fzf": "^0.5.2", "package-manager-detector": "^1.3.0", "tinyexec": "^1.0.1" }, "bin": { "na": "bin/na.mjs", "ni": "bin/ni.mjs", "nr": "bin/nr.mjs", "nci": "bin/nci.mjs", "nlx": "bin/nlx.mjs", "nun": "bin/nun.mjs", "nup": "bin/nup.mjs" } }, "sha512-9q/yCljni37pkMr4sPrI3G4jqdIk074+iukc5aFJl7kmDCCsiJrbZ6zKxnES1Gwg+i9RcDZwvktl23puGslmvA=="],
 
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@3.2.0", "", { "dependencies": { "@csstools/css-calc": "^2.1.3", "@csstools/css-color-parser": "^3.0.9", "@csstools/css-parser-algorithms": "^3.0.4", "@csstools/css-tokenizer": "^3.0.3", "lru-cache": "^10.4.3" } }, "sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw=="],
+
+    "@auth": ["@auth@workspace:packages/auth"],
 
     "@aws-crypto/sha256-browser": ["@aws-crypto/sha256-browser@5.2.0", "", { "dependencies": { "@aws-crypto/sha256-js": "^5.2.0", "@aws-crypto/supports-web-crypto": "^5.2.0", "@aws-crypto/util": "^5.2.0", "@aws-sdk/types": "^3.222.0", "@aws-sdk/util-locate-window": "^3.0.0", "@smithy/util-utf8": "^2.0.0", "tslib": "^2.6.2" } }, "sha512-AXfN/lGotSQwu6HNcEsIASo7kWXZ5HYWvfOmSNKDsEqC4OashTp8alTmaz+F7TC2L083SFv5RdB+qU3Vs1kZqw=="],
 
@@ -311,6 +313,8 @@
 
     "@chevrotain/utils": ["@chevrotain/utils@10.5.0", "", {}, "sha512-hBzuU5+JjB2cqNZyszkDHZgOSrUUT8V3dhgRl8Q9Gp6dAj/H5+KILGjbhDpc3Iy9qmqlm/akuOI2ut9VUtzJxQ=="],
 
+    "@config": ["@config@workspace:packages/config"],
+
     "@csstools/color-helpers": ["@csstools/color-helpers@5.1.0", "", {}, "sha512-S11EXWJyy0Mz5SYvRmY8nJYTFFd1LCNV+7cXyAgQtOOuzb4EsgfqDufL+9esx72/eLhsRdGZwaldu/h+E4t4BA=="],
 
     "@csstools/css-calc": ["@csstools/css-calc@2.1.4", "", { "peerDependencies": { "@csstools/css-parser-algorithms": "^3.0.5", "@csstools/css-tokenizer": "^3.0.4" } }, "sha512-3N8oaj+0juUw/1H3YwmDDJXCgTB1gKU6Hc/bB502u9zR0q2vd786XJH9QfrKIEgFlZmhZiq6epXl4rHqhzsIgQ=="],
@@ -322,6 +326,8 @@
     "@csstools/css-tokenizer": ["@csstools/css-tokenizer@3.0.4", "", {}, "sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw=="],
 
     "@date-fns/tz": ["@date-fns/tz@1.4.1", "", {}, "sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA=="],
+
+    "@db": ["@db@workspace:packages/db"],
 
     "@dotenvx/dotenvx": ["@dotenvx/dotenvx@1.51.4", "", { "dependencies": { "commander": "^11.1.0", "dotenv": "^17.2.1", "eciesjs": "^0.4.10", "execa": "^5.1.1", "fdir": "^6.2.0", "ignore": "^5.3.0", "object-treeify": "1.1.33", "picomatch": "^4.0.2", "which": "^4.0.0" }, "bin": { "dotenvx": "src/cli/dotenvx.js" } }, "sha512-AoziS8lRQ3ew/lY5J4JSlzYSN9Fo0oiyMBY37L3Bwq4mOQJT5GSrdZYLFPt6pH1LApDI3ZJceNyx+rHRACZSeQ=="],
 
@@ -344,6 +350,8 @@
     "@emnapi/runtime": ["@emnapi/runtime@1.7.1", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-PVtJr5CmLwYAU9PZDMITZoR5iAOShYREoR45EyyLrbntV50mdePTgUn4AmOw90Ifcj+x2kRjdzr1HP3RrNiHGA=="],
 
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.1.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ=="],
+
+    "@env": ["@env@workspace:packages/env"],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.27.2", "", { "os": "aix", "cpu": "ppc64" }, "sha512-GZMB+a0mOMZs4MpDbj8RJp4cw+w1WV5NYD6xzgvzUJ5Ek2jerwfO2eADyI6ExDSUED+1X8aMbegahsJi+8mgpw=="],
 
@@ -866,14 +874,6 @@
     "@tokenizer/token": ["@tokenizer/token@0.3.0", "", {}, "sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A=="],
 
     "@ts-morph/common": ["@ts-morph/common@0.27.0", "", { "dependencies": { "fast-glob": "^3.3.3", "minimatch": "^10.0.1", "path-browserify": "^1.0.1" } }, "sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ=="],
-
-    "@ts-starter/auth": ["@ts-starter/auth@workspace:packages/auth"],
-
-    "@ts-starter/config": ["@ts-starter/config@workspace:packages/config"],
-
-    "@ts-starter/db": ["@ts-starter/db@workspace:packages/db"],
-
-    "@ts-starter/env": ["@ts-starter/env@workspace:packages/env"],
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.1", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg=="],
 

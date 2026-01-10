@@ -1,11 +1,15 @@
 {
-  "extends": "@ts-starter/config/tsconfig.base.json",
+  "extends": "../../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@auth": ["../../packages/auth/src"],
+      "@db": ["../../packages/db/src"],
+      "@env/*": ["../../packages/env/src/*"],
+      "@config": ["../../packages/config/src/config.ts"]
     },
     "jsx": "react-jsx"
   }

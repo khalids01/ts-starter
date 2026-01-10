@@ -1,4 +1,4 @@
-import { siteConfig } from "@ts-starter/config";
+import { siteConfig } from "@config";
 
 export const invitationTemplate = (inviteUrl: string, inviterName: string) => `
 <!DOCTYPE html>

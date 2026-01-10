@@ -1,3 +1,3 @@
-import { auth } from "@ts-starter/auth";
+import { auth } from "@auth";
 
 export { auth };

@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { OwnerService } from "./owner.service";
 import { CreateOwnerDto } from "./owner.dto";
-import { env } from "@ts-starter/env/server";
+import { env } from "@env/server";
 import { ownerInfoGuard } from "../../../guards/owner-info.guard";
 
 const ownerService = new OwnerService();

@@ -1,5 +1,5 @@
-import prisma from "@ts-starter/db";
-import { auth } from "@ts-starter/auth";
+import prisma from "@db";
+import { auth } from "@auth";
 import type { CreateOwner } from "./owner.dto";
 
 export class OwnerService {
