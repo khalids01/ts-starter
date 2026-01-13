@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
@@ -19,6 +23,16 @@ const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/_public/',
@@ -29,6 +43,16 @@ const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
   id: '/payment/success',
   path: '/payment/success',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOverviewRoute = AdminOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/_protected/dashboard',
@@ -42,42 +66,75 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/admin': typeof AdminRouteWithChildren
   '/setup': typeof SetupRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/': typeof PublicIndexRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/': typeof PublicIndexRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/admin': typeof AdminRouteWithChildren
   '/setup': typeof SetupRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/setup' | '/login' | '/dashboard' | '/payment/success' | '/'
+  fullPaths:
+    | '/admin'
+    | '/setup'
+    | '/login'
+    | '/dashboard'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/payment/success'
+    | '/'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/setup' | '/login' | '/dashboard' | '/payment/success' | '/'
+  to:
+    | '/setup'
+    | '/login'
+    | '/dashboard'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/payment/success'
+    | '/'
+    | '/admin'
   id:
     | '__root__'
+    | '/admin'
     | '/setup'
     | '/_auth/login'
     | '/_protected/dashboard'
+    | '/admin/overview'
+    | '/admin/users'
     | '/payment/success'
     | '/_public/'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AdminRoute: typeof AdminRouteWithChildren
   SetupRoute: typeof SetupRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
@@ -94,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_public/': {
       id: '/_public/'
       path: '/'
@@ -107,6 +178,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/payment/success'
       preLoaderRoute: typeof PaymentSuccessRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/overview': {
+      id: '/admin/overview'
+      path: '/overview'
+      fullPath: '/admin/overview'
+      preLoaderRoute: typeof AdminOverviewRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
@@ -125,7 +210,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminOverviewRoute: AdminOverviewRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
+  AdminRoute: AdminRouteWithChildren,
   SetupRoute: SetupRoute,
   AuthLoginRoute: AuthLoginRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,

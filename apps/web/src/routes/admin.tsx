@@ -1,0 +1,101 @@
+import {
+  createFileRoute,
+  Outlet,
+  Link,
+  useLocation,
+} from "@tanstack/react-router";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { LayoutDashboard, Users, Settings, ChevronRight } from "lucide-react";
+import UserMenu from "@/components/core/user-menu";
+import { ThemeToggle } from "@/components/core/theme-toggle";
+
+export const Route = createFileRoute("/admin")({
+  component: AdminLayout,
+});
+
+const navItems = [
+  {
+    title: "Overview",
+    icon: LayoutDashboard,
+    url: "/admin/overview",
+  },
+  {
+    title: "Users",
+    icon: Users,
+    url: "/admin/users",
+  },
+];
+
+function AdminLayout() {
+  const location = useLocation();
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <Sidebar variant="floating" collapsible="icon">
+          <SidebarHeader className="h-16 border-b px-6 flex flex-row items-center gap-2"></SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map((item) => {
+                    const isActive = location.pathname === item.url;
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          tooltip={item.title}
+                          render={(buttonProps) => (
+                            <Link to={item.url} {...buttonProps}>
+                              <item.icon className="h-4 w-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          )}
+                        />
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset className="flex flex-col">
+          <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-6">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <div className="h-4 w-[1px] bg-border mx-2" />
+              <nav className="flex items-center space-x-1 text-sm font-medium">
+                <span className="text-muted-foreground">Admin</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <span className="capitalize">
+                  {location.pathname.split("/").pop()}
+                </span>
+              </nav>
+            </div>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <UserMenu />
+            </div>
+          </header>
+          <main className="flex-1 p-6 overflow-y-auto">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  );
+}

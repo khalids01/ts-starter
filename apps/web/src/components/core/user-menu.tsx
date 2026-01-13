@@ -73,10 +73,16 @@ export default function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant="outline" className={"rounded-full size-9"} />}
-      >
-        <User className="size-5" />
-      </DropdownMenuTrigger>
+        render={
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 rounded-[10px] border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+          >
+            <User className="size-5" />
+          </Button>
+        }
+      ></DropdownMenuTrigger>
       <DropdownMenuContent className="bg-card w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col">

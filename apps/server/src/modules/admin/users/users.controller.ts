@@ -37,6 +37,13 @@ export const usersController = new Elysia({
                     summary: "Get detailed information about a user",
                 }
             })
+            .get("/:id/sessions", async ({ params: { id } }) => {
+                return await usersService.getUserSessions(id);
+            }, {
+                detail: {
+                    summary: "Get active sessions for a user",
+                }
+            })
             .patch("/:id", async ({ params: { id }, body, set }) => {
                 try {
                     return await usersService.updateUser(id, body);

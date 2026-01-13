@@ -1,4 +1,5 @@
 import { polar, checkout, portal } from "@polar-sh/better-auth";
+import { magicLink } from "better-auth/plugins";
 import prisma from "@db";
 import { env } from "@env/server";
 import { betterAuth } from "better-auth";
@@ -68,5 +69,11 @@ export const auth = betterAuth({
         }),
       ]
       : []),
+    magicLink({
+      sendMagicLink: async ({ email, token, url }, request) => {
+        // TODO: Implement email sending integration (e.g. Resend, SendGrid)
+        console.log(`\n\n[Magic Link] Send to ${email}\nLink: ${url}\n\n`);
+      },
+    }),
   ],
 });

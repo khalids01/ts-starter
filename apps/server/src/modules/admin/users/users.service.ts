@@ -125,6 +125,13 @@ export class UsersService {
 
         return invitation;
     }
+
+    async getUserSessions(id: string) {
+        return prisma.session.findMany({
+            where: { userId: id },
+            orderBy: { createdAt: "desc" },
+        });
+    }
 }
 
 export const usersService = new UsersService();

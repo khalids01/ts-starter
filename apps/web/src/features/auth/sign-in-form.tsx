@@ -4,11 +4,13 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { client } from "@/lib/client";
 
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SignInForm({
   onSwitchToSignUp,
@@ -20,7 +22,7 @@ export default function SignInForm({
   });
   const { isPending } = authClient.useSession();
 
-  const form = useForm({
+  const passwordForm = useForm({
     defaultValues: {
       email: "",
       password: "",
@@ -38,8 +40,8 @@ export default function SignInForm({
             });
             toast.success("Sign in successful");
           },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
+          onError: (ctx) => {
+            toast.error(ctx.error.message || ctx.error.statusText);
           },
         }
       );
@@ -52,6 +54,31 @@ export default function SignInForm({
     },
   });
 
+  const magicLinkForm = useForm({
+    defaultValues: {
+      email: "",
+    },
+    onSubmit: async ({ value }) => {
+      const { data, error } = await client.auth["magic-link"].login.post({
+        email: value.email,
+      });
+
+      if (error) {
+        // @ts-ignore
+        const message = error.value?.message || "Failed to send magic link";
+        toast.error(message);
+        return;
+      }
+
+      toast.success("Magic link sent! Check your email.");
+    },
+    validators: {
+      onSubmit: z.object({
+        email: z.email("Invalid email address"),
+      }),
+    },
+  });
+
   if (isPending) {
     return <Loader />;
   }
@@ -60,82 +87,136 @@ export default function SignInForm({
     <div className="mx-auto w-full mt-10 max-w-md p-6">
       <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
+      <Tabs defaultValue="password" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="password">Password</TabsTrigger>
+          <TabsTrigger value="magic-link">Magic Link</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="password">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              passwordForm.handleSubmit();
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <passwordForm.Field name="email">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">Email</Label>
+                    <Input
+                      id="signin-email"
+                      name={field.name}
+                      type="email"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    {field.state.meta.errors.map((error) => (
+                      <p key={error?.message} className="text-red-500 text-sm">
+                        {error?.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </passwordForm.Field>
+            </div>
+
+            <div>
+              <passwordForm.Field name="password">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">Password</Label>
+                    <Input
+                      id="signin-password"
+                      name={field.name}
+                      type="password"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    {field.state.meta.errors.map((error) => (
+                      <p key={error?.message} className="text-red-500 text-sm">
+                        {error?.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </passwordForm.Field>
+            </div>
+
+            <passwordForm.Subscribe>
+              {(state) => (
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!state.canSubmit || state.isSubmitting}
+                >
+                  {state.isSubmitting ? "Submitting..." : "Sign In"}
+                </Button>
+              )}
+            </passwordForm.Subscribe>
+          </form>
+        </TabsContent>
+
+        <TabsContent value="magic-link">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              magicLinkForm.handleSubmit();
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <magicLinkForm.Field name="email">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor="magic-email">Email</Label>
+                    <Input
+                      id="magic-email"
+                      name={field.name}
+                      type="email"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    {field.state.meta.errors.map((error) => (
+                      <p key={error?.message} className="text-red-500 text-sm">
+                        {error?.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </magicLinkForm.Field>
+            </div>
+
+            <magicLinkForm.Subscribe>
+              {(state) => (
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!state.canSubmit || state.isSubmitting}
+                >
+                  {state.isSubmitting ? "Sending..." : "Send Magic Link"}
+                </Button>
+              )}
+            </magicLinkForm.Subscribe>
+          </form>
+        </TabsContent>
+        <div className="mt-4 text-center">
+          <Button
+            variant="link"
+            onClick={onSwitchToSignUp}
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            Need an account? Sign Up
+          </Button>
         </div>
-
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <form.Subscribe>
-          {(state) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-            >
-              {state.isSubmitting ? "Submitting..." : "Sign In"}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-
-      <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
-        >
-          Need an account? Sign Up
-        </Button>
-      </div>
+      </Tabs>
     </div>
   );
 }
