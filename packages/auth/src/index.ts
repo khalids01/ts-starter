@@ -4,6 +4,7 @@ import prisma from "@db";
 import { env } from "@env/server";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { sendEmail, magicLinkTemplate } from "@email";
 
 import { polarClient } from "./lib/payments";
 
@@ -14,7 +15,7 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutes
+      maxAge: 60 * 60 * 24 * 30, // 1 month
     },
   },
   trustedOrigins: [env.CORS_ORIGIN],
@@ -77,21 +78,7 @@ export const auth = betterAuth({
       : []),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        const { magicLinkTemplate } = await import("./email/templates/magic-link");
-        const nodemailer = await import("nodemailer");
-
-        const transporter = nodemailer.createTransport({
-          host: env.SMTP_HOST || "localhost",
-          port: Number(env.SMTP_PORT) || 587,
-          secure: env.SMTP_SECURE === "true",
-          auth: {
-            user: env.SMTP_USER,
-            pass: env.SMTP_PASS,
-          },
-        });
-
-        await transporter.sendMail({
-          from: env.SMTP_FROM || '"TS Starter" <hello@example.com>',
+        await sendEmail({
           to: email,
           subject: "Sign in to TS Starter",
           html: magicLinkTemplate(url),

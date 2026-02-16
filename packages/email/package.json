@@ -1,0 +1,26 @@
+{
+  "name": "@email",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/templates/*.ts"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.1",
+    "@env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^7.0.10"
+  }
+}

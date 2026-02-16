@@ -9,7 +9,8 @@
       "@auth": ["../../packages/auth/src"],
       "@db": ["../../packages/db/src"],
       "@env/*": ["../../packages/env/src/*"],
-      "@config": ["../../packages/config/src/config.ts"]
+      "@config": ["../../packages/config/src/config.ts"],
+      "@email": ["../../packages/email/src"]
     },
     "jsx": "react-jsx"
   }

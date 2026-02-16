@@ -11,7 +11,9 @@ export const authController = new Elysia({ prefix: "/auth" })
         body: t.Object({ email: t.String() })
     })
     .post("/magic-link/login", async ({ body, request, set }) => {
+        console.log(body);
         const user = await prisma.user.findUnique({ where: { email: body.email } });
+        console.log(user)
         if (!user) {
             set.status = 400;
             return { message: "User not found" };

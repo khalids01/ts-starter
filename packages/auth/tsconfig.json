@@ -9,7 +9,8 @@
     "paths": {
       "@db": ["../db/src"],
       "@env/*": ["../env/src/*"],
-      "@config": ["../config/src/config.ts"]
+      "@config": ["../config/src/config.ts"],
+      "@email": ["../email/src"]
     }
   }
 }

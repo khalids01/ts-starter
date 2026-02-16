@@ -13,22 +13,11 @@ export const env = createEnv({
             .string()
             .default("false")
             .transform((val) => val === "true"),
-        EMAIL: z.string().email().optional(),
-        EMAIL_PASSWORD: z.string().optional(),
-        EMAIL_FROM: z.string().optional(),
-        SMTP_HOST: z.string().optional(),
-        SMTP_PORT: z.string().optional(),
-        SMTP_USER: z.string().optional(),
-        SMTP_PASS: z.string().optional(),
-        SMTP_SECURE: z.string().optional(),
-        SMTP_FROM: z.string().optional(),
+
         NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     },
     runtimeEnv: {
         ...process.env,
-        SMTP_USER: process.env.SMTP_USER || process.env.EMAIL,
-        SMTP_PASS: process.env.SMTP_PASS || process.env.EMAIL_PASSWORD,
-        SMTP_FROM: process.env.SMTP_FROM || process.env.EMAIL_FROM,
     },
     emptyStringAsUndefined: true,
 });

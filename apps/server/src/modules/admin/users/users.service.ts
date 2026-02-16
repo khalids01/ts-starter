@@ -1,7 +1,6 @@
 import prisma from "@db";
 import type { Role } from "@db";
-import { sendEmail } from "../../../email/nodemailer";
-import { invitationTemplate } from "../../../email/templates/invitation";
+import { sendEmail, invitationTemplate } from "@email";
 import { env } from "../../../env";
 
 export class UsersService {
@@ -117,11 +116,11 @@ export class UsersService {
 
         // Send email
         const inviteUrl = `${env.BETTER_AUTH_URL}/accept-invitation?id=${invitation.id}`;
-        await sendEmail(
-            email,
-            `You're invited to join the team`,
-            invitationTemplate(inviteUrl, inviterName)
-        );
+        await sendEmail({
+            to: email,
+            subject: `You're invited to join the team`,
+            html: invitationTemplate(inviteUrl, inviterName)
+        });
 
         return invitation;
     }
