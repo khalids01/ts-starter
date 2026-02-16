@@ -2,7 +2,7 @@ import prisma from "@db";
 import type { Role } from "@db";
 import { sendEmail } from "../../../email/nodemailer";
 import { invitationTemplate } from "../../../email/templates/invitation";
-import { env } from "@env/server";
+import { env } from "../../../env";
 
 export class UsersService {
     async listUsers(query: {

@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "@auth";
 import prisma from "@db";
-import { env } from "@env/server";
+import { env } from "../../env";
 
 export const authController = new Elysia({ prefix: "/auth" })
     .post("/check-email", async ({ body }) => {
