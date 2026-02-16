@@ -106,10 +106,12 @@
         "@polar-sh/sdk": "^0.43.1",
         "better-auth": "^1.4.18",
         "dotenv": "^17.3.1",
+        "nodemailer": "^8.0.1",
         "zod": "^4.3.6",
       },
       "devDependencies": {
         "@config": "workspace:*",
+        "@types/nodemailer": "^7.0.10",
         "typescript": "^5.9.3",
       },
     },

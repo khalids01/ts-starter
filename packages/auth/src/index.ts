@@ -76,9 +76,26 @@ export const auth = betterAuth({
       ]
       : []),
     magicLink({
-      sendMagicLink: async ({ email, token, url }, request) => {
-        // TODO: Implement email sending integration (e.g. Resend, SendGrid)
-        console.log(`\n\n[Magic Link] Send to ${email}\nLink: ${url}\n\n`);
+      sendMagicLink: async ({ email, url }) => {
+        const { magicLinkTemplate } = await import("./email/templates/magic-link");
+        const nodemailer = await import("nodemailer");
+
+        const transporter = nodemailer.createTransport({
+          host: env.SMTP_HOST || "localhost",
+          port: Number(env.SMTP_PORT) || 587,
+          secure: env.SMTP_SECURE === "true",
+          auth: {
+            user: env.SMTP_USER,
+            pass: env.SMTP_PASS,
+          },
+        });
+
+        await transporter.sendMail({
+          from: env.SMTP_FROM || '"TS Starter" <hello@example.com>',
+          to: email,
+          subject: "Sign in to TS Starter",
+          html: magicLinkTemplate(url),
+        });
       },
     }),
   ],
