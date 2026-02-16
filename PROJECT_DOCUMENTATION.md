@@ -8,33 +8,8 @@
 
 ```
 ts-starter/
-├── .turbo/
-│   ├── cache/
-│   │   ├── 16c8bfad8ed06f33-meta.json
-│   │   ├── 16c8bfad8ed06f33.tar.zst
-│   │   ├── 1c91946b3bedf830-meta.json
-│   │   ├── 1c91946b3bedf830.tar.zst
-│   │   ├── 6a268be120ab6ee0-meta.json
-│   │   ├── 6a268be120ab6ee0.tar.zst
-│   │   ├── 9996e724de769fa1-meta.json
-│   │   ├── 9996e724de769fa1.tar.zst
-│   │   ├── a2a0bc4ca6610b6a-meta.json
-│   │   ├── a2a0bc4ca6610b6a.tar.zst
-│   │   ├── fa2d7f4857c2396d-meta.json
-│   │   └── fa2d7f4857c2396d.tar.zst
-│   ├── cookies/ (empty)
-│   ├── daemon/
-│   │   ├── 6c4cbf2aefed1ed6-turbo.log.2026-01-02 (empty)
-│   │   ├── 6c4cbf2aefed1ed6-turbo.log.2026-01-03 (empty)
-│   │   ├── 6c4cbf2aefed1ed6-turbo.log.2026-01-10 (empty)
-│   │   ├── 6c4cbf2aefed1ed6-turbo.log.2026-01-11 (empty)
-│   │   └── 6c4cbf2aefed1ed6-turbo.log.2026-01-13 (empty)
-│   └── preferences/
-│       └── tui.json
 ├── apps/
 │   ├── server/
-│   │   ├── .turbo/
-│   │   │   └── turbo-build.log
 │   │   ├── src/
 │   │   │   ├── email/
 │   │   │   │   ├── templates/
@@ -45,6 +20,9 @@ ts-starter/
 │   │   │   │   └── roles.guard.ts
 │   │   │   ├── modules/
 │   │   │   │   ├── admin/
+│   │   │   │   │   ├── metadata/
+│   │   │   │   │   │   ├── metadata.controller.ts
+│   │   │   │   │   │   └── metadata.service.ts
 │   │   │   │   │   ├── owner/
 │   │   │   │   │   │   ├── owner.controller.ts
 │   │   │   │   │   │   ├── owner.dto.ts
@@ -66,13 +44,12 @@ ts-starter/
 │   └── web/
 │       ├── .tanstack/
 │       │   └── tmp/ (empty)
-│       ├── .turbo/
-│       │   └── turbo-build.log
 │       ├── public/
 │       │   └── robots.txt
 │       ├── src/
 │       │   ├── components/
 │       │   │   ├── core/
+│       │   │   │   ├── theme-toggle.tsx
 │       │   │   │   └── user-menu.tsx
 │       │   │   ├── ui/
 │       │   │   │   ├── accordion.tsx
@@ -154,6 +131,8 @@ ts-starter/
 │       │   │   └── user/
 │       │   │       └── lib/
 │       │   │           └── get-user.ts
+│       │   ├── hooks/
+│       │   │   └── use-mobile.tsx
 │       │   ├── layouts/
 │       │   │   └── root.tsx
 │       │   ├── lib/
@@ -173,10 +152,14 @@ ts-starter/
 │       │   │   │   └── dashboard.tsx
 │       │   │   ├── _public/
 │       │   │   │   └── index.tsx
-│       │   │   ├── admin/ (empty)
+│       │   │   ├── admin/
+│       │   │   │   ├── index.tsx
+│       │   │   │   ├── overview.tsx
+│       │   │   │   └── users.tsx
 │       │   │   ├── payment/
 │       │   │   │   └── success.tsx
 │       │   │   ├── __root.tsx
+│       │   │   ├── admin.tsx
 │       │   │   └── setup.tsx
 │       │   ├── index.css
 │       │   ├── router.tsx
@@ -236,7 +219,6 @@ ts-starter/
 │       └── tsconfig.json
 ├── .gitignore
 ├── bts.jsonc
-├── bun.lock
 ├── bunfig.toml
 ├── LICENSE
 ├── package.json
@@ -302,105 +284,6 @@ coverage
 .cache
 tmp
 temp
-```
-
----
-
-### `.turbo/cache/16c8bfad8ed06f33-meta.json`
-
-```json
-{"hash":"16c8bfad8ed06f33","duration":18439}
-```
-
----
-
-### `.turbo/cache/1c91946b3bedf830-meta.json`
-
-```json
-{"hash":"1c91946b3bedf830","duration":19892}
-```
-
----
-
-### `.turbo/cache/6a268be120ab6ee0-meta.json`
-
-```json
-{"hash":"6a268be120ab6ee0","duration":385}
-```
-
----
-
-### `.turbo/cache/9996e724de769fa1-meta.json`
-
-```json
-{"hash":"9996e724de769fa1","duration":364}
-```
-
----
-
-### `.turbo/cache/a2a0bc4ca6610b6a-meta.json`
-
-```json
-{"hash":"a2a0bc4ca6610b6a","duration":812}
-```
-
----
-
-### `.turbo/cache/fa2d7f4857c2396d-meta.json`
-
-```json
-{"hash":"fa2d7f4857c2396d","duration":24344}
-```
-
----
-
-### `.turbo/daemon/6c4cbf2aefed1ed6-turbo.log.2026-01-02`
-
-```
-(empty file)
-```
-
----
-
-### `.turbo/daemon/6c4cbf2aefed1ed6-turbo.log.2026-01-03`
-
-```
-(empty file)
-```
-
----
-
-### `.turbo/daemon/6c4cbf2aefed1ed6-turbo.log.2026-01-10`
-
-```
-(empty file)
-```
-
----
-
-### `.turbo/daemon/6c4cbf2aefed1ed6-turbo.log.2026-01-11`
-
-```
-(empty file)
-```
-
----
-
-### `.turbo/daemon/6c4cbf2aefed1ed6-turbo.log.2026-01-13`
-
-```
-(empty file)
-```
-
----
-
-### `.turbo/preferences/tui.json`
-
-```json
-{
-  "is_task_list_visible": true,
-  "active_task": "web#build"
-}
 ```
 
 ---
@@ -591,24 +474,6 @@ lerna-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-```
-
----
-
-### `apps/server/.turbo/turbo-build.log`
-
-```
-
-[0m[2m[35m$[0m [2m[1mtsdown[0m
-[34mℹ[39m tsdown [2mv0.16.8[22m powered by rolldown [2mv1.0.0-beta.52[22m
-[34mℹ[39m Using tsdown config: [4m/home/khalid/Desktop/projects/saas/ts-starter/apps/server/tsdown.config.ts[24m
-[34mℹ[39m entry: [34msrc/index.ts[39m
-[34mℹ[39m tsconfig: [34mtsconfig.json[39m
-[34mℹ[39m Build start
-[34mℹ[39m Cleaning 1 files
-[34mℹ[39m [2mdist/[22m[1mindex.mjs[22m  [2m14.03 kB[22m [2m│ gzip: 4.47 kB[22m
-[34mℹ[39m 1 files, total: 14.03 kB
-[32m✔[39m Build complete in [32m114ms[39m
 ```
 
 ---
@@ -873,7 +738,7 @@ const server = new Elysia()
   .use(
     cors({
       origin: env.CORS_ORIGIN,
-      methods: ["GET", "POST", "OPTIONS"],
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     }),
@@ -898,6 +763,56 @@ const server = new Elysia()
   })
 
 export type App = typeof server;
+```
+
+---
+
+### `apps/server/src/modules/admin/metadata/metadata.controller.ts`
+
+```typescript
+import { Elysia } from "elysia";
+import { rolesGuard } from "../../../guards/roles.guard";
+import { metadataService } from "./metadata.service";
+
+export const metadataController = new Elysia({
+    prefix: "/admin/metadata",
+    detail: {
+        tags: ["Admin - Metadata"],
+    },
+})
+    .guard(
+        {
+            beforeHandle: rolesGuard(["ADMIN", "OWNER"]),
+        },
+        (app) =>
+            app.get("/overview", () => metadataService.getOverview(), {
+                detail: {
+                    summary: "Get dashboard overview statistics",
+                },
+            })
+    );
+```
+
+---
+
+### `apps/server/src/modules/admin/metadata/metadata.service.ts`
+
+```typescript
+import prisma from "@db";
+
+export const metadataService = {
+    async getOverview() {
+        const totalUsers = await prisma.user.count({
+            where: {
+                archived: false,
+            },
+        });
+
+        return {
+            totalUsers,
+        };
+    },
+};
 ```
 
 ---
@@ -1109,6 +1024,13 @@ export const usersController = new Elysia({
             }, {
                 detail: {
                     summary: "Get detailed information about a user",
+                }
+            })
+            .get("/:id/sessions", async ({ params: { id } }) => {
+                return await usersService.getUserSessions(id);
+            }, {
+                detail: {
+                    summary: "Get active sessions for a user",
                 }
             })
             .patch("/:id", async ({ params: { id }, body, set }) => {
@@ -1342,6 +1264,13 @@ export class UsersService {
 
         return invitation;
     }
+
+    async getUserSessions(id: string) {
+        return prisma.session.findMany({
+            where: { userId: id },
+            orderBy: { createdAt: "desc" },
+        });
+    }
 }
 
 export const usersService = new UsersService();
@@ -1355,12 +1284,14 @@ export const usersService = new UsersService();
 import Elysia from "elysia";
 import { ownerController } from "./admin/owner/owner.controller";
 import { usersController } from "./admin/users/users.controller";
+import { metadataController } from "./admin/metadata/metadata.controller";
 import { authController } from "./auth/auth.controller";
 
 export const app = new Elysia()
     .use(authController)
     .use(ownerController)
-    .use(usersController);
+    .use(usersController)
+    .use(metadataController);
 ```
 
 ---
@@ -1655,6 +1586,32 @@ Disallow:
 
 ---
 
+### `apps/web/src/components/core/theme-toggle.tsx`
+
+```tsx
+import { Button } from "../ui/button";
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
+
+export const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="h-10 w-10 rounded-[10px] border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+    >
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
+  );
+};
+```
+
+---
+
 ### `apps/web/src/components/core/user-menu.tsx`
 
 ```tsx
@@ -1733,10 +1690,16 @@ export default function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant="outline" className={"rounded-full size-9"} />}
-      >
-        <User className="size-5" />
-      </DropdownMenuTrigger>
+        render={
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 rounded-[10px] border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+          >
+            <User className="size-5" />
+          </Button>
+        }
+      ></DropdownMenuTrigger>
       <DropdownMenuContent className="bg-card w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col">
@@ -6885,57 +6848,57 @@ export {
 ### `apps/web/src/components/ui/sidebar.tsx`
 
 ```tsx
-import * as React from "react"
-import { mergeProps } from "@base-ui/react/merge-props"
-import { useRender } from "@base-ui/react/use-render"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { PanelLeftIcon } from "lucide-react"
+} from "@/components/ui/tooltip";
+import { useIsMobile } from "../../hooks/use-mobile";
+import { PanelLeftIcon } from "lucide-react";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+const SIDEBAR_WIDTH = "16rem";
+const SIDEBAR_WIDTH_MOBILE = "18rem";
+const SIDEBAR_WIDTH_ICON = "3rem";
+const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
 type SidebarContextProps = {
-  state: "expanded" | "collapsed"
-  open: boolean
-  setOpen: (open: boolean) => void
-  openMobile: boolean
-  setOpenMobile: (open: boolean) => void
-  isMobile: boolean
-  toggleSidebar: () => void
-}
+  state: "expanded" | "collapsed";
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  openMobile: boolean;
+  setOpenMobile: (open: boolean) => void;
+  isMobile: boolean;
+  toggleSidebar: () => void;
+};
 
-const SidebarContext = React.createContext<SidebarContextProps | null>(null)
+const SidebarContext = React.createContext<SidebarContextProps | null>(null);
 
 function useSidebar() {
-  const context = React.useContext(SidebarContext)
+  const context = React.useContext(SidebarContext);
   if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
+    throw new Error("useSidebar must be used within a SidebarProvider.");
   }
 
-  return context
+  return context;
 }
 
 function SidebarProvider({
@@ -6947,36 +6910,36 @@ function SidebarProvider({
   children,
   ...props
 }: React.ComponentProps<"div"> & {
-  defaultOpen?: boolean
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const isMobile = useIsMobile()
-  const [openMobile, setOpenMobile] = React.useState(false)
+  const isMobile = useIsMobile();
+  const [openMobile, setOpenMobile] = React.useState(false);
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
+  const [_open, _setOpen] = React.useState(defaultOpen);
+  const open = openProp ?? _open;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === "function" ? value(open) : value
+      const openState = typeof value === "function" ? value(open) : value;
       if (setOpenProp) {
-        setOpenProp(openState)
+        setOpenProp(openState);
       } else {
-        _setOpen(openState)
+        _setOpen(openState);
       }
 
       // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [setOpenProp, open]
-  )
+  );
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-  }, [isMobile, setOpen, setOpenMobile])
+    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+  }, [isMobile, setOpen, setOpenMobile]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -6985,18 +6948,18 @@ function SidebarProvider({
         event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
         (event.metaKey || event.ctrlKey)
       ) {
-        event.preventDefault()
-        toggleSidebar()
+        event.preventDefault();
+        toggleSidebar();
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [toggleSidebar])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSidebar]);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
-  const state = open ? "expanded" : "collapsed"
+  const state = open ? "expanded" : "collapsed";
 
   const contextValue = React.useMemo<SidebarContextProps>(
     () => ({
@@ -7009,7 +6972,7 @@ function SidebarProvider({
       toggleSidebar,
     }),
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
-  )
+  );
 
   return (
     <SidebarContext.Provider value={contextValue}>
@@ -7031,7 +6994,7 @@ function SidebarProvider({
         {children}
       </div>
     </SidebarContext.Provider>
-  )
+  );
 }
 
 function Sidebar({
@@ -7042,11 +7005,11 @@ function Sidebar({
   children,
   ...props
 }: React.ComponentProps<"div"> & {
-  side?: "left" | "right"
-  variant?: "sidebar" | "floating" | "inset"
-  collapsible?: "offExamples" | "icon" | "none"
+  side?: "left" | "right";
+  variant?: "sidebar" | "floating" | "inset";
+  collapsible?: "offExamples" | "icon" | "none";
 }) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
   if (collapsible === "none") {
     return (
@@ -7060,7 +7023,7 @@ function Sidebar({
       >
         {children}
       </div>
-    )
+    );
   }
 
   if (isMobile) {
@@ -7085,7 +7048,7 @@ function Sidebar({
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
       </Sheet>
-    )
+    );
   }
 
   return (
@@ -7133,7 +7096,7 @@ function Sidebar({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function SidebarTrigger({
@@ -7141,7 +7104,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar } = useSidebar();
 
   return (
     <Button
@@ -7151,20 +7114,19 @@ function SidebarTrigger({
       size="icon-sm"
       className={cn(className)}
       onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
+        onClick?.(event);
+        toggleSidebar();
       }}
       {...props}
     >
-      <PanelLeftIcon
-      />
+      <PanelLeftIcon />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
-  )
+  );
 }
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar } = useSidebar();
 
   return (
     <button
@@ -7185,7 +7147,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
@@ -7198,7 +7160,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarInput({
@@ -7212,7 +7174,7 @@ function SidebarInput({
       className={cn("bg-background h-8 w-full shadow-none", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -7223,7 +7185,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("gap-2 p-2 flex flex-col", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -7234,7 +7196,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("gap-2 p-2 flex flex-col", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarSeparator({
@@ -7248,7 +7210,7 @@ function SidebarSeparator({
       className={cn("bg-sidebar-border mx-2 w-auto", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -7262,7 +7224,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
@@ -7270,13 +7232,10 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-group"
       data-sidebar="group"
-      className={cn(
-        "p-2 relative flex w-full min-w-0 flex-col",
-        className
-      )}
+      className={cn("p-2 relative flex w-full min-w-0 flex-col", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarGroupLabel({
@@ -7300,7 +7259,7 @@ function SidebarGroupLabel({
       slot: "sidebar-group-label",
       sidebar: "group-label",
     },
-  })
+  });
 }
 
 function SidebarGroupAction({
@@ -7324,7 +7283,7 @@ function SidebarGroupAction({
       slot: "sidebar-group-action",
       sidebar: "group-action",
     },
-  })
+  });
 }
 
 function SidebarGroupContent({
@@ -7338,7 +7297,7 @@ function SidebarGroupContent({
       className={cn("text-xs w-full", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
@@ -7349,7 +7308,7 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
       className={cn("gap-0 flex w-full min-w-0 flex-col", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
@@ -7360,7 +7319,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
       className={cn("group/menu-item relative", className)}
       {...props}
     />
-  )
+  );
 }
 
 const sidebarMenuButtonVariants = cva(
@@ -7369,7 +7328,8 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        outline: "bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
+        outline:
+          "bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
         default: "h-8 text-xs",
@@ -7382,7 +7342,7 @@ const sidebarMenuButtonVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 function SidebarMenuButton({
   render,
@@ -7394,10 +7354,10 @@ function SidebarMenuButton({
   ...props
 }: useRender.ComponentProps<"button"> &
   React.ComponentProps<"button"> & {
-    isActive?: boolean
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>
+    isActive?: boolean;
+    tooltip?: string | React.ComponentProps<typeof TooltipContent>;
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
-  const { isMobile, state } = useSidebar()
+  const { isMobile, state } = useSidebar();
   const comp = useRender({
     defaultTagName: "button",
     props: mergeProps<"button">(
@@ -7406,36 +7366,36 @@ function SidebarMenuButton({
       },
       props
     ),
-    render: !tooltip ? render : TooltipTrigger,
+    render: render,
     state: {
       slot: "sidebar-menu-button",
       sidebar: "menu-button",
       size,
       active: isActive,
     },
-  })
+  });
 
   if (!tooltip) {
-    return comp
+    return comp;
   }
 
   if (typeof tooltip === "string") {
     tooltip = {
       children: tooltip,
-    }
+    };
   }
 
   return (
     <Tooltip>
-      {comp}
+      <TooltipTrigger>{comp}</TooltipTrigger>
       <TooltipContent
         side="right"
         align="center"
         hidden={state !== "collapsed" || isMobile}
-        {...tooltip}
+        {...(tooltip as React.ComponentProps<typeof TooltipContent>)}
       />
     </Tooltip>
-  )
+  );
 }
 
 function SidebarMenuAction({
@@ -7445,7 +7405,7 @@ function SidebarMenuAction({
   ...props
 }: useRender.ComponentProps<"button"> &
   React.ComponentProps<"button"> & {
-    showOnHover?: boolean
+    showOnHover?: boolean;
   }) {
   return useRender({
     defaultTagName: "button",
@@ -7465,7 +7425,7 @@ function SidebarMenuAction({
       slot: "sidebar-menu-action",
       sidebar: "menu-action",
     },
-  })
+  });
 }
 
 function SidebarMenuBadge({
@@ -7482,7 +7442,7 @@ function SidebarMenuBadge({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarMenuSkeleton({
@@ -7490,12 +7450,12 @@ function SidebarMenuSkeleton({
   showIcon = false,
   ...props
 }: React.ComponentProps<"div"> & {
-  showIcon?: boolean
+  showIcon?: boolean;
 }) {
   // Random width between 50 to 90%.
   const [width] = React.useState(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  })
+    return `${Math.floor(Math.random() * 40) + 50}%`;
+  });
 
   return (
     <div
@@ -7520,7 +7480,7 @@ function SidebarMenuSkeleton({
         }
       />
     </div>
-  )
+  );
 }
 
 function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
@@ -7528,10 +7488,13 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
     <ul
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
-      className={cn("border-sidebar-border mx-3.5 translate-x-px gap-1 border-l px-2.5 py-0.5 group-data-[collapsible=icon]:hidden flex min-w-0 flex-col", className)}
+      className={cn(
+        "border-sidebar-border mx-3.5 translate-x-px gap-1 border-l px-2.5 py-0.5 group-data-[collapsible=icon]:hidden flex min-w-0 flex-col",
+        className
+      )}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarMenuSubItem({
@@ -7545,7 +7508,7 @@ function SidebarMenuSubItem({
       className={cn("group/menu-sub-item relative", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarMenuSubButton({
@@ -7556,8 +7519,8 @@ function SidebarMenuSubButton({
   ...props
 }: useRender.ComponentProps<"a"> &
   React.ComponentProps<"a"> & {
-    size?: "sm" | "md"
-    isActive?: boolean
+    size?: "sm" | "md";
+    isActive?: boolean;
   }) {
   return useRender({
     defaultTagName: "a",
@@ -7577,7 +7540,7 @@ function SidebarMenuSubButton({
       size,
       active: isActive,
     },
-  })
+  });
 }
 
 export {
@@ -7605,7 +7568,7 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-}
+};
 ```
 
 ---
@@ -9693,6 +9656,32 @@ export const getUser = createServerFn({ method: "GET" })
 
 ---
 
+### `apps/web/src/hooks/use-mobile.tsx`
+
+```tsx
+import * as React from "react"
+
+const MOBILE_BREAKPOINT = 768
+
+export function useIsMobile() {
+    const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+
+    React.useEffect(() => {
+        const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+        const onChange = () => {
+            setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+        }
+        mql.addEventListener("change", onChange)
+        setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+        return () => mql.removeEventListener("change", onChange)
+    }, [])
+
+    return !!isMobile
+}
+```
+
+---
+
 ### `apps/web/src/index.css`
 
 ```css
@@ -9991,8 +9980,12 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
@@ -10000,6 +9993,16 @@ const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/_public/',
@@ -10010,6 +10013,16 @@ const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
   id: '/payment/success',
   path: '/payment/success',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOverviewRoute = AdminOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/_protected/dashboard',
@@ -10023,42 +10036,75 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/admin': typeof AdminRouteWithChildren
   '/setup': typeof SetupRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/': typeof PublicIndexRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/': typeof PublicIndexRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/admin': typeof AdminRouteWithChildren
   '/setup': typeof SetupRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/setup' | '/login' | '/dashboard' | '/payment/success' | '/'
+  fullPaths:
+    | '/admin'
+    | '/setup'
+    | '/login'
+    | '/dashboard'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/payment/success'
+    | '/'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/setup' | '/login' | '/dashboard' | '/payment/success' | '/'
+  to:
+    | '/setup'
+    | '/login'
+    | '/dashboard'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/payment/success'
+    | '/'
+    | '/admin'
   id:
     | '__root__'
+    | '/admin'
     | '/setup'
     | '/_auth/login'
     | '/_protected/dashboard'
+    | '/admin/overview'
+    | '/admin/users'
     | '/payment/success'
     | '/_public/'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AdminRoute: typeof AdminRouteWithChildren
   SetupRoute: typeof SetupRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
@@ -10075,6 +10121,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_public/': {
       id: '/_public/'
       path: '/'
@@ -10088,6 +10148,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/payment/success'
       preLoaderRoute: typeof PaymentSuccessRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/overview': {
+      id: '/admin/overview'
+      path: '/overview'
+      fullPath: '/admin/overview'
+      preLoaderRoute: typeof AdminOverviewRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
@@ -10106,7 +10180,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminOverviewRoute: AdminOverviewRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
+  AdminRoute: AdminRouteWithChildren,
   SetupRoute: SetupRoute,
   AuthLoginRoute: AuthLoginRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
@@ -10335,6 +10424,517 @@ function HomeComponent() {
 
 ---
 
+### `apps/web/src/routes/admin/index.tsx`
+
+```tsx
+import { createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/admin/")({
+  beforeLoad: () => {
+    throw redirect({
+      to: "/admin/overview",
+      replace: true,
+    });
+  },
+});
+```
+
+---
+
+### `apps/web/src/routes/admin/overview.tsx`
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { client } from "@/lib/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users } from "lucide-react";
+
+export const Route = createFileRoute("/admin/overview")({
+  component: OverviewPage,
+});
+
+function OverviewPage() {
+  const { data: overview, isLoading } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const { data, error } = await client.admin.metadata.overview.get();
+      if (error)
+        throw new Error(
+          error.value ? JSON.stringify(error.value) : "Unknown error"
+        );
+      return data as { totalUsers: number };
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="h-8 w-16 animate-pulse bg-muted rounded" />
+            ) : (
+              <div className="text-2xl font-bold">
+                {overview?.totalUsers ?? 0}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Across the whole platform
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### `apps/web/src/routes/admin/users.tsx`
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { client } from "@/lib/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  MoreHorizontal,
+  UserPlus,
+  Shield,
+  Ban,
+  History,
+  Mail,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+
+export const Route = createFileRoute("/admin/users")({
+  component: UsersPage,
+});
+
+function UsersPage() {
+  const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-users", search],
+    queryFn: async () => {
+      const { data, error } = await client.admin.users.get({
+        query: { search: search || undefined },
+      });
+      if (error) throw new Error(error.value?.message as string);
+      return data as { users: any[]; total: number; pages: number };
+    },
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: async ({ email, role }: { email: string; role: any }) => {
+      const { data, error } = await client.admin.users.invite.post({
+        email,
+        role,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Invitation sent successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to send invitation");
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          User Management
+        </h1>
+        <InviteDialog
+          onInvite={(email, role) => inviteMutation.mutate({ email, role })}
+          isLoading={inviteMutation.isPending}
+        />
+      </div>
+
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filter users..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : data?.users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data?.users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        user.role === "ADMIN" || user.role === "OWNER"
+                          ? "default"
+                          : "secondary"
+                      }
+                    >
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.banned ? (
+                      <Badge variant="destructive">Banned</Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-600"
+                      >
+                        Active
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <UserActions user={user} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function InviteDialog({
+  onInvite,
+  isLoading,
+}: {
+  onInvite: (email: string, role: string) => void;
+  isLoading: boolean;
+}) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("USER");
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger>
+        <Button>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Invite User
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Invite User</DialogTitle>
+          <DialogDescription>
+            Send an invitation email to a new user.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <label htmlFor="email">Email</label>
+            <Input
+              id="email"
+              placeholder="user@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="role">Role</label>
+            <select
+              id="role"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            disabled={isLoading || !email}
+            onClick={() => {
+              onInvite(email, role);
+              setOpen(false);
+              setEmail("");
+            }}
+          >
+            {isLoading ? "Sending..." : "Send Invitation"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UserActions({ user }: { user: any }) {
+  const [sessionsOpen, setSessionsOpen] = useState(false);
+  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+    queryKey: ["user-sessions", user.id],
+    queryFn: async () => {
+      const { data, error } = await client.admin
+        .users({ id: user.id })
+        .sessions.get();
+      if (error)
+        throw new Error(
+          error.value ? JSON.stringify(error.value) : "Unknown error"
+        );
+      return data as any[];
+    },
+    enabled: sessionsOpen,
+  });
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={(triggerProps) => (
+            <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          )}
+        />
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => setSessionsOpen(true)}>
+            <History className="mr-2 h-4 w-4" />
+            View Sessions
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Shield className="mr-2 h-4 w-4" />
+            Change Role
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-destructive">
+            <Ban className="mr-2 h-4 w-4" />
+            {user.banned ? "Unban User" : "Ban User"}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={sessionsOpen} onOpenChange={setSessionsOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>User Sessions - {user.name}</DialogTitle>
+            <DialogDescription>
+              All active and past sessions for this user.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {sessionsLoading ? (
+              <div className="flex justify-center py-8">
+                Loading sessions...
+              </div>
+            ) : sessions?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No sessions found.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sessions?.map((session: any) => (
+                  <div
+                    key={session.id}
+                    className="flex flex-col p-3 border rounded-lg text-sm"
+                  >
+                    <div className="flex justify-between font-medium">
+                      <span>IP: {session.ipAddress || "Unknown"}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(session.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1 truncate">
+                      OS: {session.userAgent || "Unknown"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+```
+
+---
+
+### `apps/web/src/routes/admin.tsx`
+
+```tsx
+import {
+  createFileRoute,
+  Outlet,
+  Link,
+  useLocation,
+} from "@tanstack/react-router";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { LayoutDashboard, Users, Settings, ChevronRight } from "lucide-react";
+import UserMenu from "@/components/core/user-menu";
+import { ThemeToggle } from "@/components/core/theme-toggle";
+
+export const Route = createFileRoute("/admin")({
+  component: AdminLayout,
+});
+
+const navItems = [
+  {
+    title: "Overview",
+    icon: LayoutDashboard,
+    url: "/admin/overview",
+  },
+  {
+    title: "Users",
+    icon: Users,
+    url: "/admin/users",
+  },
+];
+
+function AdminLayout() {
+  const location = useLocation();
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <Sidebar variant="floating" collapsible="icon">
+          <SidebarHeader className="h-16 border-b px-6 flex flex-row items-center gap-2"></SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map((item) => {
+                    const isActive = location.pathname === item.url;
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          tooltip={item.title}
+                          render={(buttonProps) => (
+                            <Link to={item.url} {...buttonProps}>
+                              <item.icon className="h-4 w-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          )}
+                        />
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset className="flex flex-col">
+          <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-6">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <div className="h-4 w-[1px] bg-border mx-2" />
+              <nav className="flex items-center space-x-1 text-sm font-medium">
+                <span className="text-muted-foreground">Admin</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <span className="capitalize">
+                  {location.pathname.split("/").pop()}
+                </span>
+              </nav>
+            </div>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <UserMenu />
+            </div>
+          </header>
+          <main className="flex-1 p-6 overflow-y-auto">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  );
+}
+```
+
+---
+
 ### `apps/web/src/routes/payment/success.tsx`
 
 ```tsx
@@ -10480,7 +11080,6 @@ export default defineConfig({
 ```
 
 ---
-
 
 ### `bunfig.toml`
 

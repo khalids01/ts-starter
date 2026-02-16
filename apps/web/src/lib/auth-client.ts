@@ -9,4 +9,7 @@ export const authClient = createAuthClient({
     magicLinkClient(),
     ...(env.VITE_ENABLE_POLAR ? [polarClient()] : [])
   ],
+  advanced: {
+    useCheckSession: true,
+  }
 });

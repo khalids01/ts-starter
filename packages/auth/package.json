@@ -11,15 +11,15 @@
   },
   "scripts": {},
   "devDependencies": {
-    "typescript": "catalog:",
+    "typescript": "^5.9.3",
     "@config": "workspace:*"
   },
   "dependencies": {
-    "better-auth": "catalog:",
-    "@polar-sh/better-auth": "catalog:",
-    "@polar-sh/sdk": "^0.34.16",
-    "dotenv": "catalog:",
-    "zod": "catalog:",
+    "better-auth": "^1.4.18",
+    "@polar-sh/better-auth": "^1.8.1",
+    "@polar-sh/sdk": "^0.43.1",
+    "dotenv": "^17.3.1",
+    "zod": "^4.3.6",
     "@env": "workspace:*",
     "@db": "workspace:*"
   }
