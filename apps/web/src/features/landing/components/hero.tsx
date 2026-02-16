@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export const Hero = () => {
@@ -31,19 +32,23 @@ export const Hero = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-200">
-          <Button
-            size="lg"
-            className="rounded-full px-8 h-12 text-base font-semibold"
-          >
-            Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="rounded-full px-8 h-12 text-base font-semibold"
-          >
-            Live Demo
-          </Button>
+          <Link to="/login">
+            <Button
+              size="lg"
+              className="rounded-full px-8 h-12 text-base font-semibold cursor-pointer"
+            >
+              Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link to="/login">
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-full px-8 h-12 text-base font-semibold cursor-pointer"
+            >
+              Live Demo
+            </Button>
+          </Link>
         </div>
 
         <div className="mt-16 flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
