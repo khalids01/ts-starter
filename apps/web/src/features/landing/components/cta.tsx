@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
 export const CTA = () => {
@@ -18,20 +19,24 @@ export const CTA = () => {
             seconds and focus on what matters most.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="rounded-full px-10 h-14 text-lg font-bold w-full sm:w-auto transition-transform hover:scale-105"
-            >
-              Get Started for Free
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full px-10 h-14 text-lg font-bold border-primary-foreground/20 hover:bg-white/10 w-full sm:w-auto"
-            >
-              Sign up today <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <Link to="/login">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="rounded-full px-10 h-14 text-lg font-bold w-full sm:w-auto transition-transform hover:scale-105 cursor-pointer"
+              >
+                Get Started for Free
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full px-10 h-14 text-lg font-bold border-primary-foreground/20 hover:bg-white/10 w-full sm:w-auto cursor-pointer"
+              >
+                Sign up today <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
           <p className="mt-8 text-sm text-primary-foreground/60 italic">
             No credit card required. Cancel anytime.

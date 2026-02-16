@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +68,7 @@ export const Pricing = () => {
                 "relative flex flex-col p-8 rounded-3xl border transition-all duration-300",
                 plan.popular
                   ? "bg-card border-primary shadow-xl scale-105 z-10"
-                  : "bg-background border-border hover:border-primary/50"
+                  : "bg-background border-border hover:border-primary/50",
               )}
             >
               {plan.popular && (
@@ -102,12 +103,14 @@ export const Pricing = () => {
                 ))}
               </div>
 
-              <Button
-                variant={plan.popular ? "default" : "outline"}
-                className="w-full rounded-full h-12 text-base font-bold transition-all duration-300"
-              >
-                {plan.cta}
-              </Button>
+              <Link to="/login" className="w-full">
+                <Button
+                  variant={plan.popular ? "default" : "outline"}
+                  className="w-full rounded-full h-12 text-base font-bold transition-all duration-300 cursor-pointer"
+                >
+                  {plan.cta}
+                </Button>
+              </Link>
             </div>
           ))}
         </div>
