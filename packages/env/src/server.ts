@@ -22,6 +22,11 @@ export const env = createEnv({
     SMTP_FROM: z.string().optional(),
     SMTP_SECURE: z.string().optional(),
   },
-  runtimeEnv: process.env,
+  runtimeEnv: {
+    ...process.env,
+    SMTP_USER: process.env.SMTP_USER || process.env.EMAIL,
+    SMTP_PASS: process.env.SMTP_PASS || process.env.EMAIL_PASSWORD,
+    SMTP_FROM: process.env.SMTP_FROM || process.env.EMAIL_FROM,
+  },
   emptyStringAsUndefined: true,
 });
