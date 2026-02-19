@@ -12,6 +12,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -176,12 +177,14 @@ function InviteDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Invite User
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Invite User
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Invite User</DialogTitle>
@@ -239,7 +242,7 @@ function UserActions({ user }: { user: any }) {
         .sessions.get();
       if (error)
         throw new Error(
-          error.value ? JSON.stringify(error.value) : "Unknown error"
+          error.value ? JSON.stringify(error.value) : "Unknown error",
         );
       return data as any[];
     },
@@ -258,15 +261,17 @@ function UserActions({ user }: { user: any }) {
           )}
         />
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setSessionsOpen(true)}>
-            <History className="mr-2 h-4 w-4" />
-            View Sessions
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Shield className="mr-2 h-4 w-4" />
-            Change Role
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setSessionsOpen(true)}>
+              <History className="mr-2 h-4 w-4" />
+              View Sessions
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Shield className="mr-2 h-4 w-4" />
+              Change Role
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-destructive">
             <Ban className="mr-2 h-4 w-4" />
