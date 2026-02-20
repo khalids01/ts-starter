@@ -17,9 +17,10 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, Settings, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, ChevronRight } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
+import Logo from "@/components/core/logo";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -45,7 +46,17 @@ function AdminLayout() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <Sidebar variant="floating" collapsible="icon">
-          <SidebarHeader className="h-16 border-b px-6 flex flex-row items-center gap-2"></SidebarHeader>
+          <SidebarHeader className="h-16 border-b px-2 justify-center flex flex-col">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  size="lg"
+                  tooltip="Logo"
+                  render={(buttonProps) => <Logo {...buttonProps} />}
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupContent>
@@ -57,8 +68,13 @@ function AdminLayout() {
                         <SidebarMenuButton
                           isActive={isActive}
                           tooltip={item.title}
+                          size="lg"
                           render={(buttonProps) => (
-                            <Link to={item.url} {...buttonProps}>
+                            <Link 
+                              to={item.url} 
+                              {...buttonProps} 
+                              className={buttonProps.className + " w-full flex"}
+                            >
                               <item.icon className="h-4 w-4" />
                               <span>{item.title}</span>
                             </Link>

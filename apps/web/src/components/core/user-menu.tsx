@@ -76,8 +76,7 @@ export default function UserMenu() {
         render={
           <Button
             variant="outline"
-            size="icon"
-            className="h-10 w-10 rounded-[10px] border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="h-10 w-10 shrink-0 rounded-md"
           >
             <User className="size-5" />
           </Button>
