@@ -19,8 +19,8 @@
     "@env": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3",
+    "@types/node": "^25.3.0",
     "@types/nodemailer": "^7.0.10"
   }
 }
