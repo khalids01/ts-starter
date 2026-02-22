@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { client } from "@/lib/client";
 
 export type AppNotification = {
@@ -12,56 +12,56 @@ export type AppNotification = {
 };
 
 export const useNotifications = () => {
-  return useQuery({
-    queryKey: ["notifications"],
-    queryFn: async () => {
-      const { data, error } = await client.notifications.get();
-      if (error) {
-        throw new Error(
-          (error.value as any)?.error || "Failed to fetch notifications",
-        );
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const wsRef = useRef<any>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    // Initiate Eden Treaty WebSocket connection
+    const ws = client.notifications.ws.subscribe();
+
+    // The message is already a parsed JSON object matching the `response` schema from the server
+    ws.subscribe((message: any) => {
+      if (Array.isArray(message)) {
+        setNotifications(message as unknown as AppNotification[]);
       }
-      return Array.isArray(data) ? (data as unknown as AppNotification[]) : [];
-    },
-    refetchInterval: 30000, // Poll every 30 seconds
-  });
-};
+      setIsPending(false);
+    });
 
-export const useMarkAsRead = () => {
-  const queryClient = useQueryClient();
+    wsRef.current = ws;
 
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await client.notifications({ id }).read.post();
-      if (error) {
-        throw new Error(
-          (error.value as any)?.error || "Failed to mark notification as read",
-        );
-      }
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
-  });
-};
+    return () => {
+      ws.close();
+      wsRef.current = null;
+    };
+  }, []);
 
-export const useMarkAllAsRead = () => {
-  const queryClient = useQueryClient();
+  const markAsRead = useCallback((id: string) => {
+    if (wsRef.current) {
+      setIsPending(true);
+      wsRef.current.send({ action: "mark-read", id });
+    }
+  }, []);
 
-  return useMutation({
-    mutationFn: async () => {
-      const { data, error } = await client.notifications["read-all"].post();
-      if (error) {
-        throw new Error(
-          (error.value as any)?.error ||
-            "Failed to mark all notifications as read",
-        );
-      }
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
-  });
+  const markAllAsRead = useCallback(() => {
+    if (wsRef.current) {
+      setIsPending(true);
+      wsRef.current.send({ action: "mark-all-read" });
+    }
+  }, []);
+
+  const refresh = useCallback(() => {
+    if (wsRef.current) {
+      setIsPending(true);
+      wsRef.current.send({ action: "refresh" });
+    }
+  }, []);
+
+  return {
+    data: notifications,
+    markAsRead,
+    markAllAsRead,
+    refresh,
+    isPending,
+  };
 };

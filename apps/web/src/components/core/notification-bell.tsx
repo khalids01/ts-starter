@@ -8,17 +8,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   useNotifications,
-  useMarkAsRead,
-  useMarkAllAsRead,
   type AppNotification,
 } from "@/features/notifications/hooks/use-notifications";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 export function NotificationBell() {
-  const { data: notifications = [] } = useNotifications();
-  const markReadMutation = useMarkAsRead();
-  const markAllMutation = useMarkAllAsRead();
+  const { data: notifications = [], markAsRead, markAllAsRead, isPending } = useNotifications();
 
   const unreadCount = notifications.filter((n: AppNotification) => !n.read).length;
 
@@ -48,8 +44,8 @@ export function NotificationBell() {
           {unreadCount > 0 && (
             <button
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => markAllMutation.mutate()}
-              disabled={markAllMutation.isPending}
+              onClick={() => markAllAsRead()}
+              disabled={isPending}
             >
               <CheckCheck className="h-3.5 w-3.5" />
               Mark all read
@@ -73,7 +69,7 @@ export function NotificationBell() {
                   )}
                   onClick={() => {
                     if (!notification.read) {
-                      markReadMutation.mutate(notification.id);
+                      markAsRead(notification.id);
                     }
                     if (notification.url) {
                       window.location.href = notification.url;
