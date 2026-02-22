@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { notificationsService } from "./notifications.service";
-import { authGuard } from "../../guards/auth.guard";
+import { authGuard } from "@/guards/auth.guard";
 import {
   NotificationSchema,
   NotificationMessageSchema,
