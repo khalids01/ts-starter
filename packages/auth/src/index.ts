@@ -51,30 +51,35 @@ export const auth = betterAuth({
         input: false,
         output: true,
       },
-    }
+      onboardingComplete: {
+        type: "boolean",
+        input: true,
+        output: true,
+      },
+    },
   },
   plugins: [
     ...(env.ENABLE_POLAR
       ? [
-        polar({
-          client: polarClient,
-          createCustomerOnSignUp: true,
-          enableCustomerPortal: true,
-          use: [
-            checkout({
-              products: [
-                {
-                  productId: "your-product-id",
-                  slug: "pro",
-                },
-              ],
-              successUrl: env.POLAR_SUCCESS_URL!,
-              authenticatedUsersOnly: true,
-            }),
-            portal(),
-          ],
-        }),
-      ]
+          polar({
+            client: polarClient,
+            createCustomerOnSignUp: true,
+            enableCustomerPortal: true,
+            use: [
+              checkout({
+                products: [
+                  {
+                    productId: "your-product-id",
+                    slug: "pro",
+                  },
+                ],
+                successUrl: env.POLAR_SUCCESS_URL!,
+                authenticatedUsersOnly: true,
+              }),
+              portal(),
+            ],
+          }),
+        ]
       : []),
     magicLink({
       sendMagicLink: async ({ email, url }) => {

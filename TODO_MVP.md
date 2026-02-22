@@ -1,0 +1,25 @@
+# MVP Features TODO
+
+- [x] **1. A Reusable "Account Settings" Module**
+  - Profile Page: Name, Avatar, Email.
+  - Security Page: Change password, view active sessions.
+  - Danger Zone: Delete Account with confirmation modal.
+- [x] **2. A Generic User Dashboard Shell (`/app` or `/dashboard`)**
+  - Standard `DashboardLayout` combining Top Navbar/Sidebar, User Menu, Theme Toggle, flexible content area.
+  - Ready for feature components.
+- [x] **3. Standard Onboarding Flow**
+  - Optional `onboardingComplete` boolean in User schema.
+  - Multi-step onboarding wizard using `zod` and `@tanstack/react-form`.
+- [x] **4. In-App Notifications System**
+  - Notification schema in Prisma (`packages/db/prisma/schema/notifications.prisma`).
+  - Notification Bell icon in header with animated unread badge.
+  - `getNotifications`, `markAsRead`, `markAllAsRead` server functions.
+  - Server-side `createNotification` & `broadcastNotification` utility (`notification-service.ts`).
+  - Polls every 30s; per-notification click-to-read + "Mark all read" button.
+- [ ] **5. A Custom UI Component Kitchen Sink**
+  - Empty States.
+  - Loading Skeletons.
+  - Data Tables.
+- [ ] **6. Feedback / Bug Reporting Modal**
+  - Generic "Feedback" or "Report a Bug" button.
+  - Saves to database or Discord webhook.

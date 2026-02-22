@@ -1,24 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
-import { getPayment } from "@/features/payment/lib/get-payment";
-import { getUser } from "@/features/user/lib/get-user";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_protected/dashboard")({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const session = await getUser();
-    const customerState = await getPayment();
-    return { session, customerState };
-  },
-  loader: async ({ context }) => {
-    if (!context.session) {
-      throw redirect({
-        to: "/login",
-      });
-    }
-  },
 });
 
 function RouteComponent() {

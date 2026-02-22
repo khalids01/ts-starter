@@ -10,13 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
 const SetupRoute = SetupRouteImport.update({
@@ -24,9 +27,18 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedRoute = ProtectedRouteImport.update({
+  id: '/_protected',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -55,9 +67,14 @@ const AdminOverviewRoute = AdminOverviewRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
-  id: '/_protected/dashboard',
+  id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedAccountRoute = ProtectedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/_auth/login',
@@ -66,31 +83,38 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof PublicIndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
   '/login': typeof AuthLoginRoute
+  '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
-  '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof PublicIndexRoute
+  '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
   '/login': typeof AuthLoginRoute
+  '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
-  '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_protected': typeof ProtectedRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
   '/_auth/login': typeof AuthLoginRoute
+  '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -101,30 +125,37 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/admin'
+    | '/onboarding'
     | '/setup'
     | '/login'
+    | '/account'
     | '/dashboard'
     | '/admin/overview'
     | '/admin/users'
     | '/payment/success'
-    | '/'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/onboarding'
     | '/setup'
     | '/login'
+    | '/account'
     | '/dashboard'
     | '/admin/overview'
     | '/admin/users'
     | '/payment/success'
-    | '/'
     | '/admin'
   id:
     | '__root__'
+    | '/_protected'
     | '/admin'
+    | '/onboarding'
     | '/setup'
     | '/_auth/login'
+    | '/_protected/account'
     | '/_protected/dashboard'
     | '/admin/overview'
     | '/admin/users'
@@ -134,10 +165,11 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  ProtectedRoute: typeof ProtectedRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
+  OnboardingRoute: typeof OnboardingRoute
   SetupRoute: typeof SetupRoute
   AuthLoginRoute: typeof AuthLoginRoute
-  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
@@ -151,11 +183,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -198,7 +244,14 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof ProtectedDashboardRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/account': {
+      id: '/_protected/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof ProtectedAccountRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/_auth/login': {
       id: '/_auth/login'
@@ -209,6 +262,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ProtectedRouteChildren {
+  ProtectedAccountRoute: typeof ProtectedAccountRoute
+  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+}
+
+const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedAccountRoute: ProtectedAccountRoute,
+  ProtectedDashboardRoute: ProtectedDashboardRoute,
+}
+
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
+)
 
 interface AdminRouteChildren {
   AdminOverviewRoute: typeof AdminOverviewRoute
@@ -225,10 +292,11 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  ProtectedRoute: ProtectedRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
+  OnboardingRoute: OnboardingRoute,
   SetupRoute: SetupRoute,
   AuthLoginRoute: AuthLoginRoute,
-  ProtectedDashboardRoute: ProtectedDashboardRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
