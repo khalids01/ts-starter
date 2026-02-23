@@ -20,6 +20,7 @@ import {
 import { LayoutDashboard, Users, ChevronRight } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
+import { NotificationBell } from "@/components/core/notification-bell";
 import Logo from "@/components/core/logo";
 
 export const Route = createFileRoute("/admin")({
@@ -108,6 +109,7 @@ function AdminLayout() {
               </nav>
             </div>
             <div className="flex items-center gap-3">
+              <NotificationBell />
               <ThemeToggle />
               <UserMenu />
             </div>
