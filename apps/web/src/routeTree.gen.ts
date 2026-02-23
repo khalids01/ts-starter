@@ -18,6 +18,7 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as ProtectedKitchenSinkRouteImport } from './routes/_protected/kitchen-sink'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -66,6 +67,11 @@ const AdminOverviewRoute = AdminOverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => AdminRoute,
 } as any)
+const ProtectedKitchenSinkRoute = ProtectedKitchenSinkRouteImport.update({
+  id: '/kitchen-sink',
+  path: '/kitchen-sink',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/kitchen-sink': typeof ProtectedKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/kitchen-sink': typeof ProtectedKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/kitchen-sink': typeof ProtectedKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/account'
     | '/dashboard'
+    | '/kitchen-sink'
     | '/admin/overview'
     | '/admin/users'
     | '/payment/success'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/account'
     | '/dashboard'
+    | '/kitchen-sink'
     | '/admin/overview'
     | '/admin/users'
     | '/payment/success'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_protected/account'
     | '/_protected/dashboard'
+    | '/_protected/kitchen-sink'
     | '/admin/overview'
     | '/admin/users'
     | '/payment/success'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOverviewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_protected/kitchen-sink': {
+      id: '/_protected/kitchen-sink'
+      path: '/kitchen-sink'
+      fullPath: '/kitchen-sink'
+      preLoaderRoute: typeof ProtectedKitchenSinkRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -266,11 +285,13 @@ declare module '@tanstack/react-router' {
 interface ProtectedRouteChildren {
   ProtectedAccountRoute: typeof ProtectedAccountRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedKitchenSinkRoute: typeof ProtectedKitchenSinkRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedAccountRoute: ProtectedAccountRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedKitchenSinkRoute: ProtectedKitchenSinkRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
