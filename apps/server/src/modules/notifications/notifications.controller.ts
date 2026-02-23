@@ -1,8 +1,8 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { notificationsService } from "./notifications.service";
 import { authGuard } from "@/guards/auth.guard";
 import {
-  NotificationSchema,
+  NotificationListSchema,
   NotificationMessageSchema,
 } from "./notifications.dto";
 
@@ -13,7 +13,7 @@ export const notificationsController = new Elysia({
   .use(authGuard)
   .ws("/ws", {
     body: NotificationMessageSchema,
-    response: t.Array(NotificationSchema),
+    response: NotificationListSchema,
     async open(ws) {
       const data = ws.data as { userId?: string };
       if (!data.userId) {

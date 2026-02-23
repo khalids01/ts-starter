@@ -1,6 +1,11 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { OwnerService } from "./owner.service";
-import { CreateOwnerDto } from "./owner.dto";
+import {
+  CreateOwnerDto,
+  SetupStatusResponseDto,
+  OwnerCreatedResponseDto,
+  ErrorResponseDto,
+} from "./owner.dto";
 import { env } from "@/env";
 import { ownerInfoGuard } from "@/guards/owner-info.guard";
 
@@ -29,9 +34,7 @@ export const ownerController = new Elysia({ prefix: "/owner" })
             description: "Setup status retrieved",
             content: {
               "application/json": {
-                schema: t.Object({
-                  hasOwner: t.Boolean(),
-                }),
+                schema: SetupStatusResponseDto,
               },
             },
           },
@@ -69,14 +72,7 @@ export const ownerController = new Elysia({ prefix: "/owner" })
             description: "Owner created successfully",
             content: {
               "application/json": {
-                schema: t.Object({
-                  message: t.String(),
-                  user: t.Object({
-                    id: t.String(),
-                    name: t.String(),
-                    email: t.String(),
-                  }),
-                }),
+                schema: OwnerCreatedResponseDto,
               },
             },
           },
@@ -84,9 +80,7 @@ export const ownerController = new Elysia({ prefix: "/owner" })
             description: "Failed to create owner",
             content: {
               "application/json": {
-                schema: t.Object({
-                  error: t.String(),
-                }),
+                schema: ErrorResponseDto,
               },
             },
           },

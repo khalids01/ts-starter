@@ -1,7 +1,12 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { auth } from "@auth";
 import prisma from "@db";
 import { env } from "@/env";
+import {
+  CheckEmailDto,
+  MagicLinkLoginDto,
+  MagicLinkSignupDto,
+} from "./auth.dto";
 
 export const authController = new Elysia({ prefix: "/auth" })
   .post(
@@ -13,7 +18,7 @@ export const authController = new Elysia({ prefix: "/auth" })
       return { exists: !!user };
     },
     {
-      body: t.Object({ email: t.String() }),
+      body: CheckEmailDto,
     },
   )
   .post(
@@ -38,7 +43,7 @@ export const authController = new Elysia({ prefix: "/auth" })
       return { success: true };
     },
     {
-      body: t.Object({ email: t.String() }),
+      body: MagicLinkLoginDto,
     },
   )
   .post(
@@ -62,6 +67,6 @@ export const authController = new Elysia({ prefix: "/auth" })
       return { success: true };
     },
     {
-      body: t.Object({ email: t.String(), name: t.String() }),
+      body: MagicLinkSignupDto,
     },
   );

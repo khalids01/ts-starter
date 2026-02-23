@@ -18,3 +18,5 @@ export const NotificationMessageSchema = t.Object({
   ]),
   id: t.Optional(t.String()),
 });
+
+export const NotificationListSchema = t.Array(NotificationSchema);
