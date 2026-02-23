@@ -17,7 +17,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, ChevronRight, Component } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
 import { NotificationBell } from "@/components/core/notification-bell";
@@ -37,6 +37,11 @@ const navItems = [
     title: "Users",
     icon: Users,
     url: "/admin/users",
+  },
+  {
+    title: "Components",
+    icon: Component,
+    url: "/admin/kitchen-sink",
   },
 ];
 

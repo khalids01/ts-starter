@@ -65,11 +65,6 @@ const navItems = [
     icon: UserIcon,
     url: "/account",
   },
-  {
-    title: "Components",
-    icon: Component,
-    url: "/kitchen-sink",
-  },
 ];
 
 function ProtectedLayout() {
