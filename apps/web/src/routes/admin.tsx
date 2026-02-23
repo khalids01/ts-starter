@@ -70,13 +70,18 @@ function AdminLayout() {
                           tooltip={item.title}
                           size="lg"
                           render={(buttonProps) => (
-                            <Link 
-                              to={item.url} 
-                              {...buttonProps} 
-                              className={buttonProps.className + " w-full flex"}
+                            <Link
+                              to={item.url}
+                              {...buttonProps}
+                              className={
+                                buttonProps.className +
+                                " group-data-[collapsible=icon]:justify-center"
+                              }
                             >
                               <item.icon className="h-4 w-4" />
-                              <span>{item.title}</span>
+                              <span className="group-data-[collapsible=icon]:hidden">
+                                {item.title}
+                              </span>
                             </Link>
                           )}
                         />
