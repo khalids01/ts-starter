@@ -16,7 +16,7 @@
   - `getNotifications`, `markAsRead`, `markAllAsRead` server functions.
   - Server-side `createNotification` & `broadcastNotification` utility (`notification-service.ts`).
   - Polls every 30s; per-notification click-to-read + "Mark all read" button.
-- [ ] **5. A Custom UI Component Kitchen Sink**
+- [x] **5. A Custom UI Component Kitchen Sink**
   - Empty States.
   - Loading Skeletons.
   - Data Tables.
