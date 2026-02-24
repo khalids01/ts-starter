@@ -22,6 +22,7 @@ model User {
   invitations        Invitation[]
   onboardingComplete Boolean        @default(false)
   notifications      Notification[]
+  feedbacks          Feedback[]
 
   @@unique([email])
   @@map("user")

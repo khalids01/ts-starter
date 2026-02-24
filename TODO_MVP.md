@@ -20,6 +20,6 @@
   - Empty States.
   - Loading Skeletons.
   - Data Tables.
-- [ ] **6. Feedback / Bug Reporting Modal**
+- [x] **6. Feedback / Bug Reporting Modal**
   - Generic "Feedback" or "Report a Bug" button.
   - Saves to database or Discord webhook.

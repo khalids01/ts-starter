@@ -1,0 +1,12 @@
+model Feedback {
+    id        String   @id @default(cuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    message   String   @db.Text
+    severity  String   @default("low") // low, medium, high
+    status    String   @default("open") // open, in-progress, closed
+    createdAt DateTime @default(now())
+
+    @@index([userId])
+    @@map("feedback")
+}

@@ -29,6 +29,7 @@ import { ThemeToggle } from "@/components/core/theme-toggle";
 import { NotificationBell } from "@/components/core/notification-bell";
 import Logo from "@/components/core/logo";
 
+import { FeedbackButton } from "@/components/core/feedback-button";
 import { getUser } from "@/features/user/lib/get-user";
 import { getPayment } from "@/features/payment/lib/get-payment";
 
@@ -136,6 +137,7 @@ function ProtectedLayout() {
               </nav>
             </div>
             <div className="flex items-center gap-3">
+              <FeedbackButton />
               <NotificationBell />
               <ThemeToggle />
               <UserMenu />
