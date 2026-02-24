@@ -68,7 +68,7 @@ export default function OverlaysTab() {
         </CardHeader>
         <CardContent>
           <Dialog>
-            <DialogTrigger asChild>
+            <DialogTrigger>
               <Button variant="outline">Open Dialog</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
@@ -105,7 +105,7 @@ export default function OverlaysTab() {
         </CardHeader>
         <CardContent>
           <AlertDialog>
-            <AlertDialogTrigger asChild>
+            <AlertDialogTrigger>
               <Button variant="outline">Show Alert Dialog</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -136,7 +136,7 @@ export default function OverlaysTab() {
         </CardHeader>
         <CardContent>
           <Sheet>
-            <SheetTrigger asChild>
+            <SheetTrigger>
               <Button variant="outline">Open Sheet</Button>
             </SheetTrigger>
             <SheetContent>
@@ -162,7 +162,7 @@ export default function OverlaysTab() {
         </CardHeader>
         <CardContent>
           <Popover>
-            <PopoverTrigger asChild>
+            <PopoverTrigger>
               <Button variant="outline">Open Popover</Button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
@@ -190,7 +190,7 @@ export default function OverlaysTab() {
         </CardHeader>
         <CardContent>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button variant="outline">Open Menu</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

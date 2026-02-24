@@ -138,7 +138,7 @@ export default function DataDisplayTab() {
               <h4 className="text-sm font-semibold">
                 @peduarte starred 3 repositories
               </h4>
-              <CollapsibleTrigger asChild>
+              <CollapsibleTrigger>
                 <Button variant="ghost" size="sm" className="w-9 p-0">
                   <ChevronsUpDown className="h-4 w-4" />
                   <span className="sr-only">Toggle</span>
