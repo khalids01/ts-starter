@@ -19,6 +19,7 @@ import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminKitchenSinkRouteImport } from './routes/admin/kitchen-sink'
+import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -72,6 +73,11 @@ const AdminKitchenSinkRoute = AdminKitchenSinkRouteImport.update({
   path: '/kitchen-sink',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFeedbackRoute = AdminFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/kitchen-sink': typeof AdminKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/kitchen-sink': typeof AdminKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/kitchen-sink': typeof AdminKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/account'
     | '/dashboard'
+    | '/admin/feedback'
     | '/admin/kitchen-sink'
     | '/admin/overview'
     | '/admin/users'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/account'
     | '/dashboard'
+    | '/admin/feedback'
     | '/admin/kitchen-sink'
     | '/admin/overview'
     | '/admin/users'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_protected/account'
     | '/_protected/dashboard'
+    | '/admin/feedback'
     | '/admin/kitchen-sink'
     | '/admin/overview'
     | '/admin/users'
@@ -258,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKitchenSinkRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/feedback': {
+      id: '/admin/feedback'
+      path: '/feedback'
+      fullPath: '/admin/feedback'
+      preLoaderRoute: typeof AdminFeedbackRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -297,6 +316,7 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminKitchenSinkRoute: typeof AdminKitchenSinkRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -304,6 +324,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminFeedbackRoute: AdminFeedbackRoute,
   AdminKitchenSinkRoute: AdminKitchenSinkRoute,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminUsersRoute: AdminUsersRoute,
