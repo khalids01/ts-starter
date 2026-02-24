@@ -1,27 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import React, { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 
-// Dynamically import the tab components!
-const BasicsTab = React.lazy(
-  () => import("@/components/admin/kitchen-sink/basics-tab"),
-);
-const FormsAdvancedTab = React.lazy(
-  () => import("@/components/admin/kitchen-sink/forms-advanced-tab"),
-);
-const FeedbackTab = React.lazy(
-  () => import("@/components/admin/kitchen-sink/feedback-tab"),
-);
-const OverlaysTab = React.lazy(
-  () => import("@/components/admin/kitchen-sink/overlays-tab"),
-);
-const DataDisplayTab = React.lazy(
-  () => import("@/components/admin/kitchen-sink/data-display-tab"),
-);
-const ComplexTab = React.lazy(
-  () => import("@/components/admin/kitchen-sink/complex-tab"),
-);
+import BasicsTab from "@/components/admin/kitchen-sink/basics-tab";
+import FormsAdvancedTab from "@/components/admin/kitchen-sink/forms-advanced-tab";
+import FeedbackTab from "@/components/admin/kitchen-sink/feedback-tab";
+import OverlaysTab from "@/components/admin/kitchen-sink/overlays-tab";
+import DataDisplayTab from "@/components/admin/kitchen-sink/data-display-tab";
+import ComplexTab from "@/components/admin/kitchen-sink/complex-tab";
 
 export const Route = createFileRoute("/admin/kitchen-sink")({
   component: KitchenSinkPage,
@@ -49,63 +34,27 @@ function KitchenSinkPage() {
         </TabsList>
 
         <TabsContent value="basics" className="space-y-8 min-h-[400px]">
-          <Suspense
-            fallback={
-              <Skeleton className="h-[400px] w-full rounded-xl bg-muted/50" />
-            }
-          >
-            <BasicsTab />
-          </Suspense>
+          <BasicsTab />
         </TabsContent>
 
         <TabsContent value="forms" className="space-y-8 min-h-[400px]">
-          <Suspense
-            fallback={
-              <Skeleton className="h-[400px] w-full rounded-xl bg-muted/50" />
-            }
-          >
-            <FormsAdvancedTab />
-          </Suspense>
+          <FormsAdvancedTab />
         </TabsContent>
 
         <TabsContent value="feedback" className="space-y-8 min-h-[400px]">
-          <Suspense
-            fallback={
-              <Skeleton className="h-[400px] w-full rounded-xl bg-muted/50" />
-            }
-          >
-            <FeedbackTab />
-          </Suspense>
+          <FeedbackTab />
         </TabsContent>
 
         <TabsContent value="overlays" className="space-y-8 min-h-[400px]">
-          <Suspense
-            fallback={
-              <Skeleton className="h-[400px] w-full rounded-xl bg-muted/50" />
-            }
-          >
-            <OverlaysTab />
-          </Suspense>
+          <OverlaysTab />
         </TabsContent>
 
         <TabsContent value="data" className="space-y-8 min-h-[400px]">
-          <Suspense
-            fallback={
-              <Skeleton className="h-[400px] w-full rounded-xl bg-muted/50" />
-            }
-          >
-            <DataDisplayTab />
-          </Suspense>
+          <DataDisplayTab />
         </TabsContent>
 
         <TabsContent value="complex" className="space-y-8 min-h-[400px]">
-          <Suspense
-            fallback={
-              <Skeleton className="h-[400px] w-full rounded-xl bg-muted/50" />
-            }
-          >
-            <ComplexTab />
-          </Suspense>
+          <ComplexTab />
         </TabsContent>
       </Tabs>
     </div>
