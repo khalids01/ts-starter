@@ -1,30 +1,25 @@
-import {
-  createFileRoute,
-  Outlet,
-  Link,
-  useLocation,
-} from "@tanstack/react-router";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, ChevronRight, Component } from "lucide-react";
-import UserMenu from "@/components/core/user-menu";
-import { ThemeToggle } from "@/components/core/theme-toggle";
-import { NotificationBell } from "@/components/core/notification-bell";
-import Logo from "@/components/core/logo";
-import { FeedbackButton } from "@/components/core/feedback-button";
+import { createFileRoute } from "@tanstack/react-router"
+import { getUser } from "@/features/user/lib/get-user";
 
 export const Route = createFileRoute("/admin")({
+  beforeLoad: async () => {
+    const session = await getUser();
+    return { session };
+  },
+  loader: async ({ context }) => {
+    if (!context.session) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+
+    const user = context.session.user as any;
+    if (user.role !== "ADMIN" && user.role !== "OWNER") {
+      throw redirect({
+        to: "/dashboard",
+      });
+    }
+  },
   component: AdminLayout,
 });
 

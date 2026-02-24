@@ -3,7 +3,13 @@ import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -17,7 +23,27 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+import { getUser } from "@/features/user/lib/get-user";
+import { redirect } from "@tanstack/react-router";
+
 export const Route = createFileRoute("/onboarding")({
+  beforeLoad: async () => {
+    const session = await getUser();
+    return { session };
+  },
+  loader: async ({ context }) => {
+    if (!context.session) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+
+    if ((context.session.user as any).onboardingComplete === true) {
+      throw redirect({
+        to: "/dashboard",
+      });
+    }
+  },
   component: OnboardingPage,
 });
 
@@ -88,7 +114,11 @@ function OnboardingPage() {
                   </Select>
                   {field.state.meta.errors?.length ? (
                     <p className="text-[0.8rem] font-medium text-destructive">
-                      {field.state.meta.errors.map(e => typeof e === 'string' ? e : (e as any).message).join(', ')}
+                      {field.state.meta.errors
+                        .map((e) =>
+                          typeof e === "string" ? e : (e as any).message,
+                        )
+                        .join(", ")}
                     </p>
                   ) : null}
                 </div>
@@ -107,7 +137,11 @@ function OnboardingPage() {
                   />
                   {field.state.meta.errors?.length ? (
                     <p className="text-[0.8rem] font-medium text-destructive">
-                      {field.state.meta.errors.map(e => typeof e === 'string' ? e : (e as any).message).join(', ')}
+                      {field.state.meta.errors
+                        .map((e) =>
+                          typeof e === "string" ? e : (e as any).message,
+                        )
+                        .join(", ")}
                     </p>
                   ) : null}
                 </div>

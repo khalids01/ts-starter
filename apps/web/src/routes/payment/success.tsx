@@ -1,6 +1,20 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 
+import { redirect } from "@tanstack/react-router";
+import { getUser } from "@/features/user/lib/get-user";
+
 export const Route = createFileRoute("/payment/success")({
+  beforeLoad: async () => {
+    const session = await getUser();
+    return { session };
+  },
+  loader: async ({ context }) => {
+    if (!context.session) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
   component: SuccessPage,
   validateSearch: (search) => ({
     checkout_id: search.checkout_id as string,
