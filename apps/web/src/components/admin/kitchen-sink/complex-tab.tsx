@@ -23,6 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { FolderOpen } from "lucide-react";
 
 export default function ComplexTab() {
@@ -132,6 +138,42 @@ export default function ComplexTab() {
               </TableBody>
             </Table>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Accordions */}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>Accordions</CardTitle>
+          <CardDescription>
+            Vertically stacked interactive headings that reveal more details.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion defaultValue={["item-1"]}>
+            <AccordionItem value="item-1">
+              <AccordionTrigger>Is it accessible?</AccordionTrigger>
+              <AccordionContent>
+                Yes. It adheres to the WAI-ARIA design pattern.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger>Is it animated?</AccordionTrigger>
+              <AccordionContent>
+                Yes. It's animated by default, but you can disable it if you
+                prefer.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3">
+              <AccordionTrigger>
+                Can I use it on multiple elements?
+              </AccordionTrigger>
+              <AccordionContent>
+                Absolutely. You can place as many accordions on a page as you
+                want.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
     </div>
