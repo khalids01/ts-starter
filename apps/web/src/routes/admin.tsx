@@ -1,4 +1,35 @@
-import { createFileRoute } from "@tanstack/react-router"
+import {
+  createFileRoute,
+  Outlet,
+  Link,
+  useLocation,
+  redirect,
+} from "@tanstack/react-router";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import {
+  LayoutDashboard,
+  Users,
+  ChevronRight,
+  Component,
+  MessageSquare,
+} from "lucide-react";
+import UserMenu from "@/components/core/user-menu";
+import { ThemeToggle } from "@/components/core/theme-toggle";
+import { NotificationBell } from "@/components/core/notification-bell";
+import Logo from "@/components/core/logo";
+import { FeedbackButton } from "@/components/core/feedback-button";
 import { getUser } from "@/features/user/lib/get-user";
 
 export const Route = createFileRoute("/admin")({
@@ -33,6 +64,11 @@ const navItems = [
     title: "Users",
     icon: Users,
     url: "/admin/users",
+  },
+  {
+    title: "Feedback",
+    icon: MessageSquare,
+    url: "/admin/feedback",
   },
   {
     title: "Components",

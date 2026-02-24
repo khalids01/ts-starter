@@ -70,6 +70,7 @@ const navItems = [
 
 function ProtectedLayout() {
   const location = useLocation();
+  const { session } = Route.useRouteContext();
 
   return (
     <SidebarProvider>
@@ -137,7 +138,7 @@ function ProtectedLayout() {
               </nav>
             </div>
             <div className="flex items-center gap-3">
-              <FeedbackButton />
+              {(session?.user as any)?.role === "USER" && <FeedbackButton />}
               <NotificationBell />
               <ThemeToggle />
               <UserMenu />

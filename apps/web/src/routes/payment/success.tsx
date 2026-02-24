@@ -22,7 +22,7 @@ export const Route = createFileRoute("/payment/success")({
 });
 
 function SuccessPage() {
-  const { checkout_id } = useSearch({ from: "/success" });
+  const { checkout_id } = useSearch({ from: "/payment/success" });
 
   return (
     <div className="container mx-auto px-4 py-8">
