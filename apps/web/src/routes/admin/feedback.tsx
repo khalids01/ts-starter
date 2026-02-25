@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { client } from "@/lib/client";
+import type { Prisma } from "@db";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -24,6 +25,18 @@ import {
 export const Route = createFileRoute("/admin/feedback")({
   component: AdminFeedbackPage,
 });
+
+type FeedbackItem = Prisma.FeedbackGetPayload<{
+  include: {
+    user: {
+      select: {
+        name: true;
+        email: true;
+        image: true;
+      };
+    };
+  };
+}>;
 
 function AdminFeedbackPage() {
   const queryClient = useQueryClient();
@@ -77,7 +90,7 @@ function AdminFeedbackPage() {
             </CardContent>
           </Card>
         ) : (
-          feedbacks?.map((item) => (
+          feedbacks?.map((item: FeedbackItem) => (
             <Card key={item.id}>
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div className="flex items-center gap-3">
@@ -121,8 +134,13 @@ function AdminFeedbackPage() {
                   <div className="text-sm font-medium">Status:</div>
                   <Select
                     defaultValue={item.status}
-                    onValueChange={(val: "open" | "in-progress" | "closed") => {
-                      updateStatus.mutate({ id: item.id, status: val });
+                    onValueChange={(val) => {
+                      if (val) {
+                        updateStatus.mutate({
+                          id: item.id,
+                          status: val as "open" | "in-progress" | "closed",
+                        });
+                      }
                     }}
                     disabled={updateStatus.isPending}
                   >

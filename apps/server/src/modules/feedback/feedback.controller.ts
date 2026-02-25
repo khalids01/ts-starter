@@ -11,7 +11,8 @@ export const feedbackController = new Elysia({
     .use(authGuard)
     .post(
         "/",
-        async ({ body, userId }) => {
+        async (ctx) => {
+            const { body, userId } = ctx as typeof ctx & { userId?: string };
             const feedback = await feedbackService.submitFeedback(
                 userId!,
                 body.message,
