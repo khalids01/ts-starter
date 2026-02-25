@@ -57,4 +57,11 @@ export const feedbackService = {
             },
         });
     },
+
+    async updateFeedbackStatus(id: string, status: string) {
+        return prisma.feedback.update({
+            where: { id },
+            data: { status },
+        });
+    },
 };

@@ -29,7 +29,6 @@ import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
 import { NotificationBell } from "@/components/core/notification-bell";
 import Logo from "@/components/core/logo";
-import { FeedbackButton } from "@/components/core/feedback-button";
 import { getUser } from "@/features/user/lib/get-user";
 
 export const Route = createFileRoute("/admin")({
@@ -146,7 +145,6 @@ function AdminLayout() {
               </nav>
             </div>
             <div className="flex items-center gap-3">
-              <FeedbackButton />
               <NotificationBell />
               <ThemeToggle />
               <UserMenu />
