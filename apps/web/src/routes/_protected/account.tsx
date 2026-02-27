@@ -14,6 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_protected/account")({
   component: AccountPage,
@@ -65,6 +66,7 @@ function AccountPage() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="danger">Danger Zone</TabsTrigger>
         </TabsList>
@@ -105,6 +107,61 @@ function AccountPage() {
             <CardFooter>
               <Button type="submit" form="profile-form" disabled={isUpdating}>
                 {isUpdating ? "Saving..." : "Save changes"}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="billing" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing & Subscription</CardTitle>
+              <CardDescription>
+                Manage your subscription plans and billing information.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center p-4 rounded-lg border bg-muted/30">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Current Plan</p>
+                  <h3 className="text-xl font-bold mt-1">
+                    {(session?.user as any)?.plan === "pro" ? "Pro Plan" : "Free Starter"}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Status</p>
+                  <p className={cn(
+                    "mt-1 font-semibold",
+                    (session?.user as any)?.subscriptionStatus === "active" ? "text-green-600" : "text-amber-600"
+                  )}>
+                    {(session?.user as any)?.subscriptionStatus?.toUpperCase() || "NO ACTIVE SUBSCRIPTION"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Your billing is handled securely through Polar. Click the button below to manage your subscription, download invoices, or update payment methods.
+                </p>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="default"
+                onClick={async () => {
+                  try {
+                    const result = await authClient.customer.portal();
+                    if (result.data?.url) {
+                      window.location.href = result.data.url;
+                    } else {
+                      toast.error("Could not open billing portal");
+                    }
+                  } catch (error) {
+                    toast.error("Failed to open billing portal");
+                  }
+                }}
+              >
+                Open Billing Portal
               </Button>
             </CardFooter>
           </Card>

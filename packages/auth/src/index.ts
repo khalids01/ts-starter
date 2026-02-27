@@ -1,4 +1,4 @@
-import { polar, checkout, portal } from "@polar-sh/better-auth";
+import { polar, checkout, portal, webhooks } from "@polar-sh/better-auth";
 import { magicLink } from "better-auth/plugins";
 import prisma from "@db";
 import { env } from "@env/server";
@@ -56,6 +56,26 @@ export const auth = betterAuth({
         input: true,
         output: true,
       },
+      polarCustomerId: {
+        type: "string",
+        input: false,
+        output: false,
+      },
+      subscriptionId: {
+        type: "string",
+        input: false,
+        output: false,
+      },
+      plan: {
+        type: "string",
+        input: false,
+        output: true,
+      },
+      subscriptionStatus: {
+        type: "string",
+        input: false,
+        output: true,
+      },
     },
   },
   plugins: [
@@ -64,19 +84,44 @@ export const auth = betterAuth({
           polar({
             client: polarClient,
             createCustomerOnSignUp: true,
-            enableCustomerPortal: true,
             use: [
               checkout({
                 products: [
                   {
-                    productId: "your-product-id",
-                    slug: "pro",
+                    productId: env.POLAR_PRO_MONTHLY_ID!,
+                    slug: "pro_monthly",
+                  },
+                  {
+                    productId: env.POLAR_PRO_YEARLY_ID!,
+                    slug: "pro_yearly",
                   },
                 ],
                 successUrl: env.POLAR_SUCCESS_URL!,
                 authenticatedUsersOnly: true,
               }),
               portal(),
+              webhooks({
+                secret: env.POLAR_WEBHOOK_SECRET || "",
+                onSubscriptionCreated: async (payload: any) => {
+                  const { subscription, customer } = payload;
+                  await prisma.user.update({
+                    where: { id: customer.externalId as string },
+                    data: {
+                      subscriptionId: subscription.id as string,
+                      subscriptionStatus: subscription.status as string,
+                    },
+                  });
+                },
+                onSubscriptionUpdated: async (payload: any) => {
+                  const { subscription, customer } = payload;
+                  await prisma.user.update({
+                    where: { id: customer.externalId as string },
+                    data: {
+                      subscriptionStatus: subscription.status as string,
+                    },
+                  });
+                },
+              }),
             ],
           }),
         ]

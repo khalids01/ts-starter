@@ -24,6 +24,12 @@ model User {
   notifications      Notification[]
   feedbacks          Feedback[]
 
+  // Polar Integration
+  polarCustomerId    String?
+  subscriptionId     String?
+  plan               String  @default("free")
+  subscriptionStatus String?
+
   @@unique([email])
   @@map("user")
 }
