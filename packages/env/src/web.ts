@@ -7,7 +7,7 @@ export const env = createEnv({
     VITE_SERVER_URL: z.url(),
     VITE_ENABLE_POLAR: z
       .string()
-      .default("false")
+      .default("true")
       .transform((val) => val === "true"),
   },
   runtimeEnv: (import.meta as any).env,

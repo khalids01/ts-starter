@@ -1,7 +1,7 @@
 import prisma from "@db";
 import type { Role } from "@db";
 import { sendEmail, invitationTemplate } from "@email";
-import { env } from "@/env";
+import { env } from "@env/server";
 
 export class UsersService {
   async listUsers(query: {

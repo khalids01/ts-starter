@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { auth } from "@auth";
 import prisma from "@db";
-import { env } from "@/env";
+import { env } from "@env/server";
 import {
   CheckEmailDto,
   MagicLinkLoginDto,

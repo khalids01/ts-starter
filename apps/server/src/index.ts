@@ -1,10 +1,9 @@
 import { cors } from "@elysiajs/cors";
 import { auth } from "@auth";
-import { env } from "./env";
+import { env } from "@env/server";
 import { Elysia } from "elysia";
 import { app } from "./modules/app";
-import { openapi } from '@elysiajs/openapi'
-
+import { openapi } from "@elysiajs/openapi";
 
 const server = new Elysia()
   .use(
@@ -15,9 +14,11 @@ const server = new Elysia()
       credentials: true,
     }),
   )
-  .use(openapi({
-    path: "/docs",
-  }))
+  .use(
+    openapi({
+      path: "/docs",
+    }),
+  )
   .onRequest(({ request }) => {
     console.log(`[Server] ${request.method} ${request.url}`);
   })
@@ -32,6 +33,6 @@ const server = new Elysia()
   .get("/", () => "OK")
   .listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
-  })
+  });
 
 export type App = typeof server;

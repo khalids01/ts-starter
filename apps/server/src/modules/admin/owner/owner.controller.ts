@@ -6,7 +6,7 @@ import {
   OwnerCreatedResponseDto,
   ErrorResponseDto,
 } from "./owner.dto";
-import { env } from "@/env";
+import { env } from "@env/server";
 import { ownerInfoGuard } from "@/guards/owner-info.guard";
 
 const ownerService = new OwnerService();

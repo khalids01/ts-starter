@@ -14,7 +14,7 @@ export const env = createEnv({
     POLAR_PRO_YEARLY_ID: z.string().optional(),
     ENABLE_POLAR: z
       .string()
-      .default("false")
+      .default("true")
       .transform((val) => val === "true"),
     CORS_ORIGIN: z.url(),
     NODE_ENV: z
