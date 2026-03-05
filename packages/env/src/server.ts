@@ -12,6 +12,7 @@ export const env = createEnv({
     POLAR_SUCCESS_URL: z.string().url().optional(),
     POLAR_PRO_MONTHLY_ID: z.string().optional(),
     POLAR_PRO_YEARLY_ID: z.string().optional(),
+    POLAR_MODE: z.enum(["sandbox", "production"]).default("sandbox"),
     ENABLE_POLAR: z
       .string()
       .default("true")

@@ -30,7 +30,7 @@ function RouteComponent() {
       ) : (
         <Button
           onClick={async function handleUpgrade() {
-            await authClient.checkout({ slug: "pro" });
+            await authClient.checkout({ slug: "pro_monthly" });
           }}
         >
           Upgrade to Pro

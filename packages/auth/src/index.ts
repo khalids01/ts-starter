@@ -81,50 +81,50 @@ export const auth = betterAuth({
   plugins: [
     ...(env.ENABLE_POLAR
       ? [
-          polar({
-            client: polarClient,
-            createCustomerOnSignUp: true,
-            use: [
-              checkout({
-                products: [
-                  {
-                    productId: env.POLAR_PRO_MONTHLY_ID!,
-                    slug: "pro_monthly",
-                  },
-                  {
-                    productId: env.POLAR_PRO_YEARLY_ID!,
-                    slug: "pro_yearly",
-                  },
-                ],
-                successUrl: env.POLAR_SUCCESS_URL!,
-                authenticatedUsersOnly: true,
-              }),
-              portal(),
-              webhooks({
-                secret: env.POLAR_WEBHOOK_SECRET || "",
-                onSubscriptionCreated: async (payload: any) => {
-                  const { subscription, customer } = payload;
-                  await prisma.user.update({
-                    where: { id: customer.externalId as string },
-                    data: {
-                      subscriptionId: subscription.id as string,
-                      subscriptionStatus: subscription.status as string,
-                    },
-                  });
+        polar({
+          client: polarClient,
+          createCustomerOnSignUp: true,
+          use: [
+            checkout({
+              products: [
+                {
+                  productId: "c9fe3a9c-1663-48ec-b7c5-75fdc6be91ca",
+                  slug: "pro_monthly",
                 },
-                onSubscriptionUpdated: async (payload: any) => {
-                  const { subscription, customer } = payload;
-                  await prisma.user.update({
-                    where: { id: customer.externalId as string },
-                    data: {
-                      subscriptionStatus: subscription.status as string,
-                    },
-                  });
+                {
+                  productId: env.POLAR_PRO_YEARLY_ID!,
+                  slug: "pro_yearly",
                 },
-              }),
-            ],
-          }),
-        ]
+              ],
+              successUrl: env.POLAR_SUCCESS_URL!,
+              authenticatedUsersOnly: true,
+            }),
+            portal(),
+            webhooks({
+              secret: env.POLAR_WEBHOOK_SECRET || "",
+              onSubscriptionCreated: async (payload: any) => {
+                const { subscription, customer } = payload;
+                await prisma.user.update({
+                  where: { id: customer.externalId as string },
+                  data: {
+                    subscriptionId: subscription.id as string,
+                    subscriptionStatus: subscription.status as string,
+                  },
+                });
+              },
+              onSubscriptionUpdated: async (payload: any) => {
+                const { subscription, customer } = payload;
+                await prisma.user.update({
+                  where: { id: customer.externalId as string },
+                  data: {
+                    subscriptionStatus: subscription.status as string,
+                  },
+                });
+              },
+            }),
+          ],
+        }),
+      ]
       : []),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
