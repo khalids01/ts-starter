@@ -23,12 +23,14 @@ model User {
   onboardingComplete Boolean        @default(false)
   notifications      Notification[]
   feedbacks          Feedback[]
+  orders             Order[]
 
   // Polar Integration
   polarCustomerId    String?
   subscriptionId     String?
-  plan               String  @default("free")
+  plan               String    @default("free")
   subscriptionStatus String?
+  nextPaymentDate    DateTime?
 
   @@unique([email])
   @@map("user")

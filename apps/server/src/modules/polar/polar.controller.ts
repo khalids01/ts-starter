@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { Checkout, Webhooks } from "@polar-sh/elysia";
 import { env } from "@env/server";
+import prisma from "@db";
 
 export const polarController = new Elysia({ prefix: "/polar" })
   .get(
@@ -18,6 +19,30 @@ export const polarController = new Elysia({ prefix: "/polar" })
       onPayload: async (payload) => {
         try {
           switch (payload.type) {
+            case "order.created": {
+              const order = payload.data as any;
+              const userId = (order.customerMetadata?.userId ||
+                order.customer?.externalId) as string;
+
+              if (userId) {
+                await (prisma as any).order.upsert({
+                  where: { polarOrderId: order.id },
+                  update: {
+                    status: order.status,
+                    amount: order.amount,
+                  },
+                  create: {
+                    polarOrderId: order.id,
+                    amount: order.amount,
+                    currency: order.currency,
+                    status: order.status,
+                    userId,
+                  },
+                });
+                console.log(`Order ${order.id} saved for user ${userId}`);
+              }
+              break;
+            }
             case "subscription.created":
             case "subscription.updated":
             case "subscription.active":

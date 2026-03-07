@@ -1,0 +1,13 @@
+model Order {
+    id           String   @id @default(cuid())
+    polarOrderId String   @unique
+    amount       Int
+    currency     String
+    status       String
+    userId       String
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@map("order")
+}

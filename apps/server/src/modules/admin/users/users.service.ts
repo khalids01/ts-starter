@@ -32,12 +32,30 @@ export class UsersService {
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
+        include: {
+          orders: {
+            select: {
+              amount: true,
+            },
+          },
+        },
       }),
       prisma.user.count({ where }),
     ]);
 
+    const usersWithTotal = users.map((user) => {
+      const totalAmountSpent = user.orders.reduce(
+        (sum, order) => sum + order.amount,
+        0,
+      );
+      return {
+        ...user,
+        totalAmountSpent,
+      };
+    });
+
     return {
-      users,
+      users: usersWithTotal,
       total,
       pages: Math.ceil(total / limit),
     };

@@ -112,6 +112,10 @@ function UsersPage() {
               <TableHead>User</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Plan</TableHead>
+              <TableHead>Payment Status</TableHead>
+              <TableHead>Next Payment</TableHead>
+              <TableHead>Total Paid</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -119,13 +123,13 @@ function UsersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : data?.users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -144,6 +148,44 @@ function UsersPage() {
                     >
                       {user.role}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={user.plan === "pro" ? "default" : "secondary"}
+                      className={
+                        user.plan === "pro"
+                          ? "bg-purple-500 hover:bg-purple-600"
+                          : ""
+                      }
+                    >
+                      {user.plan || "free"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.subscriptionStatus ? (
+                      <Badge
+                        variant="outline"
+                        className={
+                          user.subscriptionStatus === "active"
+                            ? "text-green-600 border-green-600"
+                            : "text-amber-600 border-amber-600"
+                        }
+                      >
+                        {user.subscriptionStatus}
+                      </Badge>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {user.nextPaymentDate
+                      ? new Date(user.nextPaymentDate).toLocaleDateString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">
+                    {user.totalAmountSpent > 0
+                      ? `$${(user.totalAmountSpent / 100).toFixed(2)}`
+                      : "$0.00"}
                   </TableCell>
                   <TableCell>
                     {user.banned ? (

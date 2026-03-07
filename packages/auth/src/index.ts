@@ -77,6 +77,11 @@ export const auth = betterAuth({
         input: false,
         output: true,
       },
+      nextPaymentDate: {
+        type: "date",
+        input: false,
+        output: true,
+      },
     },
   },
   plugins: [
@@ -106,6 +111,9 @@ export const auth = betterAuth({
                     data: {
                       subscriptionId: subscription.id as string,
                       subscriptionStatus: subscription.status as string,
+                      nextPaymentDate: subscription.currentPeriodEnd
+                        ? new Date(subscription.currentPeriodEnd)
+                        : null,
                     },
                   });
                 },
@@ -115,6 +123,9 @@ export const auth = betterAuth({
                     where: { id: customer.externalId as string },
                     data: {
                       subscriptionStatus: subscription.status as string,
+                      nextPaymentDate: subscription.currentPeriodEnd
+                        ? new Date(subscription.currentPeriodEnd)
+                        : null,
                     },
                   });
                 },
