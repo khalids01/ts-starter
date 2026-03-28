@@ -59,7 +59,7 @@ function AccountPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your account profile, security, and preferences.
+          Manage your account profile, billing, and preferences.
         </p>
       </div>
 
@@ -67,7 +67,6 @@ function AccountPage() {
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="danger">Danger Zone</TabsTrigger>
         </TabsList>
 
@@ -163,28 +162,6 @@ function AccountPage() {
               >
                 Open Billing Portal
               </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="security" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security</CardTitle>
-              <CardDescription>
-                Manage your password and security settings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium">Password</span>
-                <span className="text-sm text-muted-foreground">
-                  You are currently signed in with {session?.user?.email ? "email" : "a provider"}.
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" disabled>Change Password (Coming Soon)</Button>
             </CardFooter>
           </Card>
         </TabsContent>

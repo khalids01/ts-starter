@@ -1,5 +1,7 @@
 import prisma from "@db";
 import { auth } from "@auth";
+import { env } from "@env/server";
+import { randomUUID } from "node:crypto";
 import type { CreateOwner } from "./owner.dto";
 
 export class OwnerService {
@@ -18,31 +20,33 @@ export class OwnerService {
             throw new Error("Owner already exists");
         }
 
-        // Use better-auth to create the user with password hashing
-        // We create the user first, then update the role to OWNER
-        const user = await auth.api.signUpEmail({
-            body: {
+        const existingUser = await prisma.user.findUnique({
+            where: {
                 email: data.email,
-                password: data.password,
-                name: data.name,
             },
         });
 
-        if (!user) {
-            throw new Error("Failed to create owner user");
+        if (existingUser) {
+            throw new Error("A user with this email already exists");
         }
 
-        // Update the role to OWNER
-        const updatedUser = await prisma.user.update({
-            where: {
-                id: user.user.id,
-            },
+        const owner = await prisma.user.create({
             data: {
+                id: randomUUID(),
+                email: data.email,
+                name: data.name,
                 role: "OWNER",
-                emailVerified: true
             },
         });
 
-        return updatedUser;
+        await auth.api.signInMagicLink({
+            body: {
+                email: data.email,
+                callbackURL: env.CORS_ORIGIN,
+            },
+            headers: new Headers(),
+        });
+
+        return owner;
     }
 }

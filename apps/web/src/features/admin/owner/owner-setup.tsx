@@ -17,7 +17,6 @@ import { useCreateOwner } from "./use-owner-info";
 export const OwnerSetup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const createOwner = useCreateOwner();
 
@@ -28,10 +27,9 @@ export const OwnerSetup = () => {
       await createOwner.mutateAsync({
         name,
         email,
-        password,
       });
 
-      toast.success("Owner created successfully! You can now log in.");
+      toast.success("Owner created. Check your email for a magic link.");
       navigate({ to: "/login" });
     } catch (err: any) {
       toast.error(err.message || "Failed to create owner");
@@ -44,8 +42,8 @@ export const OwnerSetup = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Initial Setup</CardTitle>
           <CardDescription>
-            No owner found. Create the first administrator account to get
-            started.
+            No owner found. Create the first administrator account and we will
+            email a magic link to finish sign-in.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -71,19 +69,6 @@ export const OwnerSetup = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Minimum 8 characters.
-              </p>
-            </div>
           </CardContent>
           <CardFooter>
             <Button
@@ -91,7 +76,7 @@ export const OwnerSetup = () => {
               type="submit"
               disabled={createOwner.isPending}
             >
-              {createOwner.isPending ? "Creating..." : "Create Owner Account"}
+              {createOwner.isPending ? "Sending..." : "Send Owner Magic Link"}
             </Button>
           </CardFooter>
         </form>
