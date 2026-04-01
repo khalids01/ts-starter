@@ -1,0 +1,64 @@
+import { afterEach, describe, expect, it, mock } from "bun:test";
+
+const findUniqueMock = mock(async () => null);
+const authApi =
+  ((globalThis as typeof globalThis & {
+    __serverTestAuthApi?: {
+      getSession: ReturnType<typeof mock>;
+      signInMagicLink: ReturnType<typeof mock>;
+    };
+  }).__serverTestAuthApi ??= {
+    getSession: mock(async () => null),
+    signInMagicLink: mock(async () => ({ success: true })),
+  });
+
+mock.module("@db", () => ({
+  default: {
+    user: {
+      findUnique: findUniqueMock,
+    },
+  },
+}));
+
+mock.module("@auth", () => ({
+  auth: {
+    api: authApi,
+  },
+}));
+
+mock.module("@env/server", () => ({
+  env: {
+    CORS_ORIGIN: "http://localhost:3000",
+  },
+}));
+
+afterEach(() => {
+  findUniqueMock.mockReset();
+  authApi.signInMagicLink.mockReset();
+});
+
+describe("authController", () => {
+  it("returns 400 when magic-link login is requested for an unknown user", async () => {
+    findUniqueMock.mockResolvedValue(null);
+
+    const { authController } = await import("../src/modules/auth/auth.controller");
+
+    const response = await authController.handle(
+      new Request("http://localhost/auth/magic-link/login", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "missing@example.com",
+        }),
+      }),
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: "User not found" });
+    expect(authApi.signInMagicLink).not.toHaveBeenCalled();
+  });
+});
