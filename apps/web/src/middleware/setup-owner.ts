@@ -1,22 +1,11 @@
 import { createMiddleware } from "@tanstack/react-start";
-import { redirect } from "@tanstack/react-router";
 
-import { client } from "@/lib/client";
-
-export const authMiddleware = createMiddleware().server(async ({ next, request }) => {
-    const { data } = await client.owner["setup-status"].get();
-    if (!data) {
-        return redirect({
-            to: "/",
-        });
-    }
-
-    console.log("[Server] Checking setup-status. hasOwner:", data?.hasOwner);
-    if (request.url.includes("/setup") && data && !data.hasOwner) {
-        return next();
-    }
-    return redirect({
-        to: "/setup",
-    });
+// Keep middleware in place but avoid any automatic redirect behavior.
+// The /setup route is intentionally guarded server-side; the frontend
+// may query the setup-status endpoint and optionally show links to
+// /setup when appropriate. This middleware simply forwards the
+// request so we do not perform redirects automatically.
+export const authMiddleware = createMiddleware().server(async ({ next }) => {
+  return next();
 });
 

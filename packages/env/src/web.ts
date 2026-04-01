@@ -9,6 +9,10 @@ export const env = createEnv({
       .string()
       .default("true")
       .transform((val) => val === "true"),
+    VITE_OWNER_SETUP_CHECK: z
+      .string()
+      .default("false")
+      .transform((val) => val === "true"),
   },
   runtimeEnv: (import.meta as any).env,
   emptyStringAsUndefined: true,

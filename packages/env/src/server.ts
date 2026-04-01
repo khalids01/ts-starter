@@ -17,6 +17,10 @@ export const env = createEnv({
       .string()
       .default("true")
       .transform((val) => val === "true"),
+    OWNER_SETUP_CHECK: z
+      .string()
+      .default("false")
+      .transform((val) => val === "true"),
     CORS_ORIGIN: z.url(),
     NODE_ENV: z
       .enum(["development", "production", "test"])

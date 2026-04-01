@@ -8,6 +8,8 @@ import {
 } from "./owner.dto";
 import { env } from "@env/server";
 import { ownerInfoGuard } from "@/guards/owner-info.guard";
+import prisma from "@db";
+import { auth } from "@auth";
 
 const ownerService = new OwnerService();
 
@@ -16,11 +18,15 @@ export const ownerController = new Elysia({ prefix: "/owner" })
   .get(
     "/setup-status",
     async ({ redirect }) => {
-      const hasOwner = await ownerService.hasOwner();
-      if (!hasOwner) {
-        redirect(env.CORS_ORIGIN + "/setup");
+      if (!env.OWNER_SETUP_CHECK) {
+        return { hasOwner: true };
       }
 
+      // Return the setup status without performing any redirects.
+      // The frontend decides whether to expose the /setup UI. The
+      // server will only redirect or return 404 for the POST /setup
+      // endpoint via the ownerInfoGuard.
+      const hasOwner = await ownerService.hasOwner();
       return { hasOwner };
     },
     {
@@ -44,9 +50,37 @@ export const ownerController = new Elysia({ prefix: "/owner" })
   )
   .post(
     "/setup",
-    async ({ body, set }) => {
+    async ({ body, request, set }) => {
+      if (!env.OWNER_SETUP_CHECK) {
+        set.status = 404;
+        return { error: "Not Found" };
+      }
+
+      const hasOwner = await prisma.user.findFirst({
+        where: {
+          role: "OWNER",
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (hasOwner) {
+        set.status = 404;
+        return { error: "Not Found" };
+      }
+
       try {
         const owner = await ownerService.createOwner(body);
+        await auth.api.signInMagicLink({
+          body: {
+            email: body.email,
+            name: body.name,
+            callbackURL: env.CORS_ORIGIN,
+          },
+          headers: request.headers,
+        });
+
         return {
           message: "Owner created successfully",
           user: {

@@ -1,6 +1,4 @@
 import prisma from "@db";
-import { auth } from "@auth";
-import { env } from "@env/server";
 import { randomUUID } from "node:crypto";
 import type { CreateOwner } from "./owner.dto";
 
@@ -37,14 +35,6 @@ export class OwnerService {
                 name: data.name,
                 role: "OWNER",
             },
-        });
-
-        await auth.api.signInMagicLink({
-            body: {
-                email: data.email,
-                callbackURL: env.CORS_ORIGIN,
-            },
-            headers: new Headers(),
         });
 
         return owner;
