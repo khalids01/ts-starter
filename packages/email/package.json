@@ -15,7 +15,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "nodemailer": "^8.0.1",
+    "nodemailer": "^8.0.4",
     "@env": "workspace:*"
   },
   "devDependencies": {
