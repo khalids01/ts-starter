@@ -1,6 +1,6 @@
 import { Home } from "@/features/landing/home";
 import { env } from "@env/web";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { client } from "@/lib/client";
 
 export const Route = createFileRoute("/_public/")({

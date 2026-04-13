@@ -12,8 +12,8 @@
   "scripts": {},
   "devDependencies": {
     "@config": "workspace:*",
-    "@types/nodemailer": "^7.0.10",
-    "typescript": "^5.9.3"
+    "@types/nodemailer": "^8.0.0",
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "@db": "workspace:*",

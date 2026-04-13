@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Github, Twitter, Linkedin } from "lucide-react";
+import { ExternalLink, Globe, MessageCircle } from "lucide-react";
 
 export const Footer = () => {
   return (
@@ -22,19 +22,19 @@ export const Footer = () => {
                 href="#"
                 className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-all"
               >
-                <Github className="h-4 w-4" />
+                <Globe className="h-4 w-4" />
               </a>
               <a
                 href="#"
                 className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-all"
               >
-                <Twitter className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4" />
               </a>
               <a
                 href="#"
                 className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-all"
               >
-                <Linkedin className="h-4 w-4" />
+                <ExternalLink className="h-4 w-4" />
               </a>
             </div>
           </div>

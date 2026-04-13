@@ -17,7 +17,7 @@ export const ownerController = new Elysia({ prefix: "/owner" })
   .use(ownerInfoGuard)
   .get(
     "/setup-status",
-    async ({ redirect }) => {
+    async () => {
       if (!env.OWNER_SETUP_CHECK) {
         return { hasOwner: true };
       }

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
-    "baseUrl": ".",
+    "rootDir": "../..",
     "paths": {
       "@/*": ["./src/*"],
       "@auth": ["../../packages/auth/src"],
@@ -13,5 +13,14 @@
       "@email": ["../../packages/email/src"]
     },
     "jsx": "react-jsx"
-  }
+  },
+  "include": [
+    "src/**/*",
+    "../../packages/auth/src/**/*",
+    "../../packages/db/src/**/*",
+    "../../packages/db/prisma/generated/**/*",
+    "../../packages/email/src/**/*",
+    "../../packages/env/src/**/*",
+    "../../packages/config/src/**/*"
+  ]
 }
