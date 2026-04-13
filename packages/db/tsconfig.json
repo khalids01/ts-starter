@@ -5,6 +5,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
+    "rootDir": "..",
     "composite": true,
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
@@ -12,5 +13,11 @@
       "@env/*": ["../env/src/*"],
       "@config": ["../config/src/config.ts"]
     }
-  }
+  },
+  "include": [
+    "src/**/*",
+    "prisma/generated/**/*",
+    "../env/src/**/*",
+    "../config/src/**/*"
+  ]
 }

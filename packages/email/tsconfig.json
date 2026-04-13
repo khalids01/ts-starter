@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "rootDir": "..",
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
@@ -8,5 +9,5 @@
       "@env/*": ["../env/src/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "../env/src/**/*", "../config/src/**/*"]
 }

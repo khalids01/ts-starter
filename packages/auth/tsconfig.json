@@ -5,6 +5,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
+    "rootDir": "..",
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
@@ -13,5 +14,12 @@
       "@config": ["../config/src/config.ts"],
       "@email": ["../email/src"]
     }
-  }
+  },
+  "include": [
+    "src/**/*",
+    "../db/src/**/*",
+    "../email/src/**/*",
+    "../env/src/**/*",
+    "../config/src/**/*"
+  ]
 }
