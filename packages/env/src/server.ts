@@ -5,6 +5,12 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
+    REDIS_URL: z.string().url().optional(),
+    REDIS_ENABLED: z
+      .string()
+      .default("false")
+      .transform((val) => val === "true"),
+    REDIS_KEY_PREFIX: z.string().default("ts-starter:"),
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
     POLAR_ACCESS_TOKEN: z.string().optional(),

@@ -10,7 +10,8 @@
       "@db": ["../../packages/db/src"],
       "@env/*": ["../../packages/env/src/*"],
       "@config": ["../../packages/config/src/config.ts"],
-      "@email": ["../../packages/email/src"]
+      "@email": ["../../packages/email/src"],
+      "@redis": ["../../packages/redis/src"]
     },
     "jsx": "react-jsx"
   },
@@ -21,6 +22,7 @@
     "../../packages/db/prisma/generated/**/*",
     "../../packages/email/src/**/*",
     "../../packages/env/src/**/*",
-    "../../packages/config/src/**/*"
+    "../../packages/config/src/**/*",
+    "../../packages/redis/src/**/*"
   ]
 }
