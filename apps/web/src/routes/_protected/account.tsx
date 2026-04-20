@@ -125,16 +125,16 @@ function AccountPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Current Plan</p>
                   <h3 className="text-xl font-bold mt-1">
-                    {(session?.user as any)?.plan === "pro" ? "Pro Plan" : "Free Starter"}
+                    {session?.user.plan === "pro" ? "Pro Plan" : "Free Starter"}
                   </h3>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Status</p>
                   <p className={cn(
                     "mt-1 font-semibold",
-                    (session?.user as any)?.subscriptionStatus === "active" ? "text-green-600" : "text-amber-600"
+                    session?.user.subscriptionStatus === "active" ? "text-green-600" : "text-amber-600"
                   )}>
-                    {(session?.user as any)?.subscriptionStatus?.toUpperCase() || "NO ACTIVE SUBSCRIPTION"}
+                    {session?.user.subscriptionStatus?.toUpperCase() || "NO ACTIVE SUBSCRIPTION"}
                   </p>
                 </div>
               </div>

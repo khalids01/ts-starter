@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import type { authClient } from "@/lib/auth-client";
+import type { ClientSession } from "@/features/user/lib/client-session";
 
-type AppSession = (typeof authClient)["$Infer"]["Session"] | null;
+type AppSession = ClientSession;
 
 type SessionContextValue = {
   session: AppSession;

@@ -45,7 +45,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   const { session } = Route.useRouteContext();
-  console.log(session)
 
   return (
     <html lang="en" suppressHydrationWarning>

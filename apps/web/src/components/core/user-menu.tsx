@@ -46,8 +46,8 @@ export default function UserMenu() {
       href: "/admin/overview",
       type: "url",
       show:
-        (session.user as any)?.role === "ADMIN" ||
-        (session.user as any)?.role === "OWNER",
+        session.user.role === "ADMIN" ||
+        session.user.role === "OWNER",
     },
     {
       label: "Sign out",
