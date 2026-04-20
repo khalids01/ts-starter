@@ -17,6 +17,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminRateLimitsRouteImport } from './routes/admin/rate-limits'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminKitchenSinkRouteImport } from './routes/admin/kitchen-sink'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
@@ -63,6 +64,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRateLimitsRoute = AdminRateLimitsRouteImport.update({
+  id: '/rate-limits',
+  path: '/rate-limits',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOverviewRoute = AdminOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/kitchen-sink': typeof AdminKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
+  '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin/': typeof AdminIndexRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/kitchen-sink': typeof AdminKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
+  '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin': typeof AdminIndexRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/kitchen-sink': typeof AdminKitchenSinkRoute
   '/admin/overview': typeof AdminOverviewRoute
+  '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/admin/feedback'
     | '/admin/kitchen-sink'
     | '/admin/overview'
+    | '/admin/rate-limits'
     | '/admin/users'
     | '/payment/success'
     | '/admin/'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/admin/feedback'
     | '/admin/kitchen-sink'
     | '/admin/overview'
+    | '/admin/rate-limits'
     | '/admin/users'
     | '/payment/success'
     | '/admin'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/admin/feedback'
     | '/admin/kitchen-sink'
     | '/admin/overview'
+    | '/admin/rate-limits'
     | '/admin/users'
     | '/payment/success'
     | '/_public/'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/rate-limits': {
+      id: '/admin/rate-limits'
+      path: '/rate-limits'
+      fullPath: '/admin/rate-limits'
+      preLoaderRoute: typeof AdminRateLimitsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/overview': {
       id: '/admin/overview'
       path: '/overview'
@@ -319,6 +338,7 @@ interface AdminRouteChildren {
   AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminKitchenSinkRoute: typeof AdminKitchenSinkRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminRateLimitsRoute: typeof AdminRateLimitsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -327,6 +347,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFeedbackRoute: AdminFeedbackRoute,
   AdminKitchenSinkRoute: AdminKitchenSinkRoute,
   AdminOverviewRoute: AdminOverviewRoute,
+  AdminRateLimitsRoute: AdminRateLimitsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

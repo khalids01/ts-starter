@@ -5,6 +5,7 @@ import { connectRedis } from "@redis";
 import { Elysia } from "elysia";
 import { app } from "./modules/app";
 import { openapi } from "@elysiajs/openapi";
+import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 
 const server = new Elysia()
   .use(
@@ -22,6 +23,9 @@ const server = new Elysia()
   )
   .onRequest(({ request }) => {
     console.log(`[Server] ${request.method} ${request.url}`);
+  })
+  .onBeforeHandle((context) => {
+    return enforceRateLimit(context as any);
   })
   .all("/api/auth/*", async (context) => {
     const { request, status } = context;

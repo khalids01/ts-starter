@@ -1,0 +1,22 @@
+model RateLimitSettings {
+  id                      String   @id
+  enabled                 Boolean  @default(true)
+  publicEnabled           Boolean  @default(true)
+  publicWindowSeconds     Int      @default(60)
+  publicMaxRequests       Int      @default(60)
+  authEnabled             Boolean  @default(true)
+  authWindowSeconds       Int      @default(60)
+  authMaxRequests         Int      @default(10)
+  protectedEnabled        Boolean  @default(true)
+  protectedWindowSeconds  Int      @default(60)
+  protectedMaxRequests    Int      @default(120)
+  adminEnabled            Boolean  @default(true)
+  adminWindowSeconds      Int      @default(60)
+  adminMaxRequests        Int      @default(300)
+  specialEnabled          Boolean  @default(true)
+  specialWindowSeconds    Int      @default(60)
+  specialMaxRequests      Int      @default(30)
+  updatedAt               DateTime @updatedAt
+
+  @@map("rate_limit_settings")
+}

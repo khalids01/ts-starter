@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { notificationsService } from "./notifications.service";
 import { authGuard } from "@/guards/auth.guard";
+import { enforceWebsocketRateLimit } from "@/modules/rate-limit/rate-limit.service";
 import {
   NotificationListSchema,
   NotificationMessageSchema,
@@ -16,6 +17,16 @@ export const notificationsController = new Elysia({
     response: NotificationListSchema,
     async open(ws) {
       const data = ws.data as { userId?: string };
+      const request = (ws.data as { request?: Request }).request;
+
+      if (request) {
+        const decision = await enforceWebsocketRateLimit(request);
+        if (!decision.allowed) {
+          ws.close();
+          return;
+        }
+      }
+
       if (!data.userId) {
         ws.close();
         return;
