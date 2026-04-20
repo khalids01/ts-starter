@@ -1,12 +1,9 @@
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 
-import { authClient } from "@/lib/auth-client";
 import { client } from "@/lib/client";
 
-import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,18 +13,13 @@ export default function SignUpForm({
 }: {
   onSwitchToSignIn: () => void;
 }) {
-  const navigate = useNavigate({
-    from: "/",
-  });
-  const { isPending } = authClient.useSession();
-
   const magicLinkForm = useForm({
     defaultValues: {
       email: "",
       name: "",
     },
     onSubmit: async ({ value }) => {
-      const { data, error } = await client.auth["magic-link"].signup.post({
+      const { error } = await client.auth["magic-link"].signup.post({
         email: value.email,
         name: value.name,
       });
@@ -48,10 +40,6 @@ export default function SignUpForm({
       }),
     },
   });
-
-  if (isPending) {
-    return <Loader />;
-  }
 
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">

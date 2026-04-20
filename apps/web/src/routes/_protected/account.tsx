@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useSession } from "@/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_protected/account")({
 });
 
 function AccountPage() {
-  const { data: session } = authClient.useSession();
+  const { session } = useSession();
   const [name, setName] = useState(session?.user?.name || "");
   const [isUpdating, setIsUpdating] = useState(false);
 

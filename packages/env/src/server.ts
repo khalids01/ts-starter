@@ -13,6 +13,7 @@ export const env = createEnv({
     REDIS_KEY_PREFIX: z.string().default("ts-starter:"),
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
+    AUTH_SESSION_COOKIE_NAME: z.string().min(1).default("better-auth.session_token"),
     POLAR_ACCESS_TOKEN: z.string().optional(),
     POLAR_WEBHOOK_SECRET: z.string().optional(),
     POLAR_SUCCESS_URL: z.string().url().optional(),

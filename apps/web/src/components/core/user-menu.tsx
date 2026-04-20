@@ -10,19 +10,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { useSession } from "@/providers/session-provider";
 
 import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function UserMenu() {
   const navigate = useNavigate();
-  const { data: session, isPending } = authClient.useSession();
-
-  if (isPending) {
-    return <Skeleton className="h-9 w-24" />;
-  }
+  const { session } = useSession();
 
   if (!session) {
     return (

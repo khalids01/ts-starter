@@ -1,11 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
 import SignInForm from "@/features/auth/sign-in-form";
 import SignUpForm from "@/features/auth/sign-up-form";
 import Logo from "@/components/core/logo";
+import { getRootSession } from "@/features/user/lib/get-root-session";
 
 export const Route = createFileRoute("/_auth/login")({
+  beforeLoad: async () => {
+    const session = await getRootSession();
+    if (session) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   component: RouteComponent,
 });
 

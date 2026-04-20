@@ -6,10 +6,11 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@/components/ui/sonner";
-import Header from "../components/header";
 import appCss from "../index.css?url";
 import { TanstackQueryProvider } from "@/providers/tanstack-router";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { SessionProvider } from "@/providers/session-provider";
+import { getRootSession } from "@/features/user/lib/get-root-session";
 
 export interface RouterAppContext {}
 
@@ -34,11 +35,18 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       },
     ],
   }),
+  beforeLoad: async () => {
+    const session = await getRootSession();
+    return { session };
+  },
 
   component: RootDocument,
 });
 
 function RootDocument() {
+  const { session } = Route.useRouteContext();
+  console.log(session)
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -46,9 +54,11 @@ function RootDocument() {
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TanstackQueryProvider>
-            <Outlet />
-          </TanstackQueryProvider>
+          <SessionProvider session={session}>
+            <TanstackQueryProvider>
+              <Outlet />
+            </TanstackQueryProvider>
+          </SessionProvider>
           <Toaster richColors />
           <TanStackRouterDevtools position="bottom-left" />
         </ThemeProvider>

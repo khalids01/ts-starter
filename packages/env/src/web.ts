@@ -3,6 +3,12 @@ import { z } from "zod";
 
 export const env = createEnv({
   clientPrefix: "VITE_",
+  server: {
+    AUTH_SESSION_COOKIE_NAME: z
+      .string()
+      .min(1)
+      .default("better-auth.session_token"),
+  },
   client: {
     VITE_SERVER_URL: z.url(),
     VITE_ENABLE_POLAR: z
@@ -14,6 +20,9 @@ export const env = createEnv({
       .default("false")
       .transform((val) => val === "true"),
   },
-  runtimeEnv: (import.meta as any).env,
+  runtimeEnv: {
+    ...(process as any).env,
+    ...(import.meta as any).env,
+  },
   emptyStringAsUndefined: true,
 });
