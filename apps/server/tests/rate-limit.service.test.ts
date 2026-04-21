@@ -164,6 +164,58 @@ afterEach(async () => {
 });
 
 describe("rateLimitService", () => {
+  it("bypasses custom limiter for /api/auth/* routes", async () => {
+    const { enforceRateLimit } = await import("../src/modules/rate-limit/rate-limit.service");
+
+    const first = createContext("http://localhost/api/auth/sign-in/magic-link");
+    const second = createContext("http://localhost/api/auth/sign-in/magic-link");
+    const third = createContext("http://localhost/api/auth/sign-in/magic-link");
+
+    expect(await enforceRateLimit(first as any)).toBeUndefined();
+    expect(await enforceRateLimit(second as any)).toBeUndefined();
+    expect(await enforceRateLimit(third as any)).toBeUndefined();
+
+    expect(first.set.status).toBe(200);
+    expect(second.set.status).toBe(200);
+    expect(third.set.status).toBe(200);
+    expect(redisState.keys.length).toBe(0);
+    expect(getSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps custom auth limiter for /auth/* routes", async () => {
+    const { enforceRateLimit } = await import("../src/modules/rate-limit/rate-limit.service");
+    currentSettings = createSettings({
+      authMaxRequests: 2,
+    });
+
+    const first = createContext("http://localhost/auth/check-email", {
+      "x-forwarded-for": "198.51.100.22",
+    });
+    const second = createContext("http://localhost/auth/check-email", {
+      "x-forwarded-for": "198.51.100.22",
+    });
+    const third = createContext("http://localhost/auth/check-email", {
+      "x-forwarded-for": "198.51.100.22",
+    });
+
+    expect(await enforceRateLimit(first as any)).toBeUndefined();
+    expect(await enforceRateLimit(second as any)).toBeUndefined();
+
+    const blocked = await enforceRateLimit(third as any);
+
+    expect(blocked).toEqual({
+      message: "Too many requests",
+      group: "auth",
+      retryAfterSeconds: 60,
+    });
+    expect(third.set.status).toBe(429);
+    expect(
+      redisState.keys.some((key) =>
+        key.includes("ratelimit:auth:ip:198.51.100.22"),
+      ),
+    ).toBe(true);
+  });
+
   it("uses the request IP for anonymous requests and blocks after the limit", async () => {
     const { enforceRateLimit } = await import("../src/modules/rate-limit/rate-limit.service");
     const first = createContext("http://localhost/owner/setup-status", {

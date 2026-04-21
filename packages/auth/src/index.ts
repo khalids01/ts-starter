@@ -12,6 +12,11 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  rateLimit: {
+    enabled: true,
+    window: 10,
+    max: 100,
+  },
   session: {
     cookieCache: {
       enabled: true,
@@ -120,6 +125,10 @@ export const auth = betterAuth({
       ]
       : []),
     magicLink({
+      rateLimit: {
+        window: 60,
+        max: 5,
+      },
       sendMagicLink: async ({ email, url }) => {
         await sendEmail({
           to: email,

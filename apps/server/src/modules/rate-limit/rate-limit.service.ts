@@ -410,6 +410,14 @@ export async function enforceRateLimit(input: EnforceInput) {
   const { request, set } = input;
 
   try {
+    const pathname = new URL(request.url).pathname;
+
+    // Let Better Auth handle its own endpoint rate limiting so we avoid
+    // double-throttling the same auth paths.
+    if (pathname.startsWith("/api/auth/")) {
+      return;
+    }
+
     const [config, session] = await Promise.all([
       getConfig(),
       getSessionSummary(request),
@@ -419,7 +427,6 @@ export async function enforceRateLimit(input: EnforceInput) {
       return;
     }
 
-    const pathname = new URL(request.url).pathname;
     const group = getGroup(pathname, session.role, session.userId);
     const ip =
       getForwardedIp(request.headers) ??
