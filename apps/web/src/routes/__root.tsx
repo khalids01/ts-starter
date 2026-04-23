@@ -58,7 +58,7 @@ function RootDocument() {
               <Outlet />
             </TanstackQueryProvider>
           </SessionProvider>
-          <Toaster richColors />
+          <Toaster richColors position="top-center"/>
           <TanStackRouterDevtools position="bottom-left" />
         </ThemeProvider>
         <Scripts />

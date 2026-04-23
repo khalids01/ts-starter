@@ -80,7 +80,11 @@ function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to send invitation");
+      const message =
+        String(error?.value?.message || "") ||
+        String(error?.message || "") ||
+        "Failed to send invitation";
+      toast.error(message);
     },
   });
 

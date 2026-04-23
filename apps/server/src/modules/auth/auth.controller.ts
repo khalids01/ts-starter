@@ -8,6 +8,25 @@ import {
   MagicLinkSignupDto,
 } from "./auth.dto";
 
+function resolveCallbackURL(callbackURL?: string) {
+  if (!callbackURL) {
+    return env.CORS_ORIGIN;
+  }
+
+  try {
+    const baseUrl = new URL(env.CORS_ORIGIN);
+    const parsedUrl = new URL(callbackURL, env.CORS_ORIGIN);
+
+    if (parsedUrl.origin !== baseUrl.origin) {
+      return env.CORS_ORIGIN;
+    }
+
+    return parsedUrl.toString();
+  } catch {
+    return env.CORS_ORIGIN;
+  }
+}
+
 export const authController = new Elysia({ prefix: "/auth" })
   .post(
     "/check-email",
@@ -24,11 +43,9 @@ export const authController = new Elysia({ prefix: "/auth" })
   .post(
     "/magic-link/login",
     async ({ body, request, set }) => {
-      console.log(body);
       const user = await prisma.user.findUnique({
         where: { email: body.email },
       });
-      console.log(user);
       if (!user) {
         set.status = 400;
         return { message: "User not found" };
@@ -36,7 +53,7 @@ export const authController = new Elysia({ prefix: "/auth" })
       await auth.api.signInMagicLink({
         body: {
           email: body.email,
-          callbackURL: env.CORS_ORIGIN,
+          callbackURL: resolveCallbackURL(body.callbackURL),
         },
         headers: request.headers,
       });
@@ -60,7 +77,7 @@ export const authController = new Elysia({ prefix: "/auth" })
         body: {
           email: body.email,
           name: body.name,
-          callbackURL: env.CORS_ORIGIN,
+          callbackURL: resolveCallbackURL(body.callbackURL),
         },
         headers: request.headers,
       });

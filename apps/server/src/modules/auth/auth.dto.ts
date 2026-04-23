@@ -6,9 +6,11 @@ export const CheckEmailDto = t.Object({
 
 export const MagicLinkLoginDto = t.Object({
   email: t.String(),
+  callbackURL: t.Optional(t.String()),
 });
 
 export const MagicLinkSignupDto = t.Object({
   email: t.String(),
   name: t.String(),
+  callbackURL: t.Optional(t.String()),
 });

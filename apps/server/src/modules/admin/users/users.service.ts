@@ -116,7 +116,7 @@ export class UsersService {
     });
 
     // Send email
-    const inviteUrl = `${env.BETTER_AUTH_URL}/accept-invitation?id=${invitation.id}`;
+    const inviteUrl = `${env.CORS_ORIGIN}/accept-invitation?id=${invitation.id}`;
     const invitedRole = role === "ADMIN" ? "ADMIN" : "USER";
     await sendEmail({
       to: email,
