@@ -12,7 +12,8 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "email:dev": "bunx react-email dev --dir src/templates"
   },
   "dependencies": {
     "@env": "workspace:*",
@@ -22,6 +23,7 @@
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
+    "@react-email/ui": "6.0.0",
     "@types/node": "^25.3.0",
     "@types/nodemailer": "^8.0.0",
     "react-email": "^6.0.0",

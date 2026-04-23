@@ -77,3 +77,5 @@ MagicLinkEmail.PreviewProps = {
 
 export const magicLinkTemplate = (url: string) =>
   renderEmailTemplate(<MagicLinkEmail url={url} />);
+
+export default MagicLinkEmail;

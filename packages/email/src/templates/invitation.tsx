@@ -129,3 +129,5 @@ InvitationEmail.PreviewProps = {
 
 export const invitationTemplate = (input: InvitationTemplateInput) =>
   renderEmailTemplate(<InvitationEmail {...input} />);
+
+export default InvitationEmail;
