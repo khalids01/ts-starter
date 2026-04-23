@@ -1,5 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useForm } from "@tanstack/react-form";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
+import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,22 +19,26 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 import { getUser } from "@/features/user/lib/get-user";
-import { redirect } from "@tanstack/react-router";
+import {
+  getOnboardingPlans,
+  type OnboardingPlanOption,
+} from "@/features/onboarding/lib/get-onboarding-plans";
 
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
-    const session = await getUser();
-    return { session };
+    const [session, plans] = await Promise.all([getUser(), getOnboardingPlans()]);
+    return { session, plans };
   },
   loader: async ({ context }) => {
     if (!context.session) {
@@ -47,33 +56,72 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const onboardingSchema = z.object({
+const stepOneSchema = z.object({
   useCase: z.string().min(1, "Please select how you plan to use this app"),
   companyName: z.string(),
 });
 
+const stepTwoSchema = z.object({
+  plan: z.literal("free", {
+    error: "Free plan is the only available option for now.",
+  }),
+});
+
 function OnboardingPage() {
   const navigate = useNavigate();
+  const router = useRouter();
+  const { plans } = Route.useRouteContext();
+  const [step, setStep] = useState(1);
+  const [useCase, setUseCase] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState("");
+  const [stepError, setStepError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm({
-    defaultValues: {
-      useCase: "",
-      companyName: "",
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        onboardingSchema.parse(value);
-        await authClient.updateUser({
-          onboardingComplete: true,
-        } as any);
-
-        toast.success("Welcome aboard!");
-        navigate({ to: "/dashboard" });
-      } catch (error: any) {
-        toast.error(error.message || "Something went wrong.");
+  const handleNext = () => {
+    try {
+      if (step === 1) {
+        stepOneSchema.parse({ useCase, companyName });
       }
-    },
-  });
+
+      if (step === 2) {
+        stepTwoSchema.parse({ plan: selectedPlan });
+      }
+
+      setStepError(null);
+      setStep((currentStep) => Math.min(currentStep + 1, 3));
+    } catch (error: any) {
+      setStepError(error?.message || "Please complete this step to continue.");
+    }
+  };
+
+  const handleComplete = async () => {
+    setIsSubmitting(true);
+    setStepError(null);
+
+    try {
+      stepOneSchema.parse({ useCase, companyName });
+      stepTwoSchema.parse({ plan: selectedPlan });
+
+      await authClient.updateUser({
+        onboardingComplete: true,
+      } as any);
+
+      await router.invalidate();
+      await navigate({ to: "/dashboard", replace: true });
+      await router.invalidate();
+
+      // Force a hard refresh so server session context rehydrates from fresh auth state.
+      window.location.assign("/dashboard");
+    } catch (error: any) {
+      toast.error(error?.message || "Something went wrong.");
+      setStepError(error?.message || "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const progressValue = (step / 3) * 100;
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -81,93 +129,145 @@ function OnboardingPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Welcome!</CardTitle>
           <CardDescription>
-            Let's get you set up so you can start using the application.
+            Step {step} of 3. Let&apos;s finish your setup.
           </CardDescription>
+          <Progress value={progressValue} className="mt-2" />
         </CardHeader>
         <CardContent>
-          <form
-            id="onboarding-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-            className="space-y-6"
-          >
-            <form.Field
-              name="useCase"
-              children={(field) => (
-                <div className="space-y-2">
-                  <Label>How do you plan to use this app?</Label>
-                  <Select
-                    value={field.state.value}
-                    onValueChange={(val) => field.handleChange(val ?? "")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a use case" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="personal">Personal Use</SelectItem>
-                      <SelectItem value="work">Work / Business</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {field.state.meta.errors?.length ? (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {field.state.meta.errors
-                        .map((e) =>
-                          typeof e === "string" ? e : (e as any).message,
-                        )
-                        .join(", ")}
-                    </p>
-                  ) : null}
-                </div>
-              )}
-            />
+          {step === 1 ? (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label>How do you plan to use this app?</Label>
+                <Select value={useCase} onValueChange={(value) => setUseCase(value ?? "")}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a use case" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="personal">Personal Use</SelectItem>
+                    <SelectItem value="work">Work / Business</SelectItem>
+                    <SelectItem value="education">Education</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <form.Field
-              name="companyName"
-              children={(field) => (
-                <div className="space-y-2">
-                  <Label>Company or Organization (Optional)</Label>
-                  <Input
-                    placeholder="Acme Inc."
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  {field.state.meta.errors?.length ? (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {field.state.meta.errors
-                        .map((e) =>
-                          typeof e === "string" ? e : (e as any).message,
-                        )
-                        .join(", ")}
-                    </p>
-                  ) : null}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>Company or Organization (Optional)</Label>
+                <Input
+                  placeholder="Acme Inc."
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {step === 2 ? (
+            <StepTwoPlanSelection
+              plans={plans}
+              selectedPlan={selectedPlan}
+              onSelectPlan={setSelectedPlan}
             />
-          </form>
+          ) : null}
+
+          {step === 3 ? (
+            <div className="space-y-3">
+              <h3 className="font-medium">You&apos;re all set.</h3>
+              <p className="text-sm text-muted-foreground">
+                We&apos;ll start you on the Free plan. Continue to your dashboard.
+              </p>
+            </div>
+          ) : null}
+
+          {stepError ? (
+            <p className="text-[0.8rem] font-medium text-destructive mt-4">{stepError}</p>
+          ) : null}
         </CardContent>
         <CardFooter>
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
+          {step === 1 ? (
+            <Button className="w-full" onClick={handleNext}>
+              Continue
+            </Button>
+          ) : null}
+
+          {step === 2 ? (
+            <div className="w-full flex gap-2">
               <Button
-                type="submit"
-                form="onboarding-form"
-                className="w-full"
-                disabled={!canSubmit || isSubmitting}
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setStep(1);
+                  setStepError(null);
+                }}
               >
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Get Started
+                Go Back
               </Button>
-            )}
-          />
+              <Button className="flex-1" onClick={handleNext}>
+                Continue
+              </Button>
+            </div>
+          ) : null}
+
+          {step === 3 ? (
+            <div className="w-full flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setStep(2);
+                  setStepError(null);
+                }}
+                disabled={isSubmitting}
+              >
+                Go Back
+              </Button>
+              <Button className="flex-1" onClick={handleComplete} disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Continue to Dashboard
+              </Button>
+            </div>
+          ) : null}
         </CardFooter>
       </Card>
+    </div>
+  );
+}
+
+function StepTwoPlanSelection({
+  plans,
+  selectedPlan,
+  onSelectPlan,
+}: {
+  plans: OnboardingPlanOption[];
+  selectedPlan: string;
+  onSelectPlan: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <Label>Select a subscription plan</Label>
+      {plans.map((plan) => {
+        const isSelected = selectedPlan === plan.slug;
+        return (
+          <button
+            key={plan.slug}
+            type="button"
+            onClick={() => {
+              if (plan.selectable) {
+                onSelectPlan(plan.slug);
+              }
+            }}
+            className={[
+              "w-full rounded-md border p-3 text-left transition",
+              isSelected ? "border-primary bg-primary/5" : "border-border",
+              plan.selectable ? "cursor-pointer" : "cursor-not-allowed opacity-60",
+            ].join(" ")}
+          >
+            <p className="font-medium">{plan.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {plan.selectable ? "Available now" : "Coming soon"}
+            </p>
+          </button>
+        );
+      })}
     </div>
   );
 }

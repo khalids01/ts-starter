@@ -1,4 +1,5 @@
-import { env } from "@env/server";
+const proMonthlyProductId = process.env.POLAR_PRO_MONTHLY_ID ?? "";
+const proYearlyProductId = process.env.POLAR_PRO_YEARLY_ID ?? "";
 
 export const PLANS = {
   FREE: {
@@ -9,12 +10,12 @@ export const PLANS = {
   PRO_MONTHLY: {
     slug: "pro_monthly",
     name: "Pro Monthly",
-    productId: env.POLAR_PRO_MONTHLY_ID || "",
+    productId: proMonthlyProductId,
   },
   PRO_YEARLY: {
     slug: "pro_yearly",
     name: "Pro Yearly",
-    productId: env.POLAR_PRO_YEARLY_ID || "",
+    productId: proYearlyProductId,
   },
 } as const;
 

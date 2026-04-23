@@ -46,12 +46,6 @@ export const Route = createFileRoute("/_protected")({
         to: "/login",
       });
     }
-
-    if ((context.session.user as any).onboardingComplete === false) {
-      throw redirect({
-        to: "/onboarding",
-      });
-    }
   },
 });
 
