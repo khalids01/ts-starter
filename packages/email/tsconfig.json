@@ -3,6 +3,7 @@
   "compilerOptions": {
     "rootDir": "..",
     "baseUrl": ".",
+    "jsx": "react-jsx",
     "ignoreDeprecations": "6.0",
     "paths": {
       "@config": ["../config/src/config.ts"],
