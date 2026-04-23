@@ -2,6 +2,7 @@ import prisma from "@db";
 import type { Role } from "@db";
 import { sendEmail, invitationTemplate } from "@email";
 import { env } from "@env/server";
+import { siteConfig } from "@config";
 
 export class UsersService {
   async listUsers(query: {
@@ -116,10 +117,17 @@ export class UsersService {
 
     // Send email
     const inviteUrl = `${env.BETTER_AUTH_URL}/accept-invitation?id=${invitation.id}`;
+    const invitedRole = role === "ADMIN" ? "ADMIN" : "USER";
     await sendEmail({
       to: email,
-      subject: `You're invited to join the team`,
-      html: invitationTemplate(inviteUrl, inviterName),
+      subject: `Invitation: Join ${siteConfig.name} as ${invitedRole === "ADMIN" ? "Admin" : "User"}`,
+      html: invitationTemplate({
+        inviteUrl,
+        inviterName,
+        invitedEmail: email,
+        invitedRole,
+        expiresInDays: 7,
+      }),
     });
 
     return invitation;

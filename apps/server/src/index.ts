@@ -33,6 +33,8 @@ const server = new Elysia()
       return auth.handler(request);
     }
     return status(405);
+  }, {
+    parse: "none",
   })
   .use(app)
   .get("/", () => "OK")
