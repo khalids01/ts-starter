@@ -2,10 +2,14 @@ import { t } from "elysia";
 import { Role } from "@db";
 
 export const UserRoleSchema = t.Enum(Role);
+export const AssignableUserRoleSchema = t.Union([
+    t.Literal("ADMIN"),
+    t.Literal("USER"),
+]);
 
 export const UpdateUserDto = t.Object({
     name: t.Optional(t.String()),
-    role: t.Optional(UserRoleSchema),
+    role: t.Optional(AssignableUserRoleSchema),
 });
 
 export const BanUserDto = t.Object({
@@ -14,7 +18,7 @@ export const BanUserDto = t.Object({
 
 export const InviteUserDto = t.Object({
     email: t.String({ format: "email" }),
-    role: t.Optional(UserRoleSchema),
+    role: t.Optional(AssignableUserRoleSchema),
 });
 
 export const UserQueryDto = t.Object({

@@ -21,6 +21,12 @@ const adminUserSelect = {
   subscriptionStatus: true,
 };
 
+function assertAssignableAdminRole(role?: Role) {
+  if (role === "OWNER") {
+    throw new Error("Owner role cannot be assigned from user management");
+  }
+}
+
 export class UsersService {
   async listUsers(query: {
     page?: number;
@@ -82,6 +88,8 @@ export class UsersService {
   }
 
   async updateUser(id: string, data: { name?: string; role?: Role }) {
+    assertAssignableAdminRole(data.role);
+
     return prisma.user.update({
       where: { id },
       data,
@@ -130,6 +138,8 @@ export class UsersService {
   }
 
   async inviteUser(email: string, role: Role = "USER", inviterId: string) {
+    assertAssignableAdminRole(role);
+
     // Check if user already exists
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw new Error("User already exists");

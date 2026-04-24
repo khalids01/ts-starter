@@ -155,6 +155,28 @@ describe("UsersService", () => {
     });
   });
 
+  it("rejects OWNER role updates from admin user management", async () => {
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.updateUser("user-1", { role: "OWNER" } as any),
+    ).rejects.toThrow("Owner role cannot be assigned from user management");
+    expect(userUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects OWNER invitations from admin user management", async () => {
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.inviteUser("owner@example.com", "OWNER" as any, "admin-1"),
+    ).rejects.toThrow("Owner role cannot be assigned from user management");
+    expect(userFindUniqueMock).not.toHaveBeenCalled();
+  });
+
   it("does not select session tokens for admin session lists", async () => {
     const { usersService } = await import(
       "../src/modules/admin/users/users.service"
