@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { MoreHorizontal, UserPlus, Shield, Ban, History } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useObject } from "@/hooks/use-object";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -57,13 +58,16 @@ type InvitationListItem = {
 
 function UsersPage() {
   const [search, setSearch] = useState("");
-  const [invitationSearch, setInvitationSearch] = useState("");
-  const [invitationStatus, setInvitationStatus] = useState<
-    "all" | "accepted" | "pending"
-  >("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [invitationPage, setInvitationPage] = useState(1);
+  const {
+    object: invitationFilters,
+    setObjectValue: setInvitationFilter,
+  } = useObject({
+    search: "",
+    status: "all" as "all" | "accepted" | "pending",
+    dateFrom: "",
+    dateTo: "",
+    page: 1,
+  });
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -104,21 +108,24 @@ function UsersPage() {
 
   const { data: invitationData, isLoading: isInvitationLoading } = useQuery({
     queryKey: queryKeys.admin.invitations.list({
-      search: invitationSearch,
-      status: invitationStatus,
-      dateFrom,
-      dateTo,
-      page: invitationPage,
+      search: invitationFilters.search,
+      status: invitationFilters.status,
+      dateFrom: invitationFilters.dateFrom,
+      dateTo: invitationFilters.dateTo,
+      page: invitationFilters.page,
     }),
     queryFn: async () => {
       const { data, error } = await client.admin.invitations.get({
         query: {
-          page: invitationPage,
+          page: invitationFilters.page,
           limit: 10,
-          search: invitationSearch || undefined,
-          status: invitationStatus === "all" ? undefined : invitationStatus,
-          dateFrom: dateFrom || undefined,
-          dateTo: dateTo || undefined,
+          search: invitationFilters.search || undefined,
+          status:
+            invitationFilters.status === "all"
+              ? undefined
+              : invitationFilters.status,
+          dateFrom: invitationFilters.dateFrom || undefined,
+          dateTo: invitationFilters.dateTo || undefined,
         },
       });
       if (error) {
@@ -236,10 +243,10 @@ function UsersPage() {
               <Input
                 id="invitation-search"
                 placeholder="invitee@example.com"
-                value={invitationSearch}
+                value={invitationFilters.search}
                 onChange={(event) => {
-                  setInvitationSearch(event.target.value);
-                  setInvitationPage(1);
+                  setInvitationFilter("search", event.target.value);
+                  setInvitationFilter("page", 1);
                 }}
               />
             </div>
@@ -249,12 +256,13 @@ function UsersPage() {
                 Status
               </label>
               <Select
-                value={invitationStatus}
+                value={invitationFilters.status}
                 onValueChange={(value) => {
-                  setInvitationStatus(
+                  setInvitationFilter(
+                    "status",
                     (value as "all" | "accepted" | "pending") || "all",
                   );
-                  setInvitationPage(1);
+                  setInvitationFilter("page", 1);
                 }}
               >
                 <SelectTrigger id="invitation-status">
@@ -275,10 +283,10 @@ function UsersPage() {
               <Input
                 id="date-from"
                 type="date"
-                value={dateFrom}
+                value={invitationFilters.dateFrom}
                 onChange={(event) => {
-                  setDateFrom(event.target.value);
-                  setInvitationPage(1);
+                  setInvitationFilter("dateFrom", event.target.value);
+                  setInvitationFilter("page", 1);
                 }}
               />
             </div>
@@ -290,10 +298,10 @@ function UsersPage() {
               <Input
                 id="date-to"
                 type="date"
-                value={dateTo}
+                value={invitationFilters.dateTo}
                 onChange={(event) => {
-                  setDateTo(event.target.value);
-                  setInvitationPage(1);
+                  setInvitationFilter("dateTo", event.target.value);
+                  setInvitationFilter("page", 1);
                 }}
               />
             </div>
@@ -356,21 +364,30 @@ function UsersPage() {
           <div className="flex items-center justify-end gap-2">
             <Button
               variant="outline"
-              disabled={invitationPage <= 1}
-              onClick={() => setInvitationPage((prev) => Math.max(1, prev - 1))}
+              disabled={invitationFilters.page <= 1}
+              onClick={() =>
+                setInvitationFilter(
+                  "page",
+                  Math.max(1, invitationFilters.page - 1),
+                )
+              }
             >
               Previous
             </Button>
             <span className="text-sm text-muted-foreground">
-              Page {invitationData?.page ?? invitationPage} of{" "}
+              Page {invitationData?.page ?? invitationFilters.page} of{" "}
               {invitationData?.pages ?? 1}
             </span>
             <Button
               variant="outline"
-              disabled={invitationPage >= (invitationData?.pages ?? 1)}
+              disabled={invitationFilters.page >= (invitationData?.pages ?? 1)}
               onClick={() =>
-                setInvitationPage((prev) =>
-                  Math.min(invitationData?.pages ?? prev, prev + 1),
+                setInvitationFilter(
+                  "page",
+                  Math.min(
+                    invitationData?.pages ?? invitationFilters.page,
+                    invitationFilters.page + 1,
+                  ),
                 )
               }
             >

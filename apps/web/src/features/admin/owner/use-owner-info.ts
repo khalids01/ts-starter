@@ -1,17 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/query-keys";
 import { client } from "@/lib/client";
+import { getOwnerSetupStatus } from "./api";
 
 export const useOwnerInfo = () => {
     return useQuery({
         queryKey: queryKeys.owner.setupStatus(),
-        queryFn: async () => {
-            const { data, error } = await client.owner["setup-status"].get();
-            if (error) {
-                throw new Error((error.value as any)?.error || "Failed to check owner status");
-            }
-            return data;
-        },
+        queryFn: getOwnerSetupStatus,
         refetchOnWindowFocus: false,
     });
 };

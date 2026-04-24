@@ -1,7 +1,7 @@
 import { Home } from "@/features/landing/home";
 import { env } from "@env/web";
 import { createFileRoute } from "@tanstack/react-router";
-import { client } from "@/lib/client";
+import { getOwnerSetupStatus } from "@/features/admin/owner/api";
 
 export const Route = createFileRoute("/_public/")({
   beforeLoad: async () => {
@@ -12,9 +12,9 @@ export const Route = createFileRoute("/_public/")({
     // but do NOT perform any automatic redirection. The user can still
     // navigate to /setup manually if OWNER_SETUP_CHECK is enabled and
     // no owner exists.
-    const { data, error } = await client.owner["setup-status"].get();
-
-    if (error) {
+    try {
+      await getOwnerSetupStatus();
+    } catch {
       return;
     }
 

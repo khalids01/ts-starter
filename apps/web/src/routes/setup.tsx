@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { OwnerSetup } from "@/features/admin/owner/owner-setup";
-import { client } from "@/lib/client";
 import { env } from "@env/web";
+import { getOwnerSetupStatus } from "@/features/admin/owner/api";
 
 export const Route = createFileRoute("/setup")({
   beforeLoad: async () => {
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/setup")({
       throw redirect({ to: "/" });
     }
 
-    const { data } = await client.owner["setup-status"].get();
+    const data = await getOwnerSetupStatus().catch(() => null);
     // If owner already exists, don't allow access to setup page
     if (!data || data?.hasOwner) {
       throw redirect({ to: "/" });
