@@ -18,15 +18,15 @@
   "devDependencies": {
     "@config": "workspace:*",
     "@types/pg": "^8.16.0",
-    "prisma": "^7.4.1",
+    "prisma": "^7.8.0",
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@prisma/client": "^7.4.1",
+    "@env": "workspace:*",
     "@prisma/adapter-pg": "^7.4.1",
-    "pg": "^8.18.0",
+    "@prisma/client": "^7.8.0",
     "dotenv": "^17.3.1",
-    "zod": "^4.3.6",
-    "@env": "workspace:*"
+    "pg": "^8.18.0",
+    "zod": "^4.3.6"
   }
 }

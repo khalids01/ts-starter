@@ -27,15 +27,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  MoreHorizontal,
-  UserPlus,
-  Shield,
-  Ban,
-  History,
-} from "lucide-react";
+import { MoreHorizontal, UserPlus, Shield, Ban, History } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -62,9 +57,9 @@ type InvitationListItem = {
 function UsersPage() {
   const [search, setSearch] = useState("");
   const [invitationSearch, setInvitationSearch] = useState("");
-  const [invitationStatus, setInvitationStatus] = useState<"all" | "accepted" | "pending">(
-    "all",
-  );
+  const [invitationStatus, setInvitationStatus] = useState<
+    "all" | "accepted" | "pending"
+  >("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [invitationPage, setInvitationPage] = useState(1);
@@ -93,6 +88,7 @@ function UsersPage() {
     onSuccess: () => {
       toast.success("Invitation sent successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-invitations"] });
     },
     onError: (error: any) => {
       const message =
@@ -103,10 +99,7 @@ function UsersPage() {
     },
   });
 
-  const {
-    data: invitationData,
-    isLoading: isInvitationLoading,
-  } = useQuery({
+  const { data: invitationData, isLoading: isInvitationLoading } = useQuery({
     queryKey: [
       "admin-invitations",
       invitationSearch,
@@ -127,7 +120,9 @@ function UsersPage() {
         },
       });
       if (error) {
-        throw new Error(String((error.value as any)?.message || "Failed to load invitations"));
+        throw new Error(
+          String((error.value as any)?.message || "Failed to load invitations"),
+        );
       }
       return data as {
         items: InvitationListItem[];
@@ -151,227 +146,237 @@ function UsersPage() {
         />
       </div>
 
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter users..."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="invites">Invites</TabsTrigger>
+        </TabsList>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : data?.users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No users found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              data?.users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.role === "ADMIN" || user.role === "OWNER"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.banned ? (
-                      <Badge variant="destructive">Banned</Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-green-600 border-green-600"
-                      >
-                        Active
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <UserActions user={user} />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Invitations</h2>
-
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-full max-w-sm">
-            <label htmlFor="invitation-search" className="mb-1 block text-sm">
-              Search by email
-            </label>
+        <TabsContent value="users" className="space-y-4">
+          <div className="flex items-center">
             <Input
-              id="invitation-search"
-              placeholder="invitee@example.com"
-              value={invitationSearch}
-              onChange={(event) => {
-                setInvitationSearch(event.target.value);
-                setInvitationPage(1);
-              }}
+              placeholder="Filter users..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="max-w-sm"
             />
           </div>
 
-          <div className="w-[180px]">
-            <label htmlFor="invitation-status" className="mb-1 block text-sm">
-              Status
-            </label>
-            <Select
-              value={invitationStatus}
-              onValueChange={(value) => {
-                setInvitationStatus((value as "all" | "accepted" | "pending") || "all");
-                setInvitationPage(1);
-              }}
-            >
-              <SelectTrigger id="invitation-status">
-                <SelectValue placeholder="All" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label htmlFor="date-from" className="mb-1 block text-sm">
-              Expires from
-            </label>
-            <Input
-              id="date-from"
-              type="date"
-              value={dateFrom}
-              onChange={(event) => {
-                setDateFrom(event.target.value);
-                setInvitationPage(1);
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="date-to" className="mb-1 block text-sm">
-              Expires to
-            </label>
-            <Input
-              id="date-to"
-              type="date"
-              value={dateTo}
-              onChange={(event) => {
-                setDateTo(event.target.value);
-                setInvitationPage(1);
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Total Invitations</TableHead>
-                <TableHead>Last Expiry</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Accepted User</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isInvitationLoading ? (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    Loading invitations...
-                  </TableCell>
+                  <TableHead>User</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : invitationData?.items.length ? (
-                invitationData.items.map((item) => (
-                  <TableRow key={item.email}>
-                    <TableCell>{item.email}</TableCell>
-                    <TableCell>{item.invitationCount}</TableCell>
-                    <TableCell>
-                      {item.lastExpiresAt
-                        ? new Date(item.lastExpiresAt).toLocaleString()
-                        : "-"}
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      Loading...
                     </TableCell>
-                    <TableCell>
-                      {item.status === "accepted" ? (
-                        <Badge
-                          variant="outline"
-                          className="text-green-600 border-green-600"
-                        >
-                          Accepted
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Pending</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{item.acceptedUserName || "-"}</TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    No invitations found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : data?.users.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No users found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            user.role === "ADMIN" || user.role === "OWNER"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.banned ? (
+                          <Badge variant="destructive">Banned</Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="text-green-600 border-green-600"
+                          >
+                            Active
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <UserActions user={user} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
 
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            disabled={invitationPage <= 1}
-            onClick={() => setInvitationPage((prev) => Math.max(1, prev - 1))}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {invitationData?.page ?? invitationPage} of {invitationData?.pages ?? 1}
-          </span>
-          <Button
-            variant="outline"
-            disabled={invitationPage >= (invitationData?.pages ?? 1)}
-            onClick={() =>
-              setInvitationPage((prev) =>
-                Math.min(invitationData?.pages ?? prev, prev + 1),
-              )
-            }
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+        <TabsContent value="invites" className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="w-full max-w-sm">
+              <label htmlFor="invitation-search" className="mb-1 block text-sm">
+                Search by email
+              </label>
+              <Input
+                id="invitation-search"
+                placeholder="invitee@example.com"
+                value={invitationSearch}
+                onChange={(event) => {
+                  setInvitationSearch(event.target.value);
+                  setInvitationPage(1);
+                }}
+              />
+            </div>
+
+            <div className="w-[180px]">
+              <label htmlFor="invitation-status" className="mb-1 block text-sm">
+                Status
+              </label>
+              <Select
+                value={invitationStatus}
+                onValueChange={(value) => {
+                  setInvitationStatus(
+                    (value as "all" | "accepted" | "pending") || "all",
+                  );
+                  setInvitationPage(1);
+                }}
+              >
+                <SelectTrigger id="invitation-status">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label htmlFor="date-from" className="mb-1 block text-sm">
+                Expires from
+              </label>
+              <Input
+                id="date-from"
+                type="date"
+                value={dateFrom}
+                onChange={(event) => {
+                  setDateFrom(event.target.value);
+                  setInvitationPage(1);
+                }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="date-to" className="mb-1 block text-sm">
+                Expires to
+              </label>
+              <Input
+                id="date-to"
+                type="date"
+                value={dateTo}
+                onChange={(event) => {
+                  setDateTo(event.target.value);
+                  setInvitationPage(1);
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Total Invitations</TableHead>
+                  <TableHead>Last Expiry</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Accepted User</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isInvitationLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      Loading invitations...
+                    </TableCell>
+                  </TableRow>
+                ) : invitationData?.items.length ? (
+                  invitationData.items.map((item) => (
+                    <TableRow key={item.email}>
+                      <TableCell>{item.email}</TableCell>
+                      <TableCell>{item.invitationCount}</TableCell>
+                      <TableCell>
+                        {item.lastExpiresAt
+                          ? new Date(item.lastExpiresAt).toLocaleString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {item.status === "accepted" ? (
+                          <Badge
+                            variant="outline"
+                            className="text-green-600 border-green-600"
+                          >
+                            Accepted
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Pending</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{item.acceptedUserName || "-"}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No invitations found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              disabled={invitationPage <= 1}
+              onClick={() => setInvitationPage((prev) => Math.max(1, prev - 1))}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {invitationData?.page ?? invitationPage} of{" "}
+              {invitationData?.pages ?? 1}
+            </span>
+            <Button
+              variant="outline"
+              disabled={invitationPage >= (invitationData?.pages ?? 1)}
+              onClick={() =>
+                setInvitationPage((prev) =>
+                  Math.min(invitationData?.pages ?? prev, prev + 1),
+                )
+              }
+            >
+              Next
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -416,7 +421,10 @@ function InviteDialog({
           </div>
           <div className="grid gap-2">
             <label htmlFor="role">Role</label>
-            <Select value={role} onValueChange={(val) => setRole(val || "USER")}>
+            <Select
+              value={role}
+              onValueChange={(val) => setRole(val || "USER")}
+            >
               <SelectTrigger id="role" className="w-full">
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
