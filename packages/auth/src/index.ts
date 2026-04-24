@@ -7,6 +7,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { sendEmail, magicLinkTemplate } from "@email";
 
 import { polarClient } from "./lib/payments";
+import { polarCustomersForBillingUsers } from "./lib/polar-customers";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -85,7 +86,7 @@ export const auth = betterAuth({
       ? [
         polar({
           client: polarClient,
-          createCustomerOnSignUp: true,
+          createCustomerOnSignUp: false,
           use: [
             checkout({
               products: [
@@ -122,6 +123,7 @@ export const auth = betterAuth({
             }),
           ],
         }),
+        polarCustomersForBillingUsers(),
       ]
       : []),
     magicLink({
