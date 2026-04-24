@@ -146,18 +146,20 @@ export class InvitationsService {
         return null;
       }
 
-      await tx.user.update({
-        where: { id: args.userId },
-        data: { role: invitationLookup.role as Role },
-      });
+      const invitedRole = invitationLookup.role as Role;
+      const skipsOnboarding = invitedRole === "ADMIN" || invitedRole === "OWNER";
 
-      const user = await tx.user.findUnique({
+      const updatedUser = await tx.user.update({
         where: { id: args.userId },
+        data: {
+          role: invitedRole,
+          ...(skipsOnboarding ? { onboardingComplete: true } : {}),
+        },
         select: { onboardingComplete: true },
       });
 
       return {
-        redirectTo: user?.onboardingComplete ? "/dashboard" : "/onboarding",
+        redirectTo: updatedUser.onboardingComplete ? "/dashboard" : "/onboarding",
       } as const;
     });
 

@@ -47,7 +47,10 @@ export const Route = createFileRoute("/onboarding")({
       });
     }
 
-    if ((context.session.user as any).onboardingComplete === true) {
+    const user = context.session.user as any;
+    const skipsOnboarding = user.role === "ADMIN" || user.role === "OWNER";
+
+    if (skipsOnboarding || user.onboardingComplete === true) {
       throw redirect({
         to: "/dashboard",
       });
@@ -66,6 +69,18 @@ const stepTwoSchema = z.object({
     error: "Free plan is the only available option for now.",
   }),
 });
+
+function getFormErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof z.ZodError) {
+    return error.issues[0]?.message ?? fallback;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
+}
 
 function OnboardingPage() {
   const navigate = useNavigate();
@@ -91,7 +106,12 @@ function OnboardingPage() {
       setStepError(null);
       setStep((currentStep) => Math.min(currentStep + 1, 3));
     } catch (error: any) {
-      setStepError(error?.message || "Please complete this step to continue.");
+      const message = getFormErrorMessage(
+        error,
+        "Please complete this step to continue.",
+      );
+      toast.error(message);
+      setStepError(null);
     }
   };
 
@@ -114,8 +134,9 @@ function OnboardingPage() {
       // Force a hard refresh so server session context rehydrates from fresh auth state.
       window.location.assign("/dashboard");
     } catch (error: any) {
-      toast.error(error?.message || "Something went wrong.");
-      setStepError(error?.message || "Something went wrong.");
+      const message = getFormErrorMessage(error, "Something went wrong.");
+      toast.error(message);
+      setStepError(null);
     } finally {
       setIsSubmitting(false);
     }
