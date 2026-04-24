@@ -136,6 +136,13 @@ export class UsersService {
   async getUserSessions(id: string) {
     return prisma.session.findMany({
       where: { userId: id },
+      select: {
+        id: true,
+        expiresAt: true,
+        createdAt: true,
+        ipAddress: true,
+        userAgent: true,
+      },
       orderBy: { createdAt: "desc" },
     });
   }
