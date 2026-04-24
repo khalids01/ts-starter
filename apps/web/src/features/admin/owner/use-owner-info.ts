@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/constants/query-keys";
 import { client } from "@/lib/client";
 
 export const useOwnerInfo = () => {
     return useQuery({
-        queryKey: ["owner-status"],
+        queryKey: queryKeys.owner.setupStatus(),
         queryFn: async () => {
             const { data, error } = await client.owner["setup-status"].get();
             if (error) {
@@ -27,7 +28,7 @@ export const useCreateOwner = () => {
             return data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["owner-status"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.owner.setupStatus() });
         },
     });
 };

@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { queryKeys } from "@/constants/query-keys";
 import { client } from "@/lib/client";
 import { useSession } from "@/providers/session-provider";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ function AcceptInvitationPage() {
   const [emailInput, setEmailInput] = useState("");
 
   const invitationQuery = useQuery({
-    queryKey: ["invitation", invitationId],
+    queryKey: queryKeys.invitations.detail(invitationId),
     enabled: invitationId.length > 0,
     queryFn: async () => {
       const { data, error } = await client.invitations({ id: invitationId }).get();

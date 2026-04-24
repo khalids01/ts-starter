@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/constants/query-keys";
 import { client } from "@/lib/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/admin/overview")({
 
 function OverviewPage() {
   const { data: overview, isLoading } = useQuery({
-    queryKey: ["admin-overview"],
+    queryKey: queryKeys.admin.overview(),
     queryFn: async () => {
       const { data, error } = await client.admin.metadata.overview.get();
       if (error)

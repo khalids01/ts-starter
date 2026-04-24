@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { queryKeys } from "@/constants/query-keys";
 import { client } from "@/lib/client";
 import Loader from "@/components/loader";
 import {
@@ -80,7 +81,7 @@ function AdminRateLimitsPage() {
   const [draft, setDraft] = useState<RateLimitConfig | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-rate-limit"],
+    queryKey: queryKeys.admin.rateLimit(),
     queryFn: async () => {
       const response = await client.admin["rate-limit"].get();
       if (response.error) {
@@ -108,7 +109,7 @@ function AdminRateLimitsPage() {
     },
     onSuccess: (nextData) => {
       toast.success("Rate limit settings updated");
-      queryClient.setQueryData(["admin-rate-limit"], nextData);
+      queryClient.setQueryData(queryKeys.admin.rateLimit(), nextData);
       setDraft(nextData.config);
     },
     onError: (error: Error) => {

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/constants/query-keys";
 import { client } from "@/lib/client";
 import {
   Table,
@@ -66,7 +67,7 @@ function UsersPage() {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-users", search],
+    queryKey: queryKeys.admin.users.list(search),
     queryFn: async () => {
       const { data, error } = await client.admin.users.get({
         query: { search: search || undefined },
@@ -87,8 +88,10 @@ function UsersPage() {
     },
     onSuccess: () => {
       toast.success("Invitation sent successfully");
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-invitations"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.admin.invitations.all(),
+      });
     },
     onError: (error: any) => {
       const message =
@@ -100,14 +103,13 @@ function UsersPage() {
   });
 
   const { data: invitationData, isLoading: isInvitationLoading } = useQuery({
-    queryKey: [
-      "admin-invitations",
-      invitationSearch,
-      invitationStatus,
+    queryKey: queryKeys.admin.invitations.list({
+      search: invitationSearch,
+      status: invitationStatus,
       dateFrom,
       dateTo,
-      invitationPage,
-    ],
+      page: invitationPage,
+    }),
     queryFn: async () => {
       const { data, error } = await client.admin.invitations.get({
         query: {
@@ -455,7 +457,7 @@ function InviteDialog({
 function UserActions({ user }: { user: any }) {
   const [sessionsOpen, setSessionsOpen] = useState(false);
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
-    queryKey: ["user-sessions", user.id],
+    queryKey: queryKeys.admin.users.sessions(user.id),
     queryFn: async () => {
       const { data, error } = await client.admin
         .users({ id: user.id })

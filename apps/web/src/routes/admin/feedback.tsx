@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { client } from "@/lib/client";
 import type { Prisma } from "@db";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/constants/query-keys";
 import {
   Card,
   CardContent,
@@ -42,7 +43,7 @@ function AdminFeedbackPage() {
   const queryClient = useQueryClient();
 
   const { data: feedbacks, isLoading } = useQuery({
-    queryKey: ["admin-feedback"],
+    queryKey: queryKeys.admin.feedback(),
     queryFn: async () => {
       const res = await client.feedback.all.get();
       if (res.error) throw new Error("Failed to fetch feedback");
@@ -64,7 +65,7 @@ function AdminFeedbackPage() {
     },
     onSuccess: () => {
       toast.success("Feedback status updated");
-      queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.feedback() });
     },
     onError: () => {
       toast.error("Failed to update feedback status");
