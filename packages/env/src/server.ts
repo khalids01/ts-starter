@@ -47,3 +47,41 @@ export const env = createEnv({
   },
   emptyStringAsUndefined: true,
 });
+
+type PolarEnv = {
+  POLAR_ACCESS_TOKEN: string;
+  POLAR_WEBHOOK_SECRET: string;
+  POLAR_SUCCESS_URL: string;
+  POLAR_MODE: "sandbox" | "production";
+};
+
+export function getRequiredPolarEnv(): PolarEnv {
+  if (!env.ENABLE_POLAR) {
+    throw new Error("Polar is disabled. Set ENABLE_POLAR=true to use Polar.");
+  }
+
+  const missing = [
+    ["POLAR_ACCESS_TOKEN", env.POLAR_ACCESS_TOKEN],
+    ["POLAR_WEBHOOK_SECRET", env.POLAR_WEBHOOK_SECRET],
+    ["POLAR_SUCCESS_URL", env.POLAR_SUCCESS_URL],
+  ]
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Polar is enabled but missing required env vars: ${missing.join(", ")}`,
+    );
+  }
+
+  return {
+    POLAR_ACCESS_TOKEN: env.POLAR_ACCESS_TOKEN!,
+    POLAR_WEBHOOK_SECRET: env.POLAR_WEBHOOK_SECRET!,
+    POLAR_SUCCESS_URL: env.POLAR_SUCCESS_URL!,
+    POLAR_MODE: env.POLAR_MODE,
+  };
+}
+
+if (env.ENABLE_POLAR) {
+  getRequiredPolarEnv();
+}

@@ -100,7 +100,7 @@ export const auth = betterAuth({
             }),
             portal(),
             webhooks({
-              secret: env.POLAR_WEBHOOK_SECRET || "",
+              secret: env.POLAR_WEBHOOK_SECRET!,
               onSubscriptionCreated: async (payload: any) => {
                 const { subscription, customer } = payload;
                 await prisma.user.update({

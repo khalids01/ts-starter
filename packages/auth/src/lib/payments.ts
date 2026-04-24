@@ -1,7 +1,13 @@
 import { Polar } from "@polar-sh/sdk";
-import { env } from "@env/server";
+import { env, getRequiredPolarEnv } from "@env/server";
 
-export const polarClient = new Polar({
-  accessToken: env.POLAR_ACCESS_TOKEN || "",
-  server: env.POLAR_MODE || "sandbox",
-});
+export const polarClient = env.ENABLE_POLAR
+  ? (() => {
+      const polarEnv = getRequiredPolarEnv();
+
+      return new Polar({
+        accessToken: polarEnv.POLAR_ACCESS_TOKEN,
+        server: polarEnv.POLAR_MODE,
+      });
+    })()
+  : (undefined as unknown as Polar);
