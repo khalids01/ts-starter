@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 
 type SettingsRecord = {
   id: string;
@@ -91,6 +92,7 @@ mock.module("@db", () => ({
       upsert: upsertMock,
     },
   },
+  Prisma,
 }));
 
 mock.module("@/modules/auth/auth.service", () => ({
@@ -129,7 +131,9 @@ function createSettings(overrides: Partial<SettingsRecord> = {}): SettingsRecord
   };
 }
 
-function createContext(url: string, headers?: HeadersInit) {
+type RequestHeaders = Record<string, string> | Headers | Array<[string, string]>;
+
+function createContext(url: string, headers?: RequestHeaders) {
   return {
     request: new Request(url, { headers }),
     set: {

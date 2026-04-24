@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 
 const sessionFindManyMock = mock(async () => []);
 const userFindManyMock = mock(async () => []);
@@ -37,6 +38,7 @@ mock.module("@db", () => ({
       findMany: sessionFindManyMock,
     },
   },
+  Prisma,
 }));
 
 mock.module("@email", () => ({

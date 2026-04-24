@@ -1,4 +1,4 @@
-import prisma from "@db";
+import prisma, { Prisma } from "@db";
 import type { AdminInvitationQuery } from "./invitations.dto";
 
 type InvitationListItem = {
@@ -23,110 +23,125 @@ function normalizeDateRange(dateFrom?: string, dateTo?: string) {
   return range;
 }
 
+type InvitationGroupRow = {
+  email: string;
+  invitationCount: number;
+  lastExpiresAt: Date | null;
+  status: "accepted" | "pending";
+  acceptedUserName: string | null;
+};
+
+type InvitationTotalRow = {
+  total: number;
+};
+
+function normalizePagination(page?: number, limit?: number) {
+  const normalizedLimit = Math.min(Math.max(limit ?? 10, 1), 100);
+  return {
+    limit: normalizedLimit,
+    requestedPage: Math.max(page ?? 1, 1),
+  };
+}
+
+function buildBaseWhere(args: {
+  search?: string;
+  expiresAtRange: { gte?: Date; lte?: Date };
+}) {
+  const conditions: Prisma.Sql[] = [];
+
+  if (args.search) {
+    conditions.push(Prisma.sql`i.email ILIKE ${`%${args.search}%`}`);
+  }
+
+  if (args.expiresAtRange.gte) {
+    conditions.push(Prisma.sql`i."expiresAt" >= ${args.expiresAtRange.gte}`);
+  }
+
+  if (args.expiresAtRange.lte) {
+    conditions.push(Prisma.sql`i."expiresAt" <= ${args.expiresAtRange.lte}`);
+  }
+
+  if (conditions.length === 0) {
+    return Prisma.empty;
+  }
+
+  return Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
+}
+
+function buildStatusWhere(status?: "accepted" | "pending") {
+  if (status === "accepted") {
+    return Prisma.sql`WHERE "isAccepted" = true`;
+  }
+
+  if (status === "pending") {
+    return Prisma.sql`WHERE "isAccepted" = false`;
+  }
+
+  return Prisma.empty;
+}
+
+function groupedInvitationsSql(baseWhere: Prisma.Sql, statusWhere: Prisma.Sql) {
+  return Prisma.sql`
+    WITH grouped AS (
+      SELECT
+        i.email,
+        COUNT(*)::int AS "invitationCount",
+        MAX(i."expiresAt") AS "lastExpiresAt",
+        BOOL_OR(i.status = 'accepted') AS "isAccepted"
+      FROM "invitation" i
+      ${baseWhere}
+      GROUP BY i.email
+    ),
+    filtered AS (
+      SELECT *
+      FROM grouped
+      ${statusWhere}
+    )
+  `;
+}
+
 export class AdminInvitationsService {
   async listInvitations(query: AdminInvitationQuery) {
-    const { page = 1, limit = 10, search, status, dateFrom, dateTo } = query;
-
+    const { search, status, dateFrom, dateTo } = query;
+    const { requestedPage, limit } = normalizePagination(query.page, query.limit);
     const expiresAtRange = normalizeDateRange(dateFrom, dateTo);
+    const baseWhere = buildBaseWhere({ search, expiresAtRange });
+    const statusWhere = buildStatusWhere(status);
 
-    const baseWhere: {
-      email?: { contains: string; mode: "insensitive" };
-      expiresAt?: { gte?: Date; lte?: Date };
-    } = {};
+    const [{ total = 0 } = { total: 0 }] = await prisma.$queryRaw<
+      InvitationTotalRow[]
+    >(Prisma.sql`
+      ${groupedInvitationsSql(baseWhere, statusWhere)}
+      SELECT COUNT(*)::int AS total
+      FROM filtered
+    `);
 
-    if (search) {
-      baseWhere.email = {
-        contains: search,
-        mode: "insensitive",
-      };
-    }
-
-    if (expiresAtRange.gte || expiresAtRange.lte) {
-      baseWhere.expiresAt = expiresAtRange;
-    }
-
-    const [groupedInvitations, acceptedGroups] = await Promise.all([
-      prisma.invitation.groupBy({
-        by: ["email"],
-        where: baseWhere,
-        _count: {
-          _all: true,
-        },
-        _max: {
-          expiresAt: true,
-        },
-      }),
-      prisma.invitation.groupBy({
-        by: ["email"],
-        where: {
-          ...baseWhere,
-          status: "accepted",
-        },
-        _count: {
-          _all: true,
-        },
-      }),
-    ]);
-
-    const acceptedEmailSet = new Set(acceptedGroups.map((group) => group.email));
-
-    const items: InvitationListItem[] = groupedInvitations.map((group) => ({
-      email: group.email,
-      invitationCount: group._count._all,
-      lastExpiresAt: group._max.expiresAt?.toISOString() ?? null,
-      status: acceptedEmailSet.has(group.email) ? "accepted" : "pending",
-      acceptedUserName: null,
-    }));
-
-    const statusFilteredItems = status
-      ? items.filter((item) => item.status === status)
-      : items;
-
-    statusFilteredItems.sort((a, b) => {
-      const aTime = a.lastExpiresAt ? new Date(a.lastExpiresAt).getTime() : 0;
-      const bTime = b.lastExpiresAt ? new Date(b.lastExpiresAt).getTime() : 0;
-      return bTime - aTime;
-    });
-
-    const acceptedEmails = statusFilteredItems
-      .filter((item) => item.status === "accepted")
-      .map((item) => item.email);
-
-    let acceptedNameByEmail = new Map<string, string>();
-    if (acceptedEmails.length > 0) {
-      const acceptedUsers = await prisma.user.findMany({
-        where: {
-          email: {
-            in: acceptedEmails,
-          },
-        },
-        select: {
-          email: true,
-          name: true,
-        },
-      });
-
-      acceptedNameByEmail = new Map(
-        acceptedUsers.map((user) => [user.email, user.name]),
-      );
-    }
-
-    const withAcceptedUser = statusFilteredItems.map((item) => ({
-      ...item,
-      acceptedUserName:
-        item.status === "accepted"
-          ? acceptedNameByEmail.get(item.email) ?? null
-          : null,
-    }));
-
-    const total = withAcceptedUser.length;
     const pages = Math.max(1, Math.ceil(total / limit));
-    const boundedPage = Math.min(Math.max(page, 1), pages);
-    const start = (boundedPage - 1) * limit;
-    const end = start + limit;
+    const boundedPage = Math.min(requestedPage, pages);
+    const skip = (boundedPage - 1) * limit;
+    const rows = await prisma.$queryRaw<InvitationGroupRow[]>(Prisma.sql`
+      ${groupedInvitationsSql(baseWhere, statusWhere)}
+      SELECT
+        f.email,
+        f."invitationCount",
+        f."lastExpiresAt",
+        CASE WHEN f."isAccepted" THEN 'accepted' ELSE 'pending' END AS status,
+        CASE WHEN f."isAccepted" THEN u.name ELSE NULL END AS "acceptedUserName"
+      FROM filtered f
+      LEFT JOIN "user" u ON lower(u.email) = lower(f.email)
+      ORDER BY f."lastExpiresAt" DESC NULLS LAST, f.email ASC
+      LIMIT ${limit}
+      OFFSET ${skip}
+    `);
 
     return {
-      items: withAcceptedUser.slice(start, end),
+      items: rows.map((row): InvitationListItem => ({
+        email: row.email,
+        invitationCount: row.invitationCount,
+        lastExpiresAt: row.lastExpiresAt?.toISOString() ?? null,
+        status: row.status,
+        acceptedUserName: row.acceptedUserName,
+      })),
       total,
       pages,
       page: boundedPage,
@@ -136,4 +151,3 @@ export class AdminInvitationsService {
 }
 
 export const adminInvitationsService = new AdminInvitationsService();
-

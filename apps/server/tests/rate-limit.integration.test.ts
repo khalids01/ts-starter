@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 import { Elysia } from "elysia";
 
 type SettingsRecord = {
@@ -89,6 +90,7 @@ mock.module("@db", () => ({
       upsert: upsertMock,
     },
   },
+  Prisma,
 }));
 
 mock.module("@/modules/auth/auth.service", () => ({
@@ -218,4 +220,3 @@ describe("rate limit integration", () => {
     expect(customAuthThird.headers.get("retry-after")).toBe("60");
   });
 });
-

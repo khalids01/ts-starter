@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 
 const findUniqueMock = mock(async () => null);
 const authApi =
@@ -18,6 +19,7 @@ mock.module("@db", () => ({
       findUnique: findUniqueMock,
     },
   },
+  Prisma,
 }));
 
 mock.module("@auth", () => ({
