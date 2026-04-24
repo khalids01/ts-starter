@@ -75,7 +75,7 @@ MagicLinkEmail.PreviewProps = {
   url: "https://example.com/auth/magic-link?token=example",
 } satisfies MagicLinkEmailProps;
 
-export const magicLinkTemplate = (url: string) =>
+export const magicLinkTemplate = async (url: string) =>
   renderEmailTemplate(<MagicLinkEmail url={url} />);
 
 export default MagicLinkEmail;

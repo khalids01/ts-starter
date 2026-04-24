@@ -21,4 +21,9 @@ declare module "react/jsx-runtime" {
 
 declare module "react-dom/server" {
   export function renderToStaticMarkup(element: any): string;
+  export function renderToReadableStream(element: any): Promise<
+    ReadableStream<Uint8Array> & {
+      allReady: Promise<void>;
+    }
+  >;
 }

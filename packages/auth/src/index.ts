@@ -135,7 +135,7 @@ export const auth = betterAuth({
         await sendEmail({
           to: email,
           subject: "Sign in to TS Starter",
-          html: magicLinkTemplate(url),
+          html: await magicLinkTemplate(url),
         });
       },
     }),

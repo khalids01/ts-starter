@@ -127,7 +127,7 @@ InvitationEmail.PreviewProps = {
   expiresInDays: 7,
 } satisfies InvitationTemplateInput;
 
-export const invitationTemplate = (input: InvitationTemplateInput) =>
+export const invitationTemplate = async (input: InvitationTemplateInput) =>
   renderEmailTemplate(<InvitationEmail {...input} />);
 
 export default InvitationEmail;

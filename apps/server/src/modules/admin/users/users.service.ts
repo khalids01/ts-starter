@@ -121,7 +121,7 @@ export class UsersService {
     await sendEmail({
       to: email,
       subject: `Invitation: Join ${siteConfig.name} as ${invitedRole === "ADMIN" ? "Admin" : "User"}`,
-      html: invitationTemplate({
+      html: await invitationTemplate({
         inviteUrl,
         inviterName,
         invitedEmail: email,
