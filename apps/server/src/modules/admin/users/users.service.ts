@@ -4,6 +4,23 @@ import { sendEmail, invitationTemplate } from "@email";
 import { env } from "@env/server";
 import { siteConfig } from "@config";
 
+const adminUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  emailVerified: true,
+  image: true,
+  createdAt: true,
+  updatedAt: true,
+  role: true,
+  banned: true,
+  banReason: true,
+  archived: true,
+  onboardingComplete: true,
+  plan: true,
+  subscriptionStatus: true,
+};
+
 export class UsersService {
   async listUsers(query: {
     page?: number;
@@ -30,6 +47,7 @@ export class UsersService {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
+        select: adminUserSelect,
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
@@ -47,8 +65,18 @@ export class UsersService {
   async getUserById(id: string) {
     return prisma.user.findUnique({
       where: { id },
-      include: {
-        invitations: true,
+      select: {
+        ...adminUserSelect,
+        invitations: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            expiresAt: true,
+            status: true,
+            createdAt: true,
+          },
+        },
       },
     });
   }
@@ -57,6 +85,7 @@ export class UsersService {
     return prisma.user.update({
       where: { id },
       data,
+      select: adminUserSelect,
     });
   }
 
@@ -64,6 +93,7 @@ export class UsersService {
     return prisma.user.update({
       where: { id },
       data: { banned: true, banReason: reason },
+      select: adminUserSelect,
     });
   }
 
@@ -71,6 +101,7 @@ export class UsersService {
     return prisma.user.update({
       where: { id },
       data: { banned: false, banReason: null },
+      select: adminUserSelect,
     });
   }
 
@@ -78,6 +109,7 @@ export class UsersService {
     return prisma.user.update({
       where: { id },
       data: { archived: true },
+      select: adminUserSelect,
     });
   }
 
@@ -85,6 +117,7 @@ export class UsersService {
     return prisma.user.update({
       where: { id },
       data: { archived: false },
+      select: adminUserSelect,
     });
   }
 
@@ -92,6 +125,7 @@ export class UsersService {
     // Delete related records first if necessary, or let Cascade handle it
     return prisma.user.delete({
       where: { id },
+      select: adminUserSelect,
     });
   }
 
