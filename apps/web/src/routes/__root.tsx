@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@/components/ui/sonner";
-import appCss from "../index.css?url";
 import { TanstackQueryProvider } from "@/providers/tanstack-router";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { SessionProvider } from "@/providers/session-provider";
@@ -27,12 +26,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       },
       {
         title: "Saas Starter",
-      },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
       },
     ],
   }),

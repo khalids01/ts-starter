@@ -31,6 +31,8 @@ type VisitorListItem = {
   visitsCount: number;
   lastPath: string;
   isLoggedIn: boolean;
+  userName: string | null;
+  userEmail: string | null;
   deviceType: string | null;
   country: string | null;
   isBot: boolean;
@@ -310,6 +312,8 @@ export class AdminVisitorsService {
       visitsCount: number;
       lastPath: string;
       isLoggedIn: boolean;
+      userName: string | null;
+      userEmail: string | null;
       deviceType: string | null;
       country: string | null;
       isBot: boolean;
@@ -352,6 +356,8 @@ export class AdminVisitorsService {
         r."visitsCount",
         latest."lastPath",
         r."isLoggedIn",
+        latest."userName",
+        latest."userEmail",
         latest."deviceType",
         latest."country",
         latest."isBot"
@@ -361,8 +367,11 @@ export class AdminVisitorsService {
           f."lastPath",
           f."deviceType",
           f."country",
-          f."isBot"
+          f."isBot",
+          u.name AS "userName",
+          u.email AS "userEmail"
         FROM filtered f
+        LEFT JOIN "user" u ON u.id = f."userId"
         WHERE f."visitorIdentityId" = r."visitorIdentityId"
         ORDER BY f."lastSeenAt" DESC
         LIMIT 1
@@ -387,6 +396,8 @@ export class AdminVisitorsService {
         visitsCount: row.visitsCount,
         lastPath: row.lastPath,
         isLoggedIn: row.isLoggedIn,
+        userName: row.userName,
+        userEmail: row.userEmail,
         deviceType: row.deviceType,
         country: row.country,
         isBot: row.isBot,
