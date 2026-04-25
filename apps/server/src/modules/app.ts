@@ -9,6 +9,8 @@ import { feedbackController } from "./feedback/feedback.controller";
 import { polarController } from "./polar/polar.controller";
 import { rateLimitController } from "./rate-limit/rate-limit.controller";
 import { invitationsController } from "./invitations/invitations.controller";
+import { visitorsController } from "./visitors/visitors.controller";
+import { adminVisitorsController } from "./admin/visitors/visitors.controller";
 
 export const app = new Elysia()
   .use(authController)
@@ -17,6 +19,8 @@ export const app = new Elysia()
   .use(adminInvitationsController)
   .use(metadataController)
   .use(rateLimitController)
+  .use(visitorsController)
+  .use(adminVisitorsController)
   .use(notificationsController)
   .use(feedbackController)
   .use(polarController)

@@ -11,6 +11,7 @@ import { TanstackQueryProvider } from "@/providers/tanstack-router";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { SessionProvider } from "@/providers/session-provider";
 import { getRootSession } from "@/features/user/lib/get-root-session";
+import { VisitorTracker } from "@/features/visitors/visitor-tracker";
 
 export interface RouterAppContext {}
 
@@ -58,6 +59,7 @@ function RootDocument() {
               <Outlet />
             </TanstackQueryProvider>
           </SessionProvider>
+          <VisitorTracker />
           <Toaster richColors position="top-center"/>
           <TanStackRouterDevtools position="bottom-left" />
         </ThemeProvider>

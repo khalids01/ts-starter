@@ -25,6 +25,7 @@ import {
   Component,
   MessageSquare,
   ShieldAlert,
+  Activity,
 } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
@@ -74,6 +75,11 @@ const navItems = [
     title: "Rate Limits",
     icon: ShieldAlert,
     url: "/admin/rate-limits",
+  },
+  {
+    title: "Visitors",
+    icon: Activity,
+    url: "/admin/visitors",
   },
   {
     title: "Components",

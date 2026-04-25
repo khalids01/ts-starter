@@ -6,6 +6,22 @@ export const queryKeys = {
     overview: () => ["admin-overview"] as const,
     rateLimit: () => ["admin-rate-limit"] as const,
     feedback: (page: number) => ["admin-feedback", page] as const,
+    visitors: {
+      overview: (params: {
+        dateFrom: string;
+        dateTo: string;
+        segment: "humans" | "bots" | "all";
+        type: "all" | "new" | "returning";
+      }) => ["admin-visitors-overview", params] as const,
+      list: (params: {
+        dateFrom: string;
+        dateTo: string;
+        segment: "humans" | "bots" | "all";
+        type: "all" | "new" | "returning";
+        page: number;
+        limit: number;
+      }) => ["admin-visitors-list", params] as const,
+    },
     users: {
       all: () => ["admin-users"] as const,
       list: (search: string) => [...queryKeys.admin.users.all(), search] as const,
