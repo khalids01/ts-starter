@@ -5,7 +5,7 @@ export const queryKeys = {
   admin: {
     overview: () => ["admin-overview"] as const,
     rateLimit: () => ["admin-rate-limit"] as const,
-    feedback: () => ["admin-feedback"] as const,
+    feedback: (page: number) => ["admin-feedback", page] as const,
     users: {
       all: () => ["admin-users"] as const,
       list: (search: string) => [...queryKeys.admin.users.all(), search] as const,

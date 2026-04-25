@@ -1,7 +1,15 @@
 import { auth } from "@/modules/auth/auth.service";
 import type { Role } from "@db";
-import type { User } from "better-auth";
-import type { Context } from "elysia";
+
+type RolesGuardContext = {
+  request: Request;
+  set: {
+    status?: number | string;
+  };
+  user?: {
+    role?: Role | string | null;
+  } | null;
+};
 
 /**
  * Elysia beforeHandle guard to allow access only for specified roles.
@@ -10,7 +18,7 @@ import type { Context } from "elysia";
  * - Returns 403 if role is not allowed. Admin always passes.
  */
 export const rolesGuard =
-  (allowed: Role[]) => async (ctx: Context & { user?: User }) => {
+  (allowed: Role[]) => async (ctx: RolesGuardContext) => {
     // Prefer derived values from sessionCache middleware if available
     const derivedUser = ctx.user as { role?: Role } | undefined;
     if (derivedUser?.role) {

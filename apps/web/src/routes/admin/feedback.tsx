@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export const Route = createFileRoute("/admin/feedback")({
   component: AdminFeedbackPage,
@@ -41,11 +43,17 @@ type FeedbackItem = Prisma.FeedbackGetPayload<{
 
 function AdminFeedbackPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
 
-  const { data: feedbacks, isLoading } = useQuery({
-    queryKey: queryKeys.admin.feedback(),
+  const { data: feedbackData, isLoading } = useQuery({
+    queryKey: queryKeys.admin.feedback(page),
     queryFn: async () => {
-      const res = await client.feedback.all.get();
+      const res = await client.feedback.all.get({
+        query: {
+          page,
+          limit: 20,
+        },
+      });
       if (res.error) throw new Error("Failed to fetch feedback");
       return res.data;
     },
@@ -65,7 +73,7 @@ function AdminFeedbackPage() {
     },
     onSuccess: () => {
       toast.success("Feedback status updated");
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.feedback() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.feedback(page) });
     },
     onError: () => {
       toast.error("Failed to update feedback status");
@@ -84,14 +92,14 @@ function AdminFeedbackPage() {
       </div>
 
       <div className="grid gap-4">
-        {feedbacks?.length === 0 ? (
+        {feedbackData?.items.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center text-muted-foreground">
               No feedback submitted yet.
             </CardContent>
           </Card>
         ) : (
-          feedbacks?.map((item: FeedbackItem) => (
+          feedbackData?.items.map((item: FeedbackItem) => (
             <Card key={item.id}>
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div className="flex items-center gap-3">
@@ -159,6 +167,30 @@ function AdminFeedbackPage() {
             </Card>
           ))
         )}
+      </div>
+
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          disabled={(feedbackData?.page ?? page) <= 1}
+          onClick={() => setPage((current) => Math.max(1, current - 1))}
+        >
+          Previous
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          Page {feedbackData?.page ?? page} of {feedbackData?.pages ?? 1}
+        </span>
+        <Button
+          variant="outline"
+          disabled={(feedbackData?.page ?? page) >= (feedbackData?.pages ?? 1)}
+          onClick={() =>
+            setPage((current) =>
+              Math.min(feedbackData?.pages ?? current, current + 1),
+            )
+          }
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

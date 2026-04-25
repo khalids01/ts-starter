@@ -1,7 +1,11 @@
 import { Elysia } from "elysia";
 import { rolesGuard } from "@/guards/roles.guard";
 import { feedbackService } from "./feedback.service";
-import { SubmitFeedbackDto, UpdateFeedbackStatusDto } from "./feedback.dto";
+import {
+    SubmitFeedbackDto,
+    UpdateFeedbackStatusDto,
+    FeedbackQueryDto,
+} from "./feedback.dto";
 import { authGuard } from "@/guards/auth.guard";
 
 export const feedbackController = new Elysia({
@@ -28,11 +32,12 @@ export const feedbackController = new Elysia({
     )
     .get(
         "/all",
-        async () => {
-            return await feedbackService.getAllFeedback();
+        async ({ query }) => {
+            return await feedbackService.getAllFeedback(query);
         },
         {
             beforeHandle: rolesGuard(["ADMIN", "OWNER"]),
+            query: FeedbackQueryDto,
             detail: { summary: "Get all feedback (Admin only)" },
         }
     )
