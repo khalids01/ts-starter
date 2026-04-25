@@ -9,5 +9,6 @@ model Notification {
     createdAt DateTime @default(now())
 
     @@index([userId])
+    @@index([userId, createdAt])
     @@map("notification")
 }

@@ -8,5 +8,7 @@ model Feedback {
     createdAt DateTime @default(now())
 
     @@index([userId])
+    @@index([createdAt])
+    @@index([status])
     @@map("feedback")
 }

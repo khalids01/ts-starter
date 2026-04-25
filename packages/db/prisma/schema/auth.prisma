@@ -31,6 +31,10 @@ model User {
   subscriptionStatus String?
 
   @@unique([email])
+  @@index([createdAt])
+  @@index([role])
+  @@index([banned])
+  @@index([archived])
   @@map("user")
 }
 
@@ -44,6 +48,9 @@ model Invitation {
   status    String   @default("pending") // pending, accepted, rejected
   createdAt DateTime @default(now())
 
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
   @@map("invitation")
 }
 
