@@ -10,22 +10,22 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { formatChartTick } from "./visitors-helpers";
 import type { VisitorsOverviewResponse } from "./types";
 
 const chartConfig = {
-  visits: { label: "Visits", color: "hsl(var(--chart-1))" },
+  visits: { label: "Visits", color: "var(--chart-1)" },
   uniqueVisitors: {
     label: "Unique",
-    color: "hsl(var(--chart-2))",
+    color: "var(--chart-2)",
   },
-  newVisitors: { label: "New", color: "hsl(var(--chart-3))" },
+  newVisitors: { label: "New", color: "var(--chart-3)" },
   returningVisitors: {
     label: "Returning",
-    color: "hsl(var(--chart-4))",
+    color: "var(--chart-4)",
   },
-  botVisits: { label: "Bots", color: "hsl(var(--chart-5))" },
+  botVisits: { label: "Bots", color: "var(--chart-5)" },
 } as const;
 
 export function VisitorsTrendChart(props: {
@@ -54,6 +54,7 @@ export function VisitorsTrendChart(props: {
               tickMargin={8}
               tickFormatter={formatChartTick}
             />
+            <YAxis hide allowDecimals={false} domain={[0, "dataMax"]} />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}

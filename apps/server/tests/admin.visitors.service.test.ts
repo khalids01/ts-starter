@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import { Prisma } from "../../../packages/db/prisma/generated/client";
 
-const queryRawMock = mock(async (): Promise<any> => []);
+const queryRawMock = mock(async (_query?: unknown): Promise<any> => []);
 
 mock.module("@db", () => ({
   default: {

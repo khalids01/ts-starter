@@ -131,7 +131,7 @@ const dbMock = {
   $queryRaw: mock(async () => []),
 };
 
-const sessionMock = mock(async () => ({
+const sessionMock = mock(async (): Promise<{ user: { id: string } } | null> => ({
   user: {
     id: "user-1",
   },
@@ -291,7 +291,7 @@ describe("VisitorsService.trackVisit", () => {
       "../src/modules/visitors/visitors.service"
     );
 
-    const setCookieMock = mock(() => undefined);
+    const setCookieMock = mock((_value: string) => undefined);
 
     const request = new Request("http://localhost:3000/analytics/visitors/track", {
       headers: {
@@ -330,7 +330,7 @@ describe("VisitorsService.trackVisit", () => {
       "../src/modules/visitors/visitors.service"
     );
 
-    const setCookieMock = mock(() => undefined);
+    const setCookieMock = mock((_value: string) => undefined);
 
     const request = new Request("http://localhost:3000/analytics/visitors/track", {
       headers: {
@@ -357,7 +357,7 @@ describe("VisitorsService.trackVisit", () => {
       "../src/modules/visitors/visitors.service"
     );
 
-    const setCookieMock = mock(() => undefined);
+    const setCookieMock = mock((_value: string) => undefined);
     const cookies = [
       "visitor_id=visitor-one-1234567890",
       "visitor_id=visitor-two-1234567890",
@@ -399,7 +399,7 @@ describe("VisitorsService.trackVisit", () => {
       "../src/modules/visitors/visitors.service"
     );
 
-    const setCookieMock = mock(() => undefined);
+    const setCookieMock = mock((_value: string) => undefined);
 
     for (const cookie of [
       "visitor_id=anon-one-1234567890",
@@ -443,7 +443,7 @@ describe("VisitorsService.trackVisit", () => {
         path: "/admin/visitors",
         activityType: "pageview",
       },
-      setCookie: mock(() => undefined),
+      setCookie: mock((_value: string) => undefined),
     });
 
     expect(result).toMatchObject({
@@ -460,7 +460,7 @@ describe("VisitorsService.trackVisit", () => {
       "../src/modules/visitors/visitors.service"
     );
 
-    const setCookieMock = mock(() => undefined);
+    const setCookieMock = mock((_value: string) => undefined);
 
     await visitorsService.trackVisit({
       request: new Request("https://api.example.com/analytics/visitors/track", {
