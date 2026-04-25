@@ -3,6 +3,7 @@ import type { Role } from "@db";
 import { sendEmail, invitationTemplate } from "@email";
 import { env } from "@env/server";
 import { siteConfig } from "@config";
+import { activityService } from "../activity/activity.service";
 
 const adminUserSelect = {
   id: true,
@@ -87,46 +88,116 @@ export class UsersService {
     });
   }
 
-  async updateUser(id: string, data: { name?: string; role?: Role }) {
+  async updateUser(
+    id: string,
+    data: { name?: string; role?: Role },
+    actorUserId?: string,
+  ) {
     assertAssignableAdminRole(data.role);
 
-    return prisma.user.update({
+    const user = await prisma.user.update({
       where: { id },
       data,
       select: adminUserSelect,
     });
+
+    if (data.role) {
+      await activityService.record({
+        type: "user.role_updated",
+        actorUserId,
+        targetUserId: id,
+        message: `${user.name} role changed to ${data.role}`,
+        metadata: {
+          role: data.role,
+          email: user.email,
+        },
+      });
+    }
+
+    return user;
   }
 
-  async banUser(id: string, reason?: string) {
-    return prisma.user.update({
+  async banUser(id: string, reason?: string, actorUserId?: string) {
+    const user = await prisma.user.update({
       where: { id },
       data: { banned: true, banReason: reason },
       select: adminUserSelect,
     });
+
+    await activityService.record({
+      type: "user.banned",
+      actorUserId,
+      targetUserId: id,
+      severity: "warning",
+      message: `${user.name} was banned`,
+      metadata: {
+        email: user.email,
+        reason: reason ?? null,
+      },
+    });
+
+    return user;
   }
 
-  async unbanUser(id: string) {
-    return prisma.user.update({
+  async unbanUser(id: string, actorUserId?: string) {
+    const user = await prisma.user.update({
       where: { id },
       data: { banned: false, banReason: null },
       select: adminUserSelect,
     });
+
+    await activityService.record({
+      type: "user.unbanned",
+      actorUserId,
+      targetUserId: id,
+      message: `${user.name} was unbanned`,
+      metadata: {
+        email: user.email,
+      },
+    });
+
+    return user;
   }
 
-  async archiveUser(id: string) {
-    return prisma.user.update({
+  async archiveUser(id: string, actorUserId?: string) {
+    const user = await prisma.user.update({
       where: { id },
       data: { archived: true },
       select: adminUserSelect,
     });
+
+    await activityService.record({
+      type: "user.archived",
+      actorUserId,
+      targetUserId: id,
+      severity: "warning",
+      message: `${user.name} was archived`,
+      metadata: {
+        email: user.email,
+      },
+    });
+
+    return user;
   }
 
-  async restoreUser(id: string) {
-    return prisma.user.update({
+  async restoreUser(id: string, actorUserId?: string) {
+    const user = await prisma.user.update({
       where: { id },
       data: { archived: false },
       select: adminUserSelect,
     });
+
+    await activityService.record({
+      type: "user.restored",
+      actorUserId,
+      targetUserId: id,
+      message: `${user.name} was restored`,
+      metadata: {
+        email: user.email,
+      },
+    });
+
+    return user;
   }
 
   async deleteUserPermanent(id: string) {
@@ -172,6 +243,17 @@ export class UsersService {
         invitedRole,
         expiresInDays: 7,
       }),
+    });
+
+    await activityService.record({
+      type: "user.invited",
+      actorUserId: inviterId,
+      message: `${email} was invited as ${role}`,
+      metadata: {
+        email,
+        role,
+        invitationId: invitation.id,
+      },
     });
 
     return invitation;

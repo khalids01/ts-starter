@@ -1,5 +1,6 @@
 import prisma from "@db";
 import { notificationsService } from "../notifications/notifications.service";
+import { activityService } from "../admin/activity/activity.service";
 import type { FeedbackQuery } from "./feedback.dto";
 
 export const feedbackService = {
@@ -38,6 +39,18 @@ export const feedbackService = {
                 "/admin/feedback"
             );
         }
+
+        await activityService.record({
+            type: "feedback.submitted",
+            actorUserId: userId,
+            targetUserId: userId,
+            severity: severity === "high" ? "warning" : "info",
+            message: `${feedback.user.name} submitted ${severity} feedback`,
+            metadata: {
+                feedbackId: feedback.id,
+                severity,
+            },
+        });
 
         return feedback;
     },
@@ -78,10 +91,23 @@ export const feedbackService = {
         };
     },
 
-    async updateFeedbackStatus(id: string, status: string) {
-        return prisma.feedback.update({
+    async updateFeedbackStatus(id: string, status: string, actorUserId?: string) {
+        const feedback = await prisma.feedback.update({
             where: { id },
             data: { status },
         });
+
+        await activityService.record({
+            type: "feedback.status_updated",
+            actorUserId,
+            targetUserId: feedback.userId,
+            message: `Feedback status changed to ${status}`,
+            metadata: {
+                feedbackId: id,
+                status,
+            },
+        });
+
+        return feedback;
     },
 };

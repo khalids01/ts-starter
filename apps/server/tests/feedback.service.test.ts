@@ -7,8 +7,9 @@ const feedbackCreateMock = mock(async () => ({
   id: "feedback-1",
   user: { name: "User" },
 }));
-const feedbackUpdateMock = mock(async () => null);
+const feedbackUpdateMock = mock(async (): Promise<any> => null);
 const userFindManyMock = mock(async (): Promise<any> => []);
+const activityRecordMock = mock(async () => null);
 
 mock.module("@db", () => ({
   default: {
@@ -31,12 +32,19 @@ mock.module("../src/modules/notifications/notifications.service", () => ({
   },
 }));
 
+mock.module("../src/modules/admin/activity/activity.service", () => ({
+  activityService: {
+    record: activityRecordMock,
+  },
+}));
+
 afterEach(() => {
   feedbackFindManyMock.mockReset();
   feedbackCountMock.mockReset();
   feedbackCreateMock.mockReset();
   feedbackUpdateMock.mockReset();
   userFindManyMock.mockReset();
+  activityRecordMock.mockReset();
 });
 
 describe("feedbackService", () => {
@@ -112,6 +120,53 @@ describe("feedbackService", () => {
       pages: 1,
       page: 1,
       limit: 100,
+    });
+  });
+
+  it("records submitted feedback without storing the message body", async () => {
+    feedbackCreateMock.mockResolvedValueOnce({
+      id: "feedback-1",
+      user: { name: "User One" },
+    });
+    userFindManyMock.mockResolvedValueOnce([{ id: "admin-1" }]);
+
+    const { feedbackService } = await import("../src/modules/feedback/feedback.service");
+
+    await feedbackService.submitFeedback("user-1", "private message body", "high");
+
+    expect(activityRecordMock).toHaveBeenCalledWith({
+      type: "feedback.submitted",
+      actorUserId: "user-1",
+      targetUserId: "user-1",
+      severity: "warning",
+      message: "User One submitted high feedback",
+      metadata: {
+        feedbackId: "feedback-1",
+        severity: "high",
+      },
+    });
+  });
+
+  it("records feedback status updates", async () => {
+    feedbackUpdateMock.mockResolvedValueOnce({
+      id: "feedback-1",
+      userId: "user-1",
+      status: "closed",
+    });
+
+    const { feedbackService } = await import("../src/modules/feedback/feedback.service");
+
+    await feedbackService.updateFeedbackStatus("feedback-1", "closed", "admin-1");
+
+    expect(activityRecordMock).toHaveBeenCalledWith({
+      type: "feedback.status_updated",
+      actorUserId: "admin-1",
+      targetUserId: "user-1",
+      message: "Feedback status changed to closed",
+      metadata: {
+        feedbackId: "feedback-1",
+        status: "closed",
+      },
     });
   });
 });

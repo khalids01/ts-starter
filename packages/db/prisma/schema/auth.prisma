@@ -23,6 +23,8 @@ model User {
   onboardingComplete Boolean        @default(false)
   notifications      Notification[]
   feedbacks          Feedback[]
+  actedActivityEvents ActivityEvent[] @relation("ActivityEventActor")
+  targetedActivityEvents ActivityEvent[] @relation("ActivityEventTarget")
 
   // Polar Integration
   polarCustomerId    String?

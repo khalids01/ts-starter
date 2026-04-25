@@ -7,6 +7,7 @@ import {
     FeedbackQueryDto,
 } from "./feedback.dto";
 import { authGuard } from "@/guards/auth.guard";
+import { auth } from "@/modules/auth/auth.service";
 
 export const feedbackController = new Elysia({
     prefix: "/feedback",
@@ -43,8 +44,15 @@ export const feedbackController = new Elysia({
     )
     .patch(
         "/:id/status",
-        async ({ params: { id }, body }) => {
-            const feedback = await feedbackService.updateFeedbackStatus(id, body.status);
+        async ({ params: { id }, body, request }) => {
+            const session = await auth.api.getSession({
+                headers: request.headers,
+            });
+            const feedback = await feedbackService.updateFeedbackStatus(
+                id,
+                body.status,
+                session?.user.id
+            );
             return { success: true, feedback };
         },
         {

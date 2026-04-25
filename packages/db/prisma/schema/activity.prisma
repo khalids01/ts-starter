@@ -1,0 +1,19 @@
+model ActivityEvent {
+  id           String   @id @default(cuid())
+  type         String
+  actorUserId  String?
+  actorUser    User?    @relation("ActivityEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  targetUserId String?
+  targetUser   User?    @relation("ActivityEventTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  visitorId    String?
+  severity     String   @default("info")
+  message      String
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@map("activity_event")
+}

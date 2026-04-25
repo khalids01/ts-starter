@@ -1,12 +1,14 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { Prisma } from "../../../packages/db/prisma/generated/client";
 
 const sessionFindManyMock = mock(async () => []);
 const userFindManyMock = mock(async () => []);
 const userCountMock = mock(async () => 0);
-const userFindUniqueMock = mock(async () => null);
-const userUpdateMock = mock(async () => null);
-const userDeleteMock = mock(async () => null);
+const userFindUniqueMock = mock(async (): Promise<any> => null);
+const userUpdateMock = mock(async (): Promise<any> => null);
+const userDeleteMock = mock(async (): Promise<any> => null);
+const invitationCreateMock = mock(async () => ({ id: "invitation-1" }));
+const activityRecordMock = mock(async () => null);
 
 const safeAdminUserSelect = {
   id: true,
@@ -37,8 +39,17 @@ mock.module("@db", () => ({
     session: {
       findMany: sessionFindManyMock,
     },
+    invitation: {
+      create: invitationCreateMock,
+    },
   },
   Prisma,
+}));
+
+mock.module("../src/modules/admin/activity/activity.service", () => ({
+  activityService: {
+    record: activityRecordMock,
+  },
 }));
 
 mock.module("@email", () => ({
@@ -58,6 +69,26 @@ mock.module("@config", () => ({
   },
 }));
 
+beforeEach(() => {
+  userUpdateMock.mockResolvedValue({
+    id: "user-1",
+    name: "User One",
+    email: "user@example.com",
+    emailVerified: true,
+    image: null,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    role: "USER",
+    banned: false,
+    banReason: null,
+    archived: false,
+    onboardingComplete: false,
+    plan: "free",
+    subscriptionStatus: null,
+  });
+  invitationCreateMock.mockResolvedValue({ id: "invitation-1" });
+});
+
 afterEach(() => {
   sessionFindManyMock.mockReset();
   userFindManyMock.mockReset();
@@ -65,6 +96,8 @@ afterEach(() => {
   userFindUniqueMock.mockReset();
   userUpdateMock.mockReset();
   userDeleteMock.mockReset();
+  invitationCreateMock.mockReset();
+  activityRecordMock.mockReset();
 });
 
 describe("UsersService", () => {
@@ -196,6 +229,78 @@ describe("UsersService", () => {
         userAgent: true,
       },
       orderBy: { createdAt: "desc" },
+    });
+  });
+
+  it("records role changes with safe metadata", async () => {
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await usersService.updateUser("user-1", { role: "ADMIN" }, "admin-1");
+
+    expect(activityRecordMock).toHaveBeenCalledWith({
+      type: "user.role_updated",
+      actorUserId: "admin-1",
+      targetUserId: "user-1",
+      message: "User One role changed to ADMIN",
+      metadata: {
+        role: "ADMIN",
+        email: "user@example.com",
+      },
+    });
+  });
+
+  it("records user invitations after invite email succeeds", async () => {
+    userFindUniqueMock
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "admin-1", name: "Admin User" });
+
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await usersService.inviteUser("new@example.com", "USER", "admin-1");
+
+    expect(activityRecordMock).toHaveBeenCalledWith({
+      type: "user.invited",
+      actorUserId: "admin-1",
+      message: "new@example.com was invited as USER",
+      metadata: {
+        email: "new@example.com",
+        role: "USER",
+        invitationId: "invitation-1",
+      },
+    });
+  });
+
+  it("records ban and unban events", async () => {
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await usersService.banUser("user-1", "spam", "admin-1");
+    await usersService.unbanUser("user-1", "admin-1");
+
+    expect(activityRecordMock).toHaveBeenNthCalledWith(1, {
+      type: "user.banned",
+      actorUserId: "admin-1",
+      targetUserId: "user-1",
+      severity: "warning",
+      message: "User One was banned",
+      metadata: {
+        email: "user@example.com",
+        reason: "spam",
+      },
+    });
+    expect(activityRecordMock).toHaveBeenNthCalledWith(2, {
+      type: "user.unbanned",
+      actorUserId: "admin-1",
+      targetUserId: "user-1",
+      message: "User One was unbanned",
+      metadata: {
+        email: "user@example.com",
+      },
     });
   });
 });

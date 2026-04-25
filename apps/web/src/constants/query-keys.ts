@@ -6,6 +6,14 @@ export const queryKeys = {
     overview: () => ["admin-overview"] as const,
     rateLimit: () => ["admin-rate-limit"] as const,
     feedback: (page: number) => ["admin-feedback", page] as const,
+    activity: {
+      list: (params: {
+        page: number;
+        limit: number;
+        type: string;
+        severity: "all" | "info" | "warning" | "error";
+      }) => ["admin-activity", params] as const,
+    },
     visitors: {
       overview: (params: {
         dateFrom: string;

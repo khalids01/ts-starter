@@ -26,6 +26,7 @@ import {
   MessageSquare,
   ShieldAlert,
   Activity,
+  History,
 } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
@@ -80,6 +81,11 @@ const navItems = [
     title: "Visitors",
     icon: Activity,
     url: "/admin/visitors",
+  },
+  {
+    title: "Activity",
+    icon: History,
+    url: "/admin/activity",
   },
   {
     title: "Components",

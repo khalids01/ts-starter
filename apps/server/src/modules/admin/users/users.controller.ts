@@ -55,9 +55,12 @@ export const usersController = new Elysia({
       )
       .patch(
         "/:id",
-        async ({ params: { id }, body, set }) => {
+        async ({ params: { id }, body, request, set }) => {
           try {
-            return await usersService.updateUser(id, body);
+            const session = await auth.api.getSession({
+              headers: request.headers,
+            });
+            return await usersService.updateUser(id, body, session?.user.id);
           } catch (e: any) {
             set.status = 400;
             return e.message;
@@ -72,7 +75,12 @@ export const usersController = new Elysia({
       )
       .post(
         "/:id/ban",
-        ({ params: { id }, body }) => usersService.banUser(id, body.reason),
+        async ({ params: { id }, body, request }) => {
+          const session = await auth.api.getSession({
+            headers: request.headers,
+          });
+          return usersService.banUser(id, body.reason, session?.user.id);
+        },
         {
           body: BanUserDto,
           detail: {
@@ -80,14 +88,28 @@ export const usersController = new Elysia({
           },
         },
       )
-      .post("/:id/unban", ({ params: { id } }) => usersService.unbanUser(id), {
-        detail: {
-          summary: "Unban a user",
+      .post(
+        "/:id/unban",
+        async ({ params: { id }, request }) => {
+          const session = await auth.api.getSession({
+            headers: request.headers,
+          });
+          return usersService.unbanUser(id, session?.user.id);
         },
-      })
+        {
+          detail: {
+            summary: "Unban a user",
+          },
+        },
+      )
       .post(
         "/:id/archive",
-        ({ params: { id } }) => usersService.archiveUser(id),
+        async ({ params: { id }, request }) => {
+          const session = await auth.api.getSession({
+            headers: request.headers,
+          });
+          return usersService.archiveUser(id, session?.user.id);
+        },
         {
           detail: {
             summary: "Archive a user (soft delete)",
@@ -96,7 +118,12 @@ export const usersController = new Elysia({
       )
       .post(
         "/:id/restore",
-        ({ params: { id } }) => usersService.restoreUser(id),
+        async ({ params: { id }, request }) => {
+          const session = await auth.api.getSession({
+            headers: request.headers,
+          });
+          return usersService.restoreUser(id, session?.user.id);
+        },
         {
           detail: {
             summary: "Restore an archived user",
