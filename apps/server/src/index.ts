@@ -7,6 +7,8 @@ import { app } from "./modules/app";
 import { openapi } from "@elysiajs/openapi";
 import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 
+const shouldLogRequests = env.NODE_ENV === "development";
+
 const server = new Elysia()
   .use(
     cors({
@@ -22,7 +24,12 @@ const server = new Elysia()
     }),
   )
   .onRequest(({ request }) => {
-    console.log(`[Server] ${request.method} ${request.url}`);
+    if (!shouldLogRequests) {
+      return;
+    }
+
+    const { pathname } = new URL(request.url);
+    console.log(`[Server] ${request.method} ${pathname}`);
   })
   .onBeforeHandle((context) => {
     return enforceRateLimit(context as any);
