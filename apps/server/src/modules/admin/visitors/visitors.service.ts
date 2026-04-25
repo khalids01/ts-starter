@@ -140,6 +140,19 @@ function whereConditions(
   };
 }
 
+function personTypeWhere(query: NormalizedQuery, personAlias = "p") {
+  if (query.type === "new") {
+    return Prisma.sql`WHERE ${Prisma.raw(personAlias)}."firstSeenAt" >= ${query.from}
+      AND ${Prisma.raw(personAlias)}."firstSeenAt" <= ${query.to}`;
+  }
+
+  if (query.type === "returning") {
+    return Prisma.sql`WHERE ${Prisma.raw(personAlias)}."firstSeenAt" < ${query.from}`;
+  }
+
+  return Prisma.empty;
+}
+
 function listDateRangeDays(from: Date, to: Date) {
   const items: string[] = [];
   const cursor = new Date(from);
@@ -156,7 +169,10 @@ function listDateRangeDays(from: Date, to: Date) {
 export class AdminVisitorsService {
   async getOverview(query: VisitorsOverviewQuery) {
     const normalized = normalizeOverviewQuery(query);
-    const where = whereConditions(normalized);
+    const where = whereConditions(normalized, {
+      applyVisitType: false,
+    });
+    const typedPersonsWhere = personTypeWhere(normalized, "p");
 
     type OverviewRow = {
       totalVisits: number;
@@ -167,40 +183,77 @@ export class AdminVisitorsService {
     };
 
     const [totalsRow] = await prisma.$queryRaw<OverviewRow[]>(Prisma.sql`
+      WITH filtered AS (
+        SELECT
+          s.*,
+          i."firstSeenAt",
+          COALESCE(s."userId", s."visitorIdentityId") AS "personKey"
+        FROM "visitor_session" s
+        JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
+        ${where.sql}
+      ),
+      persons AS (
+        SELECT
+          f."personKey",
+          MIN(f."firstSeenAt") AS "firstSeenAt"
+        FROM filtered f
+        GROUP BY f."personKey"
+      ),
+      typed_persons AS (
+        SELECT p."personKey"
+        FROM persons p
+        ${typedPersonsWhere}
+      )
       SELECT
         COUNT(*)::int AS "totalVisits",
-        COUNT(DISTINCT s."visitorIdentityId")::int AS "uniqueVisitors",
+        COUNT(DISTINCT f."personKey")::int AS "uniqueVisitors",
         COUNT(DISTINCT CASE
-          WHEN i."firstSeenAt" >= ${normalized.from}
-            AND i."firstSeenAt" <= ${normalized.to}
-          THEN s."visitorIdentityId"
+          WHEN p."firstSeenAt" >= ${normalized.from}
+            AND p."firstSeenAt" <= ${normalized.to}
+          THEN f."personKey"
         END)::int AS "newVisitors",
         COUNT(DISTINCT CASE
-          WHEN i."firstSeenAt" < ${normalized.from}
-          THEN s."visitorIdentityId"
+          WHEN p."firstSeenAt" < ${normalized.from}
+          THEN f."personKey"
         END)::int AS "returningVisitors",
-        COUNT(*) FILTER (WHERE s."isBot" = true)::int AS "botVisits"
-      FROM "visitor_session" s
-      JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
-      ${where.sql}
+        COUNT(*) FILTER (WHERE f."isBot" = true)::int AS "botVisits"
+      FROM filtered f
+      JOIN typed_persons tp ON tp."personKey" = f."personKey"
+      JOIN persons p ON p."personKey" = f."personKey"
     `);
 
     const activeWhere = whereConditions(normalized, {
       applyRange: false,
-      applyVisitType: true,
+      applyVisitType: false,
     });
+    const activeTypedPersonsWhere = personTypeWhere(normalized, "p");
 
     type ActiveRow = {
       activeNow: number;
     };
 
     const [activeRow] = await prisma.$queryRaw<ActiveRow[]>(Prisma.sql`
-      SELECT COUNT(DISTINCT s."visitorIdentityId")::int AS "activeNow"
-      FROM "visitor_session" s
-      JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
-      ${activeWhere.sql}
-      ${activeWhere.hasConditions ? Prisma.sql`AND` : Prisma.sql`WHERE`}
-      s."lastSeenAt" >= ${new Date(Date.now() - 5 * 60 * 1000)}
+      WITH filtered AS (
+        SELECT
+          s.*,
+          i."firstSeenAt",
+          COALESCE(s."userId", s."visitorIdentityId") AS "personKey"
+        FROM "visitor_session" s
+        JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
+        ${activeWhere.sql}
+        ${activeWhere.hasConditions ? Prisma.sql`AND` : Prisma.sql`WHERE`}
+        s."lastSeenAt" >= ${new Date(Date.now() - 5 * 60 * 1000)}
+      ),
+      persons AS (
+        SELECT
+          f."personKey",
+          MIN(f."firstSeenAt") AS "firstSeenAt"
+        FROM filtered f
+        GROUP BY f."personKey"
+      )
+      SELECT COUNT(*)::int AS "activeNow"
+      FROM persons p
+      ${activeTypedPersonsWhere}
     `);
 
     type SeriesRow = {
@@ -213,23 +266,43 @@ export class AdminVisitorsService {
     };
 
     const seriesRows = await prisma.$queryRaw<SeriesRow[]>(Prisma.sql`
+      WITH filtered AS (
+        SELECT
+          s.*,
+          i."firstSeenAt",
+          COALESCE(s."userId", s."visitorIdentityId") AS "personKey"
+        FROM "visitor_session" s
+        JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
+        ${where.sql}
+      ),
+      persons AS (
+        SELECT
+          f."personKey",
+          MIN(f."firstSeenAt") AS "firstSeenAt"
+        FROM filtered f
+        GROUP BY f."personKey"
+      ),
+      typed_persons AS (
+        SELECT p."personKey", p."firstSeenAt"
+        FROM persons p
+        ${typedPersonsWhere}
+      )
       SELECT
-        date_trunc('day', s."startedAt") AS day,
+        date_trunc('day', f."startedAt") AS day,
         COUNT(*)::int AS visits,
-        COUNT(DISTINCT s."visitorIdentityId")::int AS "uniqueVisitors",
+        COUNT(DISTINCT f."personKey")::int AS "uniqueVisitors",
         COUNT(DISTINCT CASE
-          WHEN i."firstSeenAt" >= date_trunc('day', s."startedAt")
-            AND i."firstSeenAt" < date_trunc('day', s."startedAt") + interval '1 day'
-          THEN s."visitorIdentityId"
+          WHEN tp."firstSeenAt" >= date_trunc('day', f."startedAt")
+            AND tp."firstSeenAt" < date_trunc('day', f."startedAt") + interval '1 day'
+          THEN f."personKey"
         END)::int AS "newVisitors",
         COUNT(DISTINCT CASE
-          WHEN i."firstSeenAt" < date_trunc('day', s."startedAt")
-          THEN s."visitorIdentityId"
+          WHEN tp."firstSeenAt" < date_trunc('day', f."startedAt")
+          THEN f."personKey"
         END)::int AS "returningVisitors",
-        COUNT(*) FILTER (WHERE s."isBot" = true)::int AS "botVisits"
-      FROM "visitor_session" s
-      JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
-      ${where.sql}
+        COUNT(*) FILTER (WHERE f."isBot" = true)::int AS "botVisits"
+      FROM filtered f
+      JOIN typed_persons tp ON tp."personKey" = f."personKey"
       GROUP BY day
       ORDER BY day ASC
     `);
@@ -281,7 +354,10 @@ export class AdminVisitorsService {
   async listVisitors(query: VisitorsListQuery) {
     const normalized = normalizeOverviewQuery(query);
     const { page, limit } = normalizePagination(query.page, query.limit);
-    const where = whereConditions(normalized);
+    const where = whereConditions(normalized, {
+      applyVisitType: false,
+    });
+    const typedPersonsWhere = personTypeWhere(normalized, "p");
 
     type TotalRow = {
       total: number;
@@ -290,13 +366,22 @@ export class AdminVisitorsService {
     const [totalRow] = await prisma.$queryRaw<TotalRow[]>(Prisma.sql`
       WITH filtered AS (
         SELECT
-          s."visitorIdentityId"
+          COALESCE(s."userId", s."visitorIdentityId") AS "personKey",
+          i."firstSeenAt"
         FROM "visitor_session" s
         JOIN "visitor_identity" i ON i.id = s."visitorIdentityId"
         ${where.sql}
+      ),
+      persons AS (
+        SELECT
+          f."personKey",
+          MIN(f."firstSeenAt") AS "firstSeenAt"
+        FROM filtered f
+        GROUP BY f."personKey"
       )
-      SELECT COUNT(DISTINCT "visitorIdentityId")::int AS total
-      FROM filtered
+      SELECT COUNT(*)::int AS total
+      FROM persons p
+      ${typedPersonsWhere}
     `);
 
     const total = totalRow?.total ?? 0;
@@ -323,6 +408,7 @@ export class AdminVisitorsService {
       WITH filtered AS (
         SELECT
           s."visitorIdentityId",
+          COALESCE(s."userId", s."visitorIdentityId") AS "personKey",
           s."lastSeenAt",
           s."lastPath",
           s."deviceType",
@@ -338,7 +424,7 @@ export class AdminVisitorsService {
       ),
       rollup AS (
         SELECT
-          f."visitorIdentityId",
+          f."personKey",
           MIN(f."visitorId") AS "visitorId",
           MIN(f."firstSeenAt") AS "firstSeenAt",
           MAX(f."identityLastSeenAt") AS "lastSeenAt",
@@ -346,7 +432,12 @@ export class AdminVisitorsService {
           COUNT(*)::int AS "visitsCount",
           BOOL_OR(f."userId" IS NOT NULL) AS "isLoggedIn"
         FROM filtered f
-        GROUP BY f."visitorIdentityId"
+        GROUP BY f."personKey"
+      ),
+      typed_rollup AS (
+        SELECT r.*
+        FROM rollup r
+        ${personTypeWhere(normalized, "r")}
       )
       SELECT
         r."visitorId",
@@ -361,7 +452,7 @@ export class AdminVisitorsService {
         latest."deviceType",
         latest."country",
         latest."isBot"
-      FROM rollup r
+      FROM typed_rollup r
       LEFT JOIN LATERAL (
         SELECT
           f."lastPath",
@@ -372,7 +463,7 @@ export class AdminVisitorsService {
           u.email AS "userEmail"
         FROM filtered f
         LEFT JOIN "user" u ON u.id = f."userId"
-        WHERE f."visitorIdentityId" = r."visitorIdentityId"
+        WHERE f."personKey" = r."personKey"
         ORDER BY f."lastSeenAt" DESC
         LIMIT 1
       ) latest ON true

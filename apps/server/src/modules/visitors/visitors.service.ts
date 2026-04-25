@@ -9,8 +9,19 @@ const VISITOR_COOKIE_TTL_SECONDS = 90 * 24 * 60 * 60;
 const SESSION_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 const RETENTION_DAYS = 90;
+const FALLBACK_RATE_LIMIT_WINDOW_MS = 60_000;
+const FALLBACK_IP_LIMIT = 240;
+const FALLBACK_VISITOR_LIMIT = 120;
 
 let lastCleanupAt = 0;
+let cleanupPromise: Promise<void> | null = null;
+const fallbackRateLimitStore = new Map<
+  string,
+  {
+    count: number;
+    expiresAt: number;
+  }
+>();
 
 const botUserAgentRegex =
   /(bot|crawler|spider|slurp|bingpreview|headless|phantom|curl|wget|python-requests|go-http-client|httpclient|uptime|monitor|facebookexternalhit)/i;
@@ -47,15 +58,33 @@ function isValidVisitorId(visitorId: string | undefined): visitorId is string {
   return /^[a-zA-Z0-9-]{20,100}$/.test(visitorId);
 }
 
-function buildSetCookieHeader(visitorId: string, requestUrl: string) {
+function isCrossSiteRequest(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    const originUrl = new URL(origin);
+    const requestUrl = new URL(request.url);
+    return originUrl.hostname !== requestUrl.hostname;
+  } catch {
+    return false;
+  }
+}
+
+function buildSetCookieHeader(visitorId: string, request: Request) {
+  const isSecure = request.url.startsWith("https://");
+  const sameSite = isCrossSiteRequest(request) ? "None" : "Lax";
   const parts = [
     `${VISITOR_COOKIE_KEY}=${encodeURIComponent(visitorId)}`,
     `Max-Age=${VISITOR_COOKIE_TTL_SECONDS}`,
     "Path=/",
-    "SameSite=Lax",
+    "HttpOnly",
+    `SameSite=${sameSite}`,
   ];
 
-  if (requestUrl.startsWith("https://")) {
+  if (isSecure || sameSite === "None") {
     parts.push("Secure");
   }
 
@@ -144,6 +173,18 @@ function normalizePath(inputPath: string) {
   return path;
 }
 
+function shouldTrackPath(path: string) {
+  return ![
+    "/admin",
+    "/analytics",
+    "/api",
+    "/api/auth",
+    "/auth",
+    "/docs",
+    "/openapi",
+  ].some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 function normalizeReferrer(inputReferrer: string | undefined) {
   if (!inputReferrer) {
     return null;
@@ -157,10 +198,49 @@ function normalizeReferrer(inputReferrer: string | undefined) {
   return trimmed.slice(0, 500);
 }
 
+function consumeFallbackRateLimit(key: string, limit: number, now: number) {
+  const current = fallbackRateLimitStore.get(key);
+  if (!current || current.expiresAt <= now) {
+    fallbackRateLimitStore.set(key, {
+      count: 1,
+      expiresAt: now + FALLBACK_RATE_LIMIT_WINDOW_MS,
+    });
+    return true;
+  }
+
+  current.count += 1;
+  return current.count <= limit;
+}
+
+function cleanupFallbackRateLimitStore(now: number) {
+  if (fallbackRateLimitStore.size < 1_000) {
+    return;
+  }
+
+  for (const [key, value] of fallbackRateLimitStore) {
+    if (value.expiresAt <= now) {
+      fallbackRateLimitStore.delete(key);
+    }
+  }
+}
+
+function enforceFallbackTrackRateLimit(ip: string | null, visitorId: string) {
+  const now = Date.now();
+  const ipKey = `ip:${ip ?? "unknown"}`;
+  const visitorKey = `visitor:${visitorId}`;
+
+  cleanupFallbackRateLimitStore(now);
+
+  return (
+    consumeFallbackRateLimit(ipKey, FALLBACK_IP_LIMIT, now) &&
+    consumeFallbackRateLimit(visitorKey, FALLBACK_VISITOR_LIMIT, now)
+  );
+}
+
 async function enforceTrackRateLimit(ip: string | null, visitorId: string) {
   const redis = await connectRedis();
   if (!redis) {
-    return true;
+    return enforceFallbackTrackRateLimit(ip, visitorId);
   }
 
   const now = Date.now();
@@ -205,11 +285,49 @@ async function maybeRunRetentionCleanup() {
   });
 }
 
+function scheduleRetentionCleanup() {
+  if (cleanupPromise) {
+    return;
+  }
+
+  cleanupPromise = maybeRunRetentionCleanup()
+    .catch((error) => {
+      console.error("Visitor retention cleanup failed", error);
+    })
+    .finally(() => {
+      cleanupPromise = null;
+    });
+}
+
 async function resolveVisitorIdentity(args: {
   visitorId: string;
   userId: string | null;
   now: Date;
 }) {
+  if (args.userId) {
+    const existingForUser = await prisma.visitorIdentity.findFirst({
+      where: {
+        OR: [{ lastUserId: args.userId }, { firstUserId: args.userId }],
+      },
+      orderBy: {
+        lastSeenAt: "desc",
+      },
+    });
+
+    if (existingForUser) {
+      return prisma.visitorIdentity.update({
+        where: {
+          id: existingForUser.id,
+        },
+        data: {
+          lastSeenAt: args.now,
+          lastUserId: args.userId,
+          firstUserId: existingForUser.firstUserId ?? args.userId,
+        },
+      });
+    }
+  }
+
   const existing = await prisma.visitorIdentity.findUnique({
     where: {
       visitorId: args.visitorId,
@@ -323,7 +441,7 @@ export class VisitorsService {
       : crypto.randomUUID();
 
     if (!existingVisitorId || existingVisitorId !== visitorId) {
-      input.setCookie(buildSetCookieHeader(visitorId, input.request.url));
+      input.setCookie(buildSetCookieHeader(visitorId, input.request));
     }
 
     const ip = getForwardedIp(input.request.headers);
@@ -337,13 +455,22 @@ export class VisitorsService {
 
     const now = new Date();
     const path = normalizePath(input.body.path);
+    if (!shouldTrackPath(path)) {
+      return {
+        ok: true,
+        visitorId,
+        ignored: true,
+      };
+    }
+
     const referrer = normalizeReferrer(input.body.referrer);
     const userAgent = input.request.headers.get("user-agent");
 
-    const [session] = await Promise.all([
-      auth.api.getSession({ headers: input.request.headers }),
-      maybeRunRetentionCleanup(),
-    ]);
+    scheduleRetentionCleanup();
+
+    const session = await auth.api.getSession({
+      headers: input.request.headers,
+    });
 
     const userId = session?.user?.id ?? null;
     const identity = await resolveVisitorIdentity({
@@ -351,6 +478,10 @@ export class VisitorsService {
       userId,
       now,
     });
+
+    if (identity.visitorId !== visitorId) {
+      input.setCookie(buildSetCookieHeader(identity.visitorId, input.request));
+    }
 
     await resolveSession({
       visitorIdentityId: identity.id,

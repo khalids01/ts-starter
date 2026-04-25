@@ -35,8 +35,10 @@ model VisitorSession {
   updatedAt         DateTime        @updatedAt
 
   @@index([visitorIdentityId, startedAt])
+  @@index([visitorIdentityId, isBot, lastSeenAt])
   @@index([lastSeenAt])
   @@index([startedAt])
+  @@index([startedAt, userId])
   @@index([isBot, startedAt])
   @@index([userId, startedAt])
   @@map("visitor_session")
