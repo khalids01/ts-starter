@@ -28,7 +28,12 @@ export function AdminVisitorsPage() {
     limit: 20,
   });
 
-  const { data: overview, isLoading: overviewLoading } = useQuery({
+  const {
+    data: overview,
+    isLoading: overviewLoading,
+    isFetching: overviewFetching,
+    refetch: refetchOverview,
+  } = useQuery({
     queryKey: queryKeys.admin.visitors.overview({
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
@@ -51,10 +56,14 @@ export function AdminVisitorsPage() {
 
       return data as VisitorsOverviewResponse;
     },
-    refetchInterval: 15_000,
   });
 
-  const { data: listData, isLoading: listLoading } = useQuery({
+  const {
+    data: listData,
+    isLoading: listLoading,
+    isFetching: listFetching,
+    refetch: refetchList,
+  } = useQuery({
     queryKey: queryKeys.admin.visitors.list({
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
@@ -81,12 +90,20 @@ export function AdminVisitorsPage() {
 
       return data as VisitorsListResponse;
     },
-    refetchInterval: 15_000,
   });
+
+  const isRefreshing = overviewFetching || listFetching;
+
+  const refreshVisitors = () => {
+    void Promise.all([refetchOverview(), refetchList()]);
+  };
 
   return (
     <div className="w-full min-w-0 space-y-6 overflow-x-hidden">
-      <VisitorsHeader />
+      <VisitorsHeader
+        isRefreshing={isRefreshing}
+        onRefresh={refreshVisitors}
+      />
 
       <VisitorsFiltersCard
         filters={filters}
