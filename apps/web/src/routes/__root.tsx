@@ -12,6 +12,8 @@ import { SessionProvider } from "@/providers/session-provider";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 import { VisitorTracker } from "@/features/visitors/visitor-tracker";
 
+const isDevelopment = import.meta.env.DEV;
+
 export interface RouterAppContext {}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
@@ -54,7 +56,7 @@ function RootDocument() {
           </SessionProvider>
           <VisitorTracker />
           <Toaster richColors position="top-center"/>
-          <TanStackRouterDevtools position="bottom-left" />
+          {isDevelopment && <TanStackRouterDevtools position="bottom-left" />}
         </ThemeProvider>
         <Scripts />
       </body>

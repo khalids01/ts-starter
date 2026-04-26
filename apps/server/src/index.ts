@@ -9,6 +9,12 @@ import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
 
 const shouldLogRequests = env.NODE_ENV === "development";
+const docsPlugin =
+  env.NODE_ENV === "development"
+    ? openapi({
+        path: "/docs",
+      })
+    : new Elysia({ name: "openapi-disabled" });
 
 await connectRedis();
 console.log("Redis is ready");
@@ -23,11 +29,7 @@ const server = new Elysia()
       credentials: true,
     }),
   )
-  .use(
-    openapi({
-      path: "/docs",
-    }),
-  )
+  .use(docsPlugin)
   .onRequest(({ request }) => {
     if (!shouldLogRequests) {
       return;
