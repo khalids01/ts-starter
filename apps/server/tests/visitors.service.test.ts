@@ -138,19 +138,62 @@ const sessionMock = mock(async (): Promise<{ user: { id: string } } | null> => (
 }));
 
 const redisState = {
-  values: new Map<string, number>(),
+  values: new Map<string, number | string>(),
   expiry: new Map<string, number>(),
+  sets: new Map<string, Set<string>>(),
 };
 
 const fakeRedis = {
   async incr(key: string) {
-    const nextValue = (redisState.values.get(key) ?? 0) + 1;
+    const current = Number(redisState.values.get(key) ?? 0);
+    const nextValue = current + 1;
     redisState.values.set(key, nextValue);
     return nextValue;
   },
   async expire(key: string, seconds: number) {
     redisState.expiry.set(key, Date.now() + seconds * 1000);
     return 1;
+  },
+  async get(key: string) {
+    const value = redisState.values.get(key);
+    return value === undefined ? null : String(value);
+  },
+  async set(key: string, value: string) {
+    redisState.values.set(key, value);
+    return "OK";
+  },
+  async sadd(key: string, value: string) {
+    const values = redisState.sets.get(key) ?? new Set<string>();
+    const sizeBefore = values.size;
+    values.add(value);
+    redisState.sets.set(key, values);
+    return values.size - sizeBefore;
+  },
+  async smembers(key: string) {
+    return Array.from(redisState.sets.get(key) ?? []);
+  },
+  async srem(key: string, value: string) {
+    const values = redisState.sets.get(key);
+    if (!values) return 0;
+    const removed = values.delete(value);
+    return removed ? 1 : 0;
+  },
+  async rename(from: string, to: string) {
+    if (!redisState.values.has(from)) {
+      throw new Error("no such key");
+    }
+
+    redisState.values.set(to, redisState.values.get(from)!);
+    redisState.values.delete(from);
+    return "OK";
+  },
+  async del(key: string) {
+    const existed = redisState.values.delete(key);
+    redisState.sets.delete(key);
+    return existed ? 1 : 0;
+  },
+  async exists(key: string) {
+    return redisState.values.has(key) ? 1 : 0;
   },
 };
 
@@ -301,11 +344,12 @@ afterEach(() => {
   connectRedisMock.mockResolvedValue(fakeRedis);
   redisState.values.clear();
   redisState.expiry.clear();
+  redisState.sets.clear();
   restoreDbImplementations();
 });
 
 describe("VisitorsService.trackVisit", () => {
-  it("reuses active session within 5 minutes instead of creating a new one", async () => {
+  it("buffers active session events and flushes one aggregate write", async () => {
     const { visitorsService } = await import(
       "../src/modules/visitors/visitors.service"
     );
@@ -337,9 +381,15 @@ describe("VisitorsService.trackVisit", () => {
       setCookie: setCookieMock,
     });
 
+    expect(dbMock.visitorIdentity.create).not.toHaveBeenCalled();
+    expect(dbMock.visitorSession.create).not.toHaveBeenCalled();
+    expect(dbMock.visitorSession.update).not.toHaveBeenCalled();
+
+    await visitorsService.flushBufferedVisits();
+
     expect(dbMock.visitorIdentity.create).toHaveBeenCalledTimes(1);
     expect(dbMock.visitorSession.create).toHaveBeenCalledTimes(1);
-    expect(dbMock.visitorSession.update).toHaveBeenCalledTimes(1);
+    expect(dbMock.visitorSession.update).not.toHaveBeenCalled();
     expect(sessionStore[0]?.lastPath).toBe("/dashboard");
     expect(sessionStore[0]?.eventCount).toBe(2);
   });
@@ -366,6 +416,8 @@ describe("VisitorsService.trackVisit", () => {
       },
       setCookie: setCookieMock,
     });
+
+    await visitorsService.flushBufferedVisits();
 
     expect(dbMock.visitorSession.create).toHaveBeenCalledTimes(1);
     expect(sessionStore[0]?.isBot).toBe(true);
@@ -401,6 +453,10 @@ describe("VisitorsService.trackVisit", () => {
         setCookie: setCookieMock,
       });
     }
+
+    expect(identityStore).toHaveLength(0);
+
+    await visitorsService.flushBufferedVisits();
 
     expect(identityStore).toHaveLength(1);
     expect(dbMock.visitorIdentity.create).toHaveBeenCalledTimes(1);
@@ -441,6 +497,8 @@ describe("VisitorsService.trackVisit", () => {
         setCookie: setCookieMock,
       });
     }
+
+    await visitorsService.flushBufferedVisits();
 
     expect(identityStore).toHaveLength(2);
     expect(dbMock.visitorIdentity.create).toHaveBeenCalledTimes(2);

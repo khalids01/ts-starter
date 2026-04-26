@@ -6,11 +6,13 @@ import { Elysia } from "elysia";
 import { app } from "./modules/app";
 import { openapi } from "@elysiajs/openapi";
 import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
+import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
 
 const shouldLogRequests = env.NODE_ENV === "development";
 
 await connectRedis();
 console.log("Redis is ready");
+startVisitorFlushWorker();
 
 const server = new Elysia()
   .use(

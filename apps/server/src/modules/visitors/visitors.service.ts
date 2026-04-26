@@ -9,19 +9,30 @@ const VISITOR_COOKIE_TTL_SECONDS = 90 * 24 * 60 * 60;
 const SESSION_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 const RETENTION_DAYS = 90;
-const FALLBACK_RATE_LIMIT_WINDOW_MS = 60_000;
-const FALLBACK_IP_LIMIT = 240;
-const FALLBACK_VISITOR_LIMIT = 120;
+const BUFFER_TTL_SECONDS = 2 * 24 * 60 * 60;
+const FLUSH_INTERVAL_MS = 60_000;
+const FLUSH_BATCH_SIZE = 200;
+const DIRTY_VISITOR_BUFFER_KEY = "visitors:buffer:dirty";
+const VISITOR_BUFFER_KEY_PREFIX = "visitors:buffer:visit:";
 
 let lastCleanupAt = 0;
 let cleanupPromise: Promise<void> | null = null;
-const fallbackRateLimitStore = new Map<
-  string,
-  {
-    count: number;
-    expiresAt: number;
-  }
->();
+let flushInterval: ReturnType<typeof setInterval> | null = null;
+
+type BufferedVisit = {
+  visitorId: string;
+  userId: string | null;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  entryPath: string;
+  lastPath: string;
+  referrer: string | null;
+  isBot: boolean;
+  deviceType: string | null;
+  country: string | null;
+  ipHash: string | null;
+  eventCount: number;
+};
 
 const botUserAgentRegex =
   /(bot|crawler|spider|slurp|bingpreview|headless|phantom|curl|wget|python-requests|go-http-client|httpclient|uptime|monitor|facebookexternalhit)/i;
@@ -198,50 +209,8 @@ function normalizeReferrer(inputReferrer: string | undefined) {
   return trimmed.slice(0, 500);
 }
 
-function consumeFallbackRateLimit(key: string, limit: number, now: number) {
-  const current = fallbackRateLimitStore.get(key);
-  if (!current || current.expiresAt <= now) {
-    fallbackRateLimitStore.set(key, {
-      count: 1,
-      expiresAt: now + FALLBACK_RATE_LIMIT_WINDOW_MS,
-    });
-    return true;
-  }
-
-  current.count += 1;
-  return current.count <= limit;
-}
-
-function cleanupFallbackRateLimitStore(now: number) {
-  if (fallbackRateLimitStore.size < 1_000) {
-    return;
-  }
-
-  for (const [key, value] of fallbackRateLimitStore) {
-    if (value.expiresAt <= now) {
-      fallbackRateLimitStore.delete(key);
-    }
-  }
-}
-
-function enforceFallbackTrackRateLimit(ip: string | null, visitorId: string) {
-  const now = Date.now();
-  const ipKey = `ip:${ip ?? "unknown"}`;
-  const visitorKey = `visitor:${visitorId}`;
-
-  cleanupFallbackRateLimitStore(now);
-
-  return (
-    consumeFallbackRateLimit(ipKey, FALLBACK_IP_LIMIT, now) &&
-    consumeFallbackRateLimit(visitorKey, FALLBACK_VISITOR_LIMIT, now)
-  );
-}
-
 async function enforceTrackRateLimit(ip: string | null, visitorId: string) {
   const redis = await connectRedis();
-  if (!redis) {
-    return enforceFallbackTrackRateLimit(ip, visitorId);
-  }
 
   const now = Date.now();
   const windowId = Math.floor(now / 60_000);
@@ -299,9 +268,66 @@ function scheduleRetentionCleanup() {
     });
 }
 
+function getBufferSubject(userId: string | null, visitorId: string) {
+  return userId ? `user:${userId}` : `visitor:${visitorId}`;
+}
+
+function getBufferKey(subject: string) {
+  const digest = createHash("sha256").update(subject).digest("hex").slice(0, 32);
+  return `${VISITOR_BUFFER_KEY_PREFIX}${digest}`;
+}
+
+function parseBufferedVisit(raw: string | null): BufferedVisit | null {
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as BufferedVisit;
+  } catch {
+    return null;
+  }
+}
+
+function mergeBufferedVisit(
+  current: BufferedVisit | null,
+  next: BufferedVisit,
+): BufferedVisit {
+  if (!current) {
+    return next;
+  }
+
+  return {
+    ...current,
+    userId: next.userId ?? current.userId,
+    lastSeenAt: next.lastSeenAt,
+    lastPath: next.lastPath,
+    referrer: next.referrer,
+    isBot: next.isBot,
+    deviceType: next.deviceType,
+    country: next.country,
+    ipHash: next.ipHash,
+    eventCount: current.eventCount + next.eventCount,
+  };
+}
+
+async function bufferVisit(input: BufferedVisit) {
+  const redis = await connectRedis();
+  const subject = getBufferSubject(input.userId, input.visitorId);
+  const key = getBufferKey(subject);
+  const existing = parseBufferedVisit(await redis.get(key));
+  const next = mergeBufferedVisit(existing, input);
+
+  await redis.set(key, JSON.stringify(next), "EX", BUFFER_TTL_SECONDS);
+  await redis.sadd(DIRTY_VISITOR_BUFFER_KEY, key);
+
+  return next;
+}
+
 async function resolveVisitorIdentity(args: {
   visitorId: string;
   userId: string | null;
+  firstSeenAt: Date;
   now: Date;
 }) {
   if (args.userId) {
@@ -338,7 +364,7 @@ async function resolveVisitorIdentity(args: {
     return prisma.visitorIdentity.create({
       data: {
         visitorId: args.visitorId,
-        firstSeenAt: args.now,
+        firstSeenAt: args.firstSeenAt,
         lastSeenAt: args.now,
         firstUserId: args.userId,
         lastUserId: args.userId,
@@ -366,12 +392,15 @@ async function resolveSession(args: {
   visitorIdentityId: string;
   userId: string | null;
   isBot: boolean;
+  startedAt: Date;
   now: Date;
   path: string;
+  entryPath: string;
   referrer: string | null;
   deviceType: string | null;
   country: string | null;
   ipHash: string | null;
+  eventCount: number;
 }) {
   const activeSince = new Date(args.now.getTime() - SESSION_IDLE_TIMEOUT_MS);
 
@@ -403,7 +432,7 @@ async function resolveSession(args: {
         ipHash: args.ipHash,
         ...(args.userId ? { userId: args.userId } : {}),
         eventCount: {
-          increment: 1,
+          increment: args.eventCount,
         },
       },
     });
@@ -414,21 +443,106 @@ async function resolveSession(args: {
       visitorIdentityId: args.visitorIdentityId,
       userId: args.userId,
       isBot: args.isBot,
-      startedAt: args.now,
+      startedAt: args.startedAt,
       lastSeenAt: args.now,
       endedAt: args.now,
-      entryPath: args.path,
+      entryPath: args.entryPath,
       lastPath: args.path,
       referrer: args.referrer,
       deviceType: args.deviceType,
       country: args.country,
       ipHash: args.ipHash,
-      eventCount: 1,
+      eventCount: args.eventCount,
     },
   });
 }
 
+async function persistBufferedVisit(input: BufferedVisit) {
+  const firstSeenAt = new Date(input.firstSeenAt);
+  const lastSeenAt = new Date(input.lastSeenAt);
+  const identity = await resolveVisitorIdentity({
+    visitorId: input.visitorId,
+    userId: input.userId,
+    firstSeenAt,
+    now: lastSeenAt,
+  });
+
+  await resolveSession({
+    visitorIdentityId: identity.id,
+    userId: input.userId,
+    isBot: input.isBot,
+    startedAt: firstSeenAt,
+    now: lastSeenAt,
+    path: input.lastPath,
+    entryPath: input.entryPath,
+    referrer: input.referrer,
+    deviceType: input.deviceType,
+    country: input.country,
+    ipHash: input.ipHash,
+    eventCount: input.eventCount,
+  });
+}
+
 export class VisitorsService {
+  async flushBufferedVisits(limit = FLUSH_BATCH_SIZE) {
+    const redis = await connectRedis();
+    const keys = (await redis.smembers(DIRTY_VISITOR_BUFFER_KEY)).slice(0, limit);
+    let flushed = 0;
+    let failed = 0;
+
+    for (const key of keys) {
+      const processingKey = `${key}:processing:${crypto.randomUUID()}`;
+
+      try {
+        await redis.rename(key, processingKey);
+      } catch {
+        await redis.srem(DIRTY_VISITOR_BUFFER_KEY, key);
+        continue;
+      }
+
+      try {
+        const buffered = parseBufferedVisit(await redis.get(processingKey));
+        if (!buffered) {
+          await redis.del(processingKey);
+          await redis.srem(DIRTY_VISITOR_BUFFER_KEY, key);
+          continue;
+        }
+
+        await persistBufferedVisit(buffered);
+        await redis.del(processingKey);
+        await redis.srem(DIRTY_VISITOR_BUFFER_KEY, key);
+
+        if ((await redis.exists(key)) > 0) {
+          await redis.sadd(DIRTY_VISITOR_BUFFER_KEY, key);
+        }
+
+        flushed += 1;
+      } catch (error) {
+        failed += 1;
+        try {
+          await redis.sadd(DIRTY_VISITOR_BUFFER_KEY, processingKey);
+          await redis.srem(DIRTY_VISITOR_BUFFER_KEY, key);
+
+          if ((await redis.exists(key)) > 0) {
+            await redis.sadd(DIRTY_VISITOR_BUFFER_KEY, key);
+          }
+        } catch {
+          // Keep the worker alive; the next interval can process any keys
+          // still present in the dirty set.
+        }
+        console.error("Visitor buffer flush failed", error);
+      }
+    }
+
+    scheduleRetentionCleanup();
+
+    return {
+      flushed,
+      failed,
+      remaining: Math.max(0, keys.length - flushed),
+    };
+  }
+
   async trackVisit(input: {
     request: Request;
     body: VisitorTrackBody;
@@ -466,40 +580,59 @@ export class VisitorsService {
     const referrer = normalizeReferrer(input.body.referrer);
     const userAgent = input.request.headers.get("user-agent");
 
-    scheduleRetentionCleanup();
-
     const session = await auth.api.getSession({
       headers: input.request.headers,
     });
 
     const userId = session?.user?.id ?? null;
-    const identity = await resolveVisitorIdentity({
+
+    const buffered = await bufferVisit({
       visitorId,
       userId,
-      now,
-    });
-
-    if (identity.visitorId !== visitorId) {
-      input.setCookie(buildSetCookieHeader(identity.visitorId, input.request));
-    }
-
-    await resolveSession({
-      visitorIdentityId: identity.id,
-      userId,
-      isBot: detectBot(userAgent),
-      now,
-      path,
+      firstSeenAt: now.toISOString(),
+      lastSeenAt: now.toISOString(),
+      entryPath: path,
+      lastPath: path,
       referrer,
+      isBot: detectBot(userAgent),
       deviceType: detectDeviceType(userAgent),
       country: detectCountry(input.request.headers),
       ipHash: hashIp(ip),
+      eventCount: 1,
     });
+
+    if (buffered.visitorId !== visitorId) {
+      input.setCookie(buildSetCookieHeader(buffered.visitorId, input.request));
+    }
 
     return {
       ok: true,
-      visitorId,
+      visitorId: buffered.visitorId,
     };
   }
 }
 
 export const visitorsService = new VisitorsService();
+
+export function startVisitorFlushWorker(intervalMs = FLUSH_INTERVAL_MS) {
+  if (flushInterval) {
+    return;
+  }
+
+  flushInterval = setInterval(() => {
+    void visitorsService.flushBufferedVisits().catch((error) => {
+      console.error("Visitor buffer worker failed", error);
+    });
+  }, intervalMs);
+
+  flushInterval.unref?.();
+}
+
+export function stopVisitorFlushWorker() {
+  if (!flushInterval) {
+    return;
+  }
+
+  clearInterval(flushInterval);
+  flushInterval = null;
+}
