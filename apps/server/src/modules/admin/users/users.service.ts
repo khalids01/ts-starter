@@ -22,10 +22,106 @@ const adminUserSelect = {
   subscriptionStatus: true,
 };
 
+type AdminActor = {
+  id?: string;
+  role?: Role | string | null;
+};
+
+class AdminUserPolicyError extends Error {
+  status = 403;
+}
+
+function policyError(message: string): never {
+  throw new AdminUserPolicyError(message);
+}
+
 function assertAssignableAdminRole(role?: Role) {
   if (role === "OWNER") {
     throw new Error("Owner role cannot be assigned from user management");
   }
+}
+
+function actorIsOwner(actor?: AdminActor) {
+  return actor?.role === "OWNER";
+}
+
+function assertAuthenticatedActor(actor?: AdminActor) {
+  if (!actor?.id || !actor.role) {
+    policyError("Admin actor is required");
+  }
+}
+
+async function getAdminTargetUser(id: string) {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+}
+
+async function assertNotLastOwner(targetRole: Role) {
+  if (targetRole !== "OWNER") {
+    return;
+  }
+
+  const ownerCount = await prisma.user.count({
+    where: {
+      role: "OWNER",
+      banned: false,
+      archived: false,
+    },
+  });
+
+  if (ownerCount <= 1) {
+    policyError("Cannot disable or delete the last active owner");
+  }
+}
+
+async function assertCanUpdateUser(args: {
+  actor?: AdminActor;
+  targetId: string;
+  data: { role?: Role };
+}) {
+  assertAuthenticatedActor(args.actor);
+  assertAssignableAdminRole(args.data.role);
+
+  const target = await getAdminTargetUser(args.targetId);
+
+  if (target.role === "OWNER" && !actorIsOwner(args.actor)) {
+    policyError("Only owners can update owner accounts");
+  }
+
+  if (args.data.role === "ADMIN" && !actorIsOwner(args.actor)) {
+    policyError("Only owners can grant admin role");
+  }
+}
+
+async function assertCanUseDestructiveAction(args: {
+  actor?: AdminActor;
+  targetId: string;
+  action: "ban" | "archive" | "delete";
+}) {
+  assertAuthenticatedActor(args.actor);
+
+  if (args.actor?.id === args.targetId) {
+    policyError(`You cannot ${args.action} your own account`);
+  }
+
+  const target = await getAdminTargetUser(args.targetId);
+
+  if ((target.role === "OWNER" || target.role === "ADMIN") && !actorIsOwner(args.actor)) {
+    policyError("Only owners can change admin or owner accounts");
+  }
+
+  await assertNotLastOwner(target.role);
 }
 
 export class UsersService {
@@ -91,9 +187,13 @@ export class UsersService {
   async updateUser(
     id: string,
     data: { name?: string; role?: Role },
-    actorUserId?: string,
+    actor?: AdminActor,
   ) {
-    assertAssignableAdminRole(data.role);
+    await assertCanUpdateUser({
+      actor,
+      targetId: id,
+      data,
+    });
 
     const user = await prisma.user.update({
       where: { id },
@@ -104,7 +204,7 @@ export class UsersService {
     if (data.role) {
       await activityService.record({
         type: "user.role_updated",
-        actorUserId,
+        actorUserId: actor?.id,
         targetUserId: id,
         message: `${user.name} role changed to ${data.role}`,
         metadata: {
@@ -117,7 +217,13 @@ export class UsersService {
     return user;
   }
 
-  async banUser(id: string, reason?: string, actorUserId?: string) {
+  async banUser(id: string, reason?: string, actor?: AdminActor) {
+    await assertCanUseDestructiveAction({
+      actor,
+      targetId: id,
+      action: "ban",
+    });
+
     const user = await prisma.user.update({
       where: { id },
       data: { banned: true, banReason: reason },
@@ -126,7 +232,7 @@ export class UsersService {
 
     await activityService.record({
       type: "user.banned",
-      actorUserId,
+      actorUserId: actor?.id,
       targetUserId: id,
       severity: "warning",
       message: `${user.name} was banned`,
@@ -139,7 +245,7 @@ export class UsersService {
     return user;
   }
 
-  async unbanUser(id: string, actorUserId?: string) {
+  async unbanUser(id: string, actor?: AdminActor) {
     const user = await prisma.user.update({
       where: { id },
       data: { banned: false, banReason: null },
@@ -148,7 +254,7 @@ export class UsersService {
 
     await activityService.record({
       type: "user.unbanned",
-      actorUserId,
+      actorUserId: actor?.id,
       targetUserId: id,
       message: `${user.name} was unbanned`,
       metadata: {
@@ -159,7 +265,13 @@ export class UsersService {
     return user;
   }
 
-  async archiveUser(id: string, actorUserId?: string) {
+  async archiveUser(id: string, actor?: AdminActor) {
+    await assertCanUseDestructiveAction({
+      actor,
+      targetId: id,
+      action: "archive",
+    });
+
     const user = await prisma.user.update({
       where: { id },
       data: { archived: true },
@@ -168,7 +280,7 @@ export class UsersService {
 
     await activityService.record({
       type: "user.archived",
-      actorUserId,
+      actorUserId: actor?.id,
       targetUserId: id,
       severity: "warning",
       message: `${user.name} was archived`,
@@ -180,7 +292,7 @@ export class UsersService {
     return user;
   }
 
-  async restoreUser(id: string, actorUserId?: string) {
+  async restoreUser(id: string, actor?: AdminActor) {
     const user = await prisma.user.update({
       where: { id },
       data: { archived: false },
@@ -189,7 +301,7 @@ export class UsersService {
 
     await activityService.record({
       type: "user.restored",
-      actorUserId,
+      actorUserId: actor?.id,
       targetUserId: id,
       message: `${user.name} was restored`,
       metadata: {
@@ -200,7 +312,13 @@ export class UsersService {
     return user;
   }
 
-  async deleteUserPermanent(id: string) {
+  async deleteUserPermanent(id: string, actor?: AdminActor) {
+    await assertCanUseDestructiveAction({
+      actor,
+      targetId: id,
+      action: "delete",
+    });
+
     // Delete related records first if necessary, or let Cascade handle it
     return prisma.user.delete({
       where: { id },
@@ -275,3 +393,4 @@ export class UsersService {
 }
 
 export const usersService = new UsersService();
+export { AdminUserPolicyError };

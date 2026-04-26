@@ -8,6 +8,24 @@ import {
   InviteUserDto,
 } from "./users.dto";
 import { auth } from "@/modules/auth/auth.service";
+import { AdminUserPolicyError } from "./users.service";
+
+function getActor(session: Awaited<ReturnType<typeof auth.api.getSession>>) {
+  return {
+    id: session?.user.id,
+    role: session?.user.role,
+  };
+}
+
+function handleUserMutationError(error: unknown, set: { status?: number | string }) {
+  if (error instanceof AdminUserPolicyError) {
+    set.status = error.status;
+    return error.message;
+  }
+
+  set.status = 400;
+  return error instanceof Error ? error.message : "Failed to update user";
+}
 
 export const usersController = new Elysia({
   prefix: "/admin/users",
@@ -60,10 +78,9 @@ export const usersController = new Elysia({
             const session = await auth.api.getSession({
               headers: request.headers,
             });
-            return await usersService.updateUser(id, body, session?.user.id);
-          } catch (e: any) {
-            set.status = 400;
-            return e.message;
+            return await usersService.updateUser(id, body, getActor(session));
+          } catch (error) {
+            return handleUserMutationError(error, set);
           }
         },
         {
@@ -75,11 +92,15 @@ export const usersController = new Elysia({
       )
       .post(
         "/:id/ban",
-        async ({ params: { id }, body, request }) => {
-          const session = await auth.api.getSession({
-            headers: request.headers,
-          });
-          return usersService.banUser(id, body.reason, session?.user.id);
+        async ({ params: { id }, body, request, set }) => {
+          try {
+            const session = await auth.api.getSession({
+              headers: request.headers,
+            });
+            return await usersService.banUser(id, body.reason, getActor(session));
+          } catch (error) {
+            return handleUserMutationError(error, set);
+          }
         },
         {
           body: BanUserDto,
@@ -90,11 +111,15 @@ export const usersController = new Elysia({
       )
       .post(
         "/:id/unban",
-        async ({ params: { id }, request }) => {
-          const session = await auth.api.getSession({
-            headers: request.headers,
-          });
-          return usersService.unbanUser(id, session?.user.id);
+        async ({ params: { id }, request, set }) => {
+          try {
+            const session = await auth.api.getSession({
+              headers: request.headers,
+            });
+            return await usersService.unbanUser(id, getActor(session));
+          } catch (error) {
+            return handleUserMutationError(error, set);
+          }
         },
         {
           detail: {
@@ -104,11 +129,15 @@ export const usersController = new Elysia({
       )
       .post(
         "/:id/archive",
-        async ({ params: { id }, request }) => {
-          const session = await auth.api.getSession({
-            headers: request.headers,
-          });
-          return usersService.archiveUser(id, session?.user.id);
+        async ({ params: { id }, request, set }) => {
+          try {
+            const session = await auth.api.getSession({
+              headers: request.headers,
+            });
+            return await usersService.archiveUser(id, getActor(session));
+          } catch (error) {
+            return handleUserMutationError(error, set);
+          }
         },
         {
           detail: {
@@ -118,11 +147,15 @@ export const usersController = new Elysia({
       )
       .post(
         "/:id/restore",
-        async ({ params: { id }, request }) => {
-          const session = await auth.api.getSession({
-            headers: request.headers,
-          });
-          return usersService.restoreUser(id, session?.user.id);
+        async ({ params: { id }, request, set }) => {
+          try {
+            const session = await auth.api.getSession({
+              headers: request.headers,
+            });
+            return await usersService.restoreUser(id, getActor(session));
+          } catch (error) {
+            return handleUserMutationError(error, set);
+          }
         },
         {
           detail: {
@@ -132,7 +165,16 @@ export const usersController = new Elysia({
       )
       .delete(
         "/:id",
-        ({ params: { id } }) => usersService.deleteUserPermanent(id),
+        async ({ params: { id }, request, set }) => {
+          try {
+            const session = await auth.api.getSession({
+              headers: request.headers,
+            });
+            return await usersService.deleteUserPermanent(id, getActor(session));
+          } catch (error) {
+            return handleUserMutationError(error, set);
+          }
+        },
         {
           detail: {
             summary: "Permanently delete a user from the database",

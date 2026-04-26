@@ -9,6 +9,8 @@ const userUpdateMock = mock(async (): Promise<any> => null);
 const userDeleteMock = mock(async (): Promise<any> => null);
 const invitationCreateMock = mock(async () => ({ id: "invitation-1" }));
 const activityRecordMock = mock(async () => null);
+const adminActor = { id: "admin-1", role: "ADMIN" as const };
+const ownerActor = { id: "owner-1", role: "OWNER" as const };
 
 const safeAdminUserSelect = {
   id: true,
@@ -70,6 +72,11 @@ mock.module("@config", () => ({
 }));
 
 beforeEach(() => {
+  userFindUniqueMock.mockResolvedValue({
+    id: "user-1",
+    role: "USER",
+  });
+  userCountMock.mockResolvedValue(2);
   userUpdateMock.mockResolvedValue({
     id: "user-1",
     name: "User One",
@@ -152,12 +159,12 @@ describe("UsersService", () => {
       "../src/modules/admin/users/users.service"
     );
 
-    await usersService.updateUser("user-1", { name: "Updated" });
-    await usersService.banUser("user-1", "reason");
-    await usersService.unbanUser("user-1");
-    await usersService.archiveUser("user-1");
-    await usersService.restoreUser("user-1");
-    await usersService.deleteUserPermanent("user-1");
+    await usersService.updateUser("user-1", { name: "Updated" }, adminActor);
+    await usersService.banUser("user-1", "reason", adminActor);
+    await usersService.unbanUser("user-1", adminActor);
+    await usersService.archiveUser("user-1", adminActor);
+    await usersService.restoreUser("user-1", adminActor);
+    await usersService.deleteUserPermanent("user-1", adminActor);
 
     expect(userUpdateMock).toHaveBeenNthCalledWith(1, {
       where: { id: "user-1" },
@@ -196,7 +203,7 @@ describe("UsersService", () => {
     );
 
     await expect(
-      usersService.updateUser("user-1", { role: "OWNER" } as any),
+      usersService.updateUser("user-1", { role: "OWNER" } as any, ownerActor),
     ).rejects.toThrow("Owner role cannot be assigned from user management");
     expect(userUpdateMock).not.toHaveBeenCalled();
   });
@@ -237,11 +244,11 @@ describe("UsersService", () => {
       "../src/modules/admin/users/users.service"
     );
 
-    await usersService.updateUser("user-1", { role: "ADMIN" }, "admin-1");
+    await usersService.updateUser("user-1", { role: "ADMIN" }, ownerActor);
 
     expect(activityRecordMock).toHaveBeenCalledWith({
       type: "user.role_updated",
-      actorUserId: "admin-1",
+      actorUserId: "owner-1",
       targetUserId: "user-1",
       message: "User One role changed to ADMIN",
       metadata: {
@@ -279,8 +286,8 @@ describe("UsersService", () => {
       "../src/modules/admin/users/users.service"
     );
 
-    await usersService.banUser("user-1", "spam", "admin-1");
-    await usersService.unbanUser("user-1", "admin-1");
+    await usersService.banUser("user-1", "spam", adminActor);
+    await usersService.unbanUser("user-1", adminActor);
 
     expect(activityRecordMock).toHaveBeenNthCalledWith(1, {
       type: "user.banned",
@@ -302,5 +309,90 @@ describe("UsersService", () => {
         email: "user@example.com",
       },
     });
+  });
+
+  it("requires owner role to grant admin role", async () => {
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.updateUser("user-1", { role: "ADMIN" }, adminActor),
+    ).rejects.toThrow("Only owners can grant admin role");
+    expect(userUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("prevents admins from changing owner accounts", async () => {
+    userFindUniqueMock.mockResolvedValueOnce({
+      id: "owner-1",
+      role: "OWNER",
+    });
+
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.updateUser("owner-1", { name: "Updated Owner" }, adminActor),
+    ).rejects.toThrow("Only owners can update owner accounts");
+    expect(userUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("prevents admins from destructive actions against admin accounts", async () => {
+    userFindUniqueMock.mockResolvedValueOnce({
+      id: "admin-2",
+      role: "ADMIN",
+    });
+
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.banUser("admin-2", "reason", adminActor),
+    ).rejects.toThrow("Only owners can change admin or owner accounts");
+    expect(userUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("prevents self ban archive and delete", async () => {
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.banUser("admin-1", "reason", adminActor),
+    ).rejects.toThrow("You cannot ban your own account");
+    await expect(
+      usersService.archiveUser("admin-1", adminActor),
+    ).rejects.toThrow("You cannot archive your own account");
+    await expect(
+      usersService.deleteUserPermanent("admin-1", adminActor),
+    ).rejects.toThrow("You cannot delete your own account");
+    expect(userUpdateMock).not.toHaveBeenCalled();
+    expect(userDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("prevents disabling or deleting the last active owner", async () => {
+    userFindUniqueMock.mockResolvedValue({
+      id: "owner-2",
+      role: "OWNER",
+    });
+    userCountMock.mockResolvedValue(1);
+
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    await expect(
+      usersService.banUser("owner-2", "reason", ownerActor),
+    ).rejects.toThrow("Cannot disable or delete the last active owner");
+    await expect(
+      usersService.archiveUser("owner-2", ownerActor),
+    ).rejects.toThrow("Cannot disable or delete the last active owner");
+    await expect(
+      usersService.deleteUserPermanent("owner-2", ownerActor),
+    ).rejects.toThrow("Cannot disable or delete the last active owner");
+    expect(userUpdateMock).not.toHaveBeenCalled();
+    expect(userDeleteMock).not.toHaveBeenCalled();
   });
 });
