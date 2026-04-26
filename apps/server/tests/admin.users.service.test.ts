@@ -129,6 +129,27 @@ describe("UsersService", () => {
     });
   });
 
+  it("bounds admin user list pagination", async () => {
+    userCountMock.mockResolvedValue(250);
+    const { usersService } = await import(
+      "../src/modules/admin/users/users.service"
+    );
+
+    const result = await usersService.listUsers({
+      page: -10,
+      limit: 1_000,
+    });
+
+    expect(userFindManyMock).toHaveBeenCalledWith({
+      where: {},
+      select: safeAdminUserSelect,
+      skip: 0,
+      take: 100,
+      orderBy: { createdAt: "desc" },
+    });
+    expect(result.pages).toBe(3);
+  });
+
   it("uses a safe user projection for admin user details", async () => {
     const { usersService } = await import(
       "../src/modules/admin/users/users.service"

@@ -22,8 +22,8 @@ export const InviteUserDto = t.Object({
 });
 
 export const UserQueryDto = t.Object({
-    page: t.Optional(t.Numeric({ default: 1 })),
-    limit: t.Optional(t.Numeric({ default: 10 })),
+    page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
+    limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 10 })),
     search: t.Optional(t.String()),
     role: t.Optional(UserRoleSchema),
     banned: t.Optional(t.Boolean()),

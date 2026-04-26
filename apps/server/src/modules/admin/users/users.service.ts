@@ -41,6 +41,16 @@ function assertAssignableAdminRole(role?: Role) {
   }
 }
 
+function normalizePagination(page?: number, limit?: number) {
+  const normalizedLimit = Math.min(Math.max(limit ?? 10, 1), 100);
+  const normalizedPage = Math.max(page ?? 1, 1);
+
+  return {
+    page: normalizedPage,
+    limit: normalizedLimit,
+  };
+}
+
 function actorIsOwner(actor?: AdminActor) {
   return actor?.role === "OWNER";
 }
@@ -133,7 +143,8 @@ export class UsersService {
     banned?: boolean;
     archived?: boolean;
   }) {
-    const { page = 1, limit = 10, search, role, banned, archived } = query;
+    const { search, role, banned, archived } = query;
+    const { page, limit } = normalizePagination(query.page, query.limit);
     const skip = (page - 1) * limit;
 
     const where: any = {};
