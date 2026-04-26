@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 const baseEnv = {
   ...process.env,
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test",
+  REDIS_URL: "redis://localhost:6379",
   BETTER_AUTH_SECRET: "test-secret-at-least-32-characters",
   BETTER_AUTH_URL: "http://localhost:3000",
   CORS_ORIGIN: "http://localhost:3000",
@@ -35,6 +36,17 @@ async function runEnvImport(env: Record<string, string | undefined>) {
 }
 
 describe("Polar config", () => {
+  it("requires Redis URL", async () => {
+    const result = await runEnvImport({
+      ...baseEnv,
+      REDIS_URL: undefined,
+      ENABLE_POLAR: "false",
+    });
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toContain("REDIS_URL");
+  });
+
   it("allows missing Polar secrets when Polar is disabled", async () => {
     const result = await runEnvImport({
       ...baseEnv,

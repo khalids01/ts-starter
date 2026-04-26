@@ -449,8 +449,11 @@ export async function enforceRateLimit(input: EnforceInput) {
       retryAfterSeconds: decision.retryAfterSeconds,
     };
   } catch (error) {
-    console.error("Rate limit check failed, allowing request", error);
-    return;
+    console.error("Rate limit check failed", error);
+    set.status = 503;
+    return {
+      message: "Rate limit service unavailable",
+    };
   }
 }
 
@@ -479,8 +482,8 @@ export async function enforceWebsocketRateLimit(request: Request) {
       retryAfterSeconds: decision.retryAfterSeconds,
     };
   } catch (error) {
-    console.error("Websocket rate limit check failed, allowing request", error);
-    return { allowed: true as const };
+    console.error("Websocket rate limit check failed", error);
+    return { allowed: false as const, retryAfterSeconds: 60 };
   }
 }
 

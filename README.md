@@ -47,7 +47,7 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 
 ## Redis Setup
 
-Redis is optional in this starter. The shared client lives in `packages/redis`, so any future app in this monorepo can reuse the same connection and cache helpers.
+Redis is required for this starter. The shared client lives in `packages/redis`, so the server can use one shared connection for rate limits, visitor tracking, caching, and future cross-instance coordination.
 
 1. Start Redis locally:
 
@@ -58,7 +58,6 @@ docker run --name ts-starter-redis -p 6379:6379 -d redis:7-alpine
 2. Add these variables to `apps/server/.env`:
 
 ```bash
-REDIS_ENABLED=true
 REDIS_URL=redis://localhost:6379
 REDIS_KEY_PREFIX=ts-starter:
 ```

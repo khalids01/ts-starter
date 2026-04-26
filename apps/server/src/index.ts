@@ -9,6 +9,9 @@ import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 
 const shouldLogRequests = env.NODE_ENV === "development";
 
+await connectRedis();
+console.log("Redis is ready");
+
 const server = new Elysia()
   .use(
     cors({
@@ -47,19 +50,6 @@ const server = new Elysia()
   .get("/", () => "OK")
   .listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
-
-    void connectRedis()
-      .then((redis) => {
-        if (!redis) {
-          console.log("Redis is disabled");
-          return;
-        }
-
-        console.log("Redis is ready");
-      })
-      .catch((error) => {
-        console.error("Redis connection failed", error);
-      });
   });
 
 export type App = typeof server;

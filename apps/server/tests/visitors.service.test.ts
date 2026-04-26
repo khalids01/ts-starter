@@ -137,7 +137,24 @@ const sessionMock = mock(async (): Promise<{ user: { id: string } } | null> => (
   },
 }));
 
-const connectRedisMock = mock(async () => null);
+const redisState = {
+  values: new Map<string, number>(),
+  expiry: new Map<string, number>(),
+};
+
+const fakeRedis = {
+  async incr(key: string) {
+    const nextValue = (redisState.values.get(key) ?? 0) + 1;
+    redisState.values.set(key, nextValue);
+    return nextValue;
+  },
+  async expire(key: string, seconds: number) {
+    redisState.expiry.set(key, Date.now() + seconds * 1000);
+    return 1;
+  },
+};
+
+const connectRedisMock = mock(async () => fakeRedis);
 
 mock.module("@db", () => ({
   default: dbMock,
@@ -281,7 +298,9 @@ afterEach(() => {
   sessionMock.mockReset();
   sessionMock.mockResolvedValue({ user: { id: "user-1" } });
   connectRedisMock.mockReset();
-  connectRedisMock.mockResolvedValue(null);
+  connectRedisMock.mockResolvedValue(fakeRedis);
+  redisState.values.clear();
+  redisState.expiry.clear();
   restoreDbImplementations();
 });
 

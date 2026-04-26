@@ -60,7 +60,6 @@ const fakeRedis = {
 };
 
 let currentSettings: SettingsRecord;
-let redisAvailable = true;
 let currentSession:
   | {
     user: {
@@ -82,7 +81,7 @@ const upsertMock = mock(async ({ update }: { update: Partial<SettingsRecord> }) 
   return currentSettings;
 });
 const getSessionMock = mock(async () => currentSession);
-const connectRedisMock = mock(async () => (redisAvailable ? fakeRedis : null));
+const connectRedisMock = mock(async () => fakeRedis);
 
 mock.module("@db", () => ({
   default: {
@@ -151,7 +150,6 @@ function createContext(url: string, headers?: RequestHeaders) {
 beforeEach(() => {
   currentSettings = createSettings();
   currentSession = null;
-  redisAvailable = true;
   redisState.values.clear();
   redisState.expiry.clear();
   redisState.keys = [];
@@ -275,13 +273,21 @@ describe("rateLimitService", () => {
     Date.now = originalNow;
   });
 
-  it("fails open when redis is unavailable", async () => {
+  it("returns 503 when redis is unavailable", async () => {
     const { enforceRateLimit } = await import("../src/modules/rate-limit/rate-limit.service");
-    redisAvailable = false;
+    connectRedisMock.mockRejectedValueOnce(new Error("Redis unavailable"));
+    const originalConsoleError = console.error;
+    console.error = mock(() => undefined) as unknown as typeof console.error;
 
-    const result = await enforceRateLimit(createContext("http://localhost/owner/setup-status") as any);
+    try {
+      const result = await enforceRateLimit(createContext("http://localhost/owner/setup-status") as any);
 
-    expect(result).toBeUndefined();
+      expect(result).toEqual({
+        message: "Rate limit service unavailable",
+      });
+    } finally {
+      console.error = originalConsoleError;
+    }
   });
 
   it("invalidates the cached config after updating settings", async () => {

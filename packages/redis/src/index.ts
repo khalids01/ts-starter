@@ -3,25 +3,9 @@ import { env } from "@env/server";
 
 let redisClient: Redis | null = null;
 
-function getRedisUrl() {
-  if (!env.REDIS_ENABLED || !env.REDIS_URL) {
-    return null;
-  }
-
-  return env.REDIS_URL;
-}
-
 export function getRedis() {
-  const redisUrl = getRedisUrl();
-
-  if (!redisUrl) {
-    throw new Error(
-      "Redis is not enabled. Set REDIS_ENABLED=true and provide REDIS_URL.",
-    );
-  }
-
   if (!redisClient) {
-    redisClient = new Redis(redisUrl, {
+    redisClient = new Redis(env.REDIS_URL, {
       keyPrefix: env.REDIS_KEY_PREFIX,
       lazyConnect: true,
       maxRetriesPerRequest: 1,
@@ -33,12 +17,6 @@ export function getRedis() {
 }
 
 export async function connectRedis() {
-  const redisUrl = getRedisUrl();
-
-  if (!redisUrl) {
-    return null;
-  }
-
   const redis = getRedis();
 
   if (redis.status === "wait") {
@@ -51,10 +29,6 @@ export async function connectRedis() {
 export async function getCache<T>(key: string) {
   const redis = await connectRedis();
 
-  if (!redis) {
-    return null;
-  }
-
   const value = await redis.get(key);
   if (!value) {
     return null;
@@ -65,10 +39,6 @@ export async function getCache<T>(key: string) {
 
 export async function setCache(key: string, value: unknown, ttlInSeconds?: number) {
   const redis = await connectRedis();
-
-  if (!redis) {
-    return;
-  }
 
   const payload = JSON.stringify(value);
 
@@ -82,10 +52,6 @@ export async function setCache(key: string, value: unknown, ttlInSeconds?: numbe
 
 export async function deleteCache(key: string) {
   const redis = await connectRedis();
-
-  if (!redis) {
-    return;
-  }
 
   await redis.del(key);
 }
