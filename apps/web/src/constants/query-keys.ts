@@ -14,6 +14,14 @@ export const queryKeys = {
         severity: "all" | "info" | "warning" | "error";
       }) => ["admin-activity", params] as const,
     },
+    webhooks: {
+      list: (params: {
+        page: number;
+        limit: number;
+        status: "all" | "processing" | "processed" | "failed";
+        eventType: string;
+      }) => ["admin-webhooks", params] as const,
+    },
     visitors: {
       overview: (params: {
         dateFrom: string;

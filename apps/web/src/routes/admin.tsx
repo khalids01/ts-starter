@@ -27,6 +27,7 @@ import {
   ShieldAlert,
   Activity,
   History,
+  Webhook,
 } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
@@ -86,6 +87,11 @@ const navItems = [
     title: "Activity",
     icon: History,
     url: "/admin/activity",
+  },
+  {
+    title: "Webhooks",
+    icon: Webhook,
+    url: "/admin/webhooks",
   },
   {
     title: "Components",

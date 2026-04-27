@@ -17,6 +17,7 @@ import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
+import { Route as AdminWebhooksRouteImport } from './routes/admin/webhooks'
 import { Route as AdminVisitorsRouteImport } from './routes/admin/visitors'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminRateLimitsRouteImport } from './routes/admin/rate-limits'
@@ -66,6 +67,11 @@ const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
   id: '/payment/success',
   path: '/payment/success',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
+  id: '/webhooks',
+  path: '/webhooks',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminVisitorsRoute = AdminVisitorsRouteImport.update({
   id: '/visitors',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/visitors': typeof AdminVisitorsRoute
+  '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/visitors': typeof AdminVisitorsRoute
+  '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/visitors': typeof AdminVisitorsRoute
+  '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin/rate-limits'
     | '/admin/users'
     | '/admin/visitors'
+    | '/admin/webhooks'
     | '/payment/success'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/admin/rate-limits'
     | '/admin/users'
     | '/admin/visitors'
+    | '/admin/webhooks'
     | '/payment/success'
     | '/admin'
   id:
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/admin/rate-limits'
     | '/admin/users'
     | '/admin/visitors'
+    | '/admin/webhooks'
     | '/payment/success'
     | '/_public/'
     | '/admin/'
@@ -304,6 +316,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/payment/success'
       preLoaderRoute: typeof PaymentSuccessRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/webhooks': {
+      id: '/admin/webhooks'
+      path: '/webhooks'
+      fullPath: '/admin/webhooks'
+      preLoaderRoute: typeof AdminWebhooksRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/visitors': {
       id: '/admin/visitors'
@@ -400,6 +419,7 @@ interface AdminRouteChildren {
   AdminRateLimitsRoute: typeof AdminRateLimitsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVisitorsRoute: typeof AdminVisitorsRoute
+  AdminWebhooksRoute: typeof AdminWebhooksRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -411,6 +431,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminRateLimitsRoute: AdminRateLimitsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVisitorsRoute: AdminVisitorsRoute,
+  AdminWebhooksRoute: AdminWebhooksRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
