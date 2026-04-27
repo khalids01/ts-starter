@@ -1,6 +1,15 @@
 import { Elysia } from "elysia";
-import { Checkout, Webhooks } from "@polar-sh/elysia";
+import { Checkout } from "@polar-sh/elysia";
+import { handleWebhookPayload } from "@polar-sh/adapter-utils";
+import {
+    validateEvent,
+    WebhookVerificationError,
+} from "@polar-sh/sdk/webhooks";
 import { env, getRequiredPolarEnv } from "@env/server";
+import {
+    handlePolarPayload,
+    processPolarWebhookOnce,
+} from "./polar.service";
 
 export const PRODUCT_ID = "c9fe3a9c-1663-48ec-b7c5-75fdc6be91ca";
 
@@ -28,30 +37,54 @@ function buildPolarController() {
     )
     .post(
         "/webhooks",
-        Webhooks({
-            webhookSecret: polarEnv.POLAR_WEBHOOK_SECRET,
-            onPayload: async (payload) => {
-                try {
-                    switch (payload.type) {
-                        case "subscription.created":
-                        case "subscription.updated":
-                        case "subscription.active":
-                            console.log(`${payload.type} for ${payload.data.customerId}`);
-                            // Note: Better-Auth's Polar plugin already handles some of this, 
-                            // but you can add custom logic here if needed.
-                            break;
-                        case "subscription.revoked":
-                        case "subscription.canceled":
-                            console.log(`${payload.type} for ${payload.data.customerId}`);
-                            break;
-                        default:
-                            console.log(`Unhandled event type: ${payload.type}`);
-                    }
-                } catch (error) {
-                    console.error("Error processing webhook:", error);
-                }
-            },
-        }),
+        async ({ request, set }) => {
+            const requestBody = await request.text();
+            const eventId = request.headers.get("webhook-id") ?? "";
+            const webhookHeaders = {
+                "webhook-id": eventId,
+                "webhook-timestamp": request.headers.get("webhook-timestamp") ?? "",
+                "webhook-signature": request.headers.get("webhook-signature") ?? "",
+            };
+
+            if (!eventId) {
+                set.status = 400;
+                return { received: false };
+            }
+
+            let payload: ReturnType<typeof validateEvent>;
+            try {
+                payload = validateEvent(
+                    requestBody,
+                    webhookHeaders,
+                    polarEnv.POLAR_WEBHOOK_SECRET,
+                );
+            } catch (error) {
+                console.log(error);
+                set.status = error instanceof WebhookVerificationError ? 400 : 500;
+                return error instanceof WebhookVerificationError
+                    ? { received: false }
+                    : { error: "Internal server error" };
+            }
+
+            try {
+                await processPolarWebhookOnce({
+                    eventId,
+                    payload,
+                    handler: async () => {
+                        await handleWebhookPayload(payload, {
+                            webhookSecret: polarEnv.POLAR_WEBHOOK_SECRET,
+                            onPayload: handlePolarPayload,
+                        });
+                    },
+                });
+            } catch (error) {
+                console.error("Error processing webhook:", error);
+                set.status = 500;
+                return { error: "Internal server error" };
+            }
+
+            return { received: true };
+        },
     );
 }
 

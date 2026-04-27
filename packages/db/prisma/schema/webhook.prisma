@@ -1,0 +1,18 @@
+model WebhookEvent {
+  id            String    @id @default(cuid())
+  provider      String
+  eventId       String
+  eventType     String
+  status        String    @default("processing")
+  attemptCount  Int       @default(1)
+  errorMessage  String?
+  processedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([provider, eventId])
+  @@index([status, createdAt])
+  @@index([eventType, createdAt])
+  @@map("webhook_event")
+}
+

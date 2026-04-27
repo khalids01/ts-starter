@@ -5,7 +5,7 @@ import {
   getClientIp,
   getTrustedCountry,
   type RequestIpLookup,
-} from "@/lib/client-ip";
+} from "../../lib/client-ip";
 import { createHash } from "node:crypto";
 import type { VisitorTrackBody } from "./visitors.dto";
 
