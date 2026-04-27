@@ -1,6 +1,11 @@
 import prisma from "@db";
 import { connectRedis } from "@redis";
 import { auth } from "@/modules/auth/auth.service";
+import {
+  getClientIp,
+  getTrustedCountry,
+  type RequestIpLookup,
+} from "@/lib/client-ip";
 import { createHash } from "node:crypto";
 import type { VisitorTrackBody } from "./visitors.dto";
 
@@ -102,28 +107,6 @@ function buildSetCookieHeader(visitorId: string, request: Request) {
   return parts.join("; ");
 }
 
-function getForwardedIp(headers: Headers) {
-  const forwardedFor = headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(",")[0]?.trim();
-    if (firstIp) {
-      return firstIp;
-    }
-  }
-
-  const realIp = headers.get("x-real-ip");
-  if (realIp) {
-    return realIp;
-  }
-
-  const cfIp = headers.get("cf-connecting-ip");
-  if (cfIp) {
-    return cfIp;
-  }
-
-  return null;
-}
-
 function hashIp(ip: string | null) {
   if (!ip) {
     return null;
@@ -159,15 +142,6 @@ function detectDeviceType(userAgent: string | null) {
   }
 
   return "desktop";
-}
-
-function detectCountry(headers: Headers) {
-  return (
-    headers.get("cf-ipcountry") ??
-    headers.get("x-vercel-ip-country") ??
-    headers.get("x-country-code") ??
-    null
-  );
 }
 
 function normalizePath(inputPath: string) {
@@ -547,6 +521,7 @@ export class VisitorsService {
     request: Request;
     body: VisitorTrackBody;
     setCookie: (value: string) => void;
+    requestIP?: RequestIpLookup;
   }) {
     const cookies = parseCookies(input.request.headers.get("cookie"));
     const existingVisitorId = cookies.get(VISITOR_COOKIE_KEY);
@@ -558,7 +533,10 @@ export class VisitorsService {
       input.setCookie(buildSetCookieHeader(visitorId, input.request));
     }
 
-    const ip = getForwardedIp(input.request.headers);
+    const { ip, trustedProxyHeaders } = getClientIp({
+      request: input.request,
+      requestIP: input.requestIP,
+    });
     const allowed = await enforceTrackRateLimit(ip, visitorId);
     if (!allowed) {
       return {
@@ -596,7 +574,7 @@ export class VisitorsService {
       referrer,
       isBot: detectBot(userAgent),
       deviceType: detectDeviceType(userAgent),
-      country: detectCountry(input.request.headers),
+      country: getTrustedCountry(input.request.headers, trustedProxyHeaders),
       ipHash: hashIp(ip),
       eventCount: 1,
     });

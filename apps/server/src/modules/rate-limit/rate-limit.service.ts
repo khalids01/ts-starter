@@ -1,6 +1,7 @@
 import prisma from "@db";
 import { auth } from "@/modules/auth/auth.service";
 import { connectRedis } from "@redis";
+import { getClientIp } from "@/lib/client-ip";
 import type { RateLimitSettings } from "@db";
 import type {
   RateLimitConfigInput,
@@ -172,28 +173,6 @@ function getMinuteStatsKeys(group: RateLimitGroup, now: number) {
 
 function getTodayStatsKey(group: RateLimitGroup, date: Date) {
   return `ratelimit:stats:blocked:${group}:day:${dayBucket(date)}`;
-}
-
-function getForwardedIp(headers: Headers) {
-  const forwardedFor = headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(",")[0]?.trim();
-    if (firstIp) {
-      return firstIp;
-    }
-  }
-
-  const realIp = headers.get("x-real-ip");
-  if (realIp) {
-    return realIp;
-  }
-
-  const cfIp = headers.get("cf-connecting-ip");
-  if (cfIp) {
-    return cfIp;
-  }
-
-  return null;
 }
 
 function getSubject(sessionUserId: string | null, ip: string | null) {
@@ -428,10 +407,12 @@ export async function enforceRateLimit(input: EnforceInput) {
     }
 
     const group = getGroup(pathname, session.role, session.userId);
-    const ip =
-      getForwardedIp(request.headers) ??
-      input.server?.requestIP?.(request)?.address ??
-      null;
+    const { ip } = getClientIp({
+      request,
+      requestIP: input.server?.requestIP
+        ? (currentRequest) => input.server!.requestIP!(currentRequest)
+        : undefined,
+    });
     const subject = getSubject(session.userId, ip);
     const decision = await consumeRateLimit(group, subject, config.groups[group]);
 
@@ -468,7 +449,8 @@ export async function enforceWebsocketRateLimit(request: Request) {
       return { allowed: true as const };
     }
 
-    const subject = getSubject(session.userId, getForwardedIp(request.headers));
+    const { ip } = getClientIp({ request });
+    const subject = getSubject(session.userId, ip);
     const decision = await consumeRateLimit("special", subject, config.groups.special);
 
     if (decision.allowed) {

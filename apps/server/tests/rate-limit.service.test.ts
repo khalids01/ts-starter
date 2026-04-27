@@ -132,7 +132,11 @@ function createSettings(overrides: Partial<SettingsRecord> = {}): SettingsRecord
 
 type RequestHeaders = Record<string, string> | Headers | Array<[string, string]>;
 
-function createContext(url: string, headers?: RequestHeaders) {
+function createContext(
+  url: string,
+  headers?: RequestHeaders,
+  peerIp = "10.0.0.1",
+) {
   return {
     request: new Request(url, { headers }),
     set: {
@@ -141,7 +145,7 @@ function createContext(url: string, headers?: RequestHeaders) {
     },
     server: {
       requestIP: () => ({
-        address: "10.0.0.1",
+        address: peerIp,
       }),
     },
   };
@@ -241,7 +245,53 @@ describe("rateLimitService", () => {
       retryAfterSeconds: 60,
     });
     expect(third.set.status).toBe(429);
-    expect(redisState.keys.some((key) => key.includes("ratelimit:public:ip:203.0.113.10"))).toBe(true);
+    expect(
+      redisState.keys.some((key) =>
+        key.includes("ratelimit:public:ip:203.0.113.10"),
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores spoofed forwarded IP headers from untrusted public peers", async () => {
+    const { enforceRateLimit } = await import("../src/modules/rate-limit/rate-limit.service");
+    currentSettings = createSettings({
+      publicMaxRequests: 1,
+    });
+
+    const first = createContext(
+      "http://localhost/owner/setup-status",
+      {
+        "x-forwarded-for": "203.0.113.10",
+      },
+      "198.51.100.99",
+    );
+    const second = createContext(
+      "http://localhost/owner/setup-status",
+      {
+        "x-forwarded-for": "203.0.113.11",
+      },
+      "198.51.100.99",
+    );
+
+    expect(await enforceRateLimit(first as any)).toBeUndefined();
+
+    const blocked = await enforceRateLimit(second as any);
+
+    expect(blocked).toEqual({
+      message: "Too many requests",
+      group: "public",
+      retryAfterSeconds: 60,
+    });
+    expect(
+      redisState.keys.some((key) =>
+        key.includes("ratelimit:public:ip:198.51.100.99"),
+      ),
+    ).toBe(true);
+    expect(
+      redisState.keys.some((key) =>
+        key.includes("ratelimit:public:ip:203.0.113.11"),
+      ),
+    ).toBe(false);
   });
 
   it("uses the authenticated user id for protected requests", async () => {

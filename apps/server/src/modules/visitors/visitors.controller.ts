@@ -9,13 +9,14 @@ export const visitorsController = new Elysia({
   },
 }).post(
   "/track",
-  async ({ request, body, set }) => {
+  async ({ request, body, set, server }) => {
     const result = await visitorsService.trackVisit({
       request,
       body,
       setCookie: (value) => {
         set.headers["set-cookie"] = value;
       },
+      requestIP: (currentRequest) => server?.requestIP(currentRequest) ?? null,
     });
 
     if (!result.ok && result.rateLimited) {
