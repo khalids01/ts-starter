@@ -7,6 +7,7 @@ import { app } from "./modules/app";
 import { openapi } from "@elysiajs/openapi";
 import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
+import { securityHeadersPlugin } from "./plugins/security-headers";
 
 const shouldLogRequests = env.NODE_ENV === "development";
 const docsPlugin =
@@ -21,6 +22,7 @@ console.log("Redis is ready");
 startVisitorFlushWorker();
 
 const server = new Elysia()
+  .use(securityHeadersPlugin({ production: env.NODE_ENV === "production" }))
   .use(
     cors({
       origin: env.CORS_ORIGIN,
