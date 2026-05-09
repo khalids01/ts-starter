@@ -26,6 +26,11 @@ export const auth = betterAuth({
   },
   trustedOrigins: [env.CORS_ORIGIN],
   advanced: {
+    cookies:{
+      session_token:{
+        name: env.AUTH_SESSION_COOKIE_NAME
+      }
+    },
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
