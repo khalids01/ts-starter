@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@env/web";
 
@@ -8,7 +8,7 @@ type TrackPayload = {
   activityType: "pageview" | "heartbeat" | "activity";
 };
 
-const TRACK_INTERVAL_MS = 30_000;
+// const TRACK_INTERVAL_MS = 30_000;
 
 function shouldTrackPath(pathname: string) {
   if (pathname.startsWith("/admin")) {
@@ -36,7 +36,7 @@ async function sendTrack(payload: TrackPayload) {
 
 export function VisitorTracker() {
   const location = useLocation();
-  const heartbeatRef = useRef<number | null>(null);
+  // const heartbeatRef = useRef<number | null>(null);
 
   useEffect(() => {
     const pathname = location.pathname;
@@ -51,37 +51,38 @@ export function VisitorTracker() {
     });
   }, [location.pathname, location.searchStr]);
 
-  useEffect(() => {
-    const tick = () => {
-      const pathname = window.location.pathname;
-      if (!shouldTrackPath(pathname) || document.hidden) {
-        return;
-      }
-
-      void sendTrack({
-        path: `${window.location.pathname}${window.location.search}`,
-        activityType: "heartbeat",
-      });
-    };
-
-    const interval = window.setInterval(tick, TRACK_INTERVAL_MS);
-    heartbeatRef.current = interval;
-
-    const onVisibilityChange = () => {
-      if (!document.hidden) {
-        tick();
-      }
-    };
-
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      if (heartbeatRef.current) {
-        window.clearInterval(heartbeatRef.current);
-      }
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, []);
+  // Heartbeat disabled for now — re-enable when periodic presence tracking is needed.
+  // useEffect(() => {
+  //   const tick = () => {
+  //     const pathname = window.location.pathname;
+  //     if (!shouldTrackPath(pathname) || document.hidden) {
+  //       return;
+  //     }
+  //
+  //     void sendTrack({
+  //       path: `${window.location.pathname}${window.location.search}`,
+  //       activityType: "heartbeat",
+  //     });
+  //   };
+  //
+  //   const interval = window.setInterval(tick, TRACK_INTERVAL_MS);
+  //   heartbeatRef.current = interval;
+  //
+  //   const onVisibilityChange = () => {
+  //     if (!document.hidden) {
+  //       tick();
+  //     }
+  //   };
+  //
+  //   document.addEventListener("visibilitychange", onVisibilityChange);
+  //
+  //   return () => {
+  //     if (heartbeatRef.current) {
+  //       window.clearInterval(heartbeatRef.current);
+  //     }
+  //     document.removeEventListener("visibilitychange", onVisibilityChange);
+  //   };
+  // }, []);
 
   return null;
 }
