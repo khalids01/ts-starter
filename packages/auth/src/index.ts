@@ -39,11 +39,6 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      role: {
-        type: "string",
-        input: false,
-        output: true,
-      },
       banned: {
         type: "boolean",
         input: false,

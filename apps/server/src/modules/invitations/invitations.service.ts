@@ -1,5 +1,6 @@
 import prisma from "@db";
-import type { Role } from "@db";
+import { Roles, type RoleSlug } from "@rbac";
+import { assignUserRoleAndInvalidate } from "@/rbac/assignments";
 
 type InvitationErrorCode =
   | "INVITATION_NOT_FOUND"
@@ -17,7 +18,7 @@ type InvitationError = {
 type InvitationForView = {
   id: string;
   email: string;
-  role: string;
+  role: { slug: string; name: string };
   status: string;
   expiresAt: string;
   inviterName: string;
@@ -71,11 +72,21 @@ function invitationNotPending(status: string): InvitationError {
   };
 }
 
+function skipsOnboardingForRole(slug: RoleSlug) {
+  return slug === Roles.PlatformAdmin || slug === Roles.PlatformOwner;
+}
+
 export class InvitationsService {
   async getInvitationById(id: string): Promise<InvitationForView | InvitationError> {
     const invitation = await prisma.invitation.findUnique({
       where: { id },
       include: {
+        role: {
+          select: {
+            slug: true,
+            name: true,
+          },
+        },
         user: {
           select: {
             name: true,
@@ -131,6 +142,9 @@ export class InvitationsService {
       };
     }
 
+    const invitedRoleSlug = invitationLookup.role.slug as RoleSlug;
+    const skipOnboarding = skipsOnboardingForRole(invitedRoleSlug);
+
     const result = await prisma.$transaction(async (tx) => {
       const updatedInvitation = await tx.invitation.updateMany({
         where: {
@@ -146,20 +160,16 @@ export class InvitationsService {
         return null;
       }
 
-      const invitedRole = invitationLookup.role as Role;
-      const skipsOnboarding = invitedRole === "ADMIN" || invitedRole === "OWNER";
-
       const updatedUser = await tx.user.update({
         where: { id: args.userId },
-        data: {
-          role: invitedRole,
-          ...(skipsOnboarding ? { onboardingComplete: true } : {}),
-        },
+        data: skipOnboarding ? { onboardingComplete: true } : {},
         select: { onboardingComplete: true },
       });
 
       return {
-        redirectTo: updatedUser.onboardingComplete ? "/dashboard" : "/onboarding",
+        redirectTo: updatedUser.onboardingComplete
+          ? "/dashboard"
+          : "/onboarding",
       } as const;
     });
 
@@ -169,6 +179,8 @@ export class InvitationsService {
         error: invitationNotPending("accepted"),
       };
     }
+
+    await assignUserRoleAndInvalidate(args.userId, invitedRoleSlug);
 
     return {
       success: true,

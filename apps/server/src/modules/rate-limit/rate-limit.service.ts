@@ -190,11 +190,10 @@ async function getSessionSummary(request: Request) {
 
   return {
     userId: session?.user?.id ?? null,
-    role: session?.user?.role ?? null,
   };
 }
 
-function getGroup(pathname: string, role: string | null, userId: string | null): RateLimitGroup {
+function getGroup(pathname: string, userId: string | null): RateLimitGroup {
   if (pathname === "/polar/webhooks" || pathname === "/notifications/ws") {
     return "special";
   }
@@ -207,7 +206,7 @@ function getGroup(pathname: string, role: string | null, userId: string | null):
     return "admin";
   }
 
-  if (role || userId) {
+  if (userId) {
     return "protected";
   }
 
@@ -406,7 +405,7 @@ export async function enforceRateLimit(input: EnforceInput) {
       return;
     }
 
-    const group = getGroup(pathname, session.role, session.userId);
+    const group = getGroup(pathname, session.userId);
     const { ip } = getClientIp({
       request,
       requestIP: input.server?.requestIP

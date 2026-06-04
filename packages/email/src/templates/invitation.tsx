@@ -19,23 +19,17 @@ export type InvitationTemplateInput = {
   inviteUrl: string;
   inviterName: string;
   invitedEmail: string;
-  invitedRole: "USER" | "ADMIN";
+  roleLabel: string;
   expiresInDays?: number;
 };
-
-function formatRole(role: "USER" | "ADMIN") {
-  return role === "ADMIN" ? "Admin" : "User";
-}
 
 export function InvitationEmail({
   inviteUrl,
   inviterName,
   invitedEmail,
-  invitedRole,
+  roleLabel,
   expiresInDays = 7,
 }: InvitationTemplateInput) {
-  const roleLabel = formatRole(invitedRole);
-
   return (
     <Html>
       <Head />
@@ -123,7 +117,7 @@ InvitationEmail.PreviewProps = {
   inviteUrl: "https://example.com/accept-invitation?id=inv_123",
   inviterName: "A team member",
   invitedEmail: "invitee@example.com",
-  invitedRole: "USER",
+  roleLabel: "User",
   expiresInDays: 7,
 } satisfies InvitationTemplateInput;
 

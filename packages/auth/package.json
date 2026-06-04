@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@db": "workspace:*",
+    "@rbac": "workspace:*",
     "@email": "workspace:*",
     "@env": "workspace:*",
     "@polar-sh/better-auth": "^1.8.1",

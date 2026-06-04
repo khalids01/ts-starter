@@ -1,4 +1,5 @@
 import prisma, { type Prisma } from "@db";
+import { Roles } from "@rbac";
 import type { ActivityQuery, ActivitySeverity } from "./activity.dto";
 
 type ActivityUser = {
@@ -38,8 +39,38 @@ const activityUserSelect = {
   name: true,
   email: true,
   image: true,
-  role: true,
+  rbacRoles: {
+    take: 1,
+    select: {
+      role: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+  },
 };
+
+function mapActivityUser(
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    rbacRoles: Array<{ role: { slug: string } }>;
+  } | null,
+): ActivityUser | null {
+  if (!user) {
+    return null;
+  }
+
+  const { rbacRoles, ...rest } = user;
+
+  return {
+    ...rest,
+    role: rbacRoles[0]?.role.slug ?? Roles.PlatformUser,
+  };
+}
 
 function normalizePagination(page?: number, limit?: number) {
   const normalizedLimit = Math.min(Math.max(limit ?? 20, 1), 100);
@@ -106,9 +137,17 @@ export class ActivityService {
 
     return {
       items: rows.map((row): ActivityItem => ({
-        ...row,
+        id: row.id,
+        type: row.type,
+        actorUserId: row.actorUserId,
+        targetUserId: row.targetUserId,
+        visitorId: row.visitorId,
         severity: row.severity as ActivitySeverity,
+        message: row.message,
+        metadata: row.metadata,
         createdAt: row.createdAt.toISOString(),
+        actorUser: mapActivityUser(row.actorUser),
+        targetUser: mapActivityUser(row.targetUser),
       })),
       total,
       pages,

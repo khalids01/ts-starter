@@ -8,10 +8,9 @@ const rbacState = {
   permissions: new Map<string, { id: string; name: string }>(),
   roles: new Map<string, { id: string; slug: string; isProtected: boolean; customizedAt: Date | null }>(),
   rolePermissions: new Map<string, Set<string>>(),
-  userRoles: new Map<string, string>(),
 };
 
-mock.module("@db", () => ({
+const dbMock = {
   default: {
     rbacPermission: {
       upsert: async ({ where, create }: { where: { name: string }; create: { name: string; group?: string } }) => {
@@ -48,7 +47,23 @@ mock.module("@db", () => ({
       },
       findUnique: async ({ where }: { where: { slug: string } }) =>
         rbacState.roles.get(where.slug) ?? null,
-      findMany: async () => [...rbacState.roles.values()],
+      findMany: async () =>
+        [...rbacState.roles.values()].map((role) => {
+          const permissionIds = rbacState.rolePermissions.get(role.id) ?? new Set<string>();
+          return {
+            id: role.id,
+            permissions: [...permissionIds].map((permissionId) => {
+              const permission = [...rbacState.permissions.values()].find(
+                (entry) => entry.id === permissionId,
+              );
+              return {
+                permission: {
+                  name: permission?.name ?? permissionId,
+                },
+              };
+            }),
+          };
+        }),
     },
     rbacRolePermission: {
       deleteMany: async ({ where }: { where: { roleId: string } }) => {
@@ -67,29 +82,17 @@ mock.module("@db", () => ({
         }
       },
     },
-    rbacUserRole: {
-      deleteMany: async () => ({}),
-      create: async ({ data }: { data: { userId: string; roleId: string } }) => {
-        rbacState.userRoles.set(data.userId, data.roleId);
-      },
-    },
-    user: {
-      findMany: async () => [
-        { id: "user-1", role: "USER" },
-        { id: "admin-1", role: "ADMIN" },
-      ],
-    },
     $disconnect: async () => {},
   },
-}));
+};
+
+mock.module("../../../../packages/db/src/client.ts", () => dbMock);
 
 describe("rbac seed integration", () => {
   it("upserts all permissions and respects customized roles", async () => {
     rbacState.permissions.clear();
     rbacState.roles.clear();
     rbacState.rolePermissions.clear();
-    rbacState.userRoles.clear();
-
     const { seedRbac } = await import(
       "../../../../packages/db/src/seed-rbac.ts"
     );

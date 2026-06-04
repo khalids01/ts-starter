@@ -10,15 +10,18 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@db": ["../db/src"],
+      "@db": ["../db/src/index.ts"],
+      "@db/*": ["../db/src/*"],
       "@env/*": ["../env/src/*"],
       "@config": ["../config/src/config.ts"],
-      "@email": ["../email/src"]
+      "@email": ["../email/src"],
+      "@rbac": ["../rbac/src/index.ts"]
     }
   },
   "include": [
     "src/**/*",
     "../db/src/**/*",
+    "../rbac/src/**/*",
     "../email/src/**/*",
     "../env/src/**/*",
     "../config/src/**/*"

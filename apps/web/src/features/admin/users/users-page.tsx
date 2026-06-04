@@ -38,10 +38,10 @@ export function UsersPage() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: async ({ email, role }: { email: string; role: any }) => {
+    mutationFn: async ({ email, roleSlug }: { email: string; roleSlug: string }) => {
       const { data, error } = await client.admin.users.invite.post({
         email,
-        role,
+        roleSlug,
       });
       if (error) {
         throw error;
@@ -94,7 +94,7 @@ export function UsersPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">User Management</h1>
         <InviteDialog
-          onInvite={(email, role) => inviteMutation.mutate({ email, role })}
+          onInvite={(email, roleSlug) => inviteMutation.mutate({ email, roleSlug })}
           isLoading={inviteMutation.isPending}
         />
       </div>

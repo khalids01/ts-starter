@@ -29,9 +29,11 @@ import { ThemeToggle } from "@/components/core/theme-toggle";
 import { NotificationBell } from "@/components/core/notification-bell";
 import Logo from "@/components/core/logo";
 
+import { Permissions } from "@rbac";
 import { FeedbackButton } from "@/components/core/feedback-button";
 import { getUser } from "@/features/user/lib/get-user";
 import { getPayment } from "@/features/payment/lib/get-payment";
+import { useSession } from "@/providers/session-provider";
 
 export const Route = createFileRoute("/_protected")({
   component: ProtectedLayout,
@@ -64,7 +66,7 @@ const navItems = [
 
 function ProtectedLayout() {
   const location = useLocation();
-  const { session } = Route.useRouteContext();
+  const { session: appSession } = useSession();
 
   return (
     <SidebarProvider>
@@ -132,7 +134,9 @@ function ProtectedLayout() {
               </nav>
             </div>
             <div className="flex items-center gap-3">
-              {(session?.user as any)?.role === "USER" && <FeedbackButton />}
+              {appSession?.permissions.includes(Permissions.FeedbackSubmit) && (
+                <FeedbackButton />
+              )}
               <NotificationBell />
               <ThemeToggle />
               <UserMenu />

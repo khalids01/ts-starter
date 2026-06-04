@@ -1,3 +1,4 @@
+import { Roles } from "@rbac";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -59,12 +60,13 @@ export function UsersListTab(props: {
                   <TableCell>
                     <Badge
                       variant={
-                        user.role === "ADMIN" || user.role === "OWNER"
+                        user.role?.slug === Roles.PlatformAdmin ||
+                        user.role?.slug === Roles.PlatformOwner
                           ? "default"
                           : "secondary"
                       }
                     >
-                      {user.role}
+                      {user.role?.name ?? user.role?.slug ?? "User"}
                     </Badge>
                   </TableCell>
                   <TableCell>

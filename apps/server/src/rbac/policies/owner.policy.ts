@@ -1,5 +1,4 @@
-import type { Role } from "@db";
-import { Permissions, hasPermission, type Permission } from "@rbac";
+import { Permissions, Roles, hasPermission, type Permission, type RoleSlug } from "@rbac";
 
 export class RbacPolicyError extends Error {
   status = 403;
@@ -20,16 +19,20 @@ export function actorCanManageOwners(
   return hasPermission(permissions, Permissions.AdminUsersGrantAdmin);
 }
 
-export function isOwnerRole(role: Role | string | null | undefined) {
-  return role === "OWNER";
+export function isOwnerRole(slug: RoleSlug | string | null | undefined) {
+  return slug === Roles.PlatformOwner;
+}
+
+export function isAdminRole(slug: RoleSlug | string | null | undefined) {
+  return slug === Roles.PlatformAdmin;
 }
 
 export function assertActorCanAccessOwnerTarget(args: {
   actorPermissions: ReadonlySet<Permission> | readonly Permission[];
-  targetRole: Role | string | null | undefined;
+  targetRoleSlug: RoleSlug | string | null | undefined;
 }) {
   if (
-    isOwnerRole(args.targetRole) &&
+    isOwnerRole(args.targetRoleSlug) &&
     !actorCanManageOwners(args.actorPermissions)
   ) {
     policyError("Only owners can access owner accounts");
@@ -38,28 +41,28 @@ export function assertActorCanAccessOwnerTarget(args: {
 
 export function assertActorCanGrantAdminRole(args: {
   actorPermissions: ReadonlySet<Permission> | readonly Permission[];
-  nextRole?: Role | string | null;
+  nextRoleSlug?: RoleSlug | string | null;
 }) {
   if (
-    args.nextRole === "ADMIN" &&
+    isAdminRole(args.nextRoleSlug) &&
     !actorCanManageOwners(args.actorPermissions)
   ) {
     policyError("Only owners can grant admin role");
   }
 }
 
-export function assertNotAssignableOwnerRole(role?: Role | string | null) {
-  if (role === "OWNER") {
+export function assertNotAssignableOwnerRole(roleSlug?: RoleSlug | string | null) {
+  if (isOwnerRole(roleSlug)) {
     throw new Error("Owner role cannot be assigned from user management");
   }
 }
 
 export function assertActorCanChangePrivilegedAccounts(args: {
   actorPermissions: ReadonlySet<Permission> | readonly Permission[];
-  targetRole: Role | string | null | undefined;
+  targetRoleSlug: RoleSlug | string | null | undefined;
 }) {
   const privileged =
-    args.targetRole === "OWNER" || args.targetRole === "ADMIN";
+    isOwnerRole(args.targetRoleSlug) || isAdminRole(args.targetRoleSlug);
 
   if (privileged && !actorCanManageOwners(args.actorPermissions)) {
     policyError("Only owners can change admin or owner accounts");
@@ -82,7 +85,7 @@ export function shouldHideOwnerUsers(
   return !actorCanManageOwners(permissions);
 }
 
-export function filterOwnerUsers<T extends { role: Role | string }>(
+export function filterOwnerUsers<T extends { role: { slug: string } }>(
   users: T[],
   permissions: ReadonlySet<Permission> | readonly Permission[],
 ) {
@@ -90,5 +93,5 @@ export function filterOwnerUsers<T extends { role: Role | string }>(
     return users;
   }
 
-  return users.filter((user) => !isOwnerRole(user.role));
+  return users.filter((user) => !isOwnerRole(user.role.slug));
 }

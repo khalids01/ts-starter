@@ -5,6 +5,15 @@
     ".": {
       "default": "./src/index.ts"
     },
+    "./client": {
+      "default": "./src/client.ts"
+    },
+    "./rbac/assignments": {
+      "default": "./src/rbac/assignments.ts"
+    },
+    "./rbac/*": {
+      "default": "./src/rbac/*.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }

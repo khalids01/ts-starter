@@ -1,5 +1,7 @@
 import type { BetterAuthPlugin, User } from "better-auth";
 import prisma from "@db";
+import { getPrimaryRoleSlug } from "@db/rbac/assignments";
+import { Roles } from "@rbac";
 
 import { polarClient } from "./payments";
 
@@ -7,14 +9,10 @@ type AuthUser = Partial<User> & {
   id?: string;
   email?: string | null;
   name?: string | null;
-  role?: string | null;
   isAnonymous?: boolean | null;
 };
 
-const BILLING_ROLE = "USER";
-const NON_BILLING_ROLES = ["ADMIN", "OWNER"] as const;
-
-async function getPendingInvitationRole(email: string) {
+async function getPendingInvitationRoleSlug(email: string) {
   const invitation = await prisma.invitation.findFirst({
     where: {
       email: {
@@ -30,11 +28,15 @@ async function getPendingInvitationRole(email: string) {
       createdAt: "desc",
     },
     select: {
-      role: true,
+      role: {
+        select: {
+          slug: true,
+        },
+      },
     },
   });
 
-  return invitation?.role ?? null;
+  return invitation?.role.slug ?? null;
 }
 
 async function isBillingUser(user: AuthUser) {
@@ -42,15 +44,17 @@ async function isBillingUser(user: AuthUser) {
     return false;
   }
 
-  const invitedRole = await getPendingInvitationRole(user.email);
-  if (
-    invitedRole &&
-    NON_BILLING_ROLES.includes(invitedRole as (typeof NON_BILLING_ROLES)[number])
-  ) {
+  const invitedRoleSlug = await getPendingInvitationRoleSlug(user.email);
+  if (invitedRoleSlug && invitedRoleSlug !== Roles.PlatformUser) {
     return false;
   }
 
-  return (user.role ?? BILLING_ROLE) === BILLING_ROLE;
+  if (!user.id) {
+    return invitedRoleSlug === null || invitedRoleSlug === Roles.PlatformUser;
+  }
+
+  const primaryRoleSlug = await getPrimaryRoleSlug(user.id);
+  return primaryRoleSlug === Roles.PlatformUser;
 }
 
 async function ensurePolarCustomer(user: AuthUser) {

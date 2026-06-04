@@ -29,7 +29,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-import { getUser } from "@/features/user/lib/get-user";
+import { Permissions, Roles } from "@rbac";
+import { getRootSession } from "@/features/user/lib/get-root-session";
 import {
   getOnboardingPlans,
   type OnboardingPlanOption,
@@ -37,7 +38,10 @@ import {
 
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
-    const [session, plans] = await Promise.all([getUser(), getOnboardingPlans()]);
+    const [session, plans] = await Promise.all([
+      getRootSession(),
+      getOnboardingPlans(),
+    ]);
     return { session, plans };
   },
   loader: async ({ context }) => {
@@ -47,10 +51,13 @@ export const Route = createFileRoute("/onboarding")({
       });
     }
 
-    const user = context.session.user as any;
-    const skipsOnboarding = user.role === "ADMIN" || user.role === "OWNER";
+    const session = context.session;
+    const skipsOnboarding =
+      session?.permissions.includes(Permissions.AdminAccess) ||
+      session?.primaryRoleSlug === Roles.PlatformOwner ||
+      session?.primaryRoleSlug === Roles.PlatformAdmin;
 
-    if (skipsOnboarding || user.onboardingComplete === true) {
+    if (skipsOnboarding || session?.user.onboardingComplete === true) {
       throw redirect({
         to: "/dashboard",
       });

@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
-import { toPermissionArray } from "@rbac";
+import { Roles, toPermissionArray } from "@rbac";
 import { authGuard } from "@/guards/auth.guard";
+import { loadUserRoles } from "@/rbac/resolve/load-user-roles";
 
 export const sessionController = new Elysia({
   prefix: "/session",
@@ -9,17 +10,19 @@ export const sessionController = new Elysia({
   .use(authGuard)
   .get(
     "/context",
-    ({ user, permissions }) => {
-      if (!user) {
-        return { user: null, permissions: [] };
+    async ({ user, permissions, userId }) => {
+      if (!user || !userId) {
+        return { user: null, permissions: [], roles: [] };
       }
+
+      const roles = await loadUserRoles(userId);
+      const primaryRoleSlug = roles[0]?.slug ?? Roles.PlatformUser;
 
       return {
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: (user as { role?: string }).role ?? "USER",
           onboardingComplete: Boolean(
             (user as { onboardingComplete?: boolean }).onboardingComplete,
           ),
@@ -34,6 +37,8 @@ export const sessionController = new Elysia({
               : null,
         },
         permissions: toPermissionArray(permissions ?? new Set()),
+        roles,
+        primaryRoleSlug,
       };
     },
     {

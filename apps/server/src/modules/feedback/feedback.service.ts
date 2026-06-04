@@ -1,4 +1,5 @@
 import prisma from "@db";
+import { Roles } from "@rbac";
 import { notificationsService } from "../notifications/notifications.service";
 import { activityService } from "../admin/activity/activity.service";
 import type { FeedbackQuery } from "./feedback.dto";
@@ -23,8 +24,14 @@ export const feedbackService = {
         // Get all admins and owners
         const admins = await prisma.user.findMany({
             where: {
-                role: {
-                    in: ["ADMIN", "OWNER"],
+                rbacRoles: {
+                    some: {
+                        role: {
+                            slug: {
+                                in: [Roles.PlatformAdmin, Roles.PlatformOwner],
+                            },
+                        },
+                    },
                 },
             },
             select: { id: true },

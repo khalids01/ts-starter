@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 type InvitationData = {
   id: string;
   email: string;
-  role: string;
+  role: { slug: string; name: string };
   status: string;
   expiresAt: string;
   inviterName: string;
@@ -203,7 +203,7 @@ function AcceptInvitationPage() {
               <span className="font-medium">Email:</span> {invitation.email}
             </p>
             <p>
-              <span className="font-medium">Role:</span> {invitation.role}
+              <span className="font-medium">Role:</span> {invitation.role.name}
             </p>
             <p>
               <span className="font-medium">Expires:</span>{" "}

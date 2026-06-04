@@ -1,4 +1,4 @@
-import prisma from "../../src/index.ts";
+import prisma from "../../src/client.ts";
 import {
   AllPermissions,
   RoleDefinitions,
@@ -119,38 +119,6 @@ async function syncRolePermissions(
   return roles;
 }
 
-async function backfillUserRoles(roles: Record<RoleSlug, { id: string }>) {
-  const legacyToSlug: Record<string, RoleSlug> = {
-    OWNER: Roles.PlatformOwner,
-    ADMIN: Roles.PlatformAdmin,
-    USER: Roles.PlatformUser,
-  };
-
-  const users = await prisma.user.findMany({
-    select: { id: true, role: true },
-  });
-
-  for (const user of users) {
-    const slug = legacyToSlug[user.role];
-    if (!slug) {
-      continue;
-    }
-
-    const roleId = roles[slug].id;
-
-    await prisma.rbacUserRole.deleteMany({
-      where: { userId: user.id },
-    });
-
-    await prisma.rbacUserRole.create({
-      data: {
-        userId: user.id,
-        roleId,
-      },
-    });
-  }
-}
-
 async function warmRolePermissionCaches() {
   const redis = await connectRedis();
 
@@ -185,7 +153,6 @@ export async function seedRbac() {
   await upsertPermissions();
   const roles = await upsertRoles();
   await syncRolePermissions(roles);
-  await backfillUserRoles(roles);
 
   try {
     await warmRolePermissionCaches();

@@ -33,7 +33,16 @@ const safeActivityUserSelect = {
   name: true,
   email: true,
   image: true,
-  role: true,
+  rbacRoles: {
+    take: 1,
+    select: {
+      role: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+  },
 };
 
 describe("ActivityService", () => {
@@ -86,14 +95,14 @@ describe("ActivityService", () => {
           name: "Admin",
           email: "admin@example.com",
           image: null,
-          role: "ADMIN",
+          rbacRoles: [{ role: { slug: "platform.admin" } }],
         },
         targetUser: {
           id: "user-1",
           name: "User One",
           email: "user@example.com",
           image: null,
-          role: "USER",
+          rbacRoles: [{ role: { slug: "platform.user" } }],
         },
       },
     ]);
@@ -128,9 +137,11 @@ describe("ActivityService", () => {
       createdAt: "2026-04-25T12:00:00.000Z",
       actorUser: {
         email: "admin@example.com",
+        role: "platform.admin",
       },
       targetUser: {
         email: "user@example.com",
+        role: "platform.user",
       },
     });
   });

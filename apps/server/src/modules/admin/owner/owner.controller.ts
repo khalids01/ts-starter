@@ -8,7 +8,7 @@ import {
 } from "./owner.dto";
 import { env } from "@env/server";
 import { ownerInfoGuard } from "@/guards/owner-info.guard";
-import prisma from "@db";
+import { hasPlatformOwner } from "@db/rbac/assignments";
 import { auth } from "@auth";
 
 const ownerService = new OwnerService();
@@ -56,16 +56,7 @@ export const ownerController = new Elysia({ prefix: "/owner" })
         return { error: "Not Found" };
       }
 
-      const hasOwner = await prisma.user.findFirst({
-        where: {
-          role: "OWNER",
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      if (hasOwner) {
+      if (await hasPlatformOwner()) {
         set.status = 404;
         return { error: "Not Found" };
       }

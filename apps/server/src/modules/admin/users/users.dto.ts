@@ -1,15 +1,19 @@
 import { t } from "elysia";
-import { Role } from "@db";
+import { InviteableRoleSlugs, Roles } from "@rbac";
 
-export const UserRoleSchema = t.Enum(Role);
-export const AssignableUserRoleSchema = t.Union([
-    t.Literal("ADMIN"),
-    t.Literal("USER"),
+export const AssignableUserRoleSchema = t.Union(
+  InviteableRoleSlugs.map((slug) => t.Literal(slug)),
+);
+
+export const UserRoleFilterSchema = t.Union([
+  t.Literal(Roles.PlatformOwner),
+  t.Literal(Roles.PlatformAdmin),
+  t.Literal(Roles.PlatformUser),
 ]);
 
 export const UpdateUserDto = t.Object({
     name: t.Optional(t.String()),
-    role: t.Optional(AssignableUserRoleSchema),
+    roleSlug: t.Optional(AssignableUserRoleSchema),
 });
 
 export const BanUserDto = t.Object({
@@ -18,14 +22,14 @@ export const BanUserDto = t.Object({
 
 export const InviteUserDto = t.Object({
     email: t.String({ format: "email" }),
-    role: t.Optional(AssignableUserRoleSchema),
+    roleSlug: t.Optional(AssignableUserRoleSchema),
 });
 
 export const UserQueryDto = t.Object({
     page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
     limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 10 })),
     search: t.Optional(t.String()),
-    role: t.Optional(UserRoleSchema),
+    roleSlug: t.Optional(UserRoleFilterSchema),
     banned: t.Optional(t.Boolean()),
     archived: t.Optional(t.Boolean()),
 });

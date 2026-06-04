@@ -1,10 +1,10 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { env } from "@env/server";
-
-import { PrismaClient } from "../prisma/generated/client";
-
-const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
-
 export * from "../prisma/generated/client";
-export default prisma;
+export {
+  assignUserRole,
+  countActivePlatformOwners,
+  getPrimaryRoleSlug,
+  getRoleIdBySlug,
+  hasPlatformOwner,
+} from "./rbac/assignments.ts";
+export { default } from "./client.ts";
+export { default as prisma } from "./client.ts";

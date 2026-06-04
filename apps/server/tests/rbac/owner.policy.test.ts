@@ -16,7 +16,7 @@ describe("owner policy", () => {
     expect(() =>
       assertActorCanAccessOwnerTarget({
         actorPermissions: adminPermissions,
-        targetRole: "OWNER",
+        targetRoleSlug: Roles.PlatformOwner,
       }),
     ).toThrow("Only owners can access owner accounts");
   });
@@ -25,7 +25,7 @@ describe("owner policy", () => {
     expect(() =>
       assertActorCanAccessOwnerTarget({
         actorPermissions: ownerPermissions,
-        targetRole: "OWNER",
+        targetRoleSlug: Roles.PlatformOwner,
       }),
     ).not.toThrow();
   });
@@ -34,7 +34,7 @@ describe("owner policy", () => {
     expect(() =>
       assertActorCanGrantAdminRole({
         actorPermissions: adminPermissions,
-        nextRole: "ADMIN",
+        nextRoleSlug: Roles.PlatformAdmin,
       }),
     ).toThrow("Only owners can grant admin role");
   });
@@ -51,20 +51,20 @@ describe("owner policy", () => {
 
   it("filters owner users from admin list views", () => {
     const users = [
-      { id: "1", role: "USER" },
-      { id: "2", role: "OWNER" },
+      { id: "1", role: { slug: Roles.PlatformUser, name: "User" } },
+      { id: "2", role: { slug: Roles.PlatformOwner, name: "Owner" } },
     ];
 
     const filtered = filterOwnerUsers(users, adminPermissions);
     expect(filtered).toHaveLength(1);
-    expect(filtered[0]?.role).toBe("USER");
+    expect(filtered[0]?.role.slug).toBe(Roles.PlatformUser);
   });
 
   it("blocks admin from changing privileged accounts", () => {
     expect(() =>
       assertActorCanChangePrivilegedAccounts({
         actorPermissions: adminPermissions,
-        targetRole: "ADMIN",
+        targetRoleSlug: Roles.PlatformAdmin,
       }),
     ).toThrow("Only owners can change admin or owner accounts");
   });

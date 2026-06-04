@@ -218,7 +218,7 @@ export const usersController = new Elysia({
             try {
               return await usersService.inviteUser(
                 body.email,
-                body.role || "USER",
+                body.roleSlug,
                 userId,
               );
             } catch (error) {

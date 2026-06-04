@@ -19,6 +19,10 @@ const ownerActor = {
   permissions: new Set(RolePermissionMap[Roles.PlatformOwner]),
 };
 
+const assignUserRoleAndInvalidateMock = mock(async () => undefined);
+const countActivePlatformOwnersMock = mock(async () => 2);
+const getRoleIdBySlugMock = mock(async () => "role-user-id");
+
 const safeAdminUserSelect = {
   id: true,
   name: true,
@@ -27,14 +31,33 @@ const safeAdminUserSelect = {
   image: true,
   createdAt: true,
   updatedAt: true,
-  role: true,
   banned: true,
   banReason: true,
   archived: true,
   onboardingComplete: true,
   plan: true,
   subscriptionStatus: true,
+  rbacRoles: {
+    take: 1,
+    select: {
+      role: {
+        select: {
+          slug: true,
+          name: true,
+        },
+      },
+    },
+  },
 };
+
+const sampleRbacRoles = [
+  {
+    role: {
+      slug: Roles.PlatformUser,
+      name: "User",
+    },
+  },
+];
 
 mock.module("@db", () => ({
   default: {
@@ -53,6 +76,11 @@ mock.module("@db", () => ({
     },
   },
   Prisma,
+}));
+
+mock.module("@db/rbac/assignments", () => ({
+  countActivePlatformOwners: countActivePlatformOwnersMock,
+  getRoleIdBySlug: getRoleIdBySlugMock,
 }));
 
 mock.module("../src/modules/admin/activity/activity.service", () => ({
@@ -78,14 +106,14 @@ mock.module("@config", () => ({
   },
 }));
 
-mock.module("../src/rbac/policies/sync-user-role.ts", () => ({
-  syncLegacyUserRole: mock(async () => undefined),
+mock.module("../src/rbac/assignments.ts", () => ({
+  assignUserRoleAndInvalidate: assignUserRoleAndInvalidateMock,
 }));
 
 beforeEach(() => {
   userFindUniqueMock.mockResolvedValue({
     id: "user-1",
-    role: "USER",
+    rbacRoles: sampleRbacRoles,
   });
   userCountMock.mockResolvedValue(2);
   userUpdateMock.mockResolvedValue({
@@ -96,7 +124,7 @@ beforeEach(() => {
     image: null,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-    role: "USER",
+    rbacRoles: sampleRbacRoles,
     banned: false,
     banReason: null,
     archived: false,
@@ -105,6 +133,23 @@ beforeEach(() => {
     subscriptionStatus: null,
   });
   invitationCreateMock.mockResolvedValue({ id: "invitation-1" });
+  userFindManyMock.mockResolvedValue([]);
+  userDeleteMock.mockResolvedValue({
+    id: "user-1",
+    name: "User One",
+    email: "user@example.com",
+    emailVerified: true,
+    image: null,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    rbacRoles: sampleRbacRoles,
+    banned: false,
+    banReason: null,
+    archived: false,
+    onboardingComplete: false,
+    plan: "free",
+    subscriptionStatus: null,
+  });
 });
 
 afterEach(() => {
@@ -142,6 +187,7 @@ describe("UsersService", () => {
 
   it("bounds admin user list pagination", async () => {
     userCountMock.mockResolvedValue(250);
+    userFindManyMock.mockResolvedValue([]);
     const { usersService } = await import(
       "../src/modules/admin/users/users.service"
     );
@@ -162,6 +208,12 @@ describe("UsersService", () => {
   });
 
   it("uses a safe user projection for admin user details", async () => {
+    userFindUniqueMock.mockResolvedValueOnce({
+      id: "user-1",
+      rbacRoles: sampleRbacRoles,
+      invitations: [],
+    });
+
     const { usersService } = await import(
       "../src/modules/admin/users/users.service"
     );
@@ -176,7 +228,12 @@ describe("UsersService", () => {
           select: {
             id: true,
             email: true,
-            role: true,
+            role: {
+              select: {
+                slug: true,
+                name: true,
+              },
+            },
             expiresAt: true,
             status: true,
             createdAt: true,
@@ -235,7 +292,11 @@ describe("UsersService", () => {
     );
 
     await expect(
-      usersService.updateUser("user-1", { role: "OWNER" } as any, ownerActor),
+      usersService.updateUser(
+        "user-1",
+        { roleSlug: Roles.PlatformOwner },
+        ownerActor,
+      ),
     ).rejects.toThrow("Owner role cannot be assigned from user management");
     expect(userUpdateMock).not.toHaveBeenCalled();
   });
@@ -246,7 +307,11 @@ describe("UsersService", () => {
     );
 
     await expect(
-      usersService.inviteUser("owner@example.com", "OWNER" as any, "admin-1"),
+      usersService.inviteUser(
+        "owner@example.com",
+        Roles.PlatformOwner,
+        "admin-1",
+      ),
     ).rejects.toThrow("Owner role cannot be assigned from user management");
     expect(userFindUniqueMock).not.toHaveBeenCalled();
   });
@@ -276,15 +341,23 @@ describe("UsersService", () => {
       "../src/modules/admin/users/users.service"
     );
 
-    await usersService.updateUser("user-1", { role: "ADMIN" }, ownerActor);
+    await usersService.updateUser(
+      "user-1",
+      { roleSlug: Roles.PlatformAdmin },
+      ownerActor,
+    );
 
+    expect(assignUserRoleAndInvalidateMock).toHaveBeenCalledWith(
+      "user-1",
+      Roles.PlatformAdmin,
+    );
     expect(activityRecordMock).toHaveBeenCalledWith({
       type: "user.role_updated",
       actorUserId: "owner-1",
       targetUserId: "user-1",
-      message: "User One role changed to ADMIN",
+      message: "User One role changed to Admin",
       metadata: {
-        role: "ADMIN",
+        roleSlug: Roles.PlatformAdmin,
         email: "user@example.com",
       },
     });
@@ -299,15 +372,19 @@ describe("UsersService", () => {
       "../src/modules/admin/users/users.service"
     );
 
-    await usersService.inviteUser("new@example.com", "USER", "admin-1");
+    await usersService.inviteUser(
+      "new@example.com",
+      Roles.PlatformUser,
+      "admin-1",
+    );
 
     expect(activityRecordMock).toHaveBeenCalledWith({
       type: "user.invited",
       actorUserId: "admin-1",
-      message: "new@example.com was invited as USER",
+      message: "new@example.com was invited as User",
       metadata: {
         email: "new@example.com",
-        role: "USER",
+        roleSlug: Roles.PlatformUser,
         invitationId: "invitation-1",
       },
     });
@@ -349,7 +426,11 @@ describe("UsersService", () => {
     );
 
     await expect(
-      usersService.updateUser("user-1", { role: "ADMIN" }, adminActor),
+      usersService.updateUser(
+        "user-1",
+        { roleSlug: Roles.PlatformAdmin },
+        adminActor,
+      ),
     ).rejects.toThrow("Only owners can grant admin role");
     expect(userUpdateMock).not.toHaveBeenCalled();
   });
@@ -357,7 +438,9 @@ describe("UsersService", () => {
   it("prevents admins from changing owner accounts", async () => {
     userFindUniqueMock.mockResolvedValueOnce({
       id: "owner-1",
-      role: "OWNER",
+      rbacRoles: [
+        { role: { slug: Roles.PlatformOwner, name: "Owner" } },
+      ],
     });
 
     const { usersService } = await import(
@@ -373,7 +456,9 @@ describe("UsersService", () => {
   it("prevents admins from destructive actions against admin accounts", async () => {
     userFindUniqueMock.mockResolvedValueOnce({
       id: "admin-2",
-      role: "ADMIN",
+      rbacRoles: [
+        { role: { slug: Roles.PlatformAdmin, name: "Admin" } },
+      ],
     });
 
     const { usersService } = await import(
@@ -407,9 +492,11 @@ describe("UsersService", () => {
   it("prevents disabling or deleting the last active owner", async () => {
     userFindUniqueMock.mockResolvedValue({
       id: "owner-2",
-      role: "OWNER",
+      rbacRoles: [
+        { role: { slug: Roles.PlatformOwner, name: "Owner" } },
+      ],
     });
-    userCountMock.mockResolvedValue(1);
+    countActivePlatformOwnersMock.mockResolvedValue(1);
 
     const { usersService } = await import(
       "../src/modules/admin/users/users.service"

@@ -26,6 +26,7 @@ model RbacRole {
 
   permissions     RbacRolePermission[]
   userAssignments RbacUserRole[]
+  invitations     Invitation[]
 
   @@map("rbac_role")
 }

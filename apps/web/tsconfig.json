@@ -23,7 +23,8 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@db": ["../../packages/db/src"],
+      "@db": ["../../packages/db/src/index.ts"],
+      "@db/*": ["../../packages/db/src/*"],
       "@auth": ["../../packages/auth/src"],
       "@auth/*": ["../../packages/auth/src/*"],
       "@env/*": ["../../packages/env/src/*"],

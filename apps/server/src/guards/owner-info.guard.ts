@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import prisma from "@db";
+import { hasPlatformOwner } from "@db/rbac/assignments";
 import { env } from "@env/server";
 
 export const ownerInfoGuard = new Elysia({ name: "ownerInfoGuard" })
@@ -9,13 +9,7 @@ export const ownerInfoGuard = new Elysia({ name: "ownerInfoGuard" })
             return "Not Found";
         }
 
-        const owner = await prisma.user.findFirst({
-            where: {
-                role: "OWNER",
-            },
-        });
-
-        if (owner) {
+        if (await hasPlatformOwner()) {
             set.status = 404;
             return "Not Found";
         }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Roles } from "@rbac";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,11 +21,11 @@ import {
 } from "@/components/ui/select";
 
 export function InviteDialog(props: {
-  onInvite: (email: string, role: string) => void;
+  onInvite: (email: string, roleSlug: string) => void;
   isLoading: boolean;
 }) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("USER");
+  const [roleSlug, setRoleSlug] = useState<string>(Roles.PlatformUser);
   const [open, setOpen] = useState(false);
 
   return (
@@ -54,13 +55,16 @@ export function InviteDialog(props: {
           </div>
           <div className="grid gap-2">
             <label htmlFor="role">Role</label>
-            <Select value={role} onValueChange={(value) => setRole(value || "USER")}>
+            <Select
+              value={roleSlug}
+              onValueChange={(value) => setRoleSlug(value || Roles.PlatformUser)}
+            >
               <SelectTrigger id="role" className="w-full">
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="USER">User</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
+                <SelectItem value={Roles.PlatformUser}>User</SelectItem>
+                <SelectItem value={Roles.PlatformAdmin}>Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -69,7 +73,7 @@ export function InviteDialog(props: {
           <Button
             disabled={props.isLoading || !email}
             onClick={() => {
-              props.onInvite(email, role);
+              props.onInvite(email, roleSlug);
               setOpen(false);
               setEmail("");
             }}

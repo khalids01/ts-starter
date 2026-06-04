@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
-import { Permissions, RolePermissionMap, Roles } from "@rbac";
+import { RolePermissionMap, Roles } from "@rbac";
 
 const ownerActor = {
   id: "owner-1",
@@ -11,20 +11,22 @@ const adminActor = {
   permissions: new Set(RolePermissionMap[Roles.PlatformAdmin]),
 };
 
+const assignUserRoleAndInvalidateMock = mock(async () => undefined);
+
 const findUniqueMock = mock(async () => ({
   id: "user-1",
-  role: "USER",
+  rbacRoles: [{ role: { slug: Roles.PlatformUser } }],
 }));
 
 const updateMock = mock(async () => ({
   id: "user-1",
-  role: "ADMIN",
   name: "User One",
   email: "user@example.com",
   emailVerified: true,
   image: null,
   createdAt: new Date(),
   updatedAt: new Date(),
+  rbacRoles: [{ role: { slug: Roles.PlatformUser, name: "User" } }],
   banned: false,
   banReason: null,
   archived: false,
@@ -38,27 +40,17 @@ mock.module("@db", () => ({
     user: {
       findUnique: findUniqueMock,
       update: updateMock,
-      count: async () => 2,
-    },
-    rbacRole: {
-      findUnique: async () => ({ id: "role-admin" }),
-    },
-    rbacUserRole: {
-      deleteMany: async () => ({}),
-      create: async () => ({}),
-    },
-    $transaction: async (actions: unknown[]) => {
-      for (const action of actions) {
-        if (typeof action === "function") {
-          await action();
-        }
-      }
     },
   },
 }));
 
-mock.module("../../src/rbac/policies/sync-user-role.ts", () => ({
-  syncLegacyUserRole: async () => {},
+mock.module("@db/rbac/assignments", () => ({
+  countActivePlatformOwners: async () => 2,
+  getRoleIdBySlug: async () => "role-admin-id",
+}));
+
+mock.module("../../src/rbac/assignments.ts", () => ({
+  assignUserRoleAndInvalidate: assignUserRoleAndInvalidateMock,
 }));
 
 mock.module("@/modules/admin/activity/activity.service", () => ({
@@ -72,9 +64,10 @@ describe("users policy rbac integration", () => {
     findUniqueMock.mockReset();
     findUniqueMock.mockResolvedValue({
       id: "user-1",
-      role: "USER",
+      rbacRoles: [{ role: { slug: Roles.PlatformUser } }],
     });
     updateMock.mockClear();
+    assignUserRoleAndInvalidateMock.mockClear();
   });
 
   it("prevents admin from granting admin role", async () => {
@@ -83,39 +76,30 @@ describe("users policy rbac integration", () => {
     );
 
     await expect(
-      usersService.updateUser("user-1", { role: "ADMIN" }, adminActor),
+      usersService.updateUser(
+        "user-1",
+        { roleSlug: Roles.PlatformAdmin },
+        adminActor,
+      ),
     ).rejects.toThrow("Only owners can grant admin role");
+    expect(updateMock).not.toHaveBeenCalled();
+    expect(assignUserRoleAndInvalidateMock).not.toHaveBeenCalled();
   });
 
-  it("prevents admin from updating owner accounts", async () => {
-    findUniqueMock.mockResolvedValueOnce({
-      id: "owner-target",
-      role: "OWNER",
-    });
-
+  it("allows owner to grant admin role", async () => {
     const { usersService } = await import(
       "../../src/modules/admin/users/users.service"
     );
 
-    await expect(
-      usersService.updateUser("owner-target", { name: "Changed" }, adminActor),
-    ).rejects.toThrow("Only owners can access owner accounts");
-  });
-
-  it("allows owner to grant admin when target is a regular user", async () => {
-    const { usersService } = await import(
-      "../../src/modules/admin/users/users.service"
-    );
-
-    const result = await usersService.updateUser(
+    await usersService.updateUser(
       "user-1",
-      { role: "ADMIN" },
+      { roleSlug: Roles.PlatformAdmin },
       ownerActor,
     );
 
-    expect(result.role).toBe("ADMIN");
-    expect(ownerActor.permissions.has(Permissions.AdminUsersGrantAdmin)).toBe(
-      true,
+    expect(assignUserRoleAndInvalidateMock).toHaveBeenCalledWith(
+      "user-1",
+      Roles.PlatformAdmin,
     );
   });
 });

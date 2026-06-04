@@ -1,9 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
+import { Roles } from "@rbac";
 import { env } from "@env/web";
 
 import { authClient } from "@/lib/auth-client";
-import type { ClientSession } from "@/features/user/lib/client-session";
+import type {
+  ClientSession,
+  SessionRole,
+} from "@/features/user/lib/client-session";
 
 export const getRootSession = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -36,6 +40,8 @@ export const getRootSession = createServerFn({ method: "GET" }).handler(
       const user = session.user as Record<string, unknown>;
 
       let permissions: string[] = [];
+      let roles: SessionRole[] = [];
+      let primaryRoleSlug = Roles.PlatformUser;
 
       try {
         const contextResponse = await fetch(
@@ -49,10 +55,17 @@ export const getRootSession = createServerFn({ method: "GET" }).handler(
         if (contextResponse.ok) {
           const context = (await contextResponse.json()) as {
             permissions?: string[];
+            roles?: Array<{ slug: string; name: string }>;
+            primaryRoleSlug?: string;
           };
           permissions = Array.isArray(context.permissions)
             ? context.permissions
             : [];
+          roles = Array.isArray(context.roles) ? context.roles : [];
+          primaryRoleSlug =
+            typeof context.primaryRoleSlug === "string"
+              ? context.primaryRoleSlug
+              : roles[0]?.slug ?? Roles.PlatformUser;
         }
       } catch {
         permissions = [];
@@ -63,7 +76,6 @@ export const getRootSession = createServerFn({ method: "GET" }).handler(
           id: String(user.id ?? ""),
           name: String(user.name ?? ""),
           email: String(user.email ?? ""),
-          role: String(user.role ?? "USER"),
           onboardingComplete: Boolean(user.onboardingComplete),
           plan: typeof user.plan === "string" ? user.plan : null,
           subscriptionStatus:
@@ -72,6 +84,8 @@ export const getRootSession = createServerFn({ method: "GET" }).handler(
               : null,
         },
         permissions,
+        roles,
+        primaryRoleSlug,
       } satisfies NonNullable<ClientSession>;
     } catch {
       return null;

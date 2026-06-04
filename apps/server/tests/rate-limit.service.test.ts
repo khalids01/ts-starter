@@ -303,7 +303,6 @@ describe("rateLimitService", () => {
     currentSession = {
       user: {
         id: "user-123",
-        role: "USER",
       },
     };
 

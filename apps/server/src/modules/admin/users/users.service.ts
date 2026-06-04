@@ -1,6 +1,14 @@
 import prisma from "@db";
-import type { Role } from "@db";
-import type { Permission } from "@rbac";
+import {
+  countActivePlatformOwners,
+  getRoleIdBySlug,
+} from "@db/rbac/assignments";
+import {
+  formatRoleLabel,
+  Roles,
+  type Permission,
+  type RoleSlug,
+} from "@rbac";
 import { sendEmail, invitationTemplate } from "@email";
 import { env } from "@env/server";
 import { siteConfig } from "@config";
@@ -14,7 +22,7 @@ import {
   filterOwnerUsers,
   isOwnerRole,
 } from "@/rbac/policies/owner.policy";
-import { syncLegacyUserRole } from "@/rbac/policies/sync-user-role";
+import { assignUserRoleAndInvalidate } from "@/rbac/assignments";
 
 const adminUserSelect = {
   id: true,
@@ -24,14 +32,39 @@ const adminUserSelect = {
   image: true,
   createdAt: true,
   updatedAt: true,
-  role: true,
   banned: true,
   banReason: true,
   archived: true,
   onboardingComplete: true,
   plan: true,
   subscriptionStatus: true,
-};
+  rbacRoles: {
+    take: 1,
+    select: {
+      role: {
+        select: {
+          slug: true,
+          name: true,
+        },
+      },
+    },
+  },
+} as const;
+
+function mapAdminUser<
+  T extends {
+    rbacRoles: Array<{ role: { slug: string; name: string } }>;
+  },
+>(user: T) {
+  const { rbacRoles, ...rest } = user;
+  const assignment = rbacRoles[0]?.role;
+  return {
+    ...rest,
+    role: assignment
+      ? { slug: assignment.slug, name: assignment.name }
+      : { slug: Roles.PlatformUser, name: formatRoleLabel(Roles.PlatformUser) },
+  };
+}
 
 export type AdminActor = {
   id?: string;
@@ -67,7 +100,14 @@ async function getAdminTargetUser(id: string) {
     where: { id },
     select: {
       id: true,
-      role: true,
+      rbacRoles: {
+        take: 1,
+        select: {
+          role: {
+            select: { slug: true },
+          },
+        },
+      },
     },
   });
 
@@ -75,21 +115,18 @@ async function getAdminTargetUser(id: string) {
     throw new Error("User not found");
   }
 
-  return user;
+  const roleSlug =
+    user.rbacRoles[0]?.role.slug ?? Roles.PlatformUser;
+
+  return { id: user.id, roleSlug: roleSlug as RoleSlug };
 }
 
-async function assertNotLastOwner(targetRole: Role) {
-  if (targetRole !== "OWNER") {
+async function assertNotLastOwner(targetRoleSlug: RoleSlug) {
+  if (!isOwnerRole(targetRoleSlug)) {
     return;
   }
 
-  const ownerCount = await prisma.user.count({
-    where: {
-      role: "OWNER",
-      banned: false,
-      archived: false,
-    },
-  });
+  const ownerCount = await countActivePlatformOwners();
 
   if (ownerCount <= 1) {
     policyError("Cannot disable or delete the last active owner");
@@ -99,21 +136,21 @@ async function assertNotLastOwner(targetRole: Role) {
 async function assertCanUpdateUser(args: {
   actor: AdminActor;
   targetId: string;
-  data: { role?: Role };
+  data: { roleSlug?: RoleSlug };
 }) {
   assertAuthenticatedActor(args.actor);
-  assertNotAssignableOwnerRole(args.data.role);
+  assertNotAssignableOwnerRole(args.data.roleSlug);
 
   const target = await getAdminTargetUser(args.targetId);
 
   assertActorCanAccessOwnerTarget({
     actorPermissions: args.actor.permissions,
-    targetRole: target.role,
+    targetRoleSlug: target.roleSlug,
   });
 
   assertActorCanGrantAdminRole({
     actorPermissions: args.actor.permissions,
-    nextRole: args.data.role,
+    nextRoleSlug: args.data.roleSlug,
   });
 }
 
@@ -134,10 +171,10 @@ async function assertCanUseDestructiveAction(args: {
 
   assertActorCanChangePrivilegedAccounts({
     actorPermissions: args.actor.permissions,
-    targetRole: target.role,
+    targetRoleSlug: target.roleSlug,
   });
 
-  await assertNotLastOwner(target.role);
+  await assertNotLastOwner(target.roleSlug);
 }
 
 export class UsersService {
@@ -146,13 +183,13 @@ export class UsersService {
       page?: number;
       limit?: number;
       search?: string;
-      role?: Role;
+      roleSlug?: RoleSlug;
       banned?: boolean;
       archived?: boolean;
     },
     actor?: AdminActor,
   ) {
-    const { search, role, banned, archived } = query;
+    const { search, roleSlug, banned, archived } = query;
     const { page, limit } = normalizePagination(query.page, query.limit);
     const skip = (page - 1) * limit;
 
@@ -163,7 +200,15 @@ export class UsersService {
         { email: { contains: search, mode: "insensitive" } },
       ];
     }
-    if (role) where.role = role;
+    if (roleSlug) {
+      where.rbacRoles = {
+        some: {
+          role: {
+            slug: roleSlug,
+          },
+        },
+      };
+    }
     if (banned !== undefined) where.banned = banned;
     if (archived !== undefined) where.archived = archived;
 
@@ -178,9 +223,12 @@ export class UsersService {
       prisma.user.count({ where }),
     ]);
 
-    const users = actor
-      ? filterOwnerUsers(rawUsers, actor.permissions)
-      : rawUsers;
+    const users = (actor
+      ? filterOwnerUsers(
+          rawUsers.map((user) => mapAdminUser(user)),
+          actor.permissions,
+        )
+      : rawUsers.map((user) => mapAdminUser(user)));
 
     return {
       users,
@@ -198,7 +246,12 @@ export class UsersService {
           select: {
             id: true,
             email: true,
-            role: true,
+            role: {
+              select: {
+                slug: true,
+                name: true,
+              },
+            },
             expiresAt: true,
             status: true,
             createdAt: true,
@@ -211,23 +264,35 @@ export class UsersService {
       return null;
     }
 
-    if (actor && isOwnerRole(user.role)) {
+    const mapped = mapAdminUser(user);
+
+    if (actor && isOwnerRole(mapped.role.slug)) {
       try {
         assertActorCanAccessOwnerTarget({
           actorPermissions: actor.permissions,
-          targetRole: user.role,
+          targetRoleSlug: mapped.role.slug,
         });
       } catch {
         return null;
       }
     }
 
-    return user;
+    return {
+      ...mapped,
+      invitations: user.invitations.map((invitation) => ({
+        id: invitation.id,
+        email: invitation.email,
+        role: invitation.role,
+        expiresAt: invitation.expiresAt,
+        status: invitation.status,
+        createdAt: invitation.createdAt,
+      })),
+    };
   }
 
   async updateUser(
     id: string,
-    data: { name?: string; role?: Role },
+    data: { name?: string; roleSlug?: RoleSlug },
     actor: AdminActor,
   ) {
     await assertCanUpdateUser({
@@ -238,26 +303,33 @@ export class UsersService {
 
     const user = await prisma.user.update({
       where: { id },
-      data,
+      data: {
+        name: data.name,
+      },
       select: adminUserSelect,
     });
 
-    if (data.role) {
-      await syncLegacyUserRole(id, data.role);
+    if (data.roleSlug) {
+      await assignUserRoleAndInvalidate(id, data.roleSlug);
 
       await activityService.record({
         type: "user.role_updated",
         actorUserId: actor.id,
         targetUserId: id,
-        message: `${user.name} role changed to ${data.role}`,
+        message: `${user.name} role changed to ${formatRoleLabel(data.roleSlug)}`,
         metadata: {
-          role: data.role,
+          roleSlug: data.roleSlug,
           email: user.email,
         },
       });
     }
 
-    return user;
+    const refreshed = await prisma.user.findUnique({
+      where: { id },
+      select: adminUserSelect,
+    });
+
+    return mapAdminUser(refreshed ?? user);
   }
 
   async banUser(id: string, reason: string | undefined, actor: AdminActor) {
@@ -285,7 +357,7 @@ export class UsersService {
       },
     });
 
-    return user;
+    return mapAdminUser(user);
   }
 
   async unbanUser(id: string, actor: AdminActor) {
@@ -305,7 +377,7 @@ export class UsersService {
       },
     });
 
-    return user;
+    return mapAdminUser(user);
   }
 
   async archiveUser(id: string, actor: AdminActor) {
@@ -332,7 +404,7 @@ export class UsersService {
       },
     });
 
-    return user;
+    return mapAdminUser(user);
   }
 
   async restoreUser(id: string, actor: AdminActor) {
@@ -352,7 +424,7 @@ export class UsersService {
       },
     });
 
-    return user;
+    return mapAdminUser(user);
   }
 
   async deleteUserPermanent(id: string, actor: AdminActor) {
@@ -362,41 +434,56 @@ export class UsersService {
       action: "delete",
     });
 
-    return prisma.user.delete({
+    const user = await prisma.user.delete({
       where: { id },
       select: adminUserSelect,
     });
+
+    return mapAdminUser(user);
   }
 
-  async inviteUser(email: string, role: Role = "USER", inviterId: string) {
-    assertNotAssignableOwnerRole(role);
+  async inviteUser(
+    email: string,
+    roleSlug: RoleSlug = Roles.PlatformUser,
+    inviterId: string,
+  ) {
+    assertNotAssignableOwnerRole(roleSlug);
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw new Error("User already exists");
 
     const inviter = await prisma.user.findUnique({ where: { id: inviterId } });
     const inviterName = inviter?.name || "A team member";
+    const roleId = await getRoleIdBySlug(roleSlug);
 
     const invitation = await prisma.invitation.create({
       data: {
         id: crypto.randomUUID(),
         email,
-        role,
+        roleId,
         inviterId,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+      include: {
+        role: {
+          select: {
+            slug: true,
+            name: true,
+          },
+        },
       },
     });
 
     const inviteUrl = `${env.CORS_ORIGIN}/accept-invitation?id=${invitation.id}`;
-    const invitedRole = role === "ADMIN" ? "ADMIN" : "USER";
+    const roleLabel = formatRoleLabel(roleSlug);
     await sendEmail({
       to: email,
-      subject: `Invitation: Join ${siteConfig.name} as ${invitedRole === "ADMIN" ? "Admin" : "User"}`,
+      subject: `Invitation: Join ${siteConfig.name} as ${roleLabel}`,
       html: await invitationTemplate({
         inviteUrl,
         inviterName,
         invitedEmail: email,
-        invitedRole,
+        roleLabel,
         expiresInDays: 7,
       }),
     });
@@ -404,10 +491,10 @@ export class UsersService {
     await activityService.record({
       type: "user.invited",
       actorUserId: inviterId,
-      message: `${email} was invited as ${role}`,
+      message: `${email} was invited as ${roleLabel}`,
       metadata: {
         email,
-        role,
+        roleSlug,
         invitationId: invitation.id,
       },
     });

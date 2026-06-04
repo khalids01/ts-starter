@@ -1,22 +1,18 @@
 import prisma from "@db";
+import { hasPlatformOwner } from "@db/rbac/assignments";
 import { randomUUID } from "node:crypto";
 import { Roles } from "@rbac";
-import { assignUserRoleSlug } from "@/rbac/policies/sync-user-role";
+import { assignUserRoleAndInvalidate } from "@/rbac/assignments";
 import type { CreateOwner } from "./owner.dto";
 
 export class OwnerService {
     async hasOwner() {
-        const owner = await prisma.user.findFirst({
-            where: {
-                role: "OWNER",
-            },
-        });
-        return !!owner;
+        return hasPlatformOwner();
     }
 
     async createOwner(data: CreateOwner) {
-        const hasOwner = await this.hasOwner();
-        if (hasOwner) {
+        const ownerExists = await this.hasOwner();
+        if (ownerExists) {
             throw new Error("Owner already exists");
         }
 
@@ -35,11 +31,10 @@ export class OwnerService {
                 id: randomUUID(),
                 email: data.email,
                 name: data.name,
-                role: "OWNER",
             },
         });
 
-        await assignUserRoleSlug(owner.id, Roles.PlatformOwner);
+        await assignUserRoleAndInvalidate(owner.id, Roles.PlatformOwner);
 
         return owner;
     }
