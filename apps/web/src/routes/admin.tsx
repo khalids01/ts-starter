@@ -34,12 +34,13 @@ import { ThemeToggle } from "@/components/core/theme-toggle";
 import { NotificationBell } from "@/components/core/notification-bell";
 import Logo from "@/components/core/logo";
 import { Permissions } from "@rbac";
+import { getRootSession } from "@/features/user/lib/get-root-session";
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
 import { Route as RootRoute } from "@/routes/__root";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async ({ context }) => {
-    const session = context.session;
+  beforeLoad: async () => {
+    const session = await getRootSession();
 
     if (!session) {
       throw redirect({
@@ -57,6 +58,8 @@ export const Route = createFileRoute("/admin")({
         to: "/dashboard",
       });
     }
+
+    return { session };
   },
   component: AdminLayout,
 });

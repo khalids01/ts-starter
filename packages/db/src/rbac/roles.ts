@@ -1,5 +1,5 @@
 import prisma from "../client";
-import { Roles, type Permission } from "@rbac";
+import { Roles, type Permission, type RoleSlug } from "@rbac";
 import { syncRolePermissionsForSlug } from "./sync-role-permissions";
 
 const RESERVED_SYSTEM_SLUGS = new Set([
@@ -190,7 +190,7 @@ export async function replaceRolePermissions(
 }
 
 export async function resetRolePermissionsFromMap(slug: string) {
-  const result = await syncRolePermissionsForSlug(slug as import("@rbac").RoleSlug, {
+  const result = await syncRolePermissionsForSlug(slug as RoleSlug, {
     force: true,
   });
 

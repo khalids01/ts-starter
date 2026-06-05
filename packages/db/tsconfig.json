@@ -7,11 +7,16 @@
     "outDir": "dist",
     "rootDir": "..",
     "composite": true,
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
+      "@env/server": ["../env/src/server.ts"],
       "@env/*": ["../env/src/*"],
       "@config": ["../config/src/config.ts"],
-      "@rbac": ["../rbac/src"],
-      "@redis": ["../redis/src"]
+      "@rbac": ["../rbac/src/index.ts"],
+      "@rbac/*": ["../rbac/src/*"],
+      "@redis": ["../redis/src/index.ts"],
+      "@redis/*": ["../redis/src/*"]
     }
   },
   "include": [

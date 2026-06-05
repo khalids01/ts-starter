@@ -8,7 +8,6 @@
     "outDir": "dist",
     "rootDir": "..",
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@db": ["../db/src/index.ts"],
       "@db/*": ["../db/src/*"],
