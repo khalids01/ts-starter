@@ -59,7 +59,8 @@ export function isUserSessionRbacPayloadComplete(
     payload != null &&
     Array.isArray(payload.permissions) &&
     Array.isArray(payload.roles) &&
-    typeof payload.primaryRoleSlug === "string"
+    typeof payload.primaryRoleSlug === "string" &&
+    (payload.primaryRoleId === null || typeof payload.primaryRoleId === "string")
   );
 }
 

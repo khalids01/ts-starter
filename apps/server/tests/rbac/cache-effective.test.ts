@@ -23,8 +23,9 @@ describe("rbac effective cache", () => {
 
     await setCachedEffectivePermissions("user-1", {
       permissions: [Permissions.AdminAccess],
-      roles: [{ slug: Roles.PlatformAdmin, name: "Admin" }],
+      roles: [{ id: "role-admin", slug: Roles.PlatformAdmin, name: "Admin" }],
       primaryRoleSlug: Roles.PlatformAdmin,
+      primaryRoleId: "role-admin",
       catalogVersion: 1,
       computedAt: new Date().toISOString(),
     });

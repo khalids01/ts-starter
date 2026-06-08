@@ -1,7 +1,6 @@
 import {
   Permissions,
   RolePermissionMap,
-  Roles,
   hasPermission,
   type Permission,
 } from "@rbac";
@@ -19,18 +18,8 @@ function policyError(message: string, status = 403): never {
   throw new RolesPolicyError(message, status);
 }
 
-export function isProtectedOwnerRole(args: {
-  slug: string;
-  isProtected?: boolean;
-}) {
-  return args.isProtected === true || args.slug === Roles.PlatformOwner;
-}
-
-export function assertRoleIsEditable(args: {
-  slug: string;
-  isProtected: boolean;
-}) {
-  if (isProtectedOwnerRole(args)) {
+export function assertRoleIsEditable(args: { isProtected: boolean }) {
+  if (args.isProtected) {
     policyError("Protected roles cannot be modified");
   }
 }
@@ -40,7 +29,7 @@ export function assertRoleCanBeReset(args: {
   isProtected: boolean;
   isSystem: boolean;
 }) {
-  if (args.isProtected || args.slug === Roles.PlatformOwner) {
+  if (args.isProtected) {
     policyError("Protected roles cannot be reset");
   }
 
@@ -67,6 +56,15 @@ export function assertRoleCanBeDeleted(args: {
   }
 }
 
+export function assertActorCannotManageOwnRole(args: {
+  actorRoleId?: string | null;
+  targetRoleId: string;
+}) {
+  if (args.actorRoleId && args.actorRoleId === args.targetRoleId) {
+    policyError("You cannot modify the role assigned to your account");
+  }
+}
+
 export function assertPermissionsAreCatalogOnly(
   permissionNames: readonly string[],
   catalogNames: ReadonlySet<string>,
@@ -85,12 +83,10 @@ export function assertActorCanGrantPermissions(args: {
   actorPermissions: ReadonlySet<Permission> | readonly Permission[];
   permissionNames: readonly Permission[];
 }) {
-  const includesGrantAdmin = args.permissionNames.includes(
-    Permissions.AdminUsersGrantAdmin,
-  );
-
-  if (includesGrantAdmin && !hasPermission(args.actorPermissions, Permissions.AdminUsersGrantAdmin)) {
-    policyError("Only owners can grant the admin grant permission");
+  for (const permission of args.permissionNames) {
+    if (!hasPermission(args.actorPermissions, permission)) {
+      policyError(`You cannot grant permission you do not hold: ${permission}`);
+    }
   }
 }
 

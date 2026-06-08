@@ -22,5 +22,6 @@ export function toClientSession(
     permissions: session.permissions,
     roles: session.roles,
     primaryRoleSlug: session.primaryRoleSlug,
+    primaryRoleId: session.primaryRoleId,
   };
 }

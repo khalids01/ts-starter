@@ -11,13 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Loader from "@/components/loader";
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
-import { Route as RootRoute } from "@/routes/__root";
+import { useSession } from "@/providers/session-provider";
 import { PermissionEditor } from "./permission-editor";
+import { canEditRolePermissions, canManageRoles } from "./role-access";
 import type { AdminRoleDetail, PermissionCatalogEntry } from "./types";
 
 export function RoleDetailPage({ roleId }: { roleId: string }) {
   const navigate = useNavigate();
-  const { session } = RootRoute.useRouteContext();
+  const { session } = useSession();
   const queryClient = useQueryClient();
   const permissions = session?.permissions ?? [];
   const canUpdate = sessionHasPermission(permissions, Permissions.AdminRolesUpdate);
@@ -57,11 +58,18 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
   }, [role]);
 
   const isReadOnly = role?.isProtected === true;
-  const canEditPermissions = canUpdate && !isReadOnly;
-  const canRename = canUpdate && role && !role.isSystem && !role.isProtected;
-  const canResetRole = canReset && role?.isSystem && !role.isProtected;
+  const isOwnRole = role ? session?.primaryRoleId === role.id : false;
+  const canEditPermissions =
+    role && canEditRolePermissions(session, role);
+  const canRename =
+    canUpdate && role && !role.isSystem && !role.isProtected && !isOwnRole;
+  const canResetRole =
+    canReset && role?.isSystem && !role.isProtected && !isOwnRole;
   const canDeleteRole =
-    canManage && role && !role.isSystem && !role.isProtected && role.userCount === 0;
+    role &&
+    canManageRoles(session, role) &&
+    !role.isSystem &&
+    role.userCount === 0;
 
   const hasPermissionChanges = useMemo(() => {
     if (!role) {
@@ -228,6 +236,10 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
           This is a protected role. Its permissions are managed by the system catalog and
           cannot be edited here.
+        </div>
+      ) : isOwnRole ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          You cannot modify the role currently assigned to your account.
         </div>
       ) : null}
 

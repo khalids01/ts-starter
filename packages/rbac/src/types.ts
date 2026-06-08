@@ -9,6 +9,7 @@ export type PermissionOverride = {
 };
 
 export type SessionRoleSummary = {
+  id: string;
   slug: RoleSlug;
   name: string;
 };
@@ -17,6 +18,7 @@ export type UserSessionRbacPayload = {
   permissions: Permission[];
   roles: SessionRoleSummary[];
   primaryRoleSlug: RoleSlug;
+  primaryRoleId: string | null;
   catalogVersion: number;
   computedAt: string;
 };

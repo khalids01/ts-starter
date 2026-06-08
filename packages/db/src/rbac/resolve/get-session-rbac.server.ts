@@ -35,6 +35,7 @@ export async function getUserSessionRbac(
     permissions,
     roles: snapshot.roles,
     primaryRoleSlug: snapshot.primaryRoleSlug,
+    primaryRoleId: snapshot.primaryRoleId,
     catalogVersion,
     computedAt: new Date().toISOString(),
   };

@@ -11,13 +11,13 @@ export const sessionController = new Elysia({
     "/context",
     async ({ session, userId }) => {
       if (!session || !userId) {
-        return { user: null, permissions: [], roles: [], primaryRoleSlug: null };
+        return { user: null, permissions: [], roles: [], primaryRoleSlug: null, primaryRoleId: null };
       }
 
       const clientSession = toClientSession(session);
 
       if (!clientSession) {
-        return { user: null, permissions: [], roles: [], primaryRoleSlug: null };
+        return { user: null, permissions: [], roles: [], primaryRoleSlug: null, primaryRoleId: null };
       }
 
       return {
@@ -25,6 +25,7 @@ export const sessionController = new Elysia({
         permissions: clientSession.permissions,
         roles: clientSession.roles,
         primaryRoleSlug: clientSession.primaryRoleSlug,
+        primaryRoleId: clientSession.primaryRoleId,
       };
     },
     {

@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import { Permissions } from "@rbac";
+import type { AuthGetSessionResult } from "@auth/server";
 import { authGuard } from "@/guards/auth.guard";
 import { requirePermission } from "@/rbac/guards/permissions.guard";
 import {
@@ -16,9 +17,11 @@ import {
 function getActor(ctx: {
   userId?: string;
   permissions: AdminActor["permissions"];
+  session: AuthGetSessionResult;
 }): AdminActor {
   return {
     id: ctx.userId,
+    roleId: ctx.session?.primaryRoleId ?? null,
     permissions: ctx.permissions,
   };
 }
@@ -98,11 +101,11 @@ export const rolesController = new Elysia({
         )
         .post(
           "/",
-          async ({ body, set, permissions, userId }) => {
+          async ({ body, set, permissions, userId, session }) => {
             try {
               return await rolesService.createRole(
                 body,
-                getActor({ userId, permissions }),
+                getActor({ userId, permissions, session }),
               );
             } catch (error) {
               return handleRolesMutationError(error, set);
@@ -118,12 +121,12 @@ export const rolesController = new Elysia({
         )
         .patch(
           "/:id",
-          async ({ params: { id }, body, set, permissions, userId }) => {
+          async ({ params: { id }, body, set, permissions, userId, session }) => {
             try {
               return await rolesService.updateRoleMetadata(
                 id,
                 body,
-                getActor({ userId, permissions }),
+                getActor({ userId, permissions, session }),
               );
             } catch (error) {
               return handleRolesMutationError(error, set);
@@ -139,12 +142,12 @@ export const rolesController = new Elysia({
         )
         .put(
           "/:id/permissions",
-          async ({ params: { id }, body, set, permissions, userId }) => {
+          async ({ params: { id }, body, set, permissions, userId, session }) => {
             try {
               return await rolesService.updateRolePermissions(
                 id,
                 body.permissions,
-                getActor({ userId, permissions }),
+                getActor({ userId, permissions, session }),
               );
             } catch (error) {
               return handleRolesMutationError(error, set);
@@ -160,11 +163,11 @@ export const rolesController = new Elysia({
         )
         .post(
           "/:id/reset",
-          async ({ params: { id }, set, permissions, userId }) => {
+          async ({ params: { id }, set, permissions, userId, session }) => {
             try {
               return await rolesService.resetRole(
                 id,
-                getActor({ userId, permissions }),
+                getActor({ userId, permissions, session }),
               );
             } catch (error) {
               return handleRolesMutationError(error, set);
@@ -179,11 +182,11 @@ export const rolesController = new Elysia({
         )
         .delete(
           "/:id",
-          async ({ params: { id }, set, permissions, userId }) => {
+          async ({ params: { id }, set, permissions, userId, session }) => {
             try {
               return await rolesService.deleteRole(
                 id,
-                getActor({ userId, permissions }),
+                getActor({ userId, permissions, session }),
               );
             } catch (error) {
               return handleRolesMutationError(error, set);

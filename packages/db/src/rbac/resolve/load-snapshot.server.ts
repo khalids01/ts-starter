@@ -21,6 +21,7 @@ export type UserRbacSnapshot = {
   rolePermissionSets: Permission[][];
   overrides: PermissionOverride[];
   primaryRoleSlug: RoleSlug;
+  primaryRoleId: string | null;
 };
 
 function parseRoleSlug(slug: string): RoleSlug {
@@ -94,11 +95,13 @@ export async function loadUserRbacSnapshot(
   const overridesJson = row?.overrides ?? [];
 
   const roles: SessionRoleSummary[] = rolesJson.map((role) => ({
+    id: role.id,
     slug: parseRoleSlug(role.slug),
     name: role.name,
   }));
 
   const roleIds = rolesJson.map((role) => role.id);
+  const primaryRoleId = roleIds[0] ?? null;
   const rolePermissionSets = roleIds.map((roleId) => {
     const names = rolePermissionsJson[roleId] ?? [];
     return names.map((name) => parsePermission(name));
@@ -117,5 +120,6 @@ export async function loadUserRbacSnapshot(
     rolePermissionSets,
     overrides,
     primaryRoleSlug,
+    primaryRoleId,
   };
 }

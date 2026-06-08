@@ -16,6 +16,7 @@ import { setCachedRolePermissions } from "@/rbac/cache/role-permissions";
 import { invalidateRole } from "@/rbac/cache/invalidate";
 import {
   assertActorCanGrantPermissions,
+  assertActorCannotManageOwnRole,
   assertPermissionsAreCatalogOnly,
   assertRoleCanBeDeleted,
   assertRoleCanBeReset,
@@ -25,8 +26,21 @@ import {
 
 export type AdminActor = {
   id?: string;
+  roleId?: string | null;
   permissions: ReadonlySet<Permission>;
 };
+
+function assertCanManageTargetRole(
+  actor: AdminActor,
+  targetRoleId: string,
+  role: { isProtected: boolean },
+) {
+  assertRoleIsEditable({ isProtected: role.isProtected });
+  assertActorCannotManageOwnRole({
+    actorRoleId: actor.roleId,
+    targetRoleId,
+  });
+}
 
 function assertAuthenticatedActor(actor?: AdminActor) {
   if (!actor?.id) {
@@ -132,10 +146,7 @@ export class RolesService {
       throw new Error("Role not found");
     }
 
-    assertRoleIsEditable({
-      slug: role.slug,
-      isProtected: role.isProtected,
-    });
+    assertCanManageTargetRole(actor, roleId, role);
 
     const updated = await updateCustomRoleMetadata(roleId, data);
 
@@ -164,10 +175,7 @@ export class RolesService {
       throw new Error("Role not found");
     }
 
-    assertRoleIsEditable({
-      slug: role.slug,
-      isProtected: role.isProtected,
-    });
+    assertCanManageTargetRole(actor, roleId, role);
 
     const catalog = await listPermissionCatalog();
     const catalogNames = new Set(catalog.map((entry) => entry.name));
@@ -207,6 +215,10 @@ export class RolesService {
       isProtected: role.isProtected,
       isSystem: role.isSystem,
     });
+    assertActorCannotManageOwnRole({
+      actorRoleId: actor.roleId,
+      targetRoleId: roleId,
+    });
 
     const result = await resetRolePermissionsFromMap(role.slug);
     await refreshRolePermissionCache(result.roleId, [...result.permissions]);
@@ -236,6 +248,10 @@ export class RolesService {
       isSystem: role.isSystem,
       isProtected: role.isProtected,
       userAssignments: role._count.userAssignments,
+    });
+    assertActorCannotManageOwnRole({
+      actorRoleId: actor.roleId,
+      targetRoleId: roleId,
     });
 
     const deleted = await deleteCustomRole(roleId);

@@ -27,6 +27,7 @@ export type AuthClientSession = {
   permissions: Permission[];
   roles: SessionRoleSummary[];
   primaryRoleSlug: RoleSlug;
+  primaryRoleId: string | null;
 };
 
 export type ClientSessionUser = Pick<
@@ -39,6 +40,7 @@ export type ClientSession = {
   permissions: Permission[];
   roles: SessionRoleSummary[];
   primaryRoleSlug: RoleSlug;
+  primaryRoleId: string | null;
 };
 
 export type ClientSessionResult = ClientSession | null;

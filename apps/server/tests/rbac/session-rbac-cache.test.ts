@@ -24,8 +24,9 @@ describe("user session rbac cache validation", () => {
 
     await setCachedUserSessionRbac("user-1", {
       permissions: [Permissions.AdminAccess],
-      roles: [],
+      roles: [{ id: "role-user", slug: Roles.PlatformUser, name: "User" }],
       primaryRoleSlug: Roles.PlatformUser,
+      primaryRoleId: "role-user",
       catalogVersion: 1,
       computedAt: new Date().toISOString(),
     });

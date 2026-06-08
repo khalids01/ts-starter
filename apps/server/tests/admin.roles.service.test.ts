@@ -58,6 +58,7 @@ mock.module("../src/modules/admin/activity/activity.service", () => ({
 
 const ownerActor = {
   id: "owner-1",
+  roleId: "role-owner",
   permissions: new Set(RolePermissionMap[Roles.PlatformOwner]),
 };
 
@@ -154,7 +155,7 @@ describe("roles.service", () => {
     expect(activityRecordMock).toHaveBeenCalled();
   });
 
-  it("rejects permission updates for protected owner role", async () => {
+  it("rejects permission updates for protected roles", async () => {
     getRoleByIdMock.mockResolvedValueOnce({
       id: "role-owner",
       slug: Roles.PlatformOwner,
@@ -174,6 +175,37 @@ describe("roles.service", () => {
         "role-owner",
         [Permissions.AdminAccess],
         ownerActor,
+      ),
+    ).rejects.toBeInstanceOf(RolesPolicyError);
+  });
+
+  it("rejects permission updates for the actor's own assigned role", async () => {
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-admin",
+      slug: Roles.PlatformAdmin,
+      name: "Admin",
+      isProtected: false,
+      isSystem: true,
+      permissions: RolePermissionMap[Roles.PlatformAdmin],
+      _count: { permissions: 10, userAssignments: 2 },
+    });
+
+    const { rolesService, RolesPolicyError } = await import(
+      "../src/modules/admin/roles/roles.service"
+    );
+
+    await expect(
+      rolesService.updateRolePermissions(
+        "role-admin",
+        [Permissions.FeedbackSubmit],
+        {
+          id: "admin-1",
+          roleId: "role-admin",
+          permissions: new Set([
+            ...RolePermissionMap[Roles.PlatformAdmin],
+            Permissions.AdminRolesUpdate,
+          ]),
+        },
       ),
     ).rejects.toBeInstanceOf(RolesPolicyError);
   });

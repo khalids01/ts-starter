@@ -17,6 +17,7 @@ export const auth = betterAuth({
         permissions: rbac.permissions,
         roles: rbac.roles,
         primaryRoleSlug: rbac.primaryRoleSlug,
+        primaryRoleId: rbac.primaryRoleId,
       };
     }, authOptions),
   ],

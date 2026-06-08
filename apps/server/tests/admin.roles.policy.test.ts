@@ -6,6 +6,7 @@ import {
 } from "@rbac";
 import {
   assertActorCanGrantPermissions,
+  assertActorCannotManageOwnRole,
   assertRoleCanBeDeleted,
   assertRoleCanBeReset,
   assertRoleIsEditable,
@@ -13,10 +14,15 @@ import {
 } from "@/rbac/policies/roles.policy";
 
 describe("roles.policy", () => {
-  it("blocks editing protected owner role", () => {
+  it("excludes admin.roles permissions from platform.admin defaults", () => {
+    for (const permission of RolePermissionMap[Roles.PlatformAdmin]) {
+      expect(permission.startsWith("admin.roles.")).toBe(false);
+    }
+  });
+
+  it("blocks editing protected roles", () => {
     expect(() =>
       assertRoleIsEditable({
-        slug: Roles.PlatformOwner,
         isProtected: true,
       }),
     ).toThrow(RolesPolicyError);
@@ -58,7 +64,23 @@ describe("roles.policy", () => {
     ).toThrow(RolesPolicyError);
   });
 
-  it("blocks non-owners from granting admin grant permission", () => {
+  it("blocks actors from managing their own assigned role", () => {
+    expect(() =>
+      assertActorCannotManageOwnRole({
+        actorRoleId: "role-admin",
+        targetRoleId: "role-admin",
+      }),
+    ).toThrow(RolesPolicyError);
+
+    expect(() =>
+      assertActorCannotManageOwnRole({
+        actorRoleId: "role-admin",
+        targetRoleId: "role-user",
+      }),
+    ).not.toThrow();
+  });
+
+  it("blocks granting permissions the actor does not hold", () => {
     const adminPermissions = new Set(RolePermissionMap[Roles.PlatformAdmin]);
 
     expect(() =>
@@ -68,12 +90,21 @@ describe("roles.policy", () => {
       }),
     ).toThrow(RolesPolicyError);
 
+    expect(() =>
+      assertActorCanGrantPermissions({
+        actorPermissions: adminPermissions,
+        permissionNames: [Permissions.AdminAccess],
+      }),
+    ).not.toThrow();
+  });
+
+  it("allows owners to grant any catalog permission they hold", () => {
     const ownerPermissions = new Set(RolePermissionMap[Roles.PlatformOwner]);
 
     expect(() =>
       assertActorCanGrantPermissions({
         actorPermissions: ownerPermissions,
-        permissionNames: [Permissions.AdminUsersGrantAdmin],
+        permissionNames: [Permissions.AdminUsersGrantAdmin, Permissions.AdminRolesUpdate],
       }),
     ).not.toThrow();
   });

@@ -31,6 +31,7 @@ describe("rbac build-effective fixtures", () => {
     expect(expected.has(Permissions.AdminAccess)).toBe(true);
     expect(expected.has(Permissions.AdminUsersGrantAdmin)).toBe(false);
     expect(expected.has(Permissions.AdminUsersList)).toBe(true);
+    expect(expected.has(Permissions.AdminRolesList)).toBe(false);
   });
 
   it("user overrides can remove feedback submit", () => {

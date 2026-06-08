@@ -6,7 +6,9 @@ const adminPermissions = AllPermissions.filter(
     permission !== Permissions.AdminUsersGrantAdmin,
 ) as Permission[];
 
-const platformAdminPermissions = adminPermissions;
+const platformAdminPermissions = adminPermissions.filter(
+  (permission) => !permission.startsWith("admin.roles."),
+) as Permission[];
 
 const platformUserPermissions = [
   Permissions.FeedbackSubmit,
