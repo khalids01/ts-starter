@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Permissions } from "@rbac";
 import { queryKeys } from "@/constants/query-keys";
@@ -19,16 +19,12 @@ import {
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
 import { useSession } from "@/providers/session-provider";
 import { CreateRoleDialog } from "./create-role-dialog";
-import { DeleteRoleDialog } from "./delete-role-dialog";
-import { EditRolePermissionsDialog } from "./edit-role-permissions-dialog";
-import { canDeleteCustomRole, canEditRolePermissions } from "./role-access";
+import { RoleActions } from "./role-actions";
 import type { AdminRoleSummary } from "./types";
 
 export function RolesListPage() {
   const { session } = useSession();
   const [createOpen, setCreateOpen] = useState(false);
-  const [editRole, setEditRole] = useState<AdminRoleSummary | null>(null);
-  const [deleteRole, setDeleteRole] = useState<AdminRoleSummary | null>(null);
   const queryClient = useQueryClient();
   const canManage = sessionHasPermission(
     session?.permissions ?? [],
@@ -114,68 +110,42 @@ export function RolesListPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              data?.map((role) => {
-                const showEditPermissions = canEditRolePermissions(session, role);
-                const showDelete = canDeleteCustomRole(session, role);
-
-                return (
-                  <TableRow key={role.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        to="/admin/roles/$roleId"
-                        params={{ roleId: role.id }}
-                        className="hover:underline"
-                      >
-                        {role.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{role.slug}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {role.isProtected ? (
-                          <Badge variant="destructive">Protected</Badge>
-                        ) : null}
-                        {role.isSystem ? (
-                          <Badge variant="secondary">System</Badge>
-                        ) : (
-                          <Badge variant="outline">Custom</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{role.permissionCount}</TableCell>
-                    <TableCell>{role.userCount}</TableCell>
-                    <TableCell>
-                      {role.customizedAt
-                        ? new Date(role.customizedAt).toLocaleDateString()
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {showEditPermissions ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditRole(role)}
-                          >
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit permissions
-                          </Button>
-                        ) : null}
-                        {showDelete ? (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setDeleteRole(role)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </Button>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+              data?.map((role) => (
+                <TableRow key={role.id}>
+                  <TableCell className="font-medium">
+                    <Link
+                      to="/admin/roles/$roleId"
+                      params={{ roleId: role.id }}
+                      className="hover:underline"
+                    >
+                      {role.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{role.slug}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {role.isProtected ? (
+                        <Badge variant="destructive">Protected</Badge>
+                      ) : null}
+                      {role.isSystem ? (
+                        <Badge variant="secondary">System</Badge>
+                      ) : (
+                        <Badge variant="outline">Custom</Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{role.permissionCount}</TableCell>
+                  <TableCell>{role.userCount}</TableCell>
+                  <TableCell>
+                    {role.customizedAt
+                      ? new Date(role.customizedAt).toLocaleDateString()
+                      : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <RoleActions role={role} />
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
@@ -186,26 +156,6 @@ export function RolesListPage() {
         onOpenChange={setCreateOpen}
         onCreate={(input) => createMutation.mutate(input)}
         isLoading={createMutation.isPending}
-      />
-
-      <EditRolePermissionsDialog
-        role={editRole}
-        open={editRole !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditRole(null);
-          }
-        }}
-      />
-
-      <DeleteRoleDialog
-        role={deleteRole}
-        open={deleteRole !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteRole(null);
-          }
-        }}
       />
     </div>
   );
