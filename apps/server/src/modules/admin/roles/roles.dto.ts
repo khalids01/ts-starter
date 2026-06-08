@@ -19,6 +19,11 @@ export const UpdateRolePermissionsDto = t.Object({
   permissions: t.Array(PermissionNameSchema),
 });
 
+export const DeleteRoleDto = t.Object({
+  reassignToRoleId: t.Optional(t.String({ minLength: 1 })),
+});
+
 export type CreateRoleInput = typeof CreateRoleDto.static;
 export type UpdateRoleInput = typeof UpdateRoleDto.static;
 export type UpdateRolePermissionsInput = typeof UpdateRolePermissionsDto.static;
+export type DeleteRoleInput = typeof DeleteRoleDto.static;

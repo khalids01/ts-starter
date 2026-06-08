@@ -10,6 +10,7 @@ import {
   assertRoleCanBeDeleted,
   assertRoleCanBeReset,
   assertRoleIsEditable,
+  assertValidReassignTarget,
   RolesPolicyError,
 } from "@/rbac/policies/roles.policy";
 
@@ -54,14 +55,53 @@ describe("roles.policy", () => {
     ).toThrow(RolesPolicyError);
   });
 
-  it("blocks deleting roles with user assignments", () => {
+  it("blocks deleting system or protected roles", () => {
+    expect(() =>
+      assertRoleCanBeDeleted({
+        isSystem: true,
+        isProtected: false,
+      }),
+    ).toThrow(RolesPolicyError);
+
+    expect(() =>
+      assertRoleCanBeDeleted({
+        isSystem: false,
+        isProtected: true,
+      }),
+    ).toThrow(RolesPolicyError);
+
     expect(() =>
       assertRoleCanBeDeleted({
         isSystem: false,
         isProtected: false,
-        userAssignments: 1,
+      }),
+    ).not.toThrow();
+  });
+
+  it("blocks invalid reassignment targets", () => {
+    expect(() =>
+      assertValidReassignTarget({
+        sourceRoleId: "role-custom",
+        targetRoleId: "role-custom",
+        targetIsProtected: false,
       }),
     ).toThrow(RolesPolicyError);
+
+    expect(() =>
+      assertValidReassignTarget({
+        sourceRoleId: "role-custom",
+        targetRoleId: "role-owner",
+        targetIsProtected: true,
+      }),
+    ).toThrow(RolesPolicyError);
+
+    expect(() =>
+      assertValidReassignTarget({
+        sourceRoleId: "role-custom",
+        targetRoleId: "role-user",
+        targetIsProtected: false,
+      }),
+    ).not.toThrow();
   });
 
   it("blocks actors from managing their own assigned role", () => {

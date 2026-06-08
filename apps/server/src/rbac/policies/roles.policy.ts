@@ -45,14 +45,23 @@ export function assertRoleCanBeReset(args: {
 export function assertRoleCanBeDeleted(args: {
   isSystem: boolean;
   isProtected: boolean;
-  userAssignments: number;
 }) {
   if (args.isSystem || args.isProtected) {
     policyError("System or protected roles cannot be deleted");
   }
+}
 
-  if (args.userAssignments > 0) {
-    policyError("Cannot delete a role that is assigned to users");
+export function assertValidReassignTarget(args: {
+  sourceRoleId: string;
+  targetRoleId: string;
+  targetIsProtected: boolean;
+}) {
+  if (args.sourceRoleId === args.targetRoleId) {
+    policyError("Cannot reassign users to the same role being deleted");
+  }
+
+  if (args.targetIsProtected) {
+    policyError("Cannot reassign users to a protected role");
   }
 }
 

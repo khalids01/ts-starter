@@ -304,7 +304,10 @@ export async function updateCustomRoleMetadata(
   });
 }
 
-export async function deleteCustomRole(roleId: string) {
+export async function deleteCustomRole(
+  roleId: string,
+  options?: { force?: boolean },
+) {
   const role = await prisma.rbacRole.findUnique({
     where: { id: roleId },
     select: {
@@ -329,7 +332,7 @@ export async function deleteCustomRole(roleId: string) {
     throw new Error("System or protected roles cannot be deleted");
   }
 
-  if (role._count.userAssignments > 0) {
+  if (role._count.userAssignments > 0 && !options?.force) {
     throw new Error("Cannot delete a role that is assigned to users");
   }
 

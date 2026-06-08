@@ -58,10 +58,10 @@ export function CreateRoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[85vh] overflow-y-auto text-base sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create custom role</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl">Create custom role</DialogTitle>
+          <DialogDescription className="text-base">
             Custom roles use your own slug and permission subset. The platform.* namespace
             is reserved.
           </DialogDescription>
@@ -69,18 +69,24 @@ export function CreateRoleDialog({
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
-            <label htmlFor="role-slug">Slug</label>
+            <label htmlFor="role-slug" className="text-base font-medium">
+              Slug
+            </label>
             <Input
               id="role-slug"
+              className="text-base"
               placeholder="custom.support"
               value={slug}
               onChange={(event) => setSlug(event.target.value)}
             />
           </div>
           <div className="grid gap-2">
-            <label htmlFor="role-name">Name</label>
+            <label htmlFor="role-name" className="text-base font-medium">
+              Name
+            </label>
             <Input
               id="role-name"
+              className="text-base"
               placeholder="Support"
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -90,6 +96,7 @@ export function CreateRoleDialog({
             <PermissionEditor
               catalog={catalog}
               selected={selected}
+              size="lg"
               onToggle={(permission, checked) => {
                 setSelected((current) => {
                   const next = new Set(current);

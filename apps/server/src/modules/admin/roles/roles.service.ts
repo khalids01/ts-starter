@@ -3,6 +3,7 @@ import {
   deleteCustomRole,
   getRoleById,
   getUserIdsForRole,
+  isAssignableRoleSlug,
   listAssignableRoles,
   listPermissionCatalog,
   listRoles,
@@ -13,6 +14,7 @@ import {
 import { type Permission } from "@rbac";
 import { activityService } from "../activity/activity.service";
 import { setCachedRolePermissions } from "@/rbac/cache/role-permissions";
+import { assignUserRoleAndInvalidate } from "@/rbac/assignments";
 import { invalidateRole } from "@/rbac/cache/invalidate";
 import {
   assertActorCanGrantPermissions,
@@ -21,6 +23,7 @@ import {
   assertRoleCanBeDeleted,
   assertRoleCanBeReset,
   assertRoleIsEditable,
+  assertValidReassignTarget,
   RolesPolicyError,
 } from "@/rbac/policies/roles.policy";
 
@@ -236,7 +239,11 @@ export class RolesService {
     return this.getRoleById(roleId);
   }
 
-  async deleteRole(roleId: string, actor: AdminActor) {
+  async deleteRole(
+    roleId: string,
+    actor: AdminActor,
+    options?: { reassignToRoleId?: string },
+  ) {
     assertAuthenticatedActor(actor);
 
     const role = await getRoleById(roleId);
@@ -247,14 +254,50 @@ export class RolesService {
     assertRoleCanBeDeleted({
       isSystem: role.isSystem,
       isProtected: role.isProtected,
-      userAssignments: role._count.userAssignments,
     });
     assertActorCannotManageOwnRole({
       actorRoleId: actor.roleId,
       targetRoleId: roleId,
     });
 
-    const deleted = await deleteCustomRole(roleId);
+    const userIds = await getUserIdsForRole(roleId);
+    const userCount = userIds.length;
+
+    if (userCount > 0) {
+      if (!options?.reassignToRoleId) {
+        throw new RolesPolicyError(
+          `This role is assigned to ${userCount} users. Choose a role to move them to before deleting.`,
+          409,
+        );
+      }
+
+      const targetRole = await getRoleById(options.reassignToRoleId);
+      if (!targetRole) {
+        throw new RolesPolicyError("Reassignment target role not found", 404);
+      }
+
+      assertValidReassignTarget({
+        sourceRoleId: roleId,
+        targetRoleId: options.reassignToRoleId,
+        targetIsProtected: targetRole.isProtected,
+      });
+
+      const assignable = await isAssignableRoleSlug(targetRole.slug);
+      if (!assignable) {
+        throw new RolesPolicyError(
+          "Reassignment target role cannot be assigned to users",
+          403,
+        );
+      }
+
+      for (const userId of userIds) {
+        await assignUserRoleAndInvalidate(userId, targetRole.slug);
+      }
+    }
+
+    const deleted = await deleteCustomRole(roleId, {
+      force: userCount > 0,
+    });
 
     await activityService.record({
       type: "role.deleted",
@@ -263,6 +306,8 @@ export class RolesService {
       metadata: {
         roleId: deleted.id,
         slug: deleted.slug,
+        reassignedUserCount: userCount,
+        reassignToRoleId: options?.reassignToRoleId ?? null,
       },
     });
 

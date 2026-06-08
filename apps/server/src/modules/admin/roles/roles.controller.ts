@@ -10,6 +10,7 @@ import {
 } from "./roles.service";
 import {
   CreateRoleDto,
+  DeleteRoleDto,
   UpdateRoleDto,
   UpdateRolePermissionsDto,
 } from "./roles.dto";
@@ -182,11 +183,12 @@ export const rolesController = new Elysia({
         )
         .delete(
           "/:id",
-          async ({ params: { id }, set, permissions, userId, session }) => {
+          async ({ params: { id }, body, set, permissions, userId, session }) => {
             try {
               return await rolesService.deleteRole(
                 id,
                 getActor({ userId, permissions, session }),
+                body,
               );
             } catch (error) {
               return handleRolesMutationError(error, set);
@@ -194,6 +196,7 @@ export const rolesController = new Elysia({
           },
           {
             beforeHandle: requirePermission(Permissions.AdminRolesManage),
+            body: DeleteRoleDto,
             detail: {
               summary: "Delete a custom role",
             },

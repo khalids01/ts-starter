@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Permissions } from "@rbac";
 import { queryKeys } from "@/constants/query-keys";
@@ -19,14 +19,16 @@ import {
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
 import { useSession } from "@/providers/session-provider";
 import { CreateRoleDialog } from "./create-role-dialog";
+import { DeleteRoleDialog } from "./delete-role-dialog";
 import { EditRolePermissionsDialog } from "./edit-role-permissions-dialog";
-import { canEditRolePermissions } from "./role-access";
+import { canDeleteCustomRole, canEditRolePermissions } from "./role-access";
 import type { AdminRoleSummary } from "./types";
 
 export function RolesListPage() {
   const { session } = useSession();
   const [createOpen, setCreateOpen] = useState(false);
   const [editRole, setEditRole] = useState<AdminRoleSummary | null>(null);
+  const [deleteRole, setDeleteRole] = useState<AdminRoleSummary | null>(null);
   const queryClient = useQueryClient();
   const canManage = sessionHasPermission(
     session?.permissions ?? [],
@@ -114,6 +116,7 @@ export function RolesListPage() {
             ) : (
               data?.map((role) => {
                 const showEditPermissions = canEditRolePermissions(session, role);
+                const showDelete = canDeleteCustomRole(session, role);
 
                 return (
                   <TableRow key={role.id}>
@@ -147,16 +150,28 @@ export function RolesListPage() {
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {showEditPermissions ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditRole(role)}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit permissions
-                        </Button>
-                      ) : null}
+                      <div className="flex justify-end gap-2">
+                        {showEditPermissions ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditRole(role)}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit permissions
+                          </Button>
+                        ) : null}
+                        {showDelete ? (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteRole(role)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </Button>
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -179,6 +194,16 @@ export function RolesListPage() {
         onOpenChange={(open) => {
           if (!open) {
             setEditRole(null);
+          }
+        }}
+      />
+
+      <DeleteRoleDialog
+        role={deleteRole}
+        open={deleteRole !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteRole(null);
           }
         }}
       />

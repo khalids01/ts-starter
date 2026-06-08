@@ -38,3 +38,10 @@ export function canManageRoles(
 
   return sessionHasPermission(session.permissions, Permissions.AdminRolesManage);
 }
+
+export function canDeleteCustomRole(
+  session: ClientSession | null | undefined,
+  role: { id: string; isSystem: boolean; isProtected: boolean } | null | undefined,
+) {
+  return Boolean(role && !role.isSystem && canManageRoles(session, role));
+}

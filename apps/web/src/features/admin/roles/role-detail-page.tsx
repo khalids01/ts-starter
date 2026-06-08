@@ -13,7 +13,8 @@ import Loader from "@/components/loader";
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
 import { useSession } from "@/providers/session-provider";
 import { PermissionEditor } from "./permission-editor";
-import { canEditRolePermissions, canManageRoles } from "./role-access";
+import { canDeleteCustomRole, canEditRolePermissions } from "./role-access";
+import { DeleteRoleDialog } from "./delete-role-dialog";
 import type { AdminRoleDetail, PermissionCatalogEntry } from "./types";
 
 export function RoleDetailPage({ roleId }: { roleId: string }) {
@@ -23,7 +24,7 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
   const permissions = session?.permissions ?? [];
   const canUpdate = sessionHasPermission(permissions, Permissions.AdminRolesUpdate);
   const canReset = sessionHasPermission(permissions, Permissions.AdminRolesReset);
-  const canManage = sessionHasPermission(permissions, Permissions.AdminRolesManage);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: role, isLoading: roleLoading } = useQuery({
     queryKey: queryKeys.admin.roles.detail(roleId),
@@ -65,11 +66,7 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
     canUpdate && role && !role.isSystem && !role.isProtected && !isOwnRole;
   const canResetRole =
     canReset && role?.isSystem && !role.isProtected && !isOwnRole;
-  const canDeleteRole =
-    role &&
-    canManageRoles(session, role) &&
-    !role.isSystem &&
-    role.userCount === 0;
+  const canDeleteRole = canDeleteCustomRole(session, role);
 
   const hasPermissionChanges = useMemo(() => {
     if (!role) {
@@ -142,26 +139,6 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await client.admin.roles({ id: roleId }).delete();
-      if (error) {
-        throw error;
-      }
-      return data;
-    },
-    onSuccess: () => {
-      toast.success("Role deleted");
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.roles.all() });
-      navigate({ to: "/admin/roles" });
-    },
-    onError: (error: any) => {
-      toast.error(
-        String(error?.value?.message || error?.message || "Failed to delete role"),
-      );
-    },
-  });
-
   if (roleLoading || catalogLoading) {
     return <Loader />;
   }
@@ -220,11 +197,7 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
             </Button>
           ) : null}
           {canDeleteRole ? (
-            <Button
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={() => deleteMutation.mutate()}
-            >
+            <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete role
             </Button>
@@ -298,6 +271,13 @@ export function RoleDetailPage({ roleId }: { roleId: string }) {
           }}
         />
       </div>
+
+      <DeleteRoleDialog
+        role={role}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onDeleted={() => navigate({ to: "/admin/roles" })}
+      />
     </div>
   );
 }

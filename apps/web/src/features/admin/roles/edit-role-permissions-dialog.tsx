@@ -120,30 +120,33 @@ export function EditRolePermissionsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[85vh] overflow-y-auto text-base sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit permissions — {role?.name}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl">
+            Edit permissions — {role?.name}
+          </DialogTitle>
+          <DialogDescription className="text-base">
             Assign permissions from the catalog. New permissions must be added in code.
           </DialogDescription>
         </DialogHeader>
 
         {role?.isProtected ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-base">
             This is a protected role. Its permissions cannot be edited here.
           </div>
         ) : role && session?.primaryRoleId === role.id ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-base">
             You cannot modify the role currently assigned to your account.
           </div>
         ) : isLoading || !catalog ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
+          <p className="py-8 text-center text-base text-muted-foreground">
             Loading permissions...
           </p>
         ) : (
           <PermissionEditor
             catalog={catalog}
             selected={selected}
+            size="lg"
             disabled={!canEdit || saveMutation.isPending}
             onToggle={(permission, checked) => {
               setSelected((current) => {

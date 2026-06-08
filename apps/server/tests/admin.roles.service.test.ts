@@ -34,6 +34,8 @@ const deleteCustomRoleMock = mock(async () => ({
   name: "Support",
 }));
 const getUserIdsForRoleMock = mock(async () => ["user-1"]);
+const isAssignableRoleSlugMock = mock(async () => true);
+const assignUserRoleAndInvalidateMock = mock(async () => undefined);
 const activityRecordMock = mock(async () => null);
 
 mock.module("@db/server/rbac/roles", () => ({
@@ -47,7 +49,11 @@ mock.module("@db/server/rbac/roles", () => ({
   updateCustomRoleMetadata: updateCustomRoleMetadataMock,
   deleteCustomRole: deleteCustomRoleMock,
   getUserIdsForRole: getUserIdsForRoleMock,
-  isAssignableRoleSlug: mock(async () => true),
+  isAssignableRoleSlug: isAssignableRoleSlugMock,
+}));
+
+mock.module("@/rbac/assignments", () => ({
+  assignUserRoleAndInvalidate: assignUserRoleAndInvalidateMock,
 }));
 
 mock.module("../src/modules/admin/activity/activity.service", () => ({
@@ -72,7 +78,13 @@ describe("roles.service", () => {
     getRoleByIdMock.mockClear();
     replaceRolePermissionsMock.mockClear();
     resetRolePermissionsFromMapMock.mockClear();
+    deleteCustomRoleMock.mockClear();
+    getUserIdsForRoleMock.mockClear();
+    isAssignableRoleSlugMock.mockClear();
+    assignUserRoleAndInvalidateMock.mockClear();
     activityRecordMock.mockClear();
+    getUserIdsForRoleMock.mockResolvedValue([]);
+    isAssignableRoleSlugMock.mockResolvedValue(true);
   });
 
   it("updates role permissions and refreshes cache", async () => {
@@ -208,5 +220,146 @@ describe("roles.service", () => {
         },
       ),
     ).rejects.toBeInstanceOf(RolesPolicyError);
+  });
+
+  it("deletes custom roles with no assigned users", async () => {
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-custom",
+      slug: "custom.support",
+      name: "Support",
+      isProtected: false,
+      isSystem: false,
+      permissions: [Permissions.FeedbackSubmit],
+      _count: { permissions: 1, userAssignments: 0 },
+    });
+    getUserIdsForRoleMock.mockResolvedValueOnce([]);
+
+    const { rolesService } = await import("../src/modules/admin/roles/roles.service");
+
+    await rolesService.deleteRole("role-custom", ownerActor);
+
+    expect(deleteCustomRoleMock).toHaveBeenCalledWith("role-custom", { force: false });
+    expect(assignUserRoleAndInvalidateMock).not.toHaveBeenCalled();
+    expect(activityRecordMock).toHaveBeenCalled();
+  });
+
+  it("rejects delete when users are assigned without reassignment target", async () => {
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-custom",
+      slug: "custom.support",
+      name: "Support",
+      isProtected: false,
+      isSystem: false,
+      permissions: [Permissions.FeedbackSubmit],
+      _count: { permissions: 1, userAssignments: 2 },
+    });
+    getUserIdsForRoleMock.mockResolvedValueOnce(["user-1", "user-2"]);
+
+    const { rolesService, RolesPolicyError } = await import(
+      "../src/modules/admin/roles/roles.service"
+    );
+
+    await expect(rolesService.deleteRole("role-custom", ownerActor)).rejects.toMatchObject({
+      message: expect.stringContaining("assigned to 2 users"),
+      status: 409,
+    });
+
+    expect(deleteCustomRoleMock).not.toHaveBeenCalled();
+    expect(assignUserRoleAndInvalidateMock).not.toHaveBeenCalled();
+  });
+
+  it("reassigns users and deletes custom roles when target is valid", async () => {
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-custom",
+      slug: "custom.support",
+      name: "Support",
+      isProtected: false,
+      isSystem: false,
+      permissions: [Permissions.FeedbackSubmit],
+      _count: { permissions: 1, userAssignments: 2 },
+    });
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-user",
+      slug: Roles.PlatformUser,
+      name: "User",
+      isProtected: false,
+      isSystem: true,
+      permissions: RolePermissionMap[Roles.PlatformUser],
+      _count: { permissions: 5, userAssignments: 10 },
+    });
+    getUserIdsForRoleMock.mockResolvedValueOnce(["user-1", "user-2"]);
+
+    const { rolesService } = await import("../src/modules/admin/roles/roles.service");
+
+    await rolesService.deleteRole("role-custom", ownerActor, {
+      reassignToRoleId: "role-user",
+    });
+
+    expect(assignUserRoleAndInvalidateMock).toHaveBeenCalledTimes(2);
+    expect(assignUserRoleAndInvalidateMock).toHaveBeenCalledWith(
+      "user-1",
+      Roles.PlatformUser,
+    );
+    expect(assignUserRoleAndInvalidateMock).toHaveBeenCalledWith(
+      "user-2",
+      Roles.PlatformUser,
+    );
+    expect(deleteCustomRoleMock).toHaveBeenCalledWith("role-custom", { force: true });
+  });
+
+  it("rejects delete when reassignment target is the same role", async () => {
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-custom",
+      slug: "custom.support",
+      name: "Support",
+      isProtected: false,
+      isSystem: false,
+      permissions: [Permissions.FeedbackSubmit],
+      _count: { permissions: 1, userAssignments: 1 },
+    });
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-custom",
+      slug: "custom.support",
+      name: "Support",
+      isProtected: false,
+      isSystem: false,
+      permissions: [Permissions.FeedbackSubmit],
+      _count: { permissions: 1, userAssignments: 1 },
+    });
+    getUserIdsForRoleMock.mockResolvedValueOnce(["user-1"]);
+
+    const { rolesService, RolesPolicyError } = await import(
+      "../src/modules/admin/roles/roles.service"
+    );
+
+    await expect(
+      rolesService.deleteRole("role-custom", ownerActor, {
+        reassignToRoleId: "role-custom",
+      }),
+    ).rejects.toBeInstanceOf(RolesPolicyError);
+
+    expect(deleteCustomRoleMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects deleting system roles", async () => {
+    getRoleByIdMock.mockResolvedValueOnce({
+      id: "role-admin",
+      slug: Roles.PlatformAdmin,
+      name: "Admin",
+      isProtected: false,
+      isSystem: true,
+      permissions: RolePermissionMap[Roles.PlatformAdmin],
+      _count: { permissions: 10, userAssignments: 0 },
+    });
+
+    const { rolesService, RolesPolicyError } = await import(
+      "../src/modules/admin/roles/roles.service"
+    );
+
+    await expect(rolesService.deleteRole("role-admin", ownerActor)).rejects.toBeInstanceOf(
+      RolesPolicyError,
+    );
+
+    expect(deleteCustomRoleMock).not.toHaveBeenCalled();
   });
 });
