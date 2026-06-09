@@ -9,7 +9,6 @@ Use this guide when turning this starter into a new SaaS or app. Give this file 
 - Package/app slug: the lowercase machine name, for example `acme-crm`.
 - Redis key prefix: usually the slug plus a colon, for example `acme-crm:`.
 - One-line product description: used in landing page, footer, emails, metadata, and docs.
-- Primary brand color or theme direction, if the UI should visually change.
 
 ## What to Replace
 
@@ -59,7 +58,6 @@ Short text logo: <TEXT_LOGO>
 Package/app slug: <APP_SLUG>
 Redis key prefix: <APP_SLUG>:
 One-line product description: <DESCRIPTION>
-Primary brand direction: <COLOR_OR_STYLE>
 
 Update all user-facing branding, docs, email text, env examples, and package metadata. Keep the app behavior unchanged. After editing, run formatting/type checks if available and search for old branding references.
 ```
