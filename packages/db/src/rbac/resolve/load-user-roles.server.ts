@@ -11,6 +11,7 @@ export async function loadUserRoles(
     select: {
       role: {
         select: {
+          id: true,
           slug: true,
           name: true,
         },
@@ -19,6 +20,7 @@ export async function loadUserRoles(
   });
 
   return assignments.map((assignment) => ({
+    id: assignment.role.id,
     slug: assignment.role.slug as UserRoleSummary["slug"],
     name: assignment.role.name,
   }));

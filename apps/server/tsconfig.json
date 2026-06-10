@@ -38,6 +38,7 @@
     "../../packages/auth/src/**/*",
     "../../packages/db/src/**/*",
     "../../packages/db/prisma/generated/**/*",
+    "../../packages/db/prisma/seed/**/*",
     "../../packages/email/src/**/*",
     "../../packages/env/src/**/*",
     "../../packages/config/src/**/*",

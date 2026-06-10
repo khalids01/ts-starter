@@ -26,7 +26,7 @@ export const adminVisitorsController = new Elysia({
   )
   .get(
     "/",
-    ({ query }) => adminVisitorsService.list(query),
+    ({ query }) => adminVisitorsService.listVisitors(query),
     {
       query: VisitorsListQueryDto,
       detail: {

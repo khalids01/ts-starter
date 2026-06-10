@@ -6,15 +6,22 @@ type AuthUser = Partial<User> & {
   id?: string;
 };
 
-async function assignDefaultUserRole(user: AuthUser) {
+type AssignUserRole = typeof assignUserRole;
+
+async function assignDefaultUserRole(
+  user: AuthUser,
+  assignRole: AssignUserRole,
+) {
   if (!user.id) {
     return;
   }
 
-  await assignUserRole(user.id, Roles.PlatformUser);
+  await assignRole(user.id, Roles.PlatformUser);
 }
 
-export function defaultUserRoleOnSignup(): BetterAuthPlugin {
+export function defaultUserRoleOnSignup(
+  assignRole: AssignUserRole = assignUserRole,
+): BetterAuthPlugin {
   return {
     id: "default-user-role-on-signup",
     init() {
@@ -23,7 +30,7 @@ export function defaultUserRoleOnSignup(): BetterAuthPlugin {
           databaseHooks: {
             user: {
               create: {
-                after: assignDefaultUserRole,
+                after: (user) => assignDefaultUserRole(user, assignRole),
               },
             },
           },
