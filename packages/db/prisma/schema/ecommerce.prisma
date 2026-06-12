@@ -201,9 +201,10 @@ model ProductAttributeValue {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  variants           ProductVariantAttributeValue[]
-  productAssignments ProductAttributeAssignment[]
-  batchAssignments   InventoryBatchAttributeAssignment[]
+  variants                ProductVariantAttributeValue[]
+  productAssignments      ProductAttributeAssignment[]
+  productAssignmentValues ProductAttributeAssignmentValue[]
+  batchAssignments        InventoryBatchAttributeAssignment[]
 
   @@unique([attributeId, value])
   @@index([attributeId])
@@ -268,11 +269,24 @@ model ProductAttributeAssignment {
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
 
+  values ProductAttributeAssignmentValue[]
+
   @@unique([productId, attributeId])
   @@index([productId])
   @@index([attributeId])
   @@index([attributeValueId])
   @@map("product_attribute_assignment")
+}
+
+model ProductAttributeAssignmentValue {
+  assignmentId     String
+  attributeValueId String
+  assignment       ProductAttributeAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  attributeValue   ProductAttributeValue      @relation(fields: [attributeValueId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([assignmentId, attributeValueId])
+  @@index([attributeValueId])
+  @@map("product_attribute_assignment_value")
 }
 
 model Supplier {

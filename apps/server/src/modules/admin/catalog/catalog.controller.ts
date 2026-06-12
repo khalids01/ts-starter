@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { Permissions } from "@rbac";
-import { requirePermission } from "@/rbac/guards/permissions.guard";
-import { adminModuleGuard } from "../admin-rbac.plugin";
+import { authGuard } from "@/guards/auth.guard";
+import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   AssignCategoryAttributeDto,
   CreateAttributeDto,
@@ -33,7 +33,14 @@ function handleCatalogError(error: unknown, set: { status?: number | string }) {
   return { message, status: 400 };
 }
 
-const manageCatalog = requirePermission(Permissions.AdminCatalogManage);
+const readCatalog = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminCatalogRead,
+]);
+const manageCatalog = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminCatalogManage,
+]);
 
 export const adminCatalogController = new Elysia({
   prefix: "/admin/catalog",
@@ -41,11 +48,12 @@ export const adminCatalogController = new Elysia({
     tags: ["Admin - Catalog"],
   },
 })
-  .use(adminModuleGuard(Permissions.AdminCatalogRead))
+  .use(authGuard)
   .get(
     "/categories",
     ({ query }) => adminCatalogService.listCategories(query),
     {
+      beforeHandle: readCatalog,
       query: ListCatalogQueryDto,
       detail: {
         summary: "List catalog categories",
@@ -62,6 +70,7 @@ export const adminCatalogController = new Elysia({
       }
     },
     {
+      beforeHandle: readCatalog,
       params: IdParamDto,
       detail: {
         summary: "Get category details",
@@ -78,6 +87,7 @@ export const adminCatalogController = new Elysia({
       }
     },
     {
+      beforeHandle: readCatalog,
       params: IdParamDto,
       detail: {
         summary: "Get category dynamic form template",
@@ -140,6 +150,7 @@ export const adminCatalogController = new Elysia({
     "/attributes",
     ({ query }) => adminCatalogService.listAttributes(query),
     {
+      beforeHandle: readCatalog,
       query: ListCatalogQueryDto,
       detail: {
         summary: "List product attributes",
@@ -274,6 +285,7 @@ export const adminCatalogController = new Elysia({
     "/brands",
     ({ query }) => adminCatalogService.listBrands(query),
     {
+      beforeHandle: readCatalog,
       query: ListCatalogQueryDto,
       detail: {
         summary: "List product brands",
