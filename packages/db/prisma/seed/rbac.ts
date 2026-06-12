@@ -1,7 +1,9 @@
 import prisma from "../../src/client.server";
 import {
   AllPermissions,
+  Permissions,
   RoleDefinitions,
+  Roles,
   permissionGroup,
   type Permission,
   type RoleSlug,
@@ -13,7 +15,16 @@ import {
   rolePermissionsKey,
 } from "./lib/rbac-keys";
 
-const CATALOG_VERSION = 3;
+const CATALOG_VERSION = 4;
+
+const ecommerceAdminPermissions = [
+  Permissions.AdminCatalogRead,
+  Permissions.AdminCatalogManage,
+  Permissions.AdminProductsRead,
+  Permissions.AdminProductsManage,
+  Permissions.AdminInventoryRead,
+  Permissions.AdminInventoryManage,
+] as const satisfies readonly Permission[];
 
 async function upsertPermissions() {
   for (const name of AllPermissions) {
@@ -64,6 +75,38 @@ async function upsertRoles() {
   return roles;
 }
 
+async function ensureRoleHasPermissions(
+  slug: RoleSlug,
+  permissionNames: readonly Permission[],
+) {
+  const role = await prisma.rbacRole.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+
+  if (!role) {
+    throw new Error(`Role not found: ${slug}`);
+  }
+
+  const permissions = await prisma.rbacPermission.findMany({
+    where: { name: { in: [...permissionNames] } },
+    select: { id: true },
+  });
+
+  await prisma.rbacRolePermission.createMany({
+    data: permissions.map((permission) => ({
+      roleId: role.id,
+      permissionId: permission.id,
+    })),
+    skipDuplicates: true,
+  });
+}
+
+async function ensureEcommerceAdminPermissions() {
+  await ensureRoleHasPermissions(Roles.PlatformOwner, ecommerceAdminPermissions);
+  await ensureRoleHasPermissions(Roles.PlatformAdmin, ecommerceAdminPermissions);
+}
+
 async function warmRolePermissionCaches() {
   const redis = await connectRedis();
 
@@ -98,6 +141,7 @@ export async function seedRbac() {
   await upsertPermissions();
   await upsertRoles();
   await syncAllRolePermissionsFromMap();
+  await ensureEcommerceAdminPermissions();
 
   try {
     await warmRolePermissionCaches();
