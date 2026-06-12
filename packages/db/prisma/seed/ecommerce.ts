@@ -725,11 +725,27 @@ async function seedBrands() {
   }
 }
 
+async function seedInventoryLocations() {
+  await prisma.inventoryLocation.upsert({
+    where: { code: "main" },
+    create: {
+      name: "Main Warehouse",
+      code: "main",
+      isActive: true,
+    },
+    update: {
+      name: "Main Warehouse",
+      isActive: true,
+    },
+  });
+}
+
 export async function seedEcommerce() {
   const attributeBySlug = await seedAttributes();
   const categoryBySlug = await seedCategories();
   await seedCategoryTemplates(categoryBySlug, attributeBySlug);
   await seedBrands();
+  await seedInventoryLocations();
 }
 
 if (import.meta.main) {
