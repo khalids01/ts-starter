@@ -27,6 +27,7 @@
       "@env/client": ["../../packages/env/src/env.client.ts"],
       "@env/server": ["../../packages/env/src/env.server.ts"],
       "@config": ["../../packages/config/src/config.ts"],
+      "@config/brand": ["../../packages/config/src/brand.config.ts"],
       "@email/server": ["../../packages/email/src/index.server.ts"],
       "@redis/server": ["../../packages/redis/src/index.server.ts"],
       "@rbac": ["../../packages/rbac/src"]

@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@config": ["../config/src/config.ts"]
+      "@config": ["../config/src/config.ts"],
+      "@config/brand": ["../config/src/brand.config.ts"]
     }
   }
 }

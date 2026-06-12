@@ -1,0 +1,53 @@
+# Ecommerce Prisma Reference
+
+This is the compact reference for `packages/db/prisma/schema/ecommerce.prisma`.
+
+## Catalog
+
+- `Category` is both navigation and template configuration. It controls brand policy, featured display, and which attributes apply to products, variants, and batches.
+- `ProductBrand` is a manufacturer or product brand. It is optional because some niches use the store brand from `brandConfig` instead.
+- `Product` is the browseable catalog parent. It has no stock fields. Publish lifecycle is `status = draft | active | archived`.
+- `ProductVariant` is the sellable SKU. Price, barcode, variant media, physical weight, and variant choice snapshots live here.
+
+## Category Templates
+
+- `ProductAttribute` defines reusable fields such as color, storage, RAM, origin, grade, or expiry date.
+- `ProductAttributeValue` stores reusable selectable values for attributes.
+- `CategoryAttribute` connects a category to an attribute and decides how the admin UI should render it.
+- Attribute scopes:
+  - `product`: shared specs stored in `ProductAttributeAssignment`
+  - `variant`: SKU choices stored in `ProductVariantAttributeValue`
+  - `batch`: inventory facts stored in `InventoryBatchAttributeAssignment`
+
+## Brand Policy
+
+`Category.brandPolicy` controls the brand field:
+
+- `hidden`: no brand input and no public brand display
+- `optional`: admin may select a `ProductBrand`
+- `required`: admin must select a `ProductBrand`
+- `default_store`: use the deployment brand from `brandConfig`; public display depends on `Category.showStoreBrand`
+
+## Inventory
+
+- `Supplier` stores supplier contact information.
+- `InventoryLocation` stores stock locations such as warehouse, shop, or kitchen.
+- `InventoryBatch` stores received lots of stock. This helps with food expiry, harvest data, supplier tracing, purchase cost, and future FIFO behavior.
+- `InventoryStock` stores current stock per variant, location, and optional batch.
+- `InventoryMovement` is the audit log for every stock change.
+- `StockReservation` temporarily holds stock during checkout so two customers cannot buy the same last item.
+
+Available stock is calculated as:
+
+```txt
+InventoryStock.quantityOnHand - InventoryStock.quantityReserved
+```
+
+## Starter Templates
+
+The ecommerce seed creates editable starter categories and fields:
+
+- phones, laptops, generic gadget
+- fresh fruit, mango, honey, packaged food, generic product
+
+These templates are starter data, not hardcoded product behavior. Later admin CRUD should allow editing categories, attributes, and category attribute rules.

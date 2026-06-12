@@ -24,6 +24,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@auth/client": ["../../packages/auth/src/index.client.ts"],
+      "@config": ["../../packages/config/src/config.ts"],
+      "@config/brand": ["../../packages/config/src/brand.config.ts"],
       "@env/client": ["../../packages/env/src/env.client.ts"],
       "@rbac": ["../../packages/rbac/src"]
     }

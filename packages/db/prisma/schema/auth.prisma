@@ -12,13 +12,14 @@ model User {
   banReason     String?
   archived      Boolean   @default(false)
 
-  invitations        Invitation[]
-  onboardingComplete Boolean        @default(false)
-  notifications      Notification[]
-  feedbacks          Feedback[]
-  actedActivityEvents ActivityEvent[] @relation("ActivityEventActor")
-  targetedActivityEvents ActivityEvent[] @relation("ActivityEventTarget")
-  rbacRoles              RbacUserRole[]
+  invitations             Invitation[]
+  onboardingComplete      Boolean                      @default(false)
+  notifications           Notification[]
+  feedbacks               Feedback[]
+  actedActivityEvents     ActivityEvent[]              @relation("ActivityEventActor")
+  targetedActivityEvents  ActivityEvent[]              @relation("ActivityEventTarget")
+  inventoryMovements      InventoryMovement[]          @relation("InventoryMovementActor")
+  rbacRoles               RbacUserRole[]
   rbacPermissionOverrides RbacUserPermissionOverride[]
 
   // Polar Integration

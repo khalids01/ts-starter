@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     ".": "./src/config.ts",
+    "./brand": "./src/brand.config.ts",
     "./tsconfig.base.json": "./tsconfig.base.json"
   }
 }

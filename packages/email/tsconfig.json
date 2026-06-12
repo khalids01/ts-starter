@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "paths": {
       "@config": ["../config/src/config.ts"],
+      "@config/brand": ["../config/src/brand.config.ts"],
       "@env/*": ["../env/src/*"]
     }
   },

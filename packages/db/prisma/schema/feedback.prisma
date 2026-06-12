@@ -1,14 +1,14 @@
 model Feedback {
-    id        String   @id @default(cuid())
-    userId    String
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    message   String   @db.Text
-    severity  String   @default("low") // low, medium, high
-    status    String   @default("open") // open, in-progress, closed
-    createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String   @db.Text
+  severity  String   @default("low") // low, medium, high
+  status    String   @default("open") // open, in-progress, closed
+  createdAt DateTime @default(now())
 
-    @@index([userId])
-    @@index([createdAt])
-    @@index([status])
-    @@map("feedback")
+  @@index([userId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("feedback")
 }

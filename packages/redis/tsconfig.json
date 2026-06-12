@@ -11,7 +11,8 @@
     "paths": {
       "@env/server": ["../env/src/env.server.ts"],
       "@env/client": ["../env/src/env.client.ts"],
-      "@config": ["../config/src/config.ts"]
+      "@config": ["../config/src/config.ts"],
+      "@config/brand": ["../config/src/brand.config.ts"]
     }
   },
   "include": [
