@@ -13,7 +13,7 @@ import {
   rolePermissionsKey,
 } from "./lib/rbac-keys";
 
-const CATALOG_VERSION = 1;
+const CATALOG_VERSION = 3;
 
 async function upsertPermissions() {
   for (const name of AllPermissions) {

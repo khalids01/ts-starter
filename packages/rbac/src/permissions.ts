@@ -16,6 +16,12 @@ export const Permissions = {
   AdminMetadataRead: "admin.metadata.read",
   AdminWebhooksRead: "admin.webhooks.read",
   AdminRateLimitManage: "admin.rate_limit.manage",
+  AdminCatalogRead: "admin.catalog.read",
+  AdminCatalogManage: "admin.catalog.manage",
+  AdminProductsRead: "admin.products.read",
+  AdminProductsManage: "admin.products.manage",
+  AdminInventoryRead: "admin.inventory.read",
+  AdminInventoryManage: "admin.inventory.manage",
 
   AdminRolesList: "admin.roles.list",
   AdminRolesRead: "admin.roles.read",
