@@ -60,6 +60,41 @@ export const queryKeys = {
         page: number;
       }) => [...queryKeys.admin.invitations.all(), params] as const,
     },
+    ecommerce: {
+      catalog: {
+        all: () => ["admin-ecommerce-catalog"] as const,
+        categories: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.catalog.all(), "categories", params] as const,
+        category: (id: string) =>
+          [...queryKeys.admin.ecommerce.catalog.all(), "category", id] as const,
+        template: (id: string) =>
+          [...queryKeys.admin.ecommerce.catalog.all(), "template", id] as const,
+        attributes: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.catalog.all(), "attributes", params] as const,
+        brands: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.catalog.all(), "brands", params] as const,
+      },
+      products: {
+        all: () => ["admin-ecommerce-products"] as const,
+        list: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.products.all(), "list", params] as const,
+        detail: (id: string) =>
+          [...queryKeys.admin.ecommerce.products.all(), "detail", id] as const,
+        validate: (id: string) =>
+          [...queryKeys.admin.ecommerce.products.all(), "validate", id] as const,
+      },
+      inventory: {
+        all: () => ["admin-ecommerce-inventory"] as const,
+        stocks: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.inventory.all(), "stocks", params] as const,
+        movements: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.inventory.all(), "movements", params] as const,
+        suppliers: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.inventory.all(), "suppliers", params] as const,
+        locations: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.inventory.all(), "locations", params] as const,
+      },
+    },
   },
   invitations: {
     detail: (invitationId: string) => ["invitation", invitationId] as const,

@@ -27,6 +27,9 @@ import {
   History,
   Webhook,
   Shield,
+  Boxes,
+  PackageSearch,
+  Warehouse,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
@@ -41,6 +44,9 @@ import {
   canShowUsersNav,
   canShowVisitorsNav,
   canShowWebhooksNav,
+  canShowCatalogNav,
+  canShowProductsNav,
+  canShowInventoryNav,
 } from "@/features/admin/lib/admin-access";
 import { adminMiddleware } from "@/middleware/admin";
 import { useSession } from "@/providers/session-provider";
@@ -88,6 +94,24 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       icon: Shield,
       url: "/admin/roles",
       show: canShowRolesNav(session),
+    },
+    {
+      title: "Catalog",
+      icon: Boxes,
+      url: "/admin/catalog",
+      show: canShowCatalogNav(session),
+    },
+    {
+      title: "Products",
+      icon: PackageSearch,
+      url: "/admin/products",
+      show: canShowProductsNav(session),
+    },
+    {
+      title: "Inventory",
+      icon: Warehouse,
+      url: "/admin/inventory",
+      show: canShowInventoryNav(session),
     },
     {
       title: "Feedback",

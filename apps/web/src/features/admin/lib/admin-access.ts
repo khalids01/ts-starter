@@ -106,3 +106,15 @@ export function canShowWebhooksNav(session: ClientSession | null | undefined) {
     sessionHasPermission(session?.permissions ?? [], Permissions.AdminWebhooksRead)
   );
 }
+
+export function canShowCatalogNav(session: ClientSession | null | undefined) {
+  return canShowAdminNavItem(session, { permissionPrefix: "admin.catalog." });
+}
+
+export function canShowProductsNav(session: ClientSession | null | undefined) {
+  return canShowAdminNavItem(session, { permissionPrefix: "admin.products." });
+}
+
+export function canShowInventoryNav(session: ClientSession | null | undefined) {
+  return canShowAdminNavItem(session, { permissionPrefix: "admin.inventory." });
+}

@@ -22,14 +22,19 @@ import { Route as AdminVisitorsRouteImport } from './routes/admin/visitors'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminRateLimitsRouteImport } from './routes/admin/rate-limits'
+import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
+import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AdminRolesRoleIdRouteImport } from './routes/admin/roles/$roleId'
+import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
+import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products/$productId'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -95,14 +100,29 @@ const AdminRateLimitsRoute = AdminRateLimitsRouteImport.update({
   path: '/rate-limits',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOverviewRoute = AdminOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminInventoryRoute = AdminInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFeedbackRoute = AdminFeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCatalogRoute = AdminCatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminActivityRoute = AdminActivityRouteImport.update({
@@ -135,6 +155,16 @@ const AdminRolesRoleIdRoute = AdminRolesRoleIdRouteImport.update({
   path: '/$roleId',
   getParentRoute: () => AdminRolesRoute,
 } as any)
+const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
+const AdminProductsProductIdRoute = AdminProductsProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -147,8 +177,11 @@ export interface FileRoutesByFullPath {
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/activity': typeof AdminActivityRoute
+  '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/overview': typeof AdminOverviewRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
@@ -156,6 +189,8 @@ export interface FileRoutesByFullPath {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/products/$productId': typeof AdminProductsProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
 }
 export interface FileRoutesByTo {
@@ -168,8 +203,11 @@ export interface FileRoutesByTo {
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/activity': typeof AdminActivityRoute
+  '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/overview': typeof AdminOverviewRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
@@ -177,6 +215,8 @@ export interface FileRoutesByTo {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/products/$productId': typeof AdminProductsProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
 }
 export interface FileRoutesById {
@@ -191,8 +231,11 @@ export interface FileRoutesById {
   '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/admin/activity': typeof AdminActivityRoute
+  '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/overview': typeof AdminOverviewRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
@@ -201,6 +244,8 @@ export interface FileRoutesById {
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/products/$productId': typeof AdminProductsProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
 }
 export interface FileRouteTypes {
@@ -216,8 +261,11 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/activity'
+    | '/admin/catalog'
     | '/admin/feedback'
+    | '/admin/inventory'
     | '/admin/overview'
+    | '/admin/products'
     | '/admin/rate-limits'
     | '/admin/roles'
     | '/admin/users'
@@ -225,6 +273,8 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/payment/success'
     | '/admin/'
+    | '/admin/products/$productId'
+    | '/admin/products/new'
     | '/admin/roles/$roleId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -237,8 +287,11 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/activity'
+    | '/admin/catalog'
     | '/admin/feedback'
+    | '/admin/inventory'
     | '/admin/overview'
+    | '/admin/products'
     | '/admin/rate-limits'
     | '/admin/roles'
     | '/admin/users'
@@ -246,6 +299,8 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/payment/success'
     | '/admin'
+    | '/admin/products/$productId'
+    | '/admin/products/new'
     | '/admin/roles/$roleId'
   id:
     | '__root__'
@@ -259,8 +314,11 @@ export interface FileRouteTypes {
     | '/_protected/account'
     | '/_protected/dashboard'
     | '/admin/activity'
+    | '/admin/catalog'
     | '/admin/feedback'
+    | '/admin/inventory'
     | '/admin/overview'
+    | '/admin/products'
     | '/admin/rate-limits'
     | '/admin/roles'
     | '/admin/users'
@@ -269,6 +327,8 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/_public/'
     | '/admin/'
+    | '/admin/products/$productId'
+    | '/admin/products/new'
     | '/admin/roles/$roleId'
   fileRoutesById: FileRoutesById
 }
@@ -377,6 +437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRateLimitsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/overview': {
       id: '/admin/overview'
       path: '/overview'
@@ -384,11 +451,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOverviewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/inventory': {
+      id: '/admin/inventory'
+      path: '/inventory'
+      fullPath: '/admin/inventory'
+      preLoaderRoute: typeof AdminInventoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/feedback': {
       id: '/admin/feedback'
       path: '/feedback'
       fullPath: '/admin/feedback'
       preLoaderRoute: typeof AdminFeedbackRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/catalog': {
+      id: '/admin/catalog'
+      path: '/catalog'
+      fullPath: '/admin/catalog'
+      preLoaderRoute: typeof AdminCatalogRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/activity': {
@@ -433,6 +514,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRolesRoleIdRouteImport
       parentRoute: typeof AdminRolesRoute
     }
+    '/admin/products/new': {
+      id: '/admin/products/new'
+      path: '/new'
+      fullPath: '/admin/products/new'
+      preLoaderRoute: typeof AdminProductsNewRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
+    '/admin/products/$productId': {
+      id: '/admin/products/$productId'
+      path: '/$productId'
+      fullPath: '/admin/products/$productId'
+      preLoaderRoute: typeof AdminProductsProductIdRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
   }
 }
 
@@ -450,6 +545,20 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
   ProtectedRouteChildren,
 )
 
+interface AdminProductsRouteChildren {
+  AdminProductsProductIdRoute: typeof AdminProductsProductIdRoute
+  AdminProductsNewRoute: typeof AdminProductsNewRoute
+}
+
+const AdminProductsRouteChildren: AdminProductsRouteChildren = {
+  AdminProductsProductIdRoute: AdminProductsProductIdRoute,
+  AdminProductsNewRoute: AdminProductsNewRoute,
+}
+
+const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
+  AdminProductsRouteChildren,
+)
+
 interface AdminRolesRouteChildren {
   AdminRolesRoleIdRoute: typeof AdminRolesRoleIdRoute
 }
@@ -464,8 +573,11 @@ const AdminRolesRouteWithChildren = AdminRolesRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
+  AdminCatalogRoute: typeof AdminCatalogRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
+  AdminInventoryRoute: typeof AdminInventoryRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminRateLimitsRoute: typeof AdminRateLimitsRoute
   AdminRolesRoute: typeof AdminRolesRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRoute
@@ -476,8 +588,11 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
+  AdminCatalogRoute: AdminCatalogRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
+  AdminInventoryRoute: AdminInventoryRoute,
   AdminOverviewRoute: AdminOverviewRoute,
+  AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminRateLimitsRoute: AdminRateLimitsRoute,
   AdminRolesRoute: AdminRolesRouteWithChildren,
   AdminUsersRoute: AdminUsersRoute,
