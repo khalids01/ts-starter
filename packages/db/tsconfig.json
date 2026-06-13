@@ -8,6 +8,7 @@
     "rootDir": "..",
     "composite": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@env/server": ["../env/src/env.server.ts"],
       "@env/client": ["../env/src/env.client.ts"],
