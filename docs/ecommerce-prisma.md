@@ -6,8 +6,9 @@ This is the compact reference for `packages/db/prisma/schema/ecommerce.prisma`.
 
 - `Category` is both navigation and template configuration. It controls brand policy, featured display, and which attributes apply to products, variants, and batches.
 - `ProductBrand` is a manufacturer or product brand. It is optional because some niches use the store brand from `brandConfig` instead.
-- `Product` is the browseable catalog parent. It has no stock fields. Publish lifecycle is `status = draft | active | archived`.
-- `ProductVariant` is the sellable SKU. Price, barcode, variant media, physical weight, and variant choice snapshots live here.
+- `Product` is the browseable catalog parent. It has no stock fields. Publish lifecycle is `status = draft | active | archived`. It has one optional `coverImageUrl`, search keywords, and merchandising fields such as featured/trending/badge.
+- `ProductVariant` is the sellable SKU. Price, barcode, optional `imageUrls`, physical weight, and variant choice snapshots live here.
+- `ProductHighlight` stores storefront marketing bullets for a product. Highlights are not technical specs; category template attributes remain the structured specs source.
 
 ## Category Templates
 
@@ -18,6 +19,8 @@ This is the compact reference for `packages/db/prisma/schema/ecommerce.prisma`.
   - `product`: shared specs stored in `ProductAttributeAssignment`
   - `variant`: SKU choices stored in `ProductVariantAttributeValue`
   - `batch`: inventory facts stored in `InventoryBatchAttributeAssignment`
+
+Category template product fields are the source of truth for structured specifications and filters. Do not duplicate those specs into free-form product HTML.
 
 ## Brand Policy
 

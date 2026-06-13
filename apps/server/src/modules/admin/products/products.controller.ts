@@ -7,6 +7,7 @@ import {
   IdParamDto,
   ListProductsQueryDto,
   ReplaceProductAttributesDto,
+  ReplaceProductHighlightsDto,
   ReplaceProductVariantsDto,
   UpdateProductDto,
 } from "./products.dto";
@@ -156,6 +157,24 @@ export const adminProductsController = new Elysia({
       body: ReplaceProductVariantsDto,
       detail: {
         summary: "Replace product variants",
+      },
+    },
+  )
+  .put(
+    "/:id/highlights",
+    async ({ params: { id }, body, set }) => {
+      try {
+        return await adminProductsService.replaceProductHighlights(id, body);
+      } catch (error) {
+        return handleProductError(error, set);
+      }
+    },
+    {
+      beforeHandle: manageProducts,
+      params: IdParamDto,
+      body: ReplaceProductHighlightsDto,
+      detail: {
+        summary: "Replace product highlights",
       },
     },
   )

@@ -30,6 +30,8 @@ const productVariantAttributeValueDeleteManyMock = mock(async () => ({
 const productVariantAttributeValueCreateManyMock = mock(async () => ({
   count: 1,
 }));
+const productHighlightDeleteManyMock = mock(async () => ({ count: 0 }));
+const productHighlightCreateManyMock = mock(async () => ({ count: 0 }));
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
 const prismaMock = {
@@ -63,6 +65,10 @@ const prismaMock = {
   productVariantAttributeValue: {
     deleteMany: productVariantAttributeValueDeleteManyMock,
     createMany: productVariantAttributeValueCreateManyMock,
+  },
+  productHighlight: {
+    deleteMany: productHighlightDeleteManyMock,
+    createMany: productHighlightCreateManyMock,
   },
 };
 
@@ -129,11 +135,15 @@ function productRow(overrides: Record<string, any> = {}) {
     status: overrides.status ?? "draft",
     isActive: overrides.isActive ?? true,
     isFeatured: overrides.isFeatured ?? false,
-    media: overrides.media ?? null,
+    isTrending: overrides.isTrending ?? false,
+    badgeLabel: overrides.badgeLabel ?? null,
+    coverImageUrl: overrides.coverImageUrl ?? null,
+    searchKeywords: overrides.searchKeywords ?? [],
     seoTitle: overrides.seoTitle ?? null,
     seoDescription: overrides.seoDescription ?? null,
     attributeAssignments: overrides.attributeAssignments ?? [],
     variants: overrides.variants ?? [],
+    highlights: overrides.highlights ?? [],
     _count: overrides._count ?? {
       variants: overrides.variants?.length ?? 0,
       attributeAssignments: overrides.attributeAssignments?.length ?? 0,
@@ -185,6 +195,8 @@ afterEach(() => {
     productVariantUpdateMock,
     productVariantAttributeValueDeleteManyMock,
     productVariantAttributeValueCreateManyMock,
+    productHighlightDeleteManyMock,
+    productHighlightCreateManyMock,
     transactionMock,
   ]) {
     fn.mockClear();
@@ -201,6 +213,10 @@ describe("AdminProductsService", () => {
       categoryId: "cat-phones",
       name: "iPhone 15 Pro",
       brandId: "brand-1",
+      coverImageUrl: " https://cdn.test/iphone-cover.jpg ",
+      searchKeywords: ["iphone", " ios ", "", "iphone"],
+      isTrending: true,
+      badgeLabel: " New ",
     });
 
     expect(productCreateMock).toHaveBeenCalledWith(
@@ -210,6 +226,10 @@ describe("AdminProductsService", () => {
           slug: "iphone-15-pro",
           status: "draft",
           brandId: "brand-1",
+          coverImageUrl: "https://cdn.test/iphone-cover.jpg",
+          searchKeywords: ["iphone", "ios"],
+          isTrending: true,
+          badgeLabel: "New",
         }),
       }),
     );
@@ -353,7 +373,7 @@ describe("AdminProductsService", () => {
               currency: "BDT",
               isDefault: true,
               isActive: true,
-              media: null,
+              imageUrls: ["https://cdn.test/variant-black.jpg"],
               weightValue: null,
               weightUnit: null,
               attributeValues: [],
@@ -386,6 +406,12 @@ describe("AdminProductsService", () => {
       variants: [
         {
           price: "999",
+          imageUrls: [
+            " https://cdn.test/variant-black.jpg ",
+            "",
+            "https://cdn.test/variant-black.jpg",
+            "https://cdn.test/variant-angle.jpg",
+          ],
           attributeValueIds: ["value-black"],
         },
       ],
@@ -404,6 +430,10 @@ describe("AdminProductsService", () => {
               attributeSlug: "color",
               label: "Black",
             }),
+          ],
+          imageUrls: [
+            "https://cdn.test/variant-black.jpg",
+            "https://cdn.test/variant-angle.jpg",
           ],
         }),
       }),
@@ -475,5 +505,68 @@ describe("AdminProductsService", () => {
         data: { status: "archived", isActive: false },
       }),
     );
+  });
+
+  it("replaces product highlights atomically and returns sorted highlights", async () => {
+    productFindUniqueMock
+      .mockResolvedValueOnce({ id: "product-1" })
+      .mockResolvedValueOnce(
+        productRow({
+          highlights: [
+            {
+              id: "highlight-1",
+              productId: "product-1",
+              title: "Fast delivery",
+              description: "Ships from Dhaka",
+              iconUrl: "https://cdn.test/truck.svg",
+              imageUrl: null,
+              sortOrder: 1,
+              createdAt: new Date("2026-06-13T10:00:00.000Z"),
+              updatedAt: new Date("2026-06-13T10:00:00.000Z"),
+            },
+          ],
+        }),
+      );
+
+    const { adminProductsService } = await import(
+      "../src/modules/admin/products/products.service"
+    );
+
+    const product = await adminProductsService.replaceProductHighlights(
+      "product-1",
+      {
+        highlights: [
+          {
+            title: " Fast delivery ",
+            description: " Ships from Dhaka ",
+            iconUrl: " https://cdn.test/truck.svg ",
+            imageUrl: "",
+            sortOrder: 1,
+          },
+        ],
+      },
+    );
+
+    expect(productHighlightDeleteManyMock).toHaveBeenCalledWith({
+      where: { productId: "product-1" },
+    });
+    expect(productHighlightCreateManyMock).toHaveBeenCalledWith({
+      data: [
+        {
+          productId: "product-1",
+          title: "Fast delivery",
+          description: "Ships from Dhaka",
+          iconUrl: "https://cdn.test/truck.svg",
+          imageUrl: null,
+          sortOrder: 1,
+        },
+      ],
+    });
+    expect(product?.highlights).toEqual([
+      expect.objectContaining({
+        title: "Fast delivery",
+        iconUrl: "https://cdn.test/truck.svg",
+      }),
+    ]);
   });
 });

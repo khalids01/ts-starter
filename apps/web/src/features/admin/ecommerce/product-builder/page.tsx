@@ -27,7 +27,8 @@ import {
 } from "../ui";
 import { BrandField } from "./brand-field";
 import { DynamicFields } from "./dynamic-fields";
-import { steps, variantDraft, type AttributeDraft, type Step, type VariantDraft } from "./drafts";
+import { highlightDraft, steps, variantDraft, type AttributeDraft, type HighlightDraft, type Step, type VariantDraft } from "./drafts";
+import { HighlightsEditor } from "./highlights-editor";
 import { Panel } from "./panel";
 import { VariantsEditor } from "./variants-editor";
 
@@ -45,11 +46,16 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
     description: "",
     descriptionHtml: "",
     brandId: "none",
+    coverImageUrl: "",
+    searchKeywords: "",
+    badgeLabel: "",
     seoTitle: "",
     seoDescription: "",
     isFeatured: false,
+    isTrending: false,
   });
   const [attributes, setAttributes] = useState<AttributeDraft>({});
+  const [highlights, setHighlights] = useState<HighlightDraft[]>([]);
   const [variants, setVariants] = useState<VariantDraft[]>([]);
 
   const categoriesQuery = useQuery({
@@ -88,9 +94,13 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
       description: product.description ?? "",
       descriptionHtml: product.descriptionHtml ?? "",
       brandId: product.brandId ?? "none",
+      coverImageUrl: product.coverImageUrl ?? "",
+      searchKeywords: (product.searchKeywords ?? []).join(", "),
+      badgeLabel: product.badgeLabel ?? "",
       seoTitle: product.seoTitle ?? "",
       seoDescription: product.seoDescription ?? "",
       isFeatured: product.isFeatured,
+      isTrending: product.isTrending,
     });
     const nextAttributes: AttributeDraft = {};
     for (const assignment of product.attributeAssignments ?? []) {
@@ -105,6 +115,7 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
       };
     }
     setAttributes(nextAttributes);
+    setHighlights((product.highlights ?? []).map(highlightDraft));
     setVariants((product.variants ?? []).map(variantDraft));
   }, [product]);
 
@@ -127,9 +138,16 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
         description: basics.description || null,
         descriptionHtml: basics.descriptionHtml || null,
         brandId: basics.brandId === "none" ? null : basics.brandId,
+        coverImageUrl: basics.coverImageUrl || null,
+        searchKeywords: basics.searchKeywords
+          .split(",")
+          .map((keyword) => keyword.trim())
+          .filter(Boolean),
+        badgeLabel: basics.badgeLabel || null,
         seoTitle: basics.seoTitle || null,
         seoDescription: basics.seoDescription || null,
         isFeatured: basics.isFeatured,
+        isTrending: basics.isTrending,
       };
       return product?.id
         ? ecommerceApi.products.update(product.id, body)
@@ -201,6 +219,7 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
           currency: variant.currency || "BDT",
           isDefault: variant.isDefault,
           isActive: variant.isActive,
+          imageUrls: variant.imageUrls.map((url) => url.trim()).filter(Boolean),
           weightValue: variant.weightValue || null,
           weightUnit: variant.weightUnit === "none" ? null : variant.weightUnit,
           attributeValueIds: variant.attributeValueIds,
@@ -212,6 +231,31 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
       invalidateProduct(product?.id);
     },
     onError: (error) => toast.error(readError(error, "Failed to save variants")),
+  });
+
+  const saveHighlights = useMutation({
+    mutationFn: async () => {
+      if (!product?.id) {
+        throw new Error("Save basics first");
+      }
+      return ecommerceApi.products.saveHighlights(
+        product.id,
+        highlights
+          .filter((highlight) => highlight.title.trim())
+          .map((highlight, index) => ({
+            title: highlight.title,
+            description: highlight.description || null,
+            iconUrl: highlight.iconUrl || null,
+            imageUrl: highlight.imageUrl || null,
+            sortOrder: Number(highlight.sortOrder || index),
+          })),
+      );
+    },
+    onSuccess: () => {
+      toast.success("Highlights saved");
+      invalidateProduct(product?.id);
+    },
+    onError: (error) => toast.error(readError(error, "Failed to save highlights")),
   });
 
   const validate = useMutation({
@@ -313,6 +357,8 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
               value={basics.brandId}
               onChange={(brandId) => setBasics((current) => ({ ...current, brandId }))}
             />
+            <TextField label="Cover image URL" value={basics.coverImageUrl} onChange={(coverImageUrl) => setBasics((current) => ({ ...current, coverImageUrl }))} />
+            <TextField label="Badge label" value={basics.badgeLabel} onChange={(badgeLabel) => setBasics((current) => ({ ...current, badgeLabel }))} />
             <label className="flex items-end gap-2 text-sm">
               <Switch
                 checked={basics.isFeatured}
@@ -320,11 +366,21 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
               />
               Featured
             </label>
+            <label className="flex items-end gap-2 text-sm">
+              <Switch
+                checked={basics.isTrending}
+                onCheckedChange={(isTrending) => setBasics((current) => ({ ...current, isTrending }))}
+              />
+              Trending
+            </label>
             <Field label="Description">
               <Textarea value={basics.description} onChange={(event) => setBasics((current) => ({ ...current, description: event.target.value }))} />
             </Field>
             <Field label="Description HTML">
               <Textarea value={basics.descriptionHtml} onChange={(event) => setBasics((current) => ({ ...current, descriptionHtml: event.target.value }))} />
+            </Field>
+            <Field label="Search keywords">
+              <Textarea value={basics.searchKeywords} onChange={(event) => setBasics((current) => ({ ...current, searchKeywords: event.target.value }))} />
             </Field>
             <TextField label="SEO title" value={basics.seoTitle} onChange={(seoTitle) => setBasics((current) => ({ ...current, seoTitle }))} />
             <TextField label="SEO description" value={basics.seoDescription} onChange={(seoDescription) => setBasics((current) => ({ ...current, seoDescription }))} />
@@ -348,6 +404,15 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
           )}
           <SaveButton loading={saveAttributes.isPending} disabled={!canManageProducts || !product?.id} onClick={() => saveAttributes.mutate()}>
             Save specs
+          </SaveButton>
+        </Panel>
+      ) : null}
+
+      {activeStep === "Highlights" ? (
+        <Panel title="Highlights">
+          <HighlightsEditor highlights={highlights} onChange={setHighlights} />
+          <SaveButton loading={saveHighlights.isPending} disabled={!canManageProducts || !product?.id} onClick={() => saveHighlights.mutate()}>
+            Save highlights
           </SaveButton>
         </Panel>
       ) : null}

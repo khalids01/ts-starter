@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import type { Category, ProductBrand } from "../types";
-import { SelectField } from "../ui";
+import { Field, SelectField } from "../ui";
 import { statusOptions } from "./options";
 
 export type ProductFiltersState = {
@@ -17,12 +17,14 @@ export function ProductFilters(props: {
   onChange: (filters: ProductFiltersState) => void;
 }) {
   return (
-    <div className="grid gap-3 md:grid-cols-[1fr_180px_220px_220px]">
-      <Input
-        placeholder="Search products or SKUs"
-        value={props.filters.search}
-        onChange={(event) => props.onChange({ ...props.filters, search: event.target.value })}
-      />
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_180px_220px_220px]">
+      <Field label="Search">
+        <Input
+          placeholder="Search products or SKUs"
+          value={props.filters.search}
+          onChange={(event) => props.onChange({ ...props.filters, search: event.target.value })}
+        />
+      </Field>
       <SelectField
         label="Status"
         value={props.filters.status}

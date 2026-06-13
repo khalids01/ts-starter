@@ -62,6 +62,8 @@ export const ecommerceApi = {
       unwrap(api.admin.products({ id }).attributes.put({ assignments }), "Failed to save specs"),
     saveVariants: (id: string, variants: unknown[]) =>
       unwrap(api.admin.products({ id }).variants.put({ variants }), "Failed to save variants"),
+    saveHighlights: (id: string, highlights: unknown[]) =>
+      unwrap(api.admin.products({ id }).highlights.put({ highlights }), "Failed to save highlights"),
     validate: (id: string) =>
       unwrap(api.admin.products({ id }).validate.post(), "Failed to validate product"),
   },

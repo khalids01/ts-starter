@@ -120,7 +120,10 @@ model Product {
   status          ProductStatus @default(draft)
   isActive        Boolean       @default(true)
   isFeatured      Boolean       @default(false)
-  media           Json?
+  isTrending      Boolean       @default(false)
+  badgeLabel      String?
+  coverImageUrl   String?
+  searchKeywords  String[]      @default([])
   seoTitle        String?
   seoDescription  String?       @db.Text
   createdAt       DateTime      @default(now())
@@ -128,12 +131,14 @@ model Product {
 
   variants             ProductVariant[]
   attributeAssignments ProductAttributeAssignment[]
+  highlights           ProductHighlight[]
 
   @@index([categoryId])
   @@index([brandId])
   @@index([status])
   @@index([isActive])
   @@index([isFeatured])
+  @@index([isTrending])
   @@map("product")
 }
 
@@ -151,7 +156,7 @@ model ProductVariant {
   currency           String      @default("BDT")
   isDefault          Boolean     @default(false)
   isActive           Boolean     @default(true)
-  media              Json?
+  imageUrls          String[]    @default([])
   weightValue        Decimal?    @db.Decimal(10, 3)
   weightUnit         WeightUnit?
   createdAt          DateTime    @default(now())
@@ -167,6 +172,23 @@ model ProductVariant {
   @@index([isActive])
   @@index([isDefault])
   @@map("product_variant")
+}
+
+model ProductHighlight {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  title       String
+  description String?  @db.Text
+  iconUrl     String?
+  imageUrl    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([sortOrder])
+  @@map("product_highlight")
 }
 
 model ProductAttribute {

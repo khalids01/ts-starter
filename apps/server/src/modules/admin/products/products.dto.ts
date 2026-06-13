@@ -17,15 +17,6 @@ export const IdParamDto = t.Object({
   id: t.String({ minLength: 1 }),
 });
 
-export const ProductMediaItemDto = t.Object({
-  url: t.String({ minLength: 1 }),
-  alt: t.Optional(t.Union([t.String(), t.Null()])),
-  type: t.Optional(t.Union([t.String(), t.Null()])),
-  sortOrder: t.Optional(t.Number()),
-});
-
-export const ProductMediaDto = t.Array(ProductMediaItemDto);
-
 export const ListProductsQueryDto = t.Object({
   page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20 })),
@@ -43,7 +34,10 @@ export const CreateProductDto = t.Object({
   description: t.Optional(t.Union([t.String(), t.Null()])),
   descriptionHtml: t.Optional(t.Union([t.String(), t.Null()])),
   brandId: t.Optional(t.Union([t.String(), t.Null()])),
-  media: t.Optional(t.Union([ProductMediaDto, t.Null()])),
+  coverImageUrl: t.Optional(t.Union([t.String(), t.Null()])),
+  searchKeywords: t.Optional(t.Array(t.String())),
+  isTrending: t.Optional(t.Boolean()),
+  badgeLabel: t.Optional(t.Union([t.String(), t.Null()])),
   seoTitle: t.Optional(t.Union([t.String(), t.Null()])),
   seoDescription: t.Optional(t.Union([t.String(), t.Null()])),
   isFeatured: t.Optional(t.Boolean()),
@@ -60,7 +54,10 @@ export const UpdateProductDto = t.Partial(
     status: ProductStatusDto,
     isActive: t.Boolean(),
     isFeatured: t.Boolean(),
-    media: t.Union([ProductMediaDto, t.Null()]),
+    coverImageUrl: t.Union([t.String(), t.Null()]),
+    searchKeywords: t.Array(t.String()),
+    isTrending: t.Boolean(),
+    badgeLabel: t.Union([t.String(), t.Null()]),
     seoTitle: t.Union([t.String(), t.Null()]),
     seoDescription: t.Union([t.String(), t.Null()]),
   }),
@@ -92,7 +89,7 @@ export const ProductVariantInputDto = t.Object({
   currency: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
   isDefault: t.Optional(t.Boolean()),
   isActive: t.Optional(t.Boolean()),
-  media: t.Optional(t.Union([ProductMediaDto, t.Null()])),
+  imageUrls: t.Optional(t.Array(t.String())),
   weightValue: t.Optional(t.Union([t.String(), t.Number(), t.Null()])),
   weightUnit: t.Optional(t.Union([WeightUnitDto, t.Null()])),
   attributeValueIds: t.Optional(t.Array(t.String({ minLength: 1 }))),
@@ -100,6 +97,18 @@ export const ProductVariantInputDto = t.Object({
 
 export const ReplaceProductVariantsDto = t.Object({
   variants: t.Array(ProductVariantInputDto),
+});
+
+export const ProductHighlightInputDto = t.Object({
+  title: t.String({ minLength: 1 }),
+  description: t.Optional(t.Union([t.String(), t.Null()])),
+  iconUrl: t.Optional(t.Union([t.String(), t.Null()])),
+  imageUrl: t.Optional(t.Union([t.String(), t.Null()])),
+  sortOrder: t.Optional(t.Number()),
+});
+
+export const ReplaceProductHighlightsDto = t.Object({
+  highlights: t.Array(ProductHighlightInputDto),
 });
 
 export type ListProductsQuery = typeof ListProductsQueryDto.static;
@@ -112,3 +121,6 @@ export type ReplaceProductAttributesInput =
 export type ProductVariantInput = typeof ProductVariantInputDto.static;
 export type ReplaceProductVariantsInput =
   typeof ReplaceProductVariantsDto.static;
+export type ProductHighlightInput = typeof ProductHighlightInputDto.static;
+export type ReplaceProductHighlightsInput =
+  typeof ReplaceProductHighlightsDto.static;

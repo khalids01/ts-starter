@@ -205,14 +205,14 @@ flowchart TD
 
   BRAND -->|Yes| CREATE_BRAND[Create ProductBrand]
   BRAND -->|No| CREATE_PROD
-  CREATE_BRAND --> CREATE_PROD[Create Product<br/>status: draft<br/>categoryId required<br/>media, SEO fields]
+  CREATE_BRAND --> CREATE_PROD[Create Product<br/>status: draft<br/>categoryId required<br/>cover image, keywords, SEO fields]
 
   CREATE_PROD --> ATTRS{Variant attributes?<br/>size, color, etc.}
   ATTRS -->|Yes| CREATE_ATTR[Create ProductAttribute<br/>variantDefining = true]
   CREATE_ATTR --> CREATE_VAL[Create ProductAttributeValue]
   ATTRS -->|No| CREATE_VAR
 
-  CREATE_VAL --> CREATE_VAR[Create ProductVariant(s)<br/>sku, price, currency<br/>attributesSnapshot JSON]
+  CREATE_VAL --> CREATE_VAR[Create ProductVariant(s)<br/>sku, price, currency<br/>optional image URLs<br/>attributesSnapshot JSON]
 
   CREATE_VAR --> LINK_ATTR[Link variant ↔ attribute values<br/>ProductVariantAttributeValue]
   LINK_ATTR --> PUBLISH{Publish product?}

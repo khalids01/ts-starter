@@ -3,6 +3,7 @@ import type {
   CreateProductInput,
   ListProductsQuery,
   ReplaceProductAttributesInput,
+  ReplaceProductHighlightsInput,
   ReplaceProductVariantsInput,
   UpdateProductInput,
 } from "./products.dto";
@@ -119,6 +120,19 @@ function normalizeCurrency(value?: string) {
   return (value || "BDT").trim().toUpperCase();
 }
 
+function nullableTrimmed(value: string | null | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function normalizeStringList(values: string[] | null | undefined) {
+  if (!values) {
+    return [];
+  }
+
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
 function paginationResult<T>({
   items,
   total,
@@ -194,6 +208,9 @@ function productInclude() {
       },
       orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
     },
+    highlights: {
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    },
     _count: {
       select: {
         variants: true,
@@ -236,7 +253,7 @@ function mapVariant(row: any) {
     currency: row.currency,
     isDefault: row.isDefault,
     isActive: row.isActive,
-    media: row.media ?? null,
+    imageUrls: row.imageUrls ?? [],
     weightValue: decimalToString(row.weightValue),
     weightUnit: row.weightUnit,
     attributeValues: (row.attributeValues ?? []).map((entry: any) => ({
@@ -246,6 +263,20 @@ function mapVariant(row: any) {
       attributeId: entry.attributeValue.attributeId,
       attribute: entry.attributeValue.attribute,
     })),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
+  };
+}
+
+function mapHighlight(row: any) {
+  return {
+    id: row.id,
+    productId: row.productId,
+    title: row.title,
+    description: row.description,
+    iconUrl: row.iconUrl,
+    imageUrl: row.imageUrl,
+    sortOrder: row.sortOrder,
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
   };
@@ -265,7 +296,10 @@ function mapProduct(row: any) {
     status: row.status,
     isActive: row.isActive,
     isFeatured: row.isFeatured,
-    media: row.media ?? null,
+    isTrending: row.isTrending,
+    badgeLabel: row.badgeLabel,
+    coverImageUrl: row.coverImageUrl,
+    searchKeywords: row.searchKeywords ?? [],
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
     counts: row._count
@@ -277,6 +311,7 @@ function mapProduct(row: any) {
     attributeAssignments: (row.attributeAssignments ?? []).map(
       mapAttributeAssignment,
     ),
+    highlights: (row.highlights ?? []).map(mapHighlight),
     variants: (row.variants ?? []).map(mapVariant),
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
@@ -450,6 +485,8 @@ export class AdminProductsService {
         { name: { contains: search, mode: "insensitive" } },
         { slug: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
+        { badgeLabel: { contains: search, mode: "insensitive" } },
+        { searchKeywords: { has: search } },
       ];
     }
 
@@ -511,7 +548,10 @@ export class AdminProductsService {
         status: "draft",
         isActive: true,
         isFeatured: input.isFeatured ?? false,
-        media: input.media ?? undefined,
+        isTrending: input.isTrending ?? false,
+        badgeLabel: nullableTrimmed(input.badgeLabel),
+        coverImageUrl: nullableTrimmed(input.coverImageUrl),
+        searchKeywords: normalizeStringList(input.searchKeywords),
         seoTitle: input.seoTitle ?? null,
         seoDescription: input.seoDescription ?? null,
       },
@@ -595,8 +635,17 @@ export class AdminProductsService {
     if (input.isFeatured !== undefined) {
       data.isFeatured = input.isFeatured;
     }
-    if (input.media !== undefined) {
-      data.media = (input.media ?? null) as any;
+    if (input.isTrending !== undefined) {
+      data.isTrending = input.isTrending;
+    }
+    if (input.badgeLabel !== undefined) {
+      data.badgeLabel = nullableTrimmed(input.badgeLabel);
+    }
+    if (input.coverImageUrl !== undefined) {
+      data.coverImageUrl = nullableTrimmed(input.coverImageUrl);
+    }
+    if (input.searchKeywords !== undefined) {
+      data.searchKeywords = normalizeStringList(input.searchKeywords);
     }
     if (input.seoTitle !== undefined) {
       data.seoTitle = input.seoTitle;
@@ -921,7 +970,7 @@ export class AdminProductsService {
           currency: variant.currency,
           isDefault: index === defaultIndex,
           isActive: variant.isActive,
-          media: variant.media ?? undefined,
+          imageUrls: normalizeStringList(variant.imageUrls),
           weightValue: toDecimalString(variant.weightValue, "Weight value"),
           weightUnit: variant.weightUnit ?? null,
           attributesSnapshot: variant.attributesSnapshot,
@@ -953,6 +1002,42 @@ export class AdminProductsService {
             skipDuplicates: true,
           });
         }
+      }
+    });
+
+    return this.getProduct(id);
+  }
+
+  async replaceProductHighlights(
+    id: string,
+    input: ReplaceProductHighlightsInput,
+  ) {
+    await this.assertProductExists(id);
+
+    const highlights = input.highlights.map((highlight, index) => {
+      const title = highlight.title.trim();
+      if (!title) {
+        throw new AdminProductServiceError("Highlight title is required");
+      }
+
+      return {
+        title,
+        description: nullableTrimmed(highlight.description),
+        iconUrl: nullableTrimmed(highlight.iconUrl),
+        imageUrl: nullableTrimmed(highlight.imageUrl),
+        sortOrder: highlight.sortOrder ?? index,
+      };
+    });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.productHighlight.deleteMany({ where: { productId: id } });
+      if (highlights.length > 0) {
+        await tx.productHighlight.createMany({
+          data: highlights.map((highlight) => ({
+            productId: id,
+            ...highlight,
+          })),
+        });
       }
     });
 

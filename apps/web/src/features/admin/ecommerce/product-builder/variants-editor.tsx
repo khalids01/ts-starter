@@ -43,6 +43,7 @@ export function VariantsEditor(props: {
               <TableHead>SKU</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead>Images</TableHead>
               <TableHead>Options</TableHead>
               <TableHead>Default</TableHead>
               <TableHead>Active</TableHead>
@@ -51,7 +52,7 @@ export function VariantsEditor(props: {
           </TableHeader>
           <TableBody>
             {props.variants.length === 0 ? (
-              <EmptyTableRow colSpan={7}>No variants yet.</EmptyTableRow>
+              <EmptyTableRow colSpan={8}>No variants yet.</EmptyTableRow>
             ) : (
               props.variants.map((variant, index) => (
                 <TableRow key={variant.id ?? index}>
@@ -66,6 +67,12 @@ export function VariantsEditor(props: {
                       <Input value={variant.price} placeholder="Price" onChange={(event) => updateVariant(index, { price: event.target.value })} />
                       <Input value={variant.costPrice} placeholder="Cost" onChange={(event) => updateVariant(index, { costPrice: event.target.value })} />
                     </div>
+                  </TableCell>
+                  <TableCell className="min-w-[220px]">
+                    <ImageUrlList
+                      imageUrls={variant.imageUrls}
+                      onChange={(imageUrls) => updateVariant(index, { imageUrls })}
+                    />
                   </TableCell>
                   <TableCell className="min-w-[220px]">
                     <div className="grid gap-2">
@@ -122,6 +129,55 @@ export function VariantsEditor(props: {
           </TableBody>
         </Table>
       </div>
+    </div>
+  );
+}
+
+function ImageUrlList(props: {
+  imageUrls: string[];
+  onChange: (imageUrls: string[]) => void;
+}) {
+  const update = (index: number, value: string) => {
+    props.onChange(
+      props.imageUrls.map((url, currentIndex) =>
+        currentIndex === index ? value : url,
+      ),
+    );
+  };
+
+  return (
+    <div className="grid gap-2">
+      {props.imageUrls.length === 0 ? (
+        <p className="text-xs text-muted-foreground">No images</p>
+      ) : null}
+      {props.imageUrls.map((url, index) => (
+        <div key={index} className="flex gap-2">
+          <Input
+            value={url}
+            placeholder="Image URL"
+            onChange={(event) => update(index, event.target.value)}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() =>
+              props.onChange(props.imageUrls.filter((_, currentIndex) => currentIndex !== index))
+            }
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => props.onChange([...props.imageUrls, ""])}
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Image
+      </Button>
     </div>
   );
 }

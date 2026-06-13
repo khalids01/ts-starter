@@ -126,6 +126,7 @@ export type ProductVariant = {
   currency: string;
   isDefault: boolean;
   isActive: boolean;
+  imageUrls?: string[];
   weightValue?: string | null;
   weightUnit?: "g" | "kg" | "lb" | "oz" | null;
   attributeValues?: Array<ProductAttributeValue & { attribute?: ProductAttribute }>;
@@ -137,6 +138,16 @@ export type ProductVariant = {
     value: string;
     label: string;
   }>;
+};
+
+export type ProductHighlight = {
+  id?: string;
+  productId?: string;
+  title: string;
+  description?: string | null;
+  iconUrl?: string | null;
+  imageUrl?: string | null;
+  sortOrder: number;
 };
 
 export type Product = {
@@ -152,11 +163,15 @@ export type Product = {
   status: ProductStatus;
   isActive: boolean;
   isFeatured: boolean;
-  media?: Array<{ url: string; alt?: string | null; type?: string | null; sortOrder?: number }> | null;
+  isTrending: boolean;
+  badgeLabel?: string | null;
+  coverImageUrl?: string | null;
+  searchKeywords: string[];
   seoTitle?: string | null;
   seoDescription?: string | null;
   counts?: { variants: number; attributeAssignments: number };
   attributeAssignments?: ProductAttributeAssignment[];
+  highlights?: ProductHighlight[];
   variants?: ProductVariant[];
   updatedAt?: string;
 };

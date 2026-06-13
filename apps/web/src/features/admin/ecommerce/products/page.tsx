@@ -11,11 +11,15 @@ import type { Category, PageResult, Product, ProductBrand } from "../types";
 import { EcommerceHeader, ecommercePermissions, readError } from "../ui";
 import { ProductFilters, type ProductFiltersState } from "./filters";
 import { ProductsTable } from "./products-table";
+import { useProductViewStore } from "./view-store";
+import { ProductsViewSwitcher } from "./view-switcher";
 
 export function AdminProductsPage() {
   const { session } = useSession();
   const { canManageProducts } = ecommercePermissions(session);
   const queryClient = useQueryClient();
+  const viewMode = useProductViewStore((state) => state.viewMode);
+  const setViewMode = useProductViewStore((state) => state.setViewMode);
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: "",
     status: "all",
@@ -77,17 +81,23 @@ export function AdminProductsPage() {
         }
       />
 
-      <ProductFilters
-        filters={filters}
-        categories={categoriesQuery.data?.items ?? []}
-        brands={brandsQuery.data?.items ?? []}
-        onChange={setFilters}
-      />
+      <div className="grid gap-3">
+        <ProductFilters
+          filters={filters}
+          categories={categoriesQuery.data?.items ?? []}
+          brands={brandsQuery.data?.items ?? []}
+          onChange={setFilters}
+        />
+        <div className="flex items-center justify-end">
+          <ProductsViewSwitcher value={viewMode} onChange={setViewMode} />
+        </div>
+      </div>
 
       <ProductsTable
         products={productsQuery.data?.items ?? []}
         loading={productsQuery.isLoading}
         canManage={canManageProducts}
+        viewMode={viewMode}
         onValidate={(id) => validate.mutate(id)}
         onArchive={(id) => archive.mutate(id)}
       />
