@@ -108,6 +108,8 @@ export function SelectField(props: {
   placeholder?: string;
   disabled?: boolean;
 }) {
+  const selectedLabel = props.options.find((option) => option.value === props.value)?.label;
+
   return (
     <Field label={props.label}>
       <Select
@@ -116,7 +118,9 @@ export function SelectField(props: {
         disabled={props.disabled}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={props.placeholder} />
+          <SelectValue placeholder={props.placeholder}>
+            {selectedLabel}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {props.options.map((option) => (
