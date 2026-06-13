@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AdminProductsPage } from "@/features/admin/ecommerce/products";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/products")({
-  component: AdminProductsPage,
+  component: Outlet,
 });
