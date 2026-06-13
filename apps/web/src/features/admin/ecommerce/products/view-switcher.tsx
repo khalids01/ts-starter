@@ -1,8 +1,6 @@
 import { LayoutGrid, List } from "lucide-react";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { ProductViewMode } from "./view-store";
 
 export function ProductsViewSwitcher(props: {
@@ -10,24 +8,31 @@ export function ProductsViewSwitcher(props: {
   onChange: (value: ProductViewMode) => void;
 }) {
   return (
-    <ToggleGroup
-      type="single"
-      value={props.value}
-      onValueChange={(value) => {
-        if (value === "grid" || value === "list") {
-          props.onChange(value);
-        }
-      }}
-      variant="outline"
-      size="sm"
-      className="shrink-0"
-    >
-      <ToggleGroupItem value="grid" aria-label="Grid view" title="Grid view">
+    <div className="inline-flex shrink-0 rounded-md border p-0.5">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-pressed={props.value === "grid"}
+        title="Grid view"
+        className={cn(props.value === "grid" && "bg-muted")}
+        onClick={() => props.onChange("grid")}
+      >
         <LayoutGrid className="h-4 w-4" />
-      </ToggleGroupItem>
-      <ToggleGroupItem value="list" aria-label="List view" title="List view">
+        <span className="sr-only">Grid view</span>
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-pressed={props.value === "list"}
+        title="List view"
+        className={cn(props.value === "list" && "bg-muted")}
+        onClick={() => props.onChange("list")}
+      >
         <List className="h-4 w-4" />
-      </ToggleGroupItem>
-    </ToggleGroup>
+        <span className="sr-only">List view</span>
+      </Button>
+    </div>
   );
 }

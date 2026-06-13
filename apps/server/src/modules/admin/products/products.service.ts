@@ -323,7 +323,6 @@ function mapProductSummary(row: any) {
   return {
     ...mapped,
     attributeAssignments: undefined,
-    variants: undefined,
   };
 }
 
@@ -497,10 +496,32 @@ export class AdminProductsService {
       where,
       include: {
         category: {
-          select: { id: true, name: true, slug: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            brandPolicy: true,
+            showStoreBrand: true,
+          },
         },
         brand: {
           select: { id: true, name: true, slug: true, logoUrl: true },
+        },
+        variants: {
+          include: {
+            attributeValues: {
+              include: {
+                attributeValue: {
+                  include: {
+                    attribute: {
+                      select: { id: true, name: true, slug: true, type: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
         },
         _count: {
           select: { variants: true, attributeAssignments: true },
