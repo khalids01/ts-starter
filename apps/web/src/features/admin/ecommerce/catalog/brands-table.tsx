@@ -1,6 +1,15 @@
-import { Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -50,19 +59,11 @@ export function BrandsTable(props: {
                 </TableCell>
                 <TableCell className="text-right">
                   {props.canManage ? (
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => props.onEdit(brand)}>
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Disable"
-                        onClick={() => props.onDisable(brand.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <BrandActionsMenu
+                      brand={brand}
+                      onEdit={props.onEdit}
+                      onDisable={props.onDisable}
+                    />
                   ) : null}
                 </TableCell>
               </TableRow>
@@ -71,5 +72,41 @@ export function BrandsTable(props: {
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+function BrandActionsMenu(props: {
+  brand: ProductBrand;
+  onEdit: (brand: ProductBrand) => void;
+  onDisable: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(triggerProps) => (
+          <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
+            <span className="sr-only">Open brand actions</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        )}
+      />
+      <DropdownMenuContent align="end" className="w-[180px]">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => props.onEdit(props.brand)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-destructive"
+          onClick={() => props.onDisable(props.brand.id)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Disable
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { canAccessAdminCatalogRead } from "@/features/admin/lib/admin-access";
-import { AdminCatalogPage } from "@/features/admin/ecommerce/catalog";
+import { AdminBrandsPage } from "@/features/admin/ecommerce/catalog";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 import { adminMiddleware } from "@/middleware/admin";
 
-export const Route = createFileRoute("/admin/catalog")({
+export const Route = createFileRoute("/admin/brands")({
   server: {
     middleware: [adminMiddleware],
   },
@@ -15,5 +15,5 @@ export const Route = createFileRoute("/admin/catalog")({
       throw redirect({ to: "/admin/overview" });
     }
   },
-  component: AdminCatalogPage,
+  component: AdminBrandsPage,
 });

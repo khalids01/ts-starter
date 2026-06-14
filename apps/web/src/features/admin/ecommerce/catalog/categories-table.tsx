@@ -1,6 +1,15 @@
-import { Settings2, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Settings2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -55,31 +64,13 @@ export function CategoriesTable(props: {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      title="Template"
-                      onClick={() => props.onOpenTemplate(category.id)}
-                    >
-                      <Settings2 className="h-4 w-4" />
-                    </Button>
-                    {props.canManage ? (
-                      <>
-                        <Button variant="outline" size="sm" onClick={() => props.onEdit(category)}>
-                          Edit
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Disable"
-                          onClick={() => props.onDisable(category.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    ) : null}
-                  </div>
+                  <CategoryActionsMenu
+                    category={category}
+                    canManage={props.canManage}
+                    onEdit={props.onEdit}
+                    onDisable={props.onDisable}
+                    onOpenTemplate={props.onOpenTemplate}
+                  />
                 </TableCell>
               </TableRow>
             ))
@@ -87,5 +78,53 @@ export function CategoriesTable(props: {
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+function CategoryActionsMenu(props: {
+  category: Category;
+  canManage: boolean;
+  onEdit: (category: Category) => void;
+  onDisable: (id: string) => void;
+  onOpenTemplate: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(triggerProps) => (
+          <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
+            <span className="sr-only">Open category actions</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        )}
+      />
+      <DropdownMenuContent align="end" className="w-[180px]">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => props.onOpenTemplate(props.category.id)}>
+            <Settings2 className="mr-2 h-4 w-4" />
+            Template
+          </DropdownMenuItem>
+          {props.canManage ? (
+            <DropdownMenuItem onClick={() => props.onEdit(props.category)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          ) : null}
+        </DropdownMenuGroup>
+        {props.canManage ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => props.onDisable(props.category.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Disable
+            </DropdownMenuItem>
+          </>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

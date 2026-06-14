@@ -28,6 +28,8 @@ import {
   Webhook,
   Shield,
   Boxes,
+  FolderTree,
+  Tags,
   PackageSearch,
   Warehouse,
 } from "lucide-react";
@@ -45,6 +47,8 @@ import {
   canShowVisitorsNav,
   canShowWebhooksNav,
   canShowCatalogNav,
+  canShowCategoriesNav,
+  canShowBrandsNav,
   canShowProductsNav,
   canShowInventoryNav,
 } from "@/features/admin/lib/admin-access";
@@ -100,6 +104,18 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       icon: Boxes,
       url: "/admin/catalog",
       show: canShowCatalogNav(session),
+    },
+    {
+      title: "Categories",
+      icon: FolderTree,
+      url: "/admin/categories",
+      show: canShowCategoriesNav(session),
+    },
+    {
+      title: "Brands",
+      icon: Tags,
+      url: "/admin/brands",
+      show: canShowBrandsNav(session),
     },
     {
       title: "Products",

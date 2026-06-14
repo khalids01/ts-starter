@@ -104,7 +104,7 @@ export function TemplateSheet(props: {
 
   return (
     <Sheet open={Boolean(props.categoryId)} onOpenChange={props.onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-3xl">
+      <SheetContent className="w-full max-w-none overflow-y-auto sm:!max-w-none lg:w-[min(94vw,1200px)]">
         <SheetHeader>
           <SheetTitle>{template?.category.name ?? "Category template"}</SheetTitle>
         </SheetHeader>
