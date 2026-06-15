@@ -7,6 +7,17 @@ export type PageResult<T> = {
 };
 
 export type ProductStatus = "draft" | "active" | "archived";
+export type OrderStatus = "pending" | "confirmed" | "processing" | "completed" | "cancelled";
+export type PaymentStatus = "unpaid" | "authorized" | "paid" | "partially_refunded" | "refunded" | "failed";
+export type DeliveryStatus =
+  | "unfulfilled"
+  | "preparing"
+  | "ready_to_ship"
+  | "shipped"
+  | "out_for_delivery"
+  | "delivered"
+  | "returned"
+  | "failed";
 export type CategoryBrandPolicy = "hidden" | "optional" | "required" | "default_store";
 export type AttributeScope = "product" | "variant" | "batch";
 export type AttributeInputType =
@@ -230,4 +241,69 @@ export type InventoryMovement = {
   reason?: string | null;
   actorUserId?: string | null;
   createdAt: string;
+};
+
+export type OrderAddress = Record<string, unknown> | null;
+
+export type OrderLineItem = {
+  id: string;
+  orderId: string;
+  productId?: string | null;
+  product?: Pick<Product, "id" | "name" | "slug" | "coverImageUrl"> | null;
+  variantId?: string | null;
+  variant?: Pick<ProductVariant, "id" | "sku" | "name" | "imageUrls"> | null;
+  productName: string;
+  variantName?: string | null;
+  sku?: string | null;
+  imageUrl?: string | null;
+  quantity: number;
+  unitPrice: string;
+  discountAmount: string;
+  taxAmount: string;
+  subtotalAmount: string;
+  totalAmount: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type OrderStatusEvent = {
+  id: string;
+  orderId: string;
+  type: "order" | "payment" | "delivery";
+  previousValue?: string | null;
+  newValue: string;
+  note?: string | null;
+  metadata?: Record<string, unknown> | null;
+  actorUserId?: string | null;
+  actorUser?: { id: string; name: string; email: string; image?: string | null } | null;
+  createdAt: string;
+};
+
+export type Order = {
+  id: string;
+  orderNumber: string;
+  userId?: string | null;
+  user?: { id: string; name: string; email: string; image?: string | null } | null;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  billingAddress?: OrderAddress;
+  shippingAddress?: OrderAddress;
+  subtotalAmount: string;
+  discountAmount: string;
+  taxAmount: string;
+  shippingAmount: string;
+  totalAmount: string;
+  currency: string;
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
+  deliveryStatus: DeliveryStatus;
+  customerNotes?: string | null;
+  adminNotes?: string | null;
+  placedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  lineItemCount?: number;
+  lineItems?: OrderLineItem[];
+  statusEvents?: OrderStatusEvent[];
 };

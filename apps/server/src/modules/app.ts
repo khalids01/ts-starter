@@ -18,6 +18,7 @@ import { rolesController } from "./admin/roles/roles.controller";
 import { adminCatalogController } from "./admin/catalog/catalog.controller";
 import { adminProductsController } from "./admin/products/products.controller";
 import { adminInventoryController } from "./admin/inventory/inventory.controller";
+import { adminOrdersController } from "./admin/orders/orders.controller";
 
 export const app = new Elysia()
   .use(authController)
@@ -35,6 +36,7 @@ export const app = new Elysia()
   .use(adminCatalogController)
   .use(adminProductsController)
   .use(adminInventoryController)
+  .use(adminOrdersController)
   .use(notificationsController)
   .use(feedbackController)
   .use(polarController)

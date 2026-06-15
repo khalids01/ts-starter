@@ -93,4 +93,12 @@ export const ecommerceApi = {
     adjust: (body: Record<string, unknown>) =>
       unwrap(api.admin.inventory.adjust.post(body), "Failed to adjust stock"),
   },
+  orders: {
+    list: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.orders.get({ query }), "Failed to load orders"),
+    detail: (id: string) =>
+      unwrap(api.admin.orders({ id }).get(), "Failed to load order"),
+    updateStatuses: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.orders({ id }).status.patch(body), "Failed to update order statuses"),
+  },
 };

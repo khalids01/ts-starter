@@ -25,21 +25,21 @@ afterEach(() => {
   getAuthSessionMock.mockClear();
 });
 
-describe("admin products controller RBAC", () => {
-  it("requires product read permission for read routes", async () => {
-    const { adminProductsController } = await import(
-      "../src/modules/admin/products/products.controller"
+describe("admin orders controller RBAC", () => {
+  it("requires order read permission for read routes", async () => {
+    const { adminOrdersController } = await import(
+      "../src/modules/admin/orders/orders.controller"
     );
-    const app = new Elysia().use(adminProductsController);
+    const app = new Elysia().use(adminOrdersController);
 
     const response = await app.handle(
-      new Request("http://localhost/admin/products/"),
+      new Request("http://localhost/admin/orders/"),
     );
 
     expect(response.status).toBe(403);
   });
 
-  it("requires product manage permission for mutation routes", async () => {
+  it("requires order manage permission for status updates", async () => {
     getAuthSessionMock.mockResolvedValueOnce({
       user: {
         id: "admin-1",
@@ -49,22 +49,21 @@ describe("admin products controller RBAC", () => {
       },
       permissions: [
         Permissions.AdminAccess,
-        Permissions.AdminProductsRead,
+        Permissions.AdminOrdersRead,
       ],
     });
 
-    const { adminProductsController } = await import(
-      "../src/modules/admin/products/products.controller"
+    const { adminOrdersController } = await import(
+      "../src/modules/admin/orders/orders.controller"
     );
-    const app = new Elysia().use(adminProductsController);
+    const app = new Elysia().use(adminOrdersController);
 
     const response = await app.handle(
-      new Request("http://localhost/admin/products/", {
-        method: "POST",
+      new Request("http://localhost/admin/orders/order-1/status", {
+        method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          categoryId: "cat-1",
-          name: "Draft product",
+          orderStatus: "confirmed",
         }),
       }),
     );

@@ -19,6 +19,8 @@ model User {
   actedActivityEvents     ActivityEvent[]              @relation("ActivityEventActor")
   targetedActivityEvents  ActivityEvent[]              @relation("ActivityEventTarget")
   inventoryMovements      InventoryMovement[]          @relation("InventoryMovementActor")
+  orders                  Order[]                      @relation("UserOrders")
+  orderStatusEvents       OrderStatusEvent[]           @relation("OrderStatusEventActor")
   rbacRoles               RbacUserRole[]
   rbacPermissionOverrides RbacUserPermissionOverride[]
 

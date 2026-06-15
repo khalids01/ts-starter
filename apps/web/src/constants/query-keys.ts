@@ -94,6 +94,13 @@ export const queryKeys = {
         locations: (params?: unknown) =>
           [...queryKeys.admin.ecommerce.inventory.all(), "locations", params] as const,
       },
+      orders: {
+        all: () => ["admin-ecommerce-orders"] as const,
+        list: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.orders.all(), "list", params] as const,
+        detail: (id: string) =>
+          [...queryKeys.admin.ecommerce.orders.all(), "detail", id] as const,
+      },
     },
   },
   invitations: {

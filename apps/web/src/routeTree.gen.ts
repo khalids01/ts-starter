@@ -24,6 +24,7 @@ import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminRateLimitsRouteImport } from './routes/admin/rate-limits'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
@@ -38,6 +39,7 @@ import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/
 import { Route as AdminRolesRoleIdRouteImport } from './routes/admin/roles/$roleId'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
 import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products/$productId'
+import { Route as AdminOrdersOrderIdRouteImport } from './routes/admin/orders/$orderId'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -113,6 +115,11 @@ const AdminOverviewRoute = AdminOverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminInventoryRoute = AdminInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -183,6 +190,11 @@ const AdminProductsProductIdRoute = AdminProductsProductIdRouteImport.update({
   path: '/$productId',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminOrdersOrderIdRoute = AdminOrdersOrderIdRouteImport.update({
+  id: '/$orderId',
+  path: '/$orderId',
+  getParentRoute: () => AdminOrdersRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -200,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
@@ -209,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
@@ -229,6 +243,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
@@ -237,6 +252,7 @@ export interface FileRoutesByTo {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
@@ -259,6 +275,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
@@ -269,6 +286,7 @@ export interface FileRoutesById {
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
@@ -292,6 +310,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/feedback'
     | '/admin/inventory'
+    | '/admin/orders'
     | '/admin/overview'
     | '/admin/products'
     | '/admin/rate-limits'
@@ -301,6 +320,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/payment/success'
     | '/admin/'
+    | '/admin/orders/$orderId'
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
@@ -321,6 +341,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/feedback'
     | '/admin/inventory'
+    | '/admin/orders'
     | '/admin/overview'
     | '/admin/rate-limits'
     | '/admin/roles'
@@ -329,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/payment/success'
     | '/admin'
+    | '/admin/orders/$orderId'
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
@@ -350,6 +372,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/feedback'
     | '/admin/inventory'
+    | '/admin/orders'
     | '/admin/overview'
     | '/admin/products'
     | '/admin/rate-limits'
@@ -360,6 +383,7 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/_public/'
     | '/admin/'
+    | '/admin/orders/$orderId'
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
@@ -485,6 +509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOverviewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/inventory': {
       id: '/admin/inventory'
       path: '/inventory'
@@ -583,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsProductIdRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/orders/$orderId': {
+      id: '/admin/orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/admin/orders/$orderId'
+      preLoaderRoute: typeof AdminOrdersOrderIdRouteImport
+      parentRoute: typeof AdminOrdersRoute
+    }
   }
 }
 
@@ -598,6 +636,18 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
   ProtectedRouteChildren,
+)
+
+interface AdminOrdersRouteChildren {
+  AdminOrdersOrderIdRoute: typeof AdminOrdersOrderIdRoute
+}
+
+const AdminOrdersRouteChildren: AdminOrdersRouteChildren = {
+  AdminOrdersOrderIdRoute: AdminOrdersOrderIdRoute,
+}
+
+const AdminOrdersRouteWithChildren = AdminOrdersRoute._addFileChildren(
+  AdminOrdersRouteChildren,
 )
 
 interface AdminProductsRouteChildren {
@@ -635,6 +685,7 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
+  AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminRateLimitsRoute: typeof AdminRateLimitsRoute
@@ -652,6 +703,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
   AdminInventoryRoute: AdminInventoryRoute,
+  AdminOrdersRoute: AdminOrdersRouteWithChildren,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminRateLimitsRoute: AdminRateLimitsRoute,

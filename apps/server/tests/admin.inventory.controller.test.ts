@@ -21,12 +21,6 @@ mock.module("@auth/server", () => ({
   getAuthSession: getAuthSessionMock,
 }));
 
-mock.module("../src/rbac/resolve/get-effective.ts", () => ({
-  getEffectivePermissions: mock(async () => new Set()),
-  createPermissionChecker: (permissions: Set<string>) => (required: string) =>
-    permissions.has(required),
-}));
-
 afterEach(() => {
   getAuthSessionMock.mockClear();
 });

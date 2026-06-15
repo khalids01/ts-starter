@@ -24,6 +24,8 @@ const ecommerceAdminPermissions = [
   Permissions.AdminProductsManage,
   Permissions.AdminInventoryRead,
   Permissions.AdminInventoryManage,
+  Permissions.AdminOrdersRead,
+  Permissions.AdminOrdersManage,
 ] as const satisfies readonly Permission[];
 
 async function upsertPermissions() {
@@ -81,11 +83,15 @@ async function ensureRoleHasPermissions(
 ) {
   const role = await prisma.rbacRole.findUnique({
     where: { slug },
-    select: { id: true },
+    select: { id: true, isProtected: true, customizedAt: true },
   });
 
   if (!role) {
     throw new Error(`Role not found: ${slug}`);
+  }
+
+  if (!role.isProtected && role.customizedAt !== null) {
+    return;
   }
 
   const permissions = await prisma.rbacPermission.findMany({
