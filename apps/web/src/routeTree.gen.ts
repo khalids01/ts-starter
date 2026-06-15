@@ -27,9 +27,7 @@ import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
-import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
-import { Route as AdminBrandsRouteImport } from './routes/admin/brands'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
@@ -130,19 +128,9 @@ const AdminFeedbackRoute = AdminFeedbackRouteImport.update({
   path: '/feedback',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminCatalogRoute = AdminCatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminBrandsRoute = AdminBrandsRouteImport.update({
-  id: '/brands',
-  path: '/brands',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminActivityRoute = AdminActivityRouteImport.update({
@@ -207,9 +195,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/activity': typeof AdminActivityRoute
-  '/admin/brands': typeof AdminBrandsRoute
   '/admin/catalog': typeof AdminCatalogRoute
-  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
@@ -238,9 +224,7 @@ export interface FileRoutesByTo {
   '/account': typeof ProtectedAccountRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/activity': typeof AdminActivityRoute
-  '/admin/brands': typeof AdminBrandsRoute
   '/admin/catalog': typeof AdminCatalogRoute
-  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
@@ -270,9 +254,7 @@ export interface FileRoutesById {
   '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/admin/activity': typeof AdminActivityRoute
-  '/admin/brands': typeof AdminBrandsRoute
   '/admin/catalog': typeof AdminCatalogRoute
-  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
@@ -305,9 +287,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/activity'
-    | '/admin/brands'
     | '/admin/catalog'
-    | '/admin/categories'
     | '/admin/feedback'
     | '/admin/inventory'
     | '/admin/orders'
@@ -336,9 +316,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/activity'
-    | '/admin/brands'
     | '/admin/catalog'
-    | '/admin/categories'
     | '/admin/feedback'
     | '/admin/inventory'
     | '/admin/orders'
@@ -367,9 +345,7 @@ export interface FileRouteTypes {
     | '/_protected/account'
     | '/_protected/dashboard'
     | '/admin/activity'
-    | '/admin/brands'
     | '/admin/catalog'
-    | '/admin/categories'
     | '/admin/feedback'
     | '/admin/inventory'
     | '/admin/orders'
@@ -530,25 +506,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFeedbackRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/categories': {
-      id: '/admin/categories'
-      path: '/categories'
-      fullPath: '/admin/categories'
-      preLoaderRoute: typeof AdminCategoriesRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/catalog': {
       id: '/admin/catalog'
       path: '/catalog'
       fullPath: '/admin/catalog'
       preLoaderRoute: typeof AdminCatalogRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/brands': {
-      id: '/admin/brands'
-      path: '/brands'
-      fullPath: '/admin/brands'
-      preLoaderRoute: typeof AdminBrandsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/activity': {
@@ -680,9 +642,7 @@ const AdminRolesRouteWithChildren = AdminRolesRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
-  AdminBrandsRoute: typeof AdminBrandsRoute
   AdminCatalogRoute: typeof AdminCatalogRoute
-  AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
@@ -698,9 +658,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
-  AdminBrandsRoute: AdminBrandsRoute,
   AdminCatalogRoute: AdminCatalogRoute,
-  AdminCategoriesRoute: AdminCategoriesRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminOrdersRoute: AdminOrdersRouteWithChildren,

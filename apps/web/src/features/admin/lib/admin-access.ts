@@ -137,14 +137,6 @@ export function canShowCatalogNav(session: ClientSession | null | undefined) {
   return canShowAdminNavItem(session, { permissionPrefix: "admin.catalog." });
 }
 
-export function canShowCategoriesNav(session: ClientSession | null | undefined) {
-  return canShowCatalogNav(session);
-}
-
-export function canShowBrandsNav(session: ClientSession | null | undefined) {
-  return canShowCatalogNav(session);
-}
-
 export function canShowProductsNav(session: ClientSession | null | undefined) {
   return canShowAdminNavItem(session, { permissionPrefix: "admin.products." });
 }
