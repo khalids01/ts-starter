@@ -15,6 +15,8 @@ export const shopApi = {
     unwrap(api.shop.products.get({ query }), "Failed to load products"),
   product: (slug: string) =>
     unwrap(api.shop.products({ slug }).get(), "Failed to load product"),
+  shippingRates: () =>
+    unwrap(api.shop["shipping-rates"].get(), "Failed to load shipping rates"),
   cart: () => unwrap(api.shop.cart.get(), "Failed to load cart"),
   addCartItem: (body: { variantId: string; quantity: number }) =>
     unwrap(api.shop.cart.items.post(body), "Failed to add item"),
@@ -24,4 +26,7 @@ export const shopApi = {
     unwrap(api.shop.cart.items({ id }).delete(), "Failed to remove item"),
   checkout: (body: Record<string, unknown>) =>
     unwrap(api.shop.checkout.post(body), "Failed to place order"),
+  orders: () => unwrap(api.shop.orders.get(), "Failed to load orders"),
+  order: (orderNumber: string, query?: Record<string, unknown>) =>
+    unwrap(api.shop.orders({ orderNumber }).get({ query }), "Failed to load order"),
 };

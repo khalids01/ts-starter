@@ -98,7 +98,11 @@ export const ecommerceApi = {
       unwrap(api.admin.orders.get({ query }), "Failed to load orders"),
     detail: (id: string) =>
       unwrap(api.admin.orders({ id }).get(), "Failed to load order"),
+    update: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.orders({ id }).patch(body), "Failed to update order"),
     updateStatuses: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.orders({ id }).status.patch(body), "Failed to update order statuses"),
+    releaseExpiredReservations: () =>
+      unwrap(api.admin.orders["release-expired-reservations"].post(), "Failed to release expired reservations"),
   },
 };

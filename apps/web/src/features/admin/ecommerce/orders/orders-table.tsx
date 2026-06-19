@@ -22,6 +22,7 @@ import type { Order } from "../types";
 import { EmptyTableRow, formatDate } from "../ui";
 import {
   DeliveryStatusBadge,
+  InventoryStatusBadge,
   OrderStatusBadge,
   PaymentStatusBadge,
 } from "./status";
@@ -43,6 +44,7 @@ export function OrdersTable(props: OrdersTableProps) {
               <TableHead>Order status</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>Delivery</TableHead>
+              <TableHead>Inventory</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Placed</TableHead>
@@ -51,9 +53,9 @@ export function OrdersTable(props: OrdersTableProps) {
           </TableHeader>
           <TableBody>
             {props.loading ? (
-              <EmptyTableRow colSpan={9}>Loading orders...</EmptyTableRow>
+              <EmptyTableRow colSpan={10}>Loading orders...</EmptyTableRow>
             ) : props.orders.length === 0 ? (
-              <EmptyTableRow colSpan={9}>No orders found.</EmptyTableRow>
+              <EmptyTableRow colSpan={10}>No orders found.</EmptyTableRow>
             ) : (
               props.orders.map((order) => (
                 <TableRow key={order.id}>
@@ -71,6 +73,9 @@ export function OrdersTable(props: OrdersTableProps) {
                   </TableCell>
                   <TableCell>
                     <DeliveryStatusBadge status={order.deliveryStatus} />
+                  </TableCell>
+                  <TableCell>
+                    <InventoryStatusBadge status={order.inventoryStatus} />
                   </TableCell>
                   <TableCell>{order.lineItemCount ?? 0}</TableCell>
                   <TableCell>{formatMoney(order.totalAmount, order.currency)}</TableCell>
@@ -114,9 +119,11 @@ function OrderCard(props: { order: Order }) {
         <OrderStatusBadge status={props.order.orderStatus} />
         <PaymentStatusBadge status={props.order.paymentStatus} />
         <DeliveryStatusBadge status={props.order.deliveryStatus} />
+        <InventoryStatusBadge status={props.order.inventoryStatus} />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <InfoBlock label="Items" value={props.order.lineItemCount ?? 0} />
+        <InfoBlock label="Payment" value={formatPaymentMethod(props.order.paymentMethod)} />
         <InfoBlock label="Total" value={formatMoney(props.order.totalAmount, props.order.currency)} />
         <InfoBlock label="Placed" value={formatDate(props.order.placedAt)} />
         <InfoBlock label="Updated" value={formatDate(props.order.updatedAt)} />
@@ -204,4 +211,11 @@ export function formatMoney(value?: string | null, currency = "BDT") {
     currency,
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+function formatPaymentMethod(value?: string) {
+  return (value ?? "cash_on_delivery")
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

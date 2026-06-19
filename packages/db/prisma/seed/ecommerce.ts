@@ -43,6 +43,16 @@ type TemplateAttributeSeed = {
   sortOrder?: number;
 };
 
+type ShippingRateSeed = {
+  code: string;
+  label: string;
+  amount: string;
+  freeOverAmount?: string | null;
+  isDefault?: boolean;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
 const attributes: AttributeSeed[] = [
   {
     slug: "color",
@@ -238,6 +248,24 @@ const categories: CategorySeed[] = [
     parentSlug: "food",
     brandPolicy: "optional",
     sortOrder: 34,
+  },
+];
+
+const shippingRates: ShippingRateSeed[] = [
+  {
+    code: "inside_city",
+    label: "Inside city",
+    amount: "60.00",
+    freeOverAmount: "2000.00",
+    isDefault: true,
+    sortOrder: 10,
+  },
+  {
+    code: "outside_city",
+    label: "Outside city",
+    amount: "120.00",
+    freeOverAmount: "3000.00",
+    sortOrder: 20,
   },
 ];
 
@@ -740,12 +768,38 @@ async function seedInventoryLocations() {
   });
 }
 
+async function seedShippingRates() {
+  for (const rate of shippingRates) {
+    await prisma.shippingRate.upsert({
+      where: { code: rate.code },
+      create: {
+        code: rate.code,
+        label: rate.label,
+        amount: rate.amount,
+        freeOverAmount: rate.freeOverAmount ?? null,
+        isDefault: rate.isDefault ?? false,
+        isActive: rate.isActive ?? true,
+        sortOrder: rate.sortOrder ?? 0,
+      },
+      update: {
+        label: rate.label,
+        amount: rate.amount,
+        freeOverAmount: rate.freeOverAmount ?? null,
+        isDefault: rate.isDefault ?? false,
+        isActive: rate.isActive ?? true,
+        sortOrder: rate.sortOrder ?? 0,
+      },
+    });
+  }
+}
+
 export async function seedEcommerce() {
   const attributeBySlug = await seedAttributes();
   const categoryBySlug = await seedCategories();
   await seedCategoryTemplates(categoryBySlug, attributeBySlug);
   await seedBrands();
   await seedInventoryLocations();
+  await seedShippingRates();
 }
 
 if (import.meta.main) {

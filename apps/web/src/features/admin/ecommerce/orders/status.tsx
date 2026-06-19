@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { DeliveryStatus, OrderStatus, PaymentStatus } from "../types";
+import type { DeliveryStatus, OrderInventoryStatus, OrderStatus, PaymentStatus } from "../types";
 
 type StatusMeta<T extends string> = Record<T, { label: string; className: string }>;
 
@@ -89,6 +89,25 @@ export const deliveryStatusMeta = {
   },
 } satisfies StatusMeta<DeliveryStatus>;
 
+export const inventoryStatusMeta = {
+  reserved: {
+    label: "Reserved",
+    className: "border-amber-300 bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
+  },
+  committed: {
+    label: "Committed",
+    className: "border-emerald-300 bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200",
+  },
+  released: {
+    label: "Released",
+    className: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
+  },
+  restocked: {
+    label: "Restocked",
+    className: "border-blue-300 bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-200",
+  },
+} satisfies StatusMeta<OrderInventoryStatus>;
+
 export const orderStatusOptions = Object.entries(orderStatusMeta).map(([value, meta]) => ({
   value,
   label: meta.label,
@@ -98,6 +117,10 @@ export const paymentStatusOptions = Object.entries(paymentStatusMeta).map(([valu
   label: meta.label,
 }));
 export const deliveryStatusOptions = Object.entries(deliveryStatusMeta).map(([value, meta]) => ({
+  value,
+  label: meta.label,
+}));
+export const inventoryStatusOptions = Object.entries(inventoryStatusMeta).map(([value, meta]) => ({
   value,
   label: meta.label,
 }));
@@ -114,5 +137,10 @@ export function PaymentStatusBadge(props: { status: PaymentStatus }) {
 
 export function DeliveryStatusBadge(props: { status: DeliveryStatus }) {
   const meta = deliveryStatusMeta[props.status];
+  return <Badge variant="outline" className={cn("border", meta.className)}>{meta.label}</Badge>;
+}
+
+export function InventoryStatusBadge(props: { status: OrderInventoryStatus }) {
+  const meta = inventoryStatusMeta[props.status];
   return <Badge variant="outline" className={cn("border", meta.className)}>{meta.label}</Badge>;
 }

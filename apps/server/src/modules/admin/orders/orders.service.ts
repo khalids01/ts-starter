@@ -1,6 +1,7 @@
 import prisma, { type Prisma } from "@db/server";
 import type {
   ListOrdersQuery,
+  UpdateOrderInput,
   UpdateOrderStatusesInput,
 } from "./orders.dto";
 
@@ -77,6 +78,14 @@ function nullableTrimmed(value: string | null | undefined) {
   return trimmed ? trimmed : null;
 }
 
+function normalizedEmail(value: string | null | undefined) {
+  return nullableTrimmed(value)?.toLowerCase() ?? null;
+}
+
+function stockKey(variantId: string, locationId: string, batchId?: string | null) {
+  return `${variantId}:${locationId}:${batchId ?? "no_batch"}`;
+}
+
 function orderInclude() {
   return {
     user: {
@@ -107,6 +116,9 @@ function orderInclude() {
         },
       },
       orderBy: { createdAt: "asc" },
+    },
+    addresses: {
+      orderBy: { type: "desc" },
     },
     statusEvents: {
       include: {
@@ -149,12 +161,36 @@ function mapLineItem(row: any) {
     variantName: row.variantName,
     sku: row.sku,
     imageUrl: row.imageUrl,
+    attributesSnapshot: row.attributesSnapshot ?? null,
     quantity: row.quantity,
     unitPrice: decimalToString(row.unitPrice),
     discountAmount: decimalToString(row.discountAmount),
     taxAmount: decimalToString(row.taxAmount),
     subtotalAmount: decimalToString(row.subtotalAmount),
     totalAmount: decimalToString(row.totalAmount),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
+  };
+}
+
+function mapAddress(row: any) {
+  if (!row) {
+    return null;
+  }
+  return {
+    id: row.id,
+    orderId: row.orderId,
+    type: row.type,
+    fullName: row.fullName,
+    email: row.email,
+    phone: row.phone,
+    line1: row.line1,
+    line2: row.line2,
+    city: row.city,
+    state: row.state,
+    postalCode: row.postalCode,
+    country: row.country,
+    notes: row.notes,
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
   };
@@ -176,6 +212,7 @@ function mapStatusEvent(row: any) {
 }
 
 function mapOrder(row: any, options: { detail?: boolean } = {}) {
+  const addresses = (row.addresses ?? []).map(mapAddress);
   return {
     id: row.id,
     orderNumber: row.orderNumber,
@@ -184,17 +221,26 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
     customerName: row.customerName,
     customerEmail: row.customerEmail,
     customerPhone: row.customerPhone,
-    billingAddress: row.billingAddress,
-    shippingAddress: row.shippingAddress,
+    addresses,
+    billingAddress: addresses.find((address: any) => address.type === "billing") ?? null,
+    shippingAddress: addresses.find((address: any) => address.type === "shipping") ?? null,
     subtotalAmount: decimalToString(row.subtotalAmount),
     discountAmount: decimalToString(row.discountAmount),
     taxAmount: decimalToString(row.taxAmount),
     shippingAmount: decimalToString(row.shippingAmount),
     totalAmount: decimalToString(row.totalAmount),
     currency: row.currency,
+    paymentMethod: row.paymentMethod,
     orderStatus: row.orderStatus,
     paymentStatus: row.paymentStatus,
     deliveryStatus: row.deliveryStatus,
+    inventoryStatus: row.inventoryStatus,
+    stockReservedUntil: toIso(row.stockReservedUntil),
+    stockCommittedAt: toIso(row.stockCommittedAt),
+    stockReleasedAt: toIso(row.stockReleasedAt),
+    shippingRateId: row.shippingRateId,
+    shippingMethodCode: row.shippingMethodCode,
+    shippingMethodLabel: row.shippingMethodLabel,
     customerNotes: row.customerNotes,
     adminNotes: row.adminNotes,
     placedAt: toIso(row.placedAt),
@@ -223,6 +269,15 @@ function buildOrderWhere(query: ListOrdersQuery) {
   }
   if (query.deliveryStatus) {
     where.deliveryStatus = query.deliveryStatus;
+  }
+  if (query.inventoryStatus) {
+    where.inventoryStatus = query.inventoryStatus;
+  }
+  if (query.paymentMethod) {
+    where.paymentMethod = query.paymentMethod;
+  }
+  if (query.shippingRateId) {
+    where.shippingRateId = query.shippingRateId;
   }
   if (query.userId) {
     where.userId = query.userId;
@@ -270,6 +325,239 @@ function buildOrderWhere(query: ListOrdersQuery) {
   }
 
   return where;
+}
+
+async function getOrderReservations(
+  tx: Prisma.TransactionClient,
+  orderId: string,
+  status: "active" | "committed",
+) {
+  return tx.stockReservation.findMany({
+    where: {
+      referenceType: "order",
+      referenceId: orderId,
+      status,
+    },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+async function releaseReservations(
+  tx: Prisma.TransactionClient,
+  input: {
+    orderId: string;
+    actorUserId?: string;
+    reason: string;
+    expired?: boolean;
+  },
+) {
+  const reservations = await getOrderReservations(tx, input.orderId, "active");
+  const nextStatus = input.expired ? "expired" : "released";
+
+  for (const reservation of reservations) {
+    await tx.inventoryStock.update({
+      where: {
+        stockKey: stockKey(
+          reservation.variantId,
+          reservation.locationId,
+          reservation.batchId,
+        ),
+      },
+      data: {
+        quantityReserved: { decrement: reservation.quantity },
+      },
+    });
+    await tx.stockReservation.update({
+      where: { id: reservation.id },
+      data: { status: nextStatus },
+    });
+    await tx.inventoryMovement.create({
+      data: {
+        variantId: reservation.variantId,
+        locationId: reservation.locationId,
+        batchId: reservation.batchId,
+        type: "reservation_release",
+        delta: 0,
+        reason: input.reason,
+        referenceType: "order",
+        referenceId: input.orderId,
+        actorUserId: input.actorUserId ?? null,
+      },
+    });
+  }
+
+  if (reservations.length > 0) {
+    await tx.order.update({
+      where: { id: input.orderId },
+      data: {
+        inventoryStatus: "released",
+        stockReleasedAt: new Date(),
+      },
+    });
+  }
+
+  return reservations.length;
+}
+
+async function commitReservations(
+  tx: Prisma.TransactionClient,
+  input: { orderId: string; actorUserId?: string },
+) {
+  const reservations = await getOrderReservations(tx, input.orderId, "active");
+  for (const reservation of reservations) {
+    await tx.inventoryStock.update({
+      where: {
+        stockKey: stockKey(
+          reservation.variantId,
+          reservation.locationId,
+          reservation.batchId,
+        ),
+      },
+      data: {
+        quantityOnHand: { decrement: reservation.quantity },
+        quantityReserved: { decrement: reservation.quantity },
+      },
+    });
+    await tx.stockReservation.update({
+      where: { id: reservation.id },
+      data: { status: "committed" },
+    });
+    await tx.inventoryMovement.create({
+      data: {
+        variantId: reservation.variantId,
+        locationId: reservation.locationId,
+        batchId: reservation.batchId,
+        type: "sale_commit",
+        delta: -reservation.quantity,
+        reason: "Order stock committed",
+        referenceType: "order",
+        referenceId: input.orderId,
+        actorUserId: input.actorUserId ?? null,
+      },
+    });
+  }
+
+  if (reservations.length > 0) {
+    await tx.order.update({
+      where: { id: input.orderId },
+      data: {
+        inventoryStatus: "committed",
+        stockCommittedAt: new Date(),
+      },
+    });
+  }
+
+  return reservations.length;
+}
+
+async function restockCommittedReservations(
+  tx: Prisma.TransactionClient,
+  input: { orderId: string; actorUserId?: string; reason: string },
+) {
+  const reservations = await getOrderReservations(tx, input.orderId, "committed");
+  for (const reservation of reservations) {
+    await tx.inventoryStock.update({
+      where: {
+        stockKey: stockKey(
+          reservation.variantId,
+          reservation.locationId,
+          reservation.batchId,
+        ),
+      },
+      data: {
+        quantityOnHand: { increment: reservation.quantity },
+      },
+    });
+    await tx.inventoryMovement.create({
+      data: {
+        variantId: reservation.variantId,
+        locationId: reservation.locationId,
+        batchId: reservation.batchId,
+        type: "return",
+        delta: reservation.quantity,
+        reason: input.reason,
+        referenceType: "order",
+        referenceId: input.orderId,
+        actorUserId: input.actorUserId ?? null,
+      },
+    });
+  }
+
+  if (reservations.length > 0) {
+    await tx.order.update({
+      where: { id: input.orderId },
+      data: {
+        inventoryStatus: "restocked",
+        stockReleasedAt: new Date(),
+      },
+    });
+  }
+
+  return reservations.length;
+}
+
+async function applyInventorySideEffects(
+  tx: Prisma.TransactionClient,
+  input: {
+    order: any;
+    nextOrderStatus?: string;
+    nextDeliveryStatus?: string;
+    actorUserId?: string;
+  },
+) {
+  if (
+    input.nextOrderStatus === "confirmed" &&
+    input.order.inventoryStatus === "reserved"
+  ) {
+    return commitReservations(tx, {
+      orderId: input.order.id,
+      actorUserId: input.actorUserId,
+    });
+  }
+
+  if (
+    input.nextOrderStatus === "cancelled" &&
+    input.order.inventoryStatus === "reserved"
+  ) {
+    return releaseReservations(tx, {
+      orderId: input.order.id,
+      actorUserId: input.actorUserId,
+      reason: "Order cancelled before stock commit",
+    });
+  }
+
+  if (
+    (input.nextOrderStatus === "cancelled" ||
+      input.nextDeliveryStatus === "returned") &&
+    input.order.inventoryStatus === "committed"
+  ) {
+    return restockCommittedReservations(tx, {
+      orderId: input.order.id,
+      actorUserId: input.actorUserId,
+      reason:
+        input.nextDeliveryStatus === "returned"
+          ? "Order returned"
+          : "Committed order cancelled",
+    });
+  }
+
+  return 0;
+}
+
+function normalizeAddressInput(address: NonNullable<UpdateOrderInput["addresses"]>[number]) {
+  return {
+    type: address.type,
+    fullName: address.fullName.trim(),
+    email: normalizedEmail(address.email),
+    phone: nullableTrimmed(address.phone),
+    line1: address.line1.trim(),
+    line2: nullableTrimmed(address.line2),
+    city: nullableTrimmed(address.city),
+    state: nullableTrimmed(address.state),
+    postalCode: nullableTrimmed(address.postalCode),
+    country: nullableTrimmed(address.country),
+    notes: nullableTrimmed(address.notes),
+  };
 }
 
 export const adminOrdersService = {
@@ -384,6 +672,13 @@ export const adminOrdersService = {
         return mapOrder(current);
       }
 
+      await applyInventorySideEffects(tx, {
+        order: current,
+        nextOrderStatus: input.orderStatus,
+        nextDeliveryStatus: input.deliveryStatus,
+        actorUserId: actor.userId,
+      });
+
       await tx.order.update({
         where: { id },
         data,
@@ -395,6 +690,128 @@ export const adminOrdersService = {
       });
 
       return mapOrder(updated, { detail: true });
+    });
+  },
+
+  async updateOrder(id: string, input: UpdateOrderInput) {
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.order.findUnique({ where: { id } });
+      if (!existing) {
+        throw new AdminOrdersServiceError("Order not found", 404);
+      }
+
+      const data: Prisma.OrderUpdateInput = {};
+      if (input.customerName !== undefined) {
+        data.customerName = input.customerName.trim();
+      }
+      if (input.customerEmail !== undefined) {
+        data.customerEmail = normalizedEmail(input.customerEmail) ?? existing.customerEmail;
+      }
+      if (input.customerPhone !== undefined) {
+        data.customerPhone = nullableTrimmed(input.customerPhone);
+      }
+      if (input.customerNotes !== undefined) {
+        data.customerNotes = nullableTrimmed(input.customerNotes);
+      }
+      if (input.adminNotes !== undefined) {
+        data.adminNotes = nullableTrimmed(input.adminNotes);
+      }
+
+      if (Object.keys(data).length > 0) {
+        await tx.order.update({ where: { id }, data });
+      }
+
+      for (const address of input.addresses ?? []) {
+        const normalized = normalizeAddressInput(address);
+        await tx.orderAddress.upsert({
+          where: {
+            orderId_type: {
+              orderId: id,
+              type: normalized.type,
+            },
+          },
+          create: {
+            orderId: id,
+            ...normalized,
+          },
+          update: normalized,
+        });
+      }
+
+      const updated = await tx.order.findUniqueOrThrow({
+        where: { id },
+        include: orderInclude(),
+      });
+      return mapOrder(updated, { detail: true });
+    });
+  },
+
+  async releaseExpiredReservations(actor: OrdersActor) {
+    return prisma.$transaction(async (tx) => {
+      const reservations = await tx.stockReservation.findMany({
+        where: {
+          referenceType: "order",
+          status: "active",
+          expiresAt: { lte: new Date() },
+          referenceId: { not: null },
+        },
+        orderBy: { expiresAt: "asc" },
+      });
+
+      const orderIds = new Set<string>();
+      for (const reservation of reservations) {
+        if (!reservation.referenceId) {
+          continue;
+        }
+        orderIds.add(reservation.referenceId);
+        await tx.inventoryStock.update({
+          where: {
+            stockKey: stockKey(
+              reservation.variantId,
+              reservation.locationId,
+              reservation.batchId,
+            ),
+          },
+          data: {
+            quantityReserved: { decrement: reservation.quantity },
+          },
+        });
+        await tx.stockReservation.update({
+          where: { id: reservation.id },
+          data: { status: "expired" },
+        });
+        await tx.inventoryMovement.create({
+          data: {
+            variantId: reservation.variantId,
+            locationId: reservation.locationId,
+            batchId: reservation.batchId,
+            type: "reservation_release",
+            delta: 0,
+            reason: "Order reservation expired",
+            referenceType: "order",
+            referenceId: reservation.referenceId,
+            actorUserId: actor.userId ?? null,
+          },
+        });
+      }
+
+      if (orderIds.size > 0) {
+        await tx.order.updateMany({
+          where: {
+            id: { in: [...orderIds] },
+            inventoryStatus: "reserved",
+          },
+          data: {
+            inventoryStatus: "released",
+            stockReleasedAt: new Date(),
+          },
+        });
+      }
+
+      return {
+        releasedReservations: reservations.length,
+        affectedOrders: orderIds.size,
+      };
     });
   },
 };

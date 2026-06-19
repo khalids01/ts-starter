@@ -2,7 +2,7 @@
 
 Reference diagrams for [`packages/db/prisma/schema/ecommerce.prisma`](../packages/db/prisma/schema/ecommerce.prisma).
 
-The schema defines a **catalog + inventory** model. There are no `Order` or `Cart` tables yet — checkout is intended to link in via `StockReservation.referenceType` / `referenceId` and `InventoryMovement.referenceType` / `referenceId`.
+The schema defines a **catalog + inventory + order** model. Checkout creates an `Order`, reserves stock through `StockReservation`, and admin order status changes commit, release, or restock inventory through `InventoryMovement`.
 
 ---
 
@@ -59,7 +59,28 @@ flowchart TB
     BATCH -. optional .-> RES
   end
 
+  subgraph Orders["Order layer"]
+    CART[Cart]
+    CARTITEM[CartItem]
+    ORDER[Order<br/>order/payment/delivery/inventory status]
+    ADDR[OrderAddress<br/>shipping | billing]
+    LINE[OrderLineItem<br/>snapshot]
+    RATE[ShippingRate]
+    EVENT[OrderStatusEvent]
+
+    CART --> CARTITEM
+    VAR --> CARTITEM
+    ORDER --> ADDR
+    ORDER --> LINE
+    ORDER --> EVENT
+    RATE -. snapshot .-> ORDER
+    PROD -. snapshot .-> LINE
+    VAR -. snapshot .-> LINE
+  end
+
   USER[User] -. actorUserId .-> MOVE
+  USER -. optional .-> CART
+  USER -. optional .-> ORDER
 ```
 
 ### Model groups
@@ -68,6 +89,7 @@ flowchart TB
 |-------|--------|
 | Catalog | `Category`, `ProductBrand`, `Product`, `ProductVariant`, `ProductAttribute`, `ProductAttributeValue`, `CategoryAttribute`, `ProductAttributeAssignment`, `ProductVariantAttributeValue` |
 | Inventory | `Supplier`, `InventoryLocation`, `InventoryBatch`, `InventoryBatchAttributeAssignment`, `InventoryStock`, `InventoryMovement`, `StockReservation` |
+| Orders | `Cart`, `CartItem`, `Order`, `OrderAddress`, `OrderLineItem`, `OrderStatusEvent`, `ShippingRate` |
 
 ---
 
@@ -146,27 +168,28 @@ flowchart TD
   CHECK_VAR -->|Yes| CHECK_STOCK{Available stock<br/>onHand - reserved ≥ qty?}
 
   CHECK_STOCK -->|No| BLOCK3[Out of stock / insufficient qty]
-  CHECK_STOCK -->|Yes| RESERVE[Create StockReservation<br/>status: active<br/>expiresAt set<br/>referenceType + referenceId = cart/checkout]
+  CHECK_STOCK -->|Yes| CHECKOUT[Checkout creates Order<br/>status: pending]
+  CHECKOUT --> RESERVE[Create StockReservation<br/>status: active<br/>referenceType/order]
 
   RESERVE --> INC_RES[InventoryStock.quantityReserved += qty]
   INC_RES --> LOG_RES[InventoryMovement<br/>type: sale_reserve]
 
-  LOG_RES --> PAY{Payment / checkout<br/>outcome?}
+  LOG_RES --> ADMIN{Admin/order outcome?}
 
-  PAY -->|Success| COMMIT[StockReservation.status → committed]
+  ADMIN -->|Confirm| COMMIT[StockReservation.status → committed]
   COMMIT --> DEC_ON[InventoryStock.quantityOnHand -= qty]
   DEC_ON --> DEC_RES[InventoryStock.quantityReserved -= qty]
   DEC_RES --> LOG_COMMIT[InventoryMovement<br/>type: sale_commit]
-  LOG_COMMIT --> DONE([Order fulfilled — stock sold])
+  LOG_COMMIT --> DONE([Order inventoryStatus committed])
 
-  PAY -->|Cancel / timeout| RELEASE[StockReservation.status → released or expired]
+  ADMIN -->|Cancel / timeout| RELEASE[StockReservation.status → released or expired]
   RELEASE --> DEC_RES2[InventoryStock.quantityReserved -= qty]
   DEC_RES2 --> LOG_REL[InventoryMovement<br/>type: reservation_release]
-  LOG_REL --> BACK([Stock returned to pool])
+  LOG_REL --> BACK([Order inventoryStatus released])
 
-  PAY -->|Return later| RET[InventoryMovement<br/>type: return]
+  ADMIN -->|Return after commit| RET[InventoryMovement<br/>type: return]
   RET --> INC_ON[InventoryStock.quantityOnHand += qty]
-  INC_ON --> RETURNED([Stock restored])
+  INC_ON --> RETURNED([Order inventoryStatus restocked])
 ```
 
 ### Step-by-step
@@ -176,9 +199,9 @@ flowchart TD
 | Browse | User sees products only if `Product.status = active` and `isActive = true` | `Product`, `Category`, `ProductBrand` |
 | Pick variant | Price/SKU come from `ProductVariant`; attributes from `ProductVariantAttributeValue` | `ProductVariant`, `ProductAttributeValue` |
 | Stock check | App reads `InventoryStock` for that `variantId` (+ `locationId`, optional `batchId`) | `InventoryStock` |
-| Try to buy (reserve) | `StockReservation` created with `status: active` and an expiry; reserved qty increases | `StockReservation`, `InventoryStock`, `InventoryMovement` (`sale_reserve`) |
-| Pay succeeds | Reservation → `committed`; on-hand drops, reserved drops | `StockReservation`, `InventoryStock`, `InventoryMovement` (`sale_commit`) |
-| Pay fails / cart abandoned | Reservation → `released` or `expired`; reserved qty freed | `StockReservation`, `InventoryStock`, `InventoryMovement` (`reservation_release`) |
+| Checkout | `Order`, structured addresses, line item snapshots, shipping snapshot, and active reservations are created | `Order`, `OrderAddress`, `OrderLineItem`, `StockReservation`, `InventoryMovement` (`sale_reserve`) |
+| Admin confirms | Reservation → `committed`; on-hand drops, reserved drops | `StockReservation`, `InventoryStock`, `InventoryMovement` (`sale_commit`) |
+| Admin cancels / reservation expires | Reservation → `released` or `expired`; reserved qty freed | `StockReservation`, `InventoryStock`, `InventoryMovement` (`reservation_release`) |
 | Return | Stock goes back via `return` movement | `InventoryMovement`, `InventoryStock` |
 
 ### Inventory movement types (customer-facing)
@@ -276,13 +299,15 @@ flowchart LR
 
 ---
 
-## Schema gaps (not yet implemented)
+## Orders V1 implemented behavior
 
-These flows are **designed in the schema** but not wired up in application code yet:
+- Storefront cart supports guest cookie carts and signed-in user carts.
+- Checkout uses server-side variant prices and active `ShippingRate` rows.
+- Orders store structured `OrderAddress` snapshots and `OrderLineItem` snapshots.
+- `Order.inventoryStatus` is the guardrail for idempotent stock transitions.
+- Admin confirmation commits reservations; cancellation releases them; returns/restocked committed orders add stock back once.
 
-- No `Order`, `OrderItem`, or `Cart` models
-- No checkout service implementing `sale_reserve` / `sale_commit`
-- Reservations expire via `expiresAt` — a background job is needed to mark them `expired` and release stock
+Expired reservations can be released through the admin cleanup endpoint. A scheduled job can call the same behavior later.
 
 ---
 

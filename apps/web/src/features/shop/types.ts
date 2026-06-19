@@ -92,6 +92,17 @@ export type ShopCart = {
   updatedAt: string;
 };
 
+export type ShopShippingRate = {
+  id: string;
+  code: string;
+  label: string;
+  amount: string;
+  freeOverAmount?: string | null;
+  isDefault: boolean;
+  isActive: boolean;
+  sortOrder: number;
+};
+
 export type CheckoutResult = {
   orderId: string;
   orderNumber: string;

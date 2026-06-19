@@ -23,6 +23,10 @@ const orderCreateMock = mock(async () => ({
   id: "order-1",
   orderNumber: "ORD-TEST",
 }));
+const orderFindUniqueMock = mock(async () => null as any);
+const orderFindManyMock = mock(async () => []);
+const shippingRateFindFirstMock = mock(async () => shippingRateRow());
+const shippingRateFindManyMock = mock(async () => [shippingRateRow()]);
 const inventoryStockFindManyMock = mock(async () => [stockRow()]);
 const inventoryStockUpdateMock = mock(async () => stockRow({ quantityReserved: 2 }));
 const stockReservationCreateMock = mock(async (args: any) => ({ id: "reservation-1", ...args.data }));
@@ -49,6 +53,7 @@ const prismaMock = {
     delete: cartDeleteMock,
   },
   cartItem: {
+    findUnique: mock(async () => null as any),
     upsert: cartItemUpsertMock,
     findFirst: cartItemFindFirstMock,
     update: cartItemUpdateMock,
@@ -56,7 +61,13 @@ const prismaMock = {
     deleteMany: cartItemDeleteManyMock,
   },
   order: {
+    findUnique: orderFindUniqueMock,
+    findMany: orderFindManyMock,
     create: orderCreateMock,
+  },
+  shippingRate: {
+    findFirst: shippingRateFindFirstMock,
+    findMany: shippingRateFindManyMock,
   },
   inventoryStock: {
     findMany: inventoryStockFindManyMock,
@@ -129,6 +140,7 @@ function variantRow(overrides: Record<string, any> = {}) {
     isDefault: overrides.isDefault ?? true,
     isActive: overrides.isActive ?? true,
     imageUrls: overrides.imageUrls ?? [],
+    inventoryStocks: overrides.inventoryStocks ?? [stockRow()],
     weightValue: overrides.weightValue ?? null,
     weightUnit: overrides.weightUnit ?? null,
     attributeValues: overrides.attributeValues ?? [],
@@ -174,6 +186,19 @@ function stockRow(overrides: Record<string, any> = {}) {
   };
 }
 
+function shippingRateRow(overrides: Record<string, any> = {}) {
+  return {
+    id: overrides.id ?? "ship-inside",
+    code: overrides.code ?? "inside_city",
+    label: overrides.label ?? "Inside city",
+    amount: overrides.amount ?? "60.00",
+    freeOverAmount: overrides.freeOverAmount ?? null,
+    isDefault: overrides.isDefault ?? true,
+    isActive: overrides.isActive ?? true,
+    sortOrder: overrides.sortOrder ?? 10,
+  };
+}
+
 beforeEach(() => {
   cartFindFirstMock.mockResolvedValue(null);
   cartCreateMock.mockImplementation(async (args: any) => cartRow(args.data));
@@ -183,6 +208,10 @@ beforeEach(() => {
   cartFindUniqueOrThrowMock.mockResolvedValue(cartRow({ items: [cartItemRow()] }));
   cartItemFindFirstMock.mockResolvedValue(cartItemRow());
   productVariantFindUniqueMock.mockResolvedValue(variantRow());
+  orderFindUniqueMock.mockResolvedValue(null);
+  orderFindManyMock.mockResolvedValue([]);
+  shippingRateFindFirstMock.mockResolvedValue(shippingRateRow());
+  shippingRateFindManyMock.mockResolvedValue([shippingRateRow()]);
   inventoryStockFindManyMock.mockResolvedValue([stockRow()]);
   transactionMock.mockImplementation(async (callback: any) => callback(prismaMock));
 });
@@ -206,6 +235,10 @@ afterEach(() => {
     productFindFirstMock,
     productVariantFindUniqueMock,
     orderCreateMock,
+    orderFindUniqueMock,
+    orderFindManyMock,
+    shippingRateFindFirstMock,
+    shippingRateFindManyMock,
     inventoryStockFindManyMock,
     inventoryStockUpdateMock,
     stockReservationCreateMock,
@@ -263,14 +296,40 @@ describe("shop service", () => {
         customerName: "Customer",
         customerEmail: "customer@example.com",
         customerPhone: null,
-        shippingAddress: { city: "Dhaka" },
+        shippingAddress: { line1: "House 1", city: "Dhaka" },
         billingAddress: null,
         customerNotes: null,
+        shippingRateCode: "inside_city",
+        idempotencyKey: "checkout-1",
       },
     );
 
     expect(result.orderId).toBe("order-1");
     expect(orderCreateMock).toHaveBeenCalled();
+    expect(orderCreateMock.mock.calls[0]?.[0].data).toEqual(
+      expect.objectContaining({
+        checkoutKey: "user-1:checkout-1",
+        paymentMethod: "cash_on_delivery",
+        shippingAmount: "60.00",
+        totalAmount: "300.00",
+        inventoryStatus: "reserved",
+        shippingMethodCode: "inside_city",
+        addresses: {
+          create: [
+            expect.objectContaining({
+              type: "shipping",
+              line1: "House 1",
+              city: "Dhaka",
+              country: "Bangladesh",
+            }),
+            expect.objectContaining({
+              type: "billing",
+              line1: "House 1",
+            }),
+          ],
+        },
+      }),
+    );
     expect(inventoryStockUpdateMock).toHaveBeenCalledWith({
       where: { id: "stock-1" },
       data: { quantityReserved: { increment: 2 } },
@@ -287,6 +346,30 @@ describe("shop service", () => {
     expect(cartItemDeleteManyMock).toHaveBeenCalledWith({ where: { cartId: "cart-1" } });
   });
 
+  it("returns an existing order for a duplicate idempotency key", async () => {
+    const { shopService } = await import("../src/modules/shop/shop.service");
+    orderFindUniqueMock.mockResolvedValueOnce({
+      id: "order-existing",
+      orderNumber: "ORD-EXISTING",
+      totalAmount: "300.00",
+      currency: "BDT",
+    });
+
+    const result = await shopService.checkout(
+      { cartToken: "cart-token-123456789012345", userId: "user-1" },
+      {
+        customerName: "Customer",
+        customerEmail: "customer@example.com",
+        shippingAddress: { line1: "House 1" },
+        idempotencyKey: "checkout-1",
+      },
+    );
+
+    expect(result.orderId).toBe("order-existing");
+    expect(orderCreateMock).not.toHaveBeenCalled();
+    expect(inventoryStockUpdateMock).not.toHaveBeenCalled();
+  });
+
   it("fails checkout when stock cannot be reserved", async () => {
     const { shopService } = await import("../src/modules/shop/shop.service");
     inventoryStockFindManyMock.mockResolvedValueOnce([stockRow({ quantityOnHand: 1 })]);
@@ -297,7 +380,8 @@ describe("shop service", () => {
         {
           customerName: "Customer",
           customerEmail: "customer@example.com",
-          shippingAddress: { city: "Dhaka" },
+          shippingAddress: { line1: "House 1", city: "Dhaka" },
+          shippingRateCode: "inside_city",
         },
       ),
     ).rejects.toThrow("Not enough stock");

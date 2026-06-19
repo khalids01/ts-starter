@@ -9,6 +9,8 @@ export type PageResult<T> = {
 export type ProductStatus = "draft" | "active" | "archived";
 export type OrderStatus = "pending" | "confirmed" | "processing" | "completed" | "cancelled";
 export type PaymentStatus = "unpaid" | "authorized" | "paid" | "partially_refunded" | "refunded" | "failed";
+export type PaymentMethod = "cash_on_delivery" | "manual_bank" | "manual_mobile" | "online_gateway";
+export type OrderInventoryStatus = "reserved" | "committed" | "released" | "restocked";
 export type DeliveryStatus =
   | "unfulfilled"
   | "preparing"
@@ -243,7 +245,21 @@ export type InventoryMovement = {
   createdAt: string;
 };
 
-export type OrderAddress = Record<string, unknown> | null;
+export type OrderAddress = {
+  id?: string;
+  orderId?: string;
+  type: "shipping" | "billing";
+  fullName: string;
+  email?: string | null;
+  phone?: string | null;
+  line1: string;
+  line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  notes?: string | null;
+} | null;
 
 export type OrderLineItem = {
   id: string;
@@ -256,6 +272,7 @@ export type OrderLineItem = {
   variantName?: string | null;
   sku?: string | null;
   imageUrl?: string | null;
+  attributesSnapshot?: unknown;
   quantity: number;
   unitPrice: string;
   discountAmount: string;
@@ -287,6 +304,7 @@ export type Order = {
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;
+  addresses?: NonNullable<OrderAddress>[];
   billingAddress?: OrderAddress;
   shippingAddress?: OrderAddress;
   subtotalAmount: string;
@@ -295,9 +313,17 @@ export type Order = {
   shippingAmount: string;
   totalAmount: string;
   currency: string;
+  paymentMethod: PaymentMethod;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
   deliveryStatus: DeliveryStatus;
+  inventoryStatus: OrderInventoryStatus;
+  stockReservedUntil?: string | null;
+  stockCommittedAt?: string | null;
+  stockReleasedAt?: string | null;
+  shippingRateId?: string | null;
+  shippingMethodCode?: string | null;
+  shippingMethodLabel?: string | null;
   customerNotes?: string | null;
   adminNotes?: string | null;
   placedAt: string;

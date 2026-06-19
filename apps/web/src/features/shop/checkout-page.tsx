@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { shopApi } from "./api";
-import type { CheckoutResult, ShopCart } from "./types";
+import type { CheckoutResult, ShopCart, ShopShippingRate } from "./types";
 import { formatMoney } from "./utils";
 import { ShopHeader } from "./shop-page";
 
@@ -22,6 +22,7 @@ type CheckoutForm = {
   region: string;
   postalCode: string;
   country: string;
+  shippingRateId: string;
   customerNotes: string;
 };
 
@@ -35,6 +36,7 @@ const initialForm: CheckoutForm = {
   region: "",
   postalCode: "",
   country: "Bangladesh",
+  shippingRateId: "",
   customerNotes: "",
 };
 
@@ -42,11 +44,21 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [form, setForm] = useState(initialForm);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const cartQuery = useQuery({
     queryKey: queryKeys.shop.cart(),
     queryFn: () => shopApi.cart() as Promise<ShopCart>,
   });
+  const shippingRatesQuery = useQuery({
+    queryKey: ["shop", "shipping-rates"],
+    queryFn: () => shopApi.shippingRates() as Promise<ShopShippingRate[]>,
+  });
   const cart = cartQuery.data;
+  const shippingRates = shippingRatesQuery.data ?? [];
+  const selectedShippingRate =
+    shippingRates.find((rate) => rate.id === form.shippingRateId) ??
+    shippingRates.find((rate) => rate.isDefault) ??
+    shippingRates[0];
 
   const checkout = useMutation({
     mutationFn: () =>
@@ -55,14 +67,20 @@ export function CheckoutPage() {
         customerEmail: form.customerEmail,
         customerPhone: form.customerPhone || null,
         shippingAddress: {
-          addressLine1: form.addressLine1,
-          addressLine2: form.addressLine2 || null,
+          fullName: form.customerName,
+          email: form.customerEmail,
+          phone: form.customerPhone || null,
+          line1: form.addressLine1,
+          line2: form.addressLine2 || null,
           city: form.city,
-          region: form.region || null,
+          state: form.region || null,
           postalCode: form.postalCode || null,
           country: form.country,
         },
         billingAddress: null,
+        shippingRateId: selectedShippingRate?.id,
+        paymentMethod: "cash_on_delivery",
+        idempotencyKey,
         customerNotes: form.customerNotes || null,
       }) as Promise<CheckoutResult>,
     onSuccess: (result) => {
@@ -79,6 +97,7 @@ export function CheckoutPage() {
     Boolean(form.addressLine1.trim()) &&
     Boolean(form.city.trim()) &&
     Boolean(form.country.trim()) &&
+    Boolean(selectedShippingRate) &&
     Boolean(cart?.items.length);
 
   return (
@@ -119,6 +138,37 @@ export function CheckoutPage() {
                 <TextField label="Region" value={form.region} onChange={(region) => setForm({ ...form, region })} />
                 <TextField label="Postal code" value={form.postalCode} onChange={(postalCode) => setForm({ ...form, postalCode })} />
               </div>
+              <div className="space-y-2">
+                <Label>Shipping method</Label>
+                <div className="grid gap-2">
+                  {shippingRates.map((rate) => (
+                    <label
+                      key={rate.id}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-md border p-3 text-sm"
+                    >
+                      <span>
+                        <span className="block font-medium">{rate.label}</span>
+                        {rate.freeOverAmount ? (
+                          <span className="text-xs text-muted-foreground">
+                            Free over {formatMoney(rate.freeOverAmount, cart?.currency ?? "BDT")}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <span className="font-medium">
+                          {formatMoney(rate.amount, cart?.currency ?? "BDT")}
+                        </span>
+                        <input
+                          type="radio"
+                          name="shippingRateId"
+                          checked={selectedShippingRate?.id === rate.id}
+                          onChange={() => setForm({ ...form, shippingRateId: rate.id })}
+                        />
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
               <div className="space-y-1.5">
                 <Label>Notes</Label>
                 <Textarea
@@ -131,7 +181,7 @@ export function CheckoutPage() {
                 {checkout.isPending ? "Placing order..." : "Place order"}
               </Button>
             </form>
-            <CheckoutSummary cart={cart} />
+            <CheckoutSummary cart={cart} shippingRate={selectedShippingRate} />
           </section>
         )}
       </main>
@@ -157,7 +207,21 @@ function TextField(props: {
   );
 }
 
-function CheckoutSummary(props: { cart: ShopCart }) {
+function shippingAmountForRate(rate: ShopShippingRate | undefined, subtotal: string) {
+  if (!rate) {
+    return 0;
+  }
+  const subtotalAmount = Number(subtotal);
+  const freeOverAmount = Number(rate.freeOverAmount ?? 0);
+  if (freeOverAmount > 0 && subtotalAmount >= freeOverAmount) {
+    return 0;
+  }
+  return Number(rate.amount);
+}
+
+function CheckoutSummary(props: { cart: ShopCart; shippingRate?: ShopShippingRate }) {
+  const shippingAmount = shippingAmountForRate(props.shippingRate, props.cart.subtotalAmount);
+  const total = Number(props.cart.subtotalAmount) + shippingAmount;
   return (
     <aside className="h-fit space-y-4 rounded-md border p-4">
       <h2 className="font-medium">Order summary</h2>
@@ -173,9 +237,17 @@ function CheckoutSummary(props: { cart: ShopCart }) {
         ))}
       </div>
       <div className="border-t pt-3">
+        <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+          <span className="text-muted-foreground">Subtotal</span>
+          <span className="font-medium">{formatMoney(props.cart.subtotalAmount, props.cart.currency)}</span>
+        </div>
+        <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+          <span className="text-muted-foreground">Shipping</span>
+          <span className="font-medium">{formatMoney(shippingAmount.toFixed(2), props.cart.currency)}</span>
+        </div>
         <div className="flex items-center justify-between gap-3">
           <span className="text-muted-foreground">Total</span>
-          <span className="text-lg font-semibold">{formatMoney(props.cart.totalAmount, props.cart.currency)}</span>
+          <span className="text-lg font-semibold">{formatMoney(total.toFixed(2), props.cart.currency)}</span>
         </div>
       </div>
     </aside>

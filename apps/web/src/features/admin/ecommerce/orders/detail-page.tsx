@@ -6,6 +6,7 @@ import { ArrowLeft, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -17,11 +18,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/providers/session-provider";
 import { ecommerceApi } from "../apiCall";
-import type { DeliveryStatus, Order, OrderLineItem, OrderStatus, PaymentStatus } from "../types";
+import type { DeliveryStatus, Order, OrderAddress, OrderLineItem, OrderStatus, PaymentStatus } from "../types";
 import { EcommerceHeader, Field, SelectField, ecommercePermissions, formatDate, readError } from "../ui";
 import { formatMoney } from "./orders-table";
 import {
   DeliveryStatusBadge,
+  InventoryStatusBadge,
   OrderStatusBadge,
   PaymentStatusBadge,
   deliveryStatusMeta,
@@ -39,6 +41,26 @@ type StatusForm = {
   note: string;
 };
 
+type OrderEditForm = {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerNotes: string;
+  adminNotes: string;
+  shippingLine1: string;
+  shippingLine2: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingPostalCode: string;
+  shippingCountry: string;
+  billingLine1: string;
+  billingLine2: string;
+  billingCity: string;
+  billingState: string;
+  billingPostalCode: string;
+  billingCountry: string;
+};
+
 export function AdminOrderDetailPage(props: { orderId: string }) {
   const { session } = useSession();
   const { canManageOrders } = ecommercePermissions(session);
@@ -49,6 +71,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
   });
   const order = query.data;
   const [form, setForm] = useState<StatusForm | null>(null);
+  const [editForm, setEditForm] = useState<OrderEditForm | null>(null);
 
   useEffect(() => {
     if (!order) {
@@ -60,6 +83,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
       deliveryStatus: order.deliveryStatus,
       note: "",
     });
+    setEditForm(orderEditForm(order));
   }, [order]);
 
   const updateStatuses = useMutation({
@@ -77,6 +101,49 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
       });
     },
     onError: (error) => toast.error(readError(error, "Failed to update order statuses")),
+  });
+  const updateOrder = useMutation({
+    mutationFn: (value: OrderEditForm) =>
+      ecommerceApi.orders.update(props.orderId, {
+        customerName: value.customerName,
+        customerEmail: value.customerEmail,
+        customerPhone: value.customerPhone || null,
+        customerNotes: value.customerNotes || null,
+        adminNotes: value.adminNotes || null,
+        addresses: [
+          {
+            type: "shipping",
+            fullName: value.customerName,
+            email: value.customerEmail,
+            phone: value.customerPhone || null,
+            line1: value.shippingLine1,
+            line2: value.shippingLine2 || null,
+            city: value.shippingCity || null,
+            state: value.shippingState || null,
+            postalCode: value.shippingPostalCode || null,
+            country: value.shippingCountry || null,
+          },
+          {
+            type: "billing",
+            fullName: value.customerName,
+            email: value.customerEmail,
+            phone: value.customerPhone || null,
+            line1: value.billingLine1 || value.shippingLine1,
+            line2: value.billingLine2 || null,
+            city: value.billingCity || null,
+            state: value.billingState || null,
+            postalCode: value.billingPostalCode || null,
+            country: value.billingCountry || null,
+          },
+        ],
+      }),
+    onSuccess: () => {
+      toast.success("Order updated");
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.admin.ecommerce.orders.all(),
+      });
+    },
+    onError: (error) => toast.error(readError(error, "Failed to update order")),
   });
 
   if (query.isLoading) {
@@ -100,7 +167,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         }
       />
 
-      <section className="grid gap-3 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-4">
         <SummaryCard label="Order status">
           <OrderStatusBadge status={order.orderStatus} />
         </SummaryCard>
@@ -109,6 +176,9 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         </SummaryCard>
         <SummaryCard label="Delivery">
           <DeliveryStatusBadge status={order.deliveryStatus} />
+        </SummaryCard>
+        <SummaryCard label="Inventory">
+          <InventoryStatusBadge status={order.inventoryStatus} />
         </SummaryCard>
       </section>
 
@@ -121,12 +191,22 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         <div className="space-y-4">
           {canManageOrders && form ? (
             <StatusControls
+              order={order}
               form={form}
               loading={updateStatuses.isPending}
               onChange={setForm}
               onSubmit={() => updateStatuses.mutate(form)}
             />
           ) : null}
+          {canManageOrders && editForm ? (
+            <OrderEditPanel
+              form={editForm}
+              loading={updateOrder.isPending}
+              onChange={setEditForm}
+              onSubmit={() => updateOrder.mutate(editForm)}
+            />
+          ) : null}
+          <OperationalCard order={order} />
           <CustomerCard order={order} />
           <AddressCard title="Shipping address" value={order.shippingAddress} />
           <AddressCard title="Billing address" value={order.billingAddress} />
@@ -139,6 +219,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
 }
 
 function StatusControls(props: {
+  order: Order;
   form: StatusForm;
   loading: boolean;
   onChange: (form: StatusForm) => void;
@@ -147,6 +228,9 @@ function StatusControls(props: {
   return (
     <section className="space-y-4 rounded-md border p-4">
       <h2 className="font-medium">Update statuses</h2>
+      <p className="text-xs text-muted-foreground">
+        Confirming a reserved order commits stock. Cancelling a reserved order releases stock. Returning or cancelling a committed order restocks once.
+      </p>
       <div className="grid gap-3">
         <SelectField
           label="Order"
@@ -182,6 +266,40 @@ function StatusControls(props: {
       </div>
       <Button disabled={props.loading} onClick={props.onSubmit}>
         {props.loading ? "Updating..." : "Update statuses"}
+      </Button>
+    </section>
+  );
+}
+
+function OrderEditPanel(props: {
+  form: OrderEditForm;
+  loading: boolean;
+  onChange: (form: OrderEditForm) => void;
+  onSubmit: () => void;
+}) {
+  const update = (patch: Partial<OrderEditForm>) => props.onChange({ ...props.form, ...patch });
+  return (
+    <section className="space-y-4 rounded-md border p-4">
+      <h2 className="font-medium">Edit order</h2>
+      <div className="grid gap-3">
+        <TextField label="Customer name" value={props.form.customerName} onChange={(customerName) => update({ customerName })} />
+        <TextField label="Customer email" value={props.form.customerEmail} onChange={(customerEmail) => update({ customerEmail })} />
+        <TextField label="Customer phone" value={props.form.customerPhone} onChange={(customerPhone) => update({ customerPhone })} />
+        <TextField label="Shipping line 1" value={props.form.shippingLine1} onChange={(shippingLine1) => update({ shippingLine1 })} />
+        <TextField label="Shipping line 2" value={props.form.shippingLine2} onChange={(shippingLine2) => update({ shippingLine2 })} />
+        <TextField label="Shipping city" value={props.form.shippingCity} onChange={(shippingCity) => update({ shippingCity })} />
+        <TextField label="Shipping region" value={props.form.shippingState} onChange={(shippingState) => update({ shippingState })} />
+        <TextField label="Shipping postal code" value={props.form.shippingPostalCode} onChange={(shippingPostalCode) => update({ shippingPostalCode })} />
+        <TextField label="Shipping country" value={props.form.shippingCountry} onChange={(shippingCountry) => update({ shippingCountry })} />
+        <Field label="Customer notes">
+          <Textarea value={props.form.customerNotes} onChange={(event) => update({ customerNotes: event.target.value })} />
+        </Field>
+        <Field label="Admin notes">
+          <Textarea value={props.form.adminNotes} onChange={(event) => update({ adminNotes: event.target.value })} />
+        </Field>
+      </div>
+      <Button disabled={props.loading} onClick={props.onSubmit}>
+        {props.loading ? "Saving..." : "Save order"}
       </Button>
     </section>
   );
@@ -266,7 +384,20 @@ function CustomerCard(props: { order: Order }) {
   );
 }
 
-function AddressCard(props: { title: string; value?: Record<string, unknown> | null }) {
+function OperationalCard(props: { order: Order }) {
+  return (
+    <section className="space-y-3 rounded-md border p-4">
+      <h2 className="font-medium">Operations</h2>
+      <InfoBlock label="Payment method" value={formatPaymentMethod(props.order.paymentMethod)} />
+      <InfoBlock label="Shipping method" value={props.order.shippingMethodLabel || props.order.shippingMethodCode || "—"} />
+      <InfoBlock label="Reserved until" value={formatDate(props.order.stockReservedUntil)} />
+      <InfoBlock label="Committed at" value={formatDate(props.order.stockCommittedAt)} />
+      <InfoBlock label="Released/restocked at" value={formatDate(props.order.stockReleasedAt)} />
+    </section>
+  );
+}
+
+function AddressCard(props: { title: string; value?: OrderAddress }) {
   return (
     <section className="space-y-3 rounded-md border p-4">
       <h2 className="font-medium">{props.title}</h2>
@@ -275,19 +406,21 @@ function AddressCard(props: { title: string; value?: Record<string, unknown> | n
   );
 }
 
-function AddressValue(props: { value?: Record<string, unknown> | null }) {
+function AddressValue(props: { value?: OrderAddress }) {
   if (!props.value || Object.keys(props.value).length === 0) {
     return <p className="text-sm text-muted-foreground">No address saved.</p>;
   }
 
   return (
     <dl className="grid gap-2 text-sm">
-      {Object.entries(props.value).map(([key, value]) => (
-        <div key={key}>
-          <dt className="text-xs capitalize text-muted-foreground">{key.replace(/([A-Z])/g, " $1")}</dt>
-          <dd className="break-words font-medium">{formatAddressValue(value)}</dd>
-        </div>
-      ))}
+      {Object.entries(props.value)
+        .filter(([key]) => !["id", "orderId", "type", "createdAt", "updatedAt"].includes(key))
+        .map(([key, value]) => (
+          <div key={key}>
+            <dt className="text-xs capitalize text-muted-foreground">{key.replace(/([A-Z])/g, " $1")}</dt>
+            <dd className="break-words font-medium">{formatAddressValue(value)}</dd>
+          </div>
+        ))}
     </dl>
   );
 }
@@ -388,6 +521,49 @@ function InfoBlock(props: { label: string; value: ReactNode }) {
       <div className="break-words font-medium">{props.value}</div>
     </div>
   );
+}
+
+function TextField(props: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field label={props.label}>
+      <Input value={props.value} onChange={(event) => props.onChange(event.target.value)} />
+    </Field>
+  );
+}
+
+function formatPaymentMethod(value?: string) {
+  return (value ?? "cash_on_delivery")
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function orderEditForm(order: Order): OrderEditForm {
+  const shipping = order.shippingAddress;
+  const billing = order.billingAddress;
+  return {
+    customerName: order.customerName,
+    customerEmail: order.customerEmail,
+    customerPhone: order.customerPhone ?? "",
+    customerNotes: order.customerNotes ?? "",
+    adminNotes: order.adminNotes ?? "",
+    shippingLine1: shipping?.line1 ?? "",
+    shippingLine2: shipping?.line2 ?? "",
+    shippingCity: shipping?.city ?? "",
+    shippingState: shipping?.state ?? "",
+    shippingPostalCode: shipping?.postalCode ?? "",
+    shippingCountry: shipping?.country ?? "",
+    billingLine1: billing?.line1 ?? "",
+    billingLine2: billing?.line2 ?? "",
+    billingCity: billing?.city ?? "",
+    billingState: billing?.state ?? "",
+    billingPostalCode: billing?.postalCode ?? "",
+    billingCountry: billing?.country ?? "",
+  };
 }
 
 function formatAddressValue(value: unknown) {

@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Field, SelectField } from "../ui";
 import {
   deliveryStatusOptions,
+  inventoryStatusOptions,
   orderStatusOptions,
   paymentStatusOptions,
 } from "./status";
@@ -11,6 +12,8 @@ export type OrderFiltersState = {
   orderStatus: string;
   paymentStatus: string;
   deliveryStatus: string;
+  inventoryStatus: string;
+  paymentMethod: string;
   placedFrom: string;
   placedTo: string;
 };
@@ -27,7 +30,7 @@ export function OrderFilters(props: OrderFiltersProps) {
     props.onChange({ ...props.filters, ...patch });
 
   return (
-    <div className="grid gap-3 rounded-md border p-3 md:grid-cols-2 xl:grid-cols-6">
+    <div className="grid gap-3 rounded-md border p-3 md:grid-cols-2 xl:grid-cols-8">
       <Field label="Search" htmlFor="orders-search">
         <Input
           id="orders-search"
@@ -53,6 +56,24 @@ export function OrderFilters(props: OrderFiltersProps) {
         value={props.filters.deliveryStatus}
         onChange={(deliveryStatus) => update({ deliveryStatus })}
         options={[allOption, ...deliveryStatusOptions]}
+      />
+      <SelectField
+        label="Inventory"
+        value={props.filters.inventoryStatus}
+        onChange={(inventoryStatus) => update({ inventoryStatus })}
+        options={[allOption, ...inventoryStatusOptions]}
+      />
+      <SelectField
+        label="Method"
+        value={props.filters.paymentMethod}
+        onChange={(paymentMethod) => update({ paymentMethod })}
+        options={[
+          allOption,
+          { value: "cash_on_delivery", label: "COD" },
+          { value: "manual_bank", label: "Manual bank" },
+          { value: "manual_mobile", label: "Manual mobile" },
+          { value: "online_gateway", label: "Online gateway" },
+        ]}
       />
       <Field label="From" htmlFor="orders-from">
         <Input

@@ -46,11 +46,34 @@ Available stock is calculated as:
 InventoryStock.quantityOnHand - InventoryStock.quantityReserved
 ```
 
+## Orders And Checkout
+
+- `Cart` and `CartItem` hold guest or signed-in customer cart state. Guest carts use a cart token; signed-in carts attach to `User`.
+- `ShippingRate` stores editable V1 shipping methods such as inside-city and outside-city rates. Checkout snapshots the selected method on `Order`.
+- `Order` stores customer contact, totals, `paymentMethod`, order/payment/delivery statuses, and `inventoryStatus`.
+- `Order.checkoutKey` makes checkout idempotent so a double submit can return the same order instead of creating duplicates.
+- `OrderAddress` stores structured shipping and billing snapshots. It replaces loose address JSON.
+- `OrderLineItem` stores product/variant/price/image/attribute snapshots so historical orders stay readable after catalog edits.
+- `OrderStatusEvent` records admin/customer-visible timeline changes.
+
+Order inventory lifecycle:
+
+```txt
+reserved -> committed -> restocked
+reserved -> released
+```
+
+- Checkout creates active `StockReservation` rows, increments `quantityReserved`, and writes `sale_reserve`.
+- Admin confirmation commits reservations, decrements `quantityOnHand` and `quantityReserved`, and writes `sale_commit`.
+- Admin cancellation or expiry releases active reservations, decrements `quantityReserved`, and writes `reservation_release`.
+- Returning/cancelling an already committed order restocks once and writes `return`.
+
 ## Starter Templates
 
 The ecommerce seed creates editable starter categories and fields:
 
 - phones, laptops, generic gadget
 - fresh fruit, mango, honey, packaged food, generic product
+- shipping rates: inside city, outside city
 
 These templates are starter data, not hardcoded product behavior. Later admin CRUD should allow editing categories, attributes, and category attribute rules.

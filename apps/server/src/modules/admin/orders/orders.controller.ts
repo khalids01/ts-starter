@@ -5,6 +5,7 @@ import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   IdParamDto,
   ListOrdersQueryDto,
+  UpdateOrderDto,
   UpdateOrderStatusesDto,
 } from "./orders.dto";
 import {
@@ -51,6 +52,22 @@ export const adminOrdersController = new Elysia({
       },
     },
   )
+  .post(
+    "/release-expired-reservations",
+    async ({ set, userId }) => {
+      try {
+        return await adminOrdersService.releaseExpiredReservations({ userId });
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: manageOrders,
+      detail: {
+        summary: "Release expired order stock reservations",
+      },
+    },
+  )
   .get(
     "/:id",
     async ({ params: { id }, set }) => {
@@ -65,6 +82,24 @@ export const adminOrdersController = new Elysia({
       params: IdParamDto,
       detail: {
         summary: "Get order details",
+      },
+    },
+  )
+  .patch(
+    "/:id",
+    async ({ params: { id }, body, set }) => {
+      try {
+        return await adminOrdersService.updateOrder(id, body);
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: manageOrders,
+      params: IdParamDto,
+      body: UpdateOrderDto,
+      detail: {
+        summary: "Update order contact, notes, and addresses",
       },
     },
   )

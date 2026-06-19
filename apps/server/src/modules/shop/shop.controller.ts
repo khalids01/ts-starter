@@ -5,6 +5,8 @@ import {
   CheckoutDto,
   IdParamDto,
   ListShopProductsQueryDto,
+  OrderNumberParamDto,
+  OrderLookupQueryDto,
   SlugParamDto,
   UpdateCartItemDto,
 } from "./shop.dto";
@@ -102,6 +104,13 @@ export const shopController = new Elysia({
 })
   .use(authGuard)
   .get(
+    "/shipping-rates",
+    () => shopService.listShippingRates(),
+    {
+      detail: { summary: "List active storefront shipping rates" },
+    },
+  )
+  .get(
     "/products",
     ({ query }) => shopService.listProducts(query),
     {
@@ -195,6 +204,41 @@ export const shopController = new Elysia({
     {
       params: IdParamDto,
       detail: { summary: "Remove cart item" },
+    },
+  )
+  .get(
+    "/orders",
+    async ({ request, userId, set }) => {
+      try {
+        const result = await shopService.listCustomerOrders(
+          cartActor(request, userId),
+        );
+        return result;
+      } catch (error) {
+        return handleShopError(error, set);
+      }
+    },
+    {
+      detail: { summary: "List current customer orders" },
+    },
+  )
+  .get(
+    "/orders/:orderNumber",
+    async ({ request, userId, params: { orderNumber }, query, set }) => {
+      try {
+        return await shopService.getCustomerOrder(
+          cartActor(request, userId),
+          orderNumber,
+          query,
+        );
+      } catch (error) {
+        return handleShopError(error, set);
+      }
+    },
+    {
+      params: OrderNumberParamDto,
+      query: OrderLookupQueryDto,
+      detail: { summary: "Get customer order by number" },
     },
   )
   .post(
