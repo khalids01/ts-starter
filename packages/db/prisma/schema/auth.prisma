@@ -21,6 +21,7 @@ model User {
   inventoryMovements      InventoryMovement[]          @relation("InventoryMovementActor")
   orders                  Order[]                      @relation("UserOrders")
   orderStatusEvents       OrderStatusEvent[]           @relation("OrderStatusEventActor")
+  carts                   Cart[]                       @relation("UserCarts")
   rbacRoles               RbacUserRole[]
   rbacPermissionOverrides RbacUserPermissionOverride[]
 

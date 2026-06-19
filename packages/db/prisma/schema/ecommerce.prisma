@@ -203,6 +203,7 @@ model ProductVariant {
   movements        InventoryMovement[]
   reservations     StockReservation[]
   orderLineItems   OrderLineItem[]
+  cartItems        CartItem[]
 
   @@index([productId])
   @@index([isActive])
@@ -583,4 +584,36 @@ model OrderStatusEvent {
   @@index([type, createdAt])
   @@index([actorUserId])
   @@map("order_status_event")
+}
+
+model Cart {
+  id        String    @id @default(cuid())
+  cartToken String?   @unique
+  userId    String?
+  user      User?     @relation("UserCarts", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  items CartItem[]
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("cart")
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  quantity  Int
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@index([variantId])
+  @@map("cart_item")
 }

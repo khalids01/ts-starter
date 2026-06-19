@@ -7,6 +7,7 @@ import { authController } from "./auth/auth.controller";
 import { sessionController } from "./session/session.controller";
 import { notificationsController } from "./notifications/notifications.controller";
 import { feedbackController } from "./feedback/feedback.controller";
+import { shopController } from "./shop/shop.controller";
 import { polarController } from "./polar/polar.controller";
 import { rateLimitController } from "./rate-limit/rate-limit.controller";
 import { invitationsController } from "./invitations/invitations.controller";
@@ -37,6 +38,7 @@ export const app = new Elysia()
   .use(adminProductsController)
   .use(adminInventoryController)
   .use(adminOrdersController)
+  .use(shopController)
   .use(notificationsController)
   .use(feedbackController)
   .use(polarController)

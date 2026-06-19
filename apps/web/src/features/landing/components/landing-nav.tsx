@@ -42,6 +42,9 @@ export const LandingNav = () => {
               <a href="#faq" className="hover:text-primary transition-colors">
                 FAQ
               </a>
+              <Link to="/shop" className="hover:text-primary transition-colors">
+                Shop
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">

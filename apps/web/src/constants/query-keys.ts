@@ -106,4 +106,9 @@ export const queryKeys = {
   invitations: {
     detail: (invitationId: string) => ["invitation", invitationId] as const,
   },
+  shop: {
+    products: (params?: unknown) => ["shop-products", params] as const,
+    product: (slug: string) => ["shop-product", slug] as const,
+    cart: () => ["shop-cart"] as const,
+  },
 } as const;
