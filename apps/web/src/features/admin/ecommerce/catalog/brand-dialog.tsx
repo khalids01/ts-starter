@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { ImagePickerField } from "../image-picker-fields";
 import { Field, SaveButton, TextField } from "../ui";
 import type { BrandDraft } from "./drafts";
 
@@ -28,7 +29,11 @@ export function BrandDialog(props: {
           <div className="space-y-3">
             <TextField label="Name" value={draft.name} onChange={(name) => props.onChange({ ...draft, name })} />
             <TextField label="Slug" value={draft.slug} onChange={(slug) => props.onChange({ ...draft, slug })} />
-            <TextField label="Logo URL" value={draft.logoUrl} onChange={(logoUrl) => props.onChange({ ...draft, logoUrl })} />
+            <ImagePickerField
+              label="Logo image"
+              value={draft.logoUrl}
+              onChange={(logoUrl) => props.onChange({ ...draft, logoUrl })}
+            />
             <TextField label="Website URL" value={draft.websiteUrl} onChange={(websiteUrl) => props.onChange({ ...draft, websiteUrl })} />
             <Field label="Description">
               <Textarea

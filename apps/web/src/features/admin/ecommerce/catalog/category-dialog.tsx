@@ -8,6 +8,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { CategoryBrandPolicy, Category } from "../types";
+import { ImagePickerField } from "../image-picker-fields";
 import { Field, SaveButton, SelectField, TextField } from "../ui";
 import type { CategoryDraft } from "./drafts";
 import { brandPolicyOptions } from "./options";
@@ -37,6 +38,11 @@ export function CategoryDialog(props: {
                 onChange={(event) => props.onChange({ ...draft, description: event.target.value })}
               />
             </Field>
+            <ImagePickerField
+              label="Category image"
+              value={draft.imageUrl}
+              onChange={(imageUrl) => props.onChange({ ...draft, imageUrl })}
+            />
             <SelectField
               label="Parent"
               value={draft.parentId}

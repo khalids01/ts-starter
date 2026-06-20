@@ -25,6 +25,7 @@ import {
   ecommercePermissions,
   readError,
 } from "../ui";
+import { ImagePickerField } from "../image-picker-fields";
 import { BrandField } from "./brand-field";
 import { DynamicFields } from "./dynamic-fields";
 import { highlightDraft, steps, variantDraft, type AttributeDraft, type HighlightDraft, type Step, type VariantDraft } from "./drafts";
@@ -357,7 +358,11 @@ export function AdminProductBuilderPage(props: { productId?: string }) {
               value={basics.brandId}
               onChange={(brandId) => setBasics((current) => ({ ...current, brandId }))}
             />
-            <TextField label="Cover image URL" value={basics.coverImageUrl} onChange={(coverImageUrl) => setBasics((current) => ({ ...current, coverImageUrl }))} />
+            <ImagePickerField
+              label="Cover image"
+              value={basics.coverImageUrl}
+              onChange={(coverImageUrl) => setBasics((current) => ({ ...current, coverImageUrl }))}
+            />
             <TextField label="Badge label" value={basics.badgeLabel} onChange={(badgeLabel) => setBasics((current) => ({ ...current, badgeLabel }))} />
             <label className="flex items-end gap-2 text-sm">
               <Switch

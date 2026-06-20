@@ -10,6 +10,7 @@ export type CategoryDraft = {
   name: string;
   slug: string;
   description: string;
+  imageUrl: string;
   parentId: string;
   brandPolicy: CategoryBrandPolicy;
   showStoreBrand: boolean;
@@ -45,6 +46,7 @@ export function categoryDraft(category?: Category): CategoryDraft {
     name: category?.name ?? "",
     slug: category?.slug ?? "",
     description: category?.description ?? "",
+    imageUrl: category?.imageUrl ?? "",
     parentId: category?.parentId ?? "none",
     brandPolicy: category?.brandPolicy ?? "optional",
     showStoreBrand: category?.showStoreBrand ?? false,

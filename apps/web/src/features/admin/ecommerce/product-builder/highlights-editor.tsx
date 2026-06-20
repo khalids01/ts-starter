@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ImagePickerField } from "../image-picker-fields";
 import { Field, TextField } from "../ui";
 import { highlightDraft, type HighlightDraft } from "./drafts";
 
@@ -56,8 +57,8 @@ export function HighlightsEditor(props: {
             value={highlight.iconUrl}
             onChange={(iconUrl) => updateHighlight(index, { iconUrl })}
           />
-          <TextField
-            label="Image URL"
+          <ImagePickerField
+            label="Image"
             value={highlight.imageUrl}
             onChange={(imageUrl) => updateHighlight(index, { imageUrl })}
           />

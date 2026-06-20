@@ -42,6 +42,7 @@ export function CategoryManagementSection() {
         name: draft.name,
         slug: draft.slug || undefined,
         description: draft.description || null,
+        imageUrl: draft.imageUrl || null,
         parentId: draft.parentId === "none" ? null : draft.parentId,
         brandPolicy: draft.brandPolicy,
         showStoreBrand: draft.showStoreBrand,

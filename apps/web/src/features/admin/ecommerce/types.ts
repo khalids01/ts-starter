@@ -74,6 +74,7 @@ export type Category = {
   name: string;
   slug: string;
   description?: string | null;
+  imageUrl?: string | null;
   parentId?: string | null;
   parent?: { id: string; name: string; slug: string } | null;
   children?: Array<{ id: string; name: string; slug: string; isActive: boolean }>;

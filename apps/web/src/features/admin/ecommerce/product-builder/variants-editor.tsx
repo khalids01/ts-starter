@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import { ImageIcon, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import type { CategoryAttribute } from "../types";
 import { Field, SelectField, TextField } from "../ui";
+import { ImagePickerListField } from "../image-picker-fields";
 import { variantDraft, type VariantDraft } from "./drafts";
 
 export function VariantsEditor(props: {
@@ -164,8 +164,9 @@ function VariantAccordionItem(props: {
           </FormSection>
 
           <FormSection title="Media">
-            <ImageUrlList
-              imageUrls={props.variant.imageUrls}
+            <ImagePickerListField
+              label="Variant images"
+              values={props.variant.imageUrls}
               onChange={(imageUrls) => props.onUpdate({ imageUrls })}
             />
           </FormSection>
@@ -292,81 +293,6 @@ function VariantOptionsFields(props: {
           ]}
         />
       ))}
-    </div>
-  );
-}
-
-function ImageUrlList(props: {
-  imageUrls: string[];
-  onChange: (imageUrls: string[]) => void;
-}) {
-  const update = (index: number, value: string) => {
-    props.onChange(
-      props.imageUrls.map((url, currentIndex) =>
-        currentIndex === index ? value : url,
-      ),
-    );
-  };
-
-  return (
-    <div className="grid gap-3">
-      {props.imageUrls.length === 0 ? (
-        <div className="rounded-md border p-3">
-          <VariantImagePreview url="" />
-        </div>
-      ) : null}
-      {props.imageUrls.map((url, index) => (
-        <div key={index} className="grid gap-3 rounded-md border p-3 md:grid-cols-[96px_1fr_auto] md:items-center">
-          <VariantImagePreview url={url} />
-          <Input
-            value={url}
-            placeholder="Image URL"
-            onChange={(event) => update(index, event.target.value)}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            title="Remove image"
-            onClick={() =>
-              props.onChange(props.imageUrls.filter((_, currentIndex) => currentIndex !== index))
-            }
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-      <div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => props.onChange([...props.imageUrls, ""])}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Image
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function VariantImagePreview(props: { url: string }) {
-  if (!props.url) {
-    return (
-      <div className="grid aspect-square w-24 place-items-center rounded-md bg-muted text-muted-foreground">
-        <ImageIcon className="h-5 w-5" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="aspect-square w-24 overflow-hidden rounded-md border bg-muted">
-      <img
-        src={props.url}
-        alt="Variant"
-        className="h-full w-full object-cover"
-      />
     </div>
   );
 }
