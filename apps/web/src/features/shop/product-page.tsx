@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
+import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { shopApi } from "./api";
@@ -134,7 +135,7 @@ function ProductMedia(props: { product: ShopProduct; variant: ShopVariant | null
     <div className="overflow-hidden rounded-md border bg-muted">
       <div className="aspect-square">
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">No image</div>
         )}

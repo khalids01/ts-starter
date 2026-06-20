@@ -1,5 +1,6 @@
 import { Copy, Eye, ImageIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,11 +78,11 @@ function ImageRow(props: {
             onClick={() => props.onPreview(props.image)}
           >
             {props.image.previewUrl ? (
-              <img
+              <Img
                 src={props.image.previewUrl}
+                placeholderSrc={props.image.placeholderUrl}
                 alt={props.image.originalName}
                 className="h-full w-full object-cover"
-                loading="lazy"
               />
             ) : (
               <ImageIcon className="h-5 w-5" />

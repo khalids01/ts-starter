@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
+import { Img } from "@/components/core/img";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -359,7 +360,7 @@ function LineItemTitle(props: { item: OrderLineItem }) {
     <div className="flex min-w-0 items-center gap-3">
       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
         ) : (
           <ImageIcon className="h-5 w-5 text-muted-foreground" />
         )}

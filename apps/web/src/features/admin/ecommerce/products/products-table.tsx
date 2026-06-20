@@ -10,6 +10,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { queryKeys } from "@/constants/query-keys";
+import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -502,7 +503,7 @@ function ProductImage(props: { product: Product; className?: string }) {
 
   return (
     <div className={props.className ?? "aspect-[4/3]"}>
-      <img
+      <Img
         src={src}
         alt={props.product.name}
         className="h-full w-full object-cover"
@@ -520,7 +521,7 @@ function VariantImage(props: { variant: NonNullable<Product["variants"]>[number]
 
   return (
     <div className="aspect-square overflow-hidden rounded-md border">
-      <img
+      <Img
         src={src}
         alt={props.variant.name || props.variant.sku}
         className="h-full w-full object-cover"

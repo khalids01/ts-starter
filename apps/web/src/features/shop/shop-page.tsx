@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ShoppingCart } from "lucide-react";
 import { queryKeys } from "@/constants/query-keys";
+import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,7 +113,7 @@ function ProductCard(props: { product: ShopProduct }) {
       <Link to="/shop/products/$slug" params={{ slug: props.product.slug }} className="block">
         <div className="aspect-[4/3] bg-muted">
           {imageUrl ? (
-            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+            <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No image</div>
           )}

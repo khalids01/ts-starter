@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ImageIcon, RefreshCcw, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
+import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -323,11 +324,11 @@ function PickerImageCard(props: {
     >
       <div className="relative aspect-square bg-muted">
         {props.image.previewUrl ? (
-          <img
+          <Img
             src={props.image.previewUrl}
+            placeholderSrc={props.image.placeholderUrl}
             alt={props.image.originalName}
             className="h-full w-full object-cover"
-            loading="lazy"
           />
         ) : (
           <div className="grid h-full place-items-center text-muted-foreground">

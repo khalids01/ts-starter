@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
+import { Img } from "@/components/core/img";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { shopApi } from "./api";
 import type { ShopCart, ShopCartItem } from "./types";
@@ -83,7 +84,7 @@ function CartItemRow(props: {
     <article className="grid gap-4 rounded-md border p-4 sm:grid-cols-[96px_1fr_auto]">
       <div className="aspect-square overflow-hidden rounded-md border bg-muted">
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
         )}

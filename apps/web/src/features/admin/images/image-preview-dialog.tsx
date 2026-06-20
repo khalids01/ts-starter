@@ -1,5 +1,6 @@
 import { Copy, ExternalLink, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,10 +53,12 @@ export function ImagePreviewDialog(props: {
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="grid min-h-[360px] place-items-center overflow-hidden rounded-md border bg-muted">
               {image.previewUrl ? (
-                <img
+                <Img
                   src={image.previewUrl}
+                  placeholderSrc={image.placeholderUrl}
                   alt={image.originalName}
-                  className="max-h-[70vh] w-full object-contain"
+                  className="h-[70vh] max-h-[70vh] w-full object-contain"
+                  objectFit="contain"
                 />
               ) : (
                 <ImageIcon className="h-10 w-10 text-muted-foreground" />

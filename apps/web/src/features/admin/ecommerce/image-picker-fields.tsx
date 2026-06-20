@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ImageIcon, Plus, Trash2 } from "lucide-react";
+import { Img } from "@/components/core/img";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AdminImagePickerDialog } from "../images/image-picker-dialog";
@@ -135,7 +136,7 @@ function ImagePreview(props: { url: string; alt: string }) {
 
   return (
     <div className="aspect-square w-24 overflow-hidden rounded-md border bg-muted">
-      <img
+      <Img
         src={props.url}
         alt={props.alt}
         className="h-full w-full object-cover"
