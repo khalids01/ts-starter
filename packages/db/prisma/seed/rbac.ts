@@ -15,7 +15,7 @@ import {
   rolePermissionsKey,
 } from "./lib/rbac-keys";
 
-const CATALOG_VERSION = 4;
+const CATALOG_VERSION = 5;
 
 const ecommerceAdminPermissions = [
   Permissions.AdminCatalogRead,
@@ -26,6 +26,8 @@ const ecommerceAdminPermissions = [
   Permissions.AdminInventoryManage,
   Permissions.AdminOrdersRead,
   Permissions.AdminOrdersManage,
+  Permissions.AdminImagesRead,
+  Permissions.AdminImagesManage,
 ] as const satisfies readonly Permission[];
 
 async function upsertPermissions() {

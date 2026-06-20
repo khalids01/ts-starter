@@ -31,6 +31,7 @@ import {
   PackageSearch,
   Warehouse,
   ReceiptText,
+  Images,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
@@ -49,6 +50,7 @@ import {
   canShowProductsNav,
   canShowInventoryNav,
   canShowOrdersNav,
+  canShowImagesNav,
 } from "@/features/admin/lib/admin-access";
 import { adminMiddleware } from "@/middleware/admin";
 import { useSession } from "@/providers/session-provider";
@@ -120,6 +122,12 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       icon: ReceiptText,
       url: "/admin/orders",
       show: canShowOrdersNav(session),
+    },
+    {
+      title: "Images",
+      icon: Images,
+      url: "/admin/images",
+      show: canShowImagesNav(session),
     },
     {
       title: "Feedback",

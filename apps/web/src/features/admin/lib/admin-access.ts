@@ -86,6 +86,19 @@ export function canAccessAdminOrdersRead(session: ClientSession | null | undefin
   );
 }
 
+export function canAccessAdminImagesRead(session: ClientSession | null | undefined) {
+  if (isPlatformOwner(session)) {
+    return true;
+  }
+
+  const permissions = session?.permissions ?? [];
+  return (
+    sessionHasPermission(permissions, Permissions.AdminImagesRead) ||
+    sessionHasPermission(permissions, Permissions.AdminImagesManage) ||
+    sessionHasAnyPermissionPrefix(permissions, "admin.images.")
+  );
+}
+
 export function canShowUsersNav(session: ClientSession | null | undefined) {
   return canShowAdminNavItem(session, { permissionPrefix: "admin.users." });
 }
@@ -147,4 +160,8 @@ export function canShowInventoryNav(session: ClientSession | null | undefined) {
 
 export function canShowOrdersNav(session: ClientSession | null | undefined) {
   return canShowAdminNavItem(session, { permissionPrefix: "admin.orders." });
+}
+
+export function canShowImagesNav(session: ClientSession | null | undefined) {
+  return canShowAdminNavItem(session, { permissionPrefix: "admin.images." });
 }

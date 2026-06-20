@@ -24,6 +24,8 @@ export const Permissions = {
   AdminInventoryManage: "admin.inventory.manage",
   AdminOrdersRead: "admin.orders.read",
   AdminOrdersManage: "admin.orders.manage",
+  AdminImagesRead: "admin.images.read",
+  AdminImagesManage: "admin.images.manage",
 
   AdminRolesList: "admin.roles.list",
   AdminRolesRead: "admin.roles.read",

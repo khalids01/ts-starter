@@ -29,6 +29,7 @@ import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
+import { Route as AdminImagesRouteImport } from './routes/admin/images'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
 import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
@@ -143,6 +144,11 @@ const AdminInventoryRoute = AdminInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminImagesRoute = AdminImagesRouteImport.update({
+  id: '/images',
+  path: '/images',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFeedbackRoute = AdminFeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
@@ -230,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
@@ -299,6 +307,7 @@ export interface FileRoutesById {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
@@ -337,6 +346,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/feedback'
+    | '/admin/images'
     | '/admin/inventory'
     | '/admin/orders'
     | '/admin/overview'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/feedback'
+    | '/admin/images'
     | '/admin/inventory'
     | '/admin/orders'
     | '/admin/overview'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/feedback'
+    | '/admin/images'
     | '/admin/inventory'
     | '/admin/orders'
     | '/admin/overview'
@@ -583,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInventoryRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/images': {
+      id: '/admin/images'
+      path: '/images'
+      fullPath: '/admin/images'
+      preLoaderRoute: typeof AdminImagesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/feedback': {
       id: '/admin/feedback'
       path: '/feedback'
@@ -742,6 +761,7 @@ interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
   AdminCatalogRoute: typeof AdminCatalogRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
+  AdminImagesRoute: typeof AdminImagesRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
   AdminOverviewRoute: typeof AdminOverviewRoute
@@ -758,6 +778,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
   AdminCatalogRoute: AdminCatalogRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
+  AdminImagesRoute: AdminImagesRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminOrdersRoute: AdminOrdersRouteWithChildren,
   AdminOverviewRoute: AdminOverviewRoute,

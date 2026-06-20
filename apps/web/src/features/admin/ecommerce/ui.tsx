@@ -171,6 +171,7 @@ export function ecommercePermissions(session: ClientSession | null | undefined) 
     canManageProducts: hasAdminPermission(session, Permissions.AdminProductsManage),
     canManageInventory: hasAdminPermission(session, Permissions.AdminInventoryManage),
     canManageOrders: hasAdminPermission(session, Permissions.AdminOrdersManage),
+    canManageImages: hasAdminPermission(session, Permissions.AdminImagesManage),
   };
 }
 

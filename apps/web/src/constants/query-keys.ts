@@ -102,6 +102,13 @@ export const queryKeys = {
           [...queryKeys.admin.ecommerce.orders.all(), "detail", id] as const,
       },
     },
+    images: {
+      all: () => ["admin-images"] as const,
+      list: (params?: unknown) =>
+        [...queryKeys.admin.images.all(), "list", params] as const,
+      detail: (id: string) =>
+        [...queryKeys.admin.images.all(), "detail", id] as const,
+    },
   },
   invitations: {
     detail: (invitationId: string) => ["invitation", invitationId] as const,

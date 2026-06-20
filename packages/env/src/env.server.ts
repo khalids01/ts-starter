@@ -34,6 +34,9 @@ export const env = createEnv({
     SMTP_PASS: z.string().optional(),
     SMTP_FROM: z.string().optional(),
     SMTP_SECURE: z.string().optional(),
+    FILE_SERVER_URL: z.string().url().optional(),
+    FILE_SERVER_PUBLIC_URL: z.string().url().optional(),
+    FILE_SERVER_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
     ...process.env,
