@@ -29,9 +29,11 @@ export const authOptions = {
     max: 100,
   },
   session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    updateAge: 60 * 60 * 24, // refresh active sessions daily
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 24 * 30, // 1 month
+      maxAge: 5 * 60, // cache only; does not control login lifetime
       version: (_session, user) => getUserSessionCacheVersion(user.id),
     },
   },
