@@ -19,7 +19,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
+  CreditCard,
   LayoutDashboard,
+  Settings,
   User as UserIcon,
   ChevronRight,
 } from "lucide-react";
@@ -69,6 +71,16 @@ const navItems = [
     title: "Account",
     icon: UserIcon,
     url: "/account",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    url: "/settings",
+  },
+  {
+    title: "Billing",
+    icon: CreditCard,
+    url: "/billing",
   },
 ];
 
