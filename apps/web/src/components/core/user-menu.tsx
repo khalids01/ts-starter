@@ -62,8 +62,8 @@ export default function UserMenu() {
 
   const items = [
     {
-      label: "My Account",
-      href: "/account",
+      label: "Dashboard",
+      href: "/dashboard",
       type: "url",
     },
     {
