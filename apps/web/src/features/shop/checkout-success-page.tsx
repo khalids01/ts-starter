@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { ShopHeader } from "./shop-page";
+import { PublicShopFooter, PublicShopShell } from "./public-shop-shell";
 
 export function CheckoutSuccessPage(props: { orderId: string }) {
   return (
-    <div className="min-h-screen bg-background">
-      <ShopHeader />
+    <PublicShopShell footer={<PublicShopFooter />}>
       <main className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-3xl items-center px-4 py-10">
         <section className="w-full rounded-md border p-8 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
@@ -19,12 +18,12 @@ export function CheckoutSuccessPage(props: { orderId: string }) {
             <Link to="/shop" className={buttonVariants({ variant: "outline" })}>
               Continue shopping
             </Link>
-            <Link to="/admin/orders/$orderId" params={{ orderId: props.orderId }} className={buttonVariants()}>
-              View in admin
+            <Link to="/track-order" className={buttonVariants()}>
+              Track order
             </Link>
           </div>
         </section>
       </main>
-    </div>
+    </PublicShopShell>
   );
 }

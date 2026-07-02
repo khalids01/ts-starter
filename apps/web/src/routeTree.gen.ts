@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackOrderRouteImport } from './routes/track-order'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
@@ -47,6 +49,11 @@ import { Route as AdminProductsNewRouteImport } from './routes/admin/products/ne
 import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products/$productId'
 import { Route as AdminOrdersOrderIdRouteImport } from './routes/admin/orders/$orderId'
 
+const TrackOrderRoute = TrackOrderRouteImport.update({
+  id: '/track-order',
+  path: '/track-order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -55,6 +62,11 @@ const ShopRoute = ShopRouteImport.update({
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -239,8 +251,10 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
   '/shop': typeof ShopRouteWithChildren
+  '/track-order': typeof TrackOrderRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/account': typeof ProtectedAccountRoute
@@ -276,8 +290,10 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
   '/shop': typeof ShopRouteWithChildren
+  '/track-order': typeof TrackOrderRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/account': typeof ProtectedAccountRoute
@@ -314,8 +330,10 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
   '/shop': typeof ShopRouteWithChildren
+  '/track-order': typeof TrackOrderRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_protected/account': typeof ProtectedAccountRoute
@@ -355,8 +373,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/onboarding'
+    | '/saved'
     | '/setup'
     | '/shop'
+    | '/track-order'
     | '/login'
     | '/signup'
     | '/account'
@@ -392,8 +412,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/onboarding'
+    | '/saved'
     | '/setup'
     | '/shop'
+    | '/track-order'
     | '/login'
     | '/signup'
     | '/account'
@@ -429,8 +451,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/onboarding'
+    | '/saved'
     | '/setup'
     | '/shop'
+    | '/track-order'
     | '/_auth/login'
     | '/_auth/signup'
     | '/_protected/account'
@@ -469,8 +493,10 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
+  SavedRoute: typeof SavedRoute
   SetupRoute: typeof SetupRoute
   ShopRoute: typeof ShopRouteWithChildren
+  TrackOrderRoute: typeof TrackOrderRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignupRoute: typeof AuthSignupRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
@@ -479,6 +505,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/track-order': {
+      id: '/track-order'
+      path: '/track-order'
+      fullPath: '/track-order'
+      preLoaderRoute: typeof TrackOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -491,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -864,8 +904,10 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
+  SavedRoute: SavedRoute,
   SetupRoute: SetupRoute,
   ShopRoute: ShopRouteWithChildren,
+  TrackOrderRoute: TrackOrderRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthSignupRoute: AuthSignupRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,

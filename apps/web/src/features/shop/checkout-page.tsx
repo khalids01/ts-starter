@@ -6,11 +6,13 @@ import { queryKeys } from "@/constants/query-keys";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { shopApi } from "./api";
 import type { CheckoutResult, ShopCart, ShopShippingRate } from "./types";
 import { formatMoney } from "./utils";
-import { ShopHeader } from "./shop-page";
+import { PublicShopFooter, PublicShopShell, useShopCategories } from "./public-shop-shell";
 
 type CheckoutForm = {
   customerName: string;
@@ -43,6 +45,7 @@ const initialForm: CheckoutForm = {
 export function CheckoutPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const categoriesQuery = useShopCategories();
   const [form, setForm] = useState(initialForm);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const cartQuery = useQuery({
@@ -101,11 +104,10 @@ export function CheckoutPage() {
     Boolean(cart?.items.length);
 
   return (
-    <div className="min-h-screen bg-background">
-      <ShopHeader />
+    <PublicShopShell footer={<PublicShopFooter categories={categoriesQuery.data ?? []} />}>
       <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
+          <h1 className="text-3xl font-semibold tracking-normal">Checkout</h1>
           <p className="text-sm text-muted-foreground">Cash on delivery / manual payment for this version.</p>
         </div>
 
@@ -140,11 +142,19 @@ export function CheckoutPage() {
               </div>
               <div className="space-y-2">
                 <Label>Shipping method</Label>
-                <div className="grid gap-2">
+                <RadioGroup
+                  value={selectedShippingRate?.id ?? ""}
+                  onValueChange={(value) => setForm({ ...form, shippingRateId: value ?? "" })}
+                  className="grid gap-2"
+                >
                   {shippingRates.map((rate) => (
                     <label
                       key={rate.id}
-                      className="flex cursor-pointer items-center justify-between gap-3 rounded-md border p-3 text-sm"
+                      onClick={() => setForm({ ...form, shippingRateId: rate.id })}
+                      className={cn(
+                        "flex cursor-pointer items-center justify-between gap-3 rounded-md border p-3 text-sm transition hover:bg-muted",
+                        selectedShippingRate?.id === rate.id ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/20" : "",
+                      )}
                     >
                       <span>
                         <span className="block font-medium">{rate.label}</span>
@@ -158,16 +168,11 @@ export function CheckoutPage() {
                         <span className="font-medium">
                           {formatMoney(rate.amount, cart?.currency ?? "BDT")}
                         </span>
-                        <input
-                          type="radio"
-                          name="shippingRateId"
-                          checked={selectedShippingRate?.id === rate.id}
-                          onChange={() => setForm({ ...form, shippingRateId: rate.id })}
-                        />
+                        <RadioGroupItem value={rate.id} />
                       </span>
                     </label>
                   ))}
-                </div>
+                </RadioGroup>
               </div>
               <div className="space-y-1.5">
                 <Label>Notes</Label>
@@ -185,7 +190,7 @@ export function CheckoutPage() {
           </section>
         )}
       </main>
-    </div>
+    </PublicShopShell>
   );
 }
 

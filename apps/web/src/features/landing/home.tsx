@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { shopApi } from "@/features/shop/api";
 import type { PageResult, ShopCategory, ShopProduct } from "@/features/shop/types";
 import { formatMoney, productImage } from "@/features/shop/utils";
+import { PublicShopFooter, PublicShopShell } from "@/features/shop/public-shop-shell";
 
 const asset = (path: string) => `/ecommerce/${path}`;
 
@@ -117,8 +118,7 @@ export const Home = () => {
   const products = productsQuery.data?.items ?? [];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <LandingHeader categories={categories} />
+    <PublicShopShell footer={<PublicShopFooter categories={categories} />}>
       <main>
         <Hero categories={categories} />
         <ServiceStrip />
@@ -126,8 +126,7 @@ export const Home = () => {
         <FeaturedProducts products={products} loading={productsQuery.isLoading} />
         <MixedCatalogPromo />
       </main>
-      <LandingFooter categories={categories} />
-    </div>
+    </PublicShopShell>
   );
 };
 
@@ -203,17 +202,17 @@ function Hero(props: { categories: ShopCategory[] }) {
       <div className="relative mx-auto grid min-h-[660px] w-full max-w-7xl content-center gap-8 px-4 py-12 md:px-6 lg:grid-cols-[1fr_360px]">
         <div className="max-w-3xl">
           <Badge variant="secondary" className="mb-5 border bg-background/80">
-            Food + gadgets ecommerce starter
+            Fresh food + gadget store
           </Badge>
           <h1 className="text-4xl font-semibold leading-tight tracking-normal sm:text-5xl lg:text-6xl">
-            Fresh food, sharp gadgets, and the full store flow ready to shape.
+            Fresh food and sharp gadgets delivered from one simple shop.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            A mixed ecommerce storefront for mango, honey, phones, laptops, and
-            the inventory-backed products that come next.
+            Browse seasonal mango, honey, phones, laptops, and daily essentials
+            with clear prices, stock-aware variants, and quick checkout.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link to="/shop" className={buttonVariants({ size: "lg", className: "bg-emerald-700 text-white hover:bg-emerald-800" })}>
+            <Link to="/shop" className={buttonVariants({ size: "lg", className: "border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800 dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400" })}>
               Shop products
               <ArrowRight className="size-4" />
             </Link>
@@ -314,8 +313,8 @@ function CategoryBrowse(props: { categories: ShopCategory[]; loading: boolean })
     <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-12 md:px-6">
       <SectionHeader
         eyebrow="Browse categories"
-        title="Templates for fresh food and technical products"
-        description="Categories come from the catalog admin area, so the landing follows the store you configure."
+        title="Fresh food and technical products by category"
+        description="Shop by the categories available in this store, from seasonal food to phones, PCs, laptops, and accessories."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -351,8 +350,8 @@ function FeaturedProducts(props: { products: ShopProduct[]; loading: boolean }) 
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <SectionHeader
             eyebrow="Featured products"
-            title="Inventory-backed products ready for checkout"
-            description="Product cards use active storefront data, prices, images, and stock-aware variants."
+            title="Products ready for checkout"
+            description="Active products show their storefront prices, images, categories, and available variants."
           />
           <Link to="/shop" className={buttonVariants({ variant: "outline" })}>
             View all

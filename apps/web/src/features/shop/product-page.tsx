@@ -1,19 +1,32 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Heart, PackageCheck, ShoppingCart, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { shopApi } from "./api";
 import type { ShopCart, ShopProduct, ShopVariant } from "./types";
 import { formatMoney, productImage } from "./utils";
-import { ShopHeader } from "./shop-page";
+import { useCartSheetStore } from "./cart-sheet-store";
+import {
+  PublicShopFooter,
+  PublicShopShell,
+  useShopCategories,
+} from "./public-shop-shell";
+import {
+  savedProductFromProduct,
+  useSavedItemsStore,
+} from "./saved-items-store";
 
 export function ShopProductPage(props: { slug: string }) {
   const queryClient = useQueryClient();
+  const openCart = useCartSheetStore((state) => state.openCart);
+  const categoriesQuery = useShopCategories();
   const productQuery = useQuery({
     queryKey: queryKeys.shop.product(props.slug),
     queryFn: () => shopApi.product(props.slug) as Promise<ShopProduct>,
@@ -27,29 +40,32 @@ export function ShopProductPage(props: { slug: string }) {
     return product.variants.find((variant) => variant.id === (variantId || product.variants[0]?.id)) ?? null;
   }, [product, variantId]);
 
+  const toggleSaved = useSavedItemsStore((state) => state.toggle);
+  const isSaved = useSavedItemsStore((state) => (product ? state.isSaved(product.id) : false));
+
   const addToCart = useMutation({
     mutationFn: (variant: ShopVariant) =>
       shopApi.addCartItem({ variantId: variant.id, quantity: 1 }) as Promise<ShopCart>,
     onSuccess: () => {
       toast.success("Added to cart");
       void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
+      openCart();
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to add item"),
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <ShopHeader />
+    <PublicShopShell footer={<PublicShopFooter categories={categoriesQuery.data ?? []} />}>
       <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
         <Link to="/shop" className={buttonVariants({ variant: "ghost" })}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="size-4" />
           Products
         </Link>
 
         {productQuery.isLoading ? (
-          <div className="mt-6 rounded-md border p-8 text-center text-sm text-muted-foreground">Loading product...</div>
+          <StateCard>Loading product...</StateCard>
         ) : !product ? (
-          <div className="mt-6 rounded-md border p-8 text-center text-sm text-muted-foreground">Product not found.</div>
+          <StateCard>Product not found.</StateCard>
         ) : (
           <section className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <ProductMedia product={product} variant={selectedVariant} />
@@ -60,54 +76,74 @@ export function ShopProductPage(props: { slug: string }) {
                   {product.brand ? <Badge variant="outline">{product.brand.name}</Badge> : null}
                   {product.category ? <Badge variant="secondary">{product.category.name}</Badge> : null}
                 </div>
-                <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
-                {product.description ? (
-                  <p className="text-muted-foreground">{product.description}</p>
-                ) : null}
-              </div>
-
-              <div className="rounded-md border p-4">
-                <p className="text-sm text-muted-foreground">Variant</p>
-                <div className="mt-3 grid gap-2">
-                  {product.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      type="button"
-                      className={`rounded-md border p-3 text-left transition ${selectedVariant?.id === variant.id ? "border-primary bg-primary/5" : "hover:bg-muted"}`}
-                      onClick={() => setVariantId(variant.id)}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium">{variant.name}</p>
-                          <p className="text-xs text-muted-foreground">{variant.sku}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold">{formatMoney(variant.price, variant.currency)}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {variant.availableQuantity > 0 ? `${variant.availableQuantity} available` : "Out of stock"}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">{product.name}</h1>
+                    {product.description ? (
+                      <p className="mt-3 leading-7 text-muted-foreground">{product.description}</p>
+                    ) : null}
+                  </div>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => toggleSaved(savedProductFromProduct(product))}
+                  >
+                    <Heart className={cn("size-4", isSaved ? "fill-rose-500 text-rose-500" : "")} />
+                    <span className="sr-only">{isSaved ? "Remove from saved" : "Save product"}</span>
+                  </Button>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 rounded-md border p-4 sm:flex-row sm:items-center sm:justify-between">
+              <section className="rounded-md border p-4">
+                <p className="text-sm font-medium">Choose variant</p>
+                <div className="mt-3 grid gap-2">
+                  {product.variants.map((variant) => (
+                    <Button
+                      key={variant.id}
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "h-auto justify-between gap-3 p-3 text-left",
+                        selectedVariant?.id === variant.id ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/20" : "",
+                      )}
+                      onClick={() => setVariantId(variant.id)}
+                    >
+                      <span className="min-w-0">
+                        <span className="block font-medium">{variant.name}</span>
+                        <span className="block text-xs text-muted-foreground">{variant.sku}</span>
+                      </span>
+                      <span className="text-right">
+                        <span className="block font-semibold">{formatMoney(variant.price, variant.currency)}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {variant.availableQuantity > 0 ? `${variant.availableQuantity} available` : "Out of stock"}
+                        </span>
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </section>
+
+              <section className="flex flex-col gap-3 rounded-md border p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total</p>
                   <p className="text-2xl font-semibold">
                     {formatMoney(selectedVariant?.price, selectedVariant?.currency)}
                   </p>
+                  {selectedVariant?.compareAtPrice ? (
+                    <p className="text-sm text-muted-foreground line-through">
+                      {formatMoney(selectedVariant.compareAtPrice, selectedVariant.currency)}
+                    </p>
+                  ) : null}
                 </div>
                 <Button
                   disabled={!selectedVariant || selectedVariant.availableQuantity <= 0 || addToCart.isPending}
                   onClick={() => selectedVariant && addToCart.mutate(selectedVariant)}
                 >
-                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  <ShoppingCart className="size-4" />
                   {addToCart.isPending ? "Adding..." : "Add to cart"}
                 </Button>
-              </div>
+              </section>
 
               {product.highlights && product.highlights.length > 0 ? (
                 <section className="grid gap-3 sm:grid-cols-2">
@@ -125,21 +161,82 @@ export function ShopProductPage(props: { slug: string }) {
           </section>
         )}
       </main>
-    </div>
+    </PublicShopShell>
   );
 }
 
 function ProductMedia(props: { product: ShopProduct; variant: ShopVariant | null }) {
-  const imageUrl = props.variant?.imageUrls?.[0] || productImage(props.product);
+  const images = useMemo(() => {
+    const urls = [
+      ...(props.variant?.imageUrls ?? []),
+      productImage(props.product),
+      props.product.coverImageUrl,
+    ].filter(Boolean) as string[];
+    return [...new Set(urls)];
+  }, [props.product, props.variant]);
+  const [activeImage, setActiveImage] = useState(images[0] ?? "");
+
+  useEffect(() => {
+    setActiveImage(images[0] ?? "");
+  }, [images]);
+
   return (
-    <div className="overflow-hidden rounded-md border bg-muted">
-      <div className="aspect-square">
-        {imageUrl ? (
-          <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">No image</div>
-        )}
+    <div className="grid gap-3">
+      <div className="overflow-hidden rounded-md border bg-muted">
+        <div className="aspect-square">
+          {activeImage ? (
+            <Img src={activeImage} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <FallbackProductVisual category={props.product.category?.name} />
+          )}
+        </div>
       </div>
+      {images.length > 1 ? (
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+          {images.map((image) => (
+            <Button
+              key={image}
+              type="button"
+              variant="outline"
+              className={cn(
+                "h-auto overflow-hidden p-0",
+                activeImage === image ? "border-emerald-600" : "",
+              )}
+              onClick={() => setActiveImage(image)}
+            >
+              <span className="aspect-square w-full">
+                <Img src={image} alt="" className="h-full w-full object-cover" />
+              </span>
+            </Button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function FallbackProductVisual(props: { category?: string | null }) {
+  const isGadget = /phone|laptop|gadget|pc|computer/i.test(props.category ?? "");
+  return (
+    <div
+      className={cn(
+        "grid h-full w-full place-items-center",
+        isGadget ? "bg-cyan-100 dark:bg-cyan-950/40" : "bg-emerald-100 dark:bg-emerald-950/40",
+      )}
+    >
+      {isGadget ? (
+        <Smartphone className="size-14 text-cyan-700" />
+      ) : (
+        <PackageCheck className="size-14 text-emerald-700" />
+      )}
+    </div>
+  );
+}
+
+function StateCard(props: { children: ReactNode }) {
+  return (
+    <div className="mt-6 rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+      {props.children}
     </div>
   );
 }

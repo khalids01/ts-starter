@@ -116,3 +116,37 @@ export type CheckoutResult = {
   totalAmount: string;
   currency: string;
 };
+
+export type ShopOrder = {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  subtotalAmount: string;
+  discountAmount: string;
+  taxAmount: string;
+  shippingAmount: string;
+  totalAmount: string;
+  currency: string;
+  paymentMethod?: string | null;
+  orderStatus: string;
+  paymentStatus: string;
+  deliveryStatus: string;
+  inventoryStatus: string;
+  shippingMethodLabel?: string | null;
+  placedAt?: string | null;
+  createdAt: string;
+  lineItems: Array<{
+    id: string;
+    productId: string;
+    variantId: string;
+    productName: string;
+    variantName?: string | null;
+    sku?: string | null;
+    imageUrl?: string | null;
+    quantity: number;
+    unitPrice: string;
+    totalAmount: string;
+  }>;
+};
