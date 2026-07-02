@@ -18,6 +18,22 @@ const productCountMock = mock(async () => 1);
 const productFindManyMock = mock(async () => [productRow()]);
 const productFindFirstMock = mock(async () => productRow());
 const productVariantFindUniqueMock = mock(async () => variantRow());
+const categoryFindManyMock = mock(async () => [
+  categoryRow({
+    id: "cat-featured",
+    name: "Food",
+    slug: "food",
+    isFeatured: true,
+    sortOrder: 20,
+  }),
+  categoryRow({
+    id: "cat-gadgets",
+    name: "Gadgets",
+    slug: "gadgets",
+    isFeatured: false,
+    sortOrder: 30,
+  }),
+]);
 
 const orderCreateMock = mock(async () => ({
   id: "order-1",
@@ -42,6 +58,9 @@ const prismaMock = {
   },
   productVariant: {
     findUnique: productVariantFindUniqueMock,
+  },
+  category: {
+    findMany: categoryFindManyMock,
   },
   cart: {
     findFirst: cartFindFirstMock,
@@ -108,6 +127,21 @@ function productRow(overrides: Record<string, any> = {}) {
     variants: overrides.variants ?? [variantRow({ product: undefined })],
     highlights: overrides.highlights ?? [],
     updatedAt: new Date("2026-06-15T10:00:00.000Z"),
+  };
+}
+
+function categoryRow(overrides: Record<string, any> = {}) {
+  return {
+    id: overrides.id ?? "cat-1",
+    name: overrides.name ?? "Fruit",
+    slug: overrides.slug ?? "fruit",
+    description: overrides.description ?? "Fresh food and essentials",
+    imageUrl: overrides.imageUrl ?? null,
+    iconUrl: overrides.iconUrl ?? null,
+    parentId: overrides.parentId ?? null,
+    isFeatured: overrides.isFeatured ?? false,
+    sortOrder: overrides.sortOrder ?? 10,
+    _count: overrides._count ?? { products: 2 },
   };
 }
 
@@ -207,6 +241,22 @@ beforeEach(() => {
   cartFindUniqueMock.mockResolvedValue(cartRow({ items: [cartItemRow()] }));
   cartFindUniqueOrThrowMock.mockResolvedValue(cartRow({ items: [cartItemRow()] }));
   cartItemFindFirstMock.mockResolvedValue(cartItemRow());
+  categoryFindManyMock.mockResolvedValue([
+    categoryRow({
+      id: "cat-featured",
+      name: "Food",
+      slug: "food",
+      isFeatured: true,
+      sortOrder: 20,
+    }),
+    categoryRow({
+      id: "cat-gadgets",
+      name: "Gadgets",
+      slug: "gadgets",
+      isFeatured: false,
+      sortOrder: 30,
+    }),
+  ]);
   productVariantFindUniqueMock.mockResolvedValue(variantRow());
   orderFindUniqueMock.mockResolvedValue(null);
   orderFindManyMock.mockResolvedValue([]);
@@ -234,6 +284,7 @@ afterEach(() => {
     productFindManyMock,
     productFindFirstMock,
     productVariantFindUniqueMock,
+    categoryFindManyMock,
     orderCreateMock,
     orderFindUniqueMock,
     orderFindManyMock,
@@ -250,6 +301,59 @@ afterEach(() => {
 });
 
 describe("shop service", () => {
+  it("lists only public active categories with product counts", async () => {
+    const { shopService } = await import("../src/modules/shop/shop.service");
+
+    const result = await shopService.listCategories();
+
+    expect(categoryFindManyMock).toHaveBeenCalledWith({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        imageUrl: true,
+        iconUrl: true,
+        parentId: true,
+        isFeatured: true,
+        sortOrder: true,
+        _count: {
+          select: {
+            products: {
+              where: {
+                status: "active",
+                isActive: true,
+                variants: { some: { isActive: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        { isFeatured: "desc" },
+        { sortOrder: "asc" },
+        { name: "asc" },
+      ],
+    });
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "cat-featured",
+        name: "Food",
+        slug: "food",
+        productCount: 2,
+      }),
+      expect.objectContaining({
+        id: "cat-gadgets",
+        name: "Gadgets",
+        slug: "gadgets",
+        productCount: 2,
+      }),
+    ]);
+    expect(result[0]).not.toHaveProperty("attributes");
+    expect(result[0]).not.toHaveProperty("brandPolicy");
+  });
+
   it("creates a guest cart and maps server-calculated totals", async () => {
     const { shopService } = await import("../src/modules/shop/shop.service");
 

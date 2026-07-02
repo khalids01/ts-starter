@@ -1,4 +1,5 @@
 import { Home } from "@/features/landing/home";
+import { brandConfig } from "@config/brand";
 import { env } from "@env/client";
 import { createFileRoute } from "@tanstack/react-router";
 import { getOwnerSetupStatus } from "@/features/admin/owner/api";
@@ -22,6 +23,17 @@ export const Route = createFileRoute("/_public/")({
     // UI decide whether to show setup entry points.
     return;
   },
+  head: () => ({
+    meta: [
+      { title: brandConfig.seo.title },
+      { name: "description", content: brandConfig.seo.description },
+      { property: "og:title", content: brandConfig.seo.title },
+      { property: "og:description", content: brandConfig.seo.description },
+      ...(brandConfig.seo.ogImage
+        ? [{ property: "og:image", content: brandConfig.seo.ogImage }]
+        : []),
+    ],
+  }),
   component: HomeComponent,
 });
 

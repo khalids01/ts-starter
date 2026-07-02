@@ -104,6 +104,13 @@ export const shopController = new Elysia({
 })
   .use(authGuard)
   .get(
+    "/categories",
+    () => shopService.listCategories(),
+    {
+      detail: { summary: "List active storefront categories" },
+    },
+  )
+  .get(
     "/shipping-rates",
     () => shopService.listShippingRates(),
     {

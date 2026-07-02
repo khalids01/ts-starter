@@ -297,6 +297,21 @@ function mapProduct(row: any) {
   };
 }
 
+function mapCategory(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    imageUrl: row.imageUrl,
+    iconUrl: row.iconUrl,
+    parentId: row.parentId,
+    isFeatured: row.isFeatured,
+    sortOrder: row.sortOrder,
+    productCount: row._count?.products ?? 0,
+  };
+}
+
 function mapShippingRate(row: any) {
   return {
     id: row.id,
@@ -582,6 +597,43 @@ function shippingAmountForRate(rate: any, subtotal: number) {
 }
 
 export const shopService = {
+  async listCategories() {
+    const categories = await prisma.category.findMany({
+      where: {
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        imageUrl: true,
+        iconUrl: true,
+        parentId: true,
+        isFeatured: true,
+        sortOrder: true,
+        _count: {
+          select: {
+            products: {
+              where: {
+                status: "active",
+                isActive: true,
+                variants: { some: { isActive: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        { isFeatured: "desc" },
+        { sortOrder: "asc" },
+        { name: "asc" },
+      ],
+    });
+
+    return categories.map(mapCategory);
+  },
+
   async listShippingRates() {
     const rates = await prisma.shippingRate.findMany({
       where: { isActive: true },

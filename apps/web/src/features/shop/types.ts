@@ -10,6 +10,13 @@ export type ShopCategory = {
   id: string;
   name: string;
   slug: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  iconUrl?: string | null;
+  parentId?: string | null;
+  isFeatured?: boolean;
+  sortOrder?: number;
+  productCount?: number;
 };
 
 export type ShopBrand = {
