@@ -25,16 +25,22 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { queryKeys } from "@/constants/query-keys";
+import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/providers/session-provider";
-import { shopApi } from "./api";
 import { CartSheet, CartTriggerButton } from "./cart-sheet";
 import type { ShopCategory } from "./types";
 
 export function useShopCategories() {
   return useQuery({
     queryKey: queryKeys.shop.categories(),
-    queryFn: () => shopApi.categories() as Promise<ShopCategory[]>,
+    queryFn: async () => {
+      const { data, error } = await client.shop.categories.get();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load categories"));
+      }
+      return data as ShopCategory[];
+    },
     staleTime: 60_000,
   });
 }

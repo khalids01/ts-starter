@@ -49,13 +49,13 @@ export default function UserMenu() {
     return (
       <>
         <Link to="/login">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <Button className="hidden h-10 sm:inline-flex">
             Log in
           </Button>
         </Link>
-        <Link to="/login">
+        {/* <Link to="/login">
           <Button size="sm">Get Started</Button>
-        </Link>
+        </Link> */}
       </>
     );
   }

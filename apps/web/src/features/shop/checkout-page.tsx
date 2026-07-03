@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import { shopApi } from "./api";
 import type { CheckoutResult, ShopCart, ShopShippingRate } from "./types";
 import { formatMoney } from "./utils";
 import { PublicShopFooter, PublicShopShell, useShopCategories } from "./public-shop-shell";
@@ -50,11 +50,23 @@ export function CheckoutPage() {
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const cartQuery = useQuery({
     queryKey: queryKeys.shop.cart(),
-    queryFn: () => shopApi.cart() as Promise<ShopCart>,
+    queryFn: async () => {
+      const { data, error } = await client.shop.cart.get();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
+      }
+      return data as ShopCart;
+    },
   });
   const shippingRatesQuery = useQuery({
     queryKey: ["shop", "shipping-rates"],
-    queryFn: () => shopApi.shippingRates() as Promise<ShopShippingRate[]>,
+    queryFn: async () => {
+      const { data, error } = await client.shop["shipping-rates"].get();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load shipping rates"));
+      }
+      return data as ShopShippingRate[];
+    },
   });
   const cart = cartQuery.data;
   const shippingRates = shippingRatesQuery.data ?? [];
@@ -64,8 +76,8 @@ export function CheckoutPage() {
     shippingRates[0];
 
   const checkout = useMutation({
-    mutationFn: () =>
-      shopApi.checkout({
+    mutationFn: async () => {
+      const { data, error } = await client.shop.checkout.post({
         customerName: form.customerName,
         customerEmail: form.customerEmail,
         customerPhone: form.customerPhone || null,
@@ -85,7 +97,12 @@ export function CheckoutPage() {
         paymentMethod: "cash_on_delivery",
         idempotencyKey,
         customerNotes: form.customerNotes || null,
-      }) as Promise<CheckoutResult>,
+      });
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to place order"));
+      }
+      return data as CheckoutResult;
+    },
     onSuccess: (result) => {
       toast.success("Order placed");
       void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });

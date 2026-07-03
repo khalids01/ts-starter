@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Img } from "@/components/core/img";
-import { shopApi } from "./api";
+import { client } from "@/lib/client";
 import type { ShopOrder } from "./types";
 import { formatMoney } from "./utils";
 import { PublicShopFooter, PublicShopShell } from "./public-shop-shell";
@@ -18,10 +18,14 @@ export function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [contact, setContact] = useState("");
   const lookup = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const value = contact.trim();
       const query = value.includes("@") ? { email: value } : { phone: value };
-      return shopApi.order(orderNumber.trim(), query) as Promise<ShopOrder>;
+      const { data, error } = await client.shop.orders({ orderNumber: orderNumber.trim() }).get({ query });
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load order"));
+      }
+      return data as ShopOrder;
     },
   });
 

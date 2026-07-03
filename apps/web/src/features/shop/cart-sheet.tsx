@@ -16,8 +16,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import { shopApi } from "./api";
 import type { ShopCart, ShopCartItem } from "./types";
 import { formatMoney } from "./utils";
 import { useCartSheetStore } from "./cart-sheet-store";
@@ -30,7 +30,13 @@ export function CartTriggerButton(props: {
   const openCart = useCartSheetStore((state) => state.openCart);
   const cartQuery = useQuery({
     queryKey: queryKeys.shop.cart(),
-    queryFn: () => shopApi.cart() as Promise<ShopCart>,
+    queryFn: async () => {
+      const { data, error } = await client.shop.cart.get();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
+      }
+      return data as ShopCart;
+    },
     staleTime: 30_000,
   });
   const itemCount = cartQuery.data?.itemCount ?? 0;
@@ -61,7 +67,13 @@ export function CartSheet() {
   const closeCart = useCartSheetStore((state) => state.closeCart);
   const cartQuery = useQuery({
     queryKey: queryKeys.shop.cart(),
-    queryFn: () => shopApi.cart() as Promise<ShopCart>,
+    queryFn: async () => {
+      const { data, error } = await client.shop.cart.get();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
+      }
+      return data as ShopCart;
+    },
   });
   const cart = cartQuery.data;
 
@@ -70,15 +82,26 @@ export function CartSheet() {
   };
 
   const updateItem = useMutation({
-    mutationFn: ({ id, quantity }: { id: string; quantity: number }) =>
-      shopApi.updateCartItem(id, { quantity }) as Promise<ShopCart>,
+    mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
+      const { data, error } = await client.shop.cart.items({ id }).patch({ quantity });
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to update cart"));
+      }
+      return data as ShopCart;
+    },
     onSuccess: invalidateCart,
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Failed to update cart"),
   });
 
   const removeItem = useMutation({
-    mutationFn: (id: string) => shopApi.removeCartItem(id) as Promise<ShopCart>,
+    mutationFn: async (id: string) => {
+      const { data, error } = await client.shop.cart.items({ id }).delete();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to remove item"));
+      }
+      return data as ShopCart;
+    },
     onSuccess: invalidateCart,
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Failed to remove item"),

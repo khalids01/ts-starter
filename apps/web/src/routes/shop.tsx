@@ -1,31 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShopPage } from "@/features/shop";
+import {z} from "zod";
 
 export const Route = createFileRoute("/shop")({
-  validateSearch: (search) => {
-    const legacyCategoryId = typeof search.categoryId === "string" && search.categoryId !== "all"
-      ? search.categoryId
-      : "";
-    const legacyBrandId = typeof search.brandId === "string" && search.brandId !== "all"
-      ? search.brandId
-      : "";
+  loader: async ({  }) => {
 
-    return {
-      search: typeof search.search === "string" ? search.search : "",
-      categoryId: legacyCategoryId || "all",
-      categoryIds: typeof search.categoryIds === "string" ? search.categoryIds : legacyCategoryId,
-      brandId: legacyBrandId || "all",
-      brandIds: typeof search.brandIds === "string" ? search.brandIds : legacyBrandId,
-      minPrice: typeof search.minPrice === "string" ? search.minPrice : "",
-      maxPrice: typeof search.maxPrice === "string" ? search.maxPrice : "",
-      inStock: search.inStock === "true" ? "true" : "all",
-      availability:
-        search.availability === "in-stock" || search.availability === "out-of-stock"
-          ? search.availability
-          : "all",
-      sort: typeof search.sort === "string" ? search.sort : "newest",
-      filters: typeof search.filters === "string" ? search.filters : "",
-    };
+  },
+  validateSearch: (search) => {
+
+    return z.object({
+      search: z.string().optional().default(""),
+      categoryIds: z.string().optional().default(""),
+      brandIds: z.string().optional().default(""),
+      minPrice: z.string().optional().default(""),
+      maxPrice: z.string().optional().default(""),
+      inStock: z.enum(["true", "false", "all"]).optional().default("all"),
+      availability: z.enum(["in-stock", "out-of-stock", "all"]).optional().default("all"),
+      sort: z.enum(["newest", "price-asc", "price-desc"]).optional().default("newest"),
+      filters: z.string().optional().default(""),
+    }).parse(search);
   },
   component: ShopPage,
 });

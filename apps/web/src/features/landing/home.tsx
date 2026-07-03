@@ -12,42 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { queryKeys } from "@/constants/query-keys";
 import { cn } from "@/lib/utils";
-import { shopApi } from "@/features/shop/api";
+import { client } from "@/lib/client";
 import type { PageResult, ShopCategory, ShopProduct } from "@/features/shop/types";
 import { formatMoney, productImage } from "@/features/shop/utils";
 import { PublicShopFooter, PublicShopShell } from "@/features/shop/public-shop-shell";
+import { usePublicData } from "@/providers/public-data-provider";
 
 const asset = (path: string) => `/ecommerce/${path}`;
-
-const fallbackCategories: ShopCategory[] = [
-  {
-    id: "fallback-featured",
-    name: "Featured Products",
-    slug: "featured-products",
-    description: "Curated products ready for browsing and checkout.",
-    iconUrl: asset("icons/groceries.png"),
-    isFeatured: true,
-    sortOrder: 1,
-  },
-  {
-    id: "fallback-new",
-    name: "New Arrivals",
-    slug: "new-arrivals",
-    description: "Recently added products and variants.",
-    iconUrl: asset("icons/top-rated.png"),
-    isFeatured: true,
-    sortOrder: 2,
-  },
-  {
-    id: "fallback-popular",
-    name: "Popular Picks",
-    slug: "popular-picks",
-    description: "Products customers often view and save.",
-    iconUrl: asset("icons/handle-with-care.png"),
-    isFeatured: false,
-    sortOrder: 3,
-  },
-];
 
 const promises = [
   {
@@ -97,18 +68,19 @@ const fallbackProducts = [
 ];
 
 export const Home = () => {
-  const categoriesQuery = useQuery({
-    queryKey: queryKeys.shop.categories(),
-    queryFn: () => shopApi.categories() as Promise<ShopCategory[]>,
-  });
+ const {categories}= usePublicData(); 
   const productsQuery = useQuery({
     queryKey: queryKeys.shop.products({ limit: 8 }),
-    queryFn: () => shopApi.products({ limit: 8 }) as Promise<PageResult<ShopProduct>>,
+    queryFn: async () => {
+      const { data, error } = await client.shop.products.get({ query: { limit: 8 } });
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load products"));
+      }
+      return data as PageResult<ShopProduct>;
+    },
   });
 
-  const categories = categoriesQuery.data?.length
-    ? categoriesQuery.data
-    : fallbackCategories;
+  
   const products = productsQuery.data?.items ?? [];
 
   return (
@@ -116,7 +88,7 @@ export const Home = () => {
       <main>
         <Hero categories={categories} />
         <ServiceStrip />
-        <CategoryBrowse categories={categories} loading={categoriesQuery.isLoading} />
+        <CategoryBrowse categories={categories} />
         <FeaturedProducts products={products} loading={productsQuery.isLoading} />
         <MixedCatalogPromo />
       </main>
@@ -247,7 +219,7 @@ function ServiceStrip() {
   );
 }
 
-function CategoryBrowse(props: { categories: ShopCategory[]; loading: boolean }) {
+function CategoryBrowse(props: { categories: ShopCategory[]; }) {
   return (
     <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-12 md:px-6">
       <SectionHeader
@@ -257,7 +229,7 @@ function CategoryBrowse(props: { categories: ShopCategory[]; loading: boolean })
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {(props.loading ? fallbackCategories : props.categories).slice(0, 8).map((category) => (
+        {(props.categories)?.filter(c=>c.isFeatured)?.map((category) => (
           <a
             key={category.id}
             href={`/shop?categoryId=${encodeURIComponent(category.id)}`}

@@ -56,5 +56,6 @@ export const brandConfig = {
   seo: {
     title: "Ecommerce Starter",
     description: "A flexible ecommerce starter for dynamic product catalogs.",
+    ogImage: "/og-image.jpg",
   },
 } satisfies BrandConfig;

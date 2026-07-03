@@ -8,8 +8,8 @@ import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import { shopApi } from "./api";
 import type { ShopCart, ShopProduct, ShopVariant } from "./types";
 import { formatMoney, productImage } from "./utils";
 import { useCartSheetStore } from "./cart-sheet-store";
@@ -29,7 +29,13 @@ export function ShopProductPage(props: { slug: string }) {
   const categoriesQuery = useShopCategories();
   const productQuery = useQuery({
     queryKey: queryKeys.shop.product(props.slug),
-    queryFn: () => shopApi.product(props.slug) as Promise<ShopProduct>,
+    queryFn: async () => {
+      const { data, error } = await client.shop.products({ slug: props.slug }).get();
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to load product"));
+      }
+      return data as ShopProduct;
+    },
   });
   const product = productQuery.data;
   const [variantId, setVariantId] = useState("");
@@ -44,8 +50,13 @@ export function ShopProductPage(props: { slug: string }) {
   const isSaved = useSavedItemsStore((state) => (product ? state.isSaved(product.id) : false));
 
   const addToCart = useMutation({
-    mutationFn: (variant: ShopVariant) =>
-      shopApi.addCartItem({ variantId: variant.id, quantity: 1 }) as Promise<ShopCart>,
+    mutationFn: async (variant: ShopVariant) => {
+      const { data, error } = await client.shop.cart.items.post({ variantId: variant.id, quantity: 1 });
+      if (error) {
+        throw new Error(String(error.value?.message || error.message || "Failed to add item"));
+      }
+      return data as ShopCart;
+    },
     onSuccess: () => {
       toast.success("Added to cart");
       void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
