@@ -56,7 +56,12 @@ const defaultShopSearch: ShopSearchState = {
   filters: "",
 };
 
-export function ShopPage() {
+export type ShopInitialData = {
+  products: PageResult<ShopProduct>;
+  filters: ShopFilters;
+};
+
+export function ShopPage(props: { initialData: ShopInitialData }) {
   const rawSearch = useSearch({ from: "/shop" }) as ShopRouteSearch;
   const navigate = useNavigate();
   const routeSearch = normalizeShopSearch(rawSearch);

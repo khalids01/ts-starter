@@ -1,23 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
-const cartFindFirstMock = mock(async () => null as any);
-const cartCreateMock = mock(async (args: any) => cartRow(args.data));
-const cartUpdateMock = mock(async (args: any) => cartRow({ id: args.where.id, ...args.data }));
-const cartUpsertMock = mock(async (args: any) => cartRow({ cartToken: args.where.cartToken, ...args.create }));
-const cartFindUniqueMock = mock(async () => null as any);
-const cartFindUniqueOrThrowMock = mock(async () => cartRow({ items: [cartItemRow()] }));
-const cartDeleteMock = mock(async () => cartRow());
-
-const cartItemUpsertMock = mock(async (args: any) => cartItemRow(args.create));
-const cartItemFindFirstMock = mock(async () => cartItemRow());
-const cartItemUpdateMock = mock(async (args: any) => cartItemRow(args.data));
-const cartItemDeleteMock = mock(async () => cartItemRow());
-const cartItemDeleteManyMock = mock(async () => ({ count: 1 }));
+mock.restore();
 
 const productCountMock = mock(async () => 1);
 const productFindManyMock = mock(async () => [productRow()]);
 const productFindFirstMock = mock(async () => productRow());
-const productVariantFindUniqueMock = mock(async () => variantRow());
+const productVariantFindManyMock = mock(async () => [variantRow()]);
 const categoryFindManyMock = mock(async () => [
   categoryRow({
     id: "cat-featured",
@@ -58,30 +46,13 @@ const prismaMock = {
     findFirst: productFindFirstMock,
   },
   productVariant: {
-    findUnique: productVariantFindUniqueMock,
+    findMany: productVariantFindManyMock,
   },
   category: {
     findMany: categoryFindManyMock,
   },
   categoryAttribute: {
     findMany: categoryAttributeFindManyMock,
-  },
-  cart: {
-    findFirst: cartFindFirstMock,
-    create: cartCreateMock,
-    update: cartUpdateMock,
-    upsert: cartUpsertMock,
-    findUnique: cartFindUniqueMock,
-    findUniqueOrThrow: cartFindUniqueOrThrowMock,
-    delete: cartDeleteMock,
-  },
-  cartItem: {
-    findUnique: mock(async () => null as any),
-    upsert: cartItemUpsertMock,
-    findFirst: cartItemFindFirstMock,
-    update: cartItemUpdateMock,
-    delete: cartItemDeleteMock,
-    deleteMany: cartItemDeleteManyMock,
   },
   order: {
     findUnique: orderFindUniqueMock,
@@ -225,30 +196,6 @@ function variantRow(overrides: Record<string, any> = {}) {
   };
 }
 
-function cartItemRow(overrides: Record<string, any> = {}) {
-  return {
-    id: overrides.id ?? "item-1",
-    cartId: overrides.cartId ?? "cart-1",
-    variantId: overrides.variantId ?? "variant-1",
-    variant: overrides.variant ?? variantRow(),
-    quantity: overrides.quantity ?? 2,
-    createdAt: new Date("2026-06-15T10:00:00.000Z"),
-    updatedAt: new Date("2026-06-15T10:00:00.000Z"),
-  };
-}
-
-function cartRow(overrides: Record<string, any> = {}) {
-  return {
-    id: overrides.id ?? "cart-1",
-    cartToken: overrides.cartToken ?? "cart-token-123456789012345",
-    userId: overrides.userId ?? null,
-    expiresAt: overrides.expiresAt ?? new Date("2026-07-15T10:00:00.000Z"),
-    createdAt: new Date("2026-06-15T10:00:00.000Z"),
-    updatedAt: new Date("2026-06-15T10:00:00.000Z"),
-    items: overrides.items ?? [],
-  };
-}
-
 function stockRow(overrides: Record<string, any> = {}) {
   return {
     id: overrides.id ?? "stock-1",
@@ -278,13 +225,6 @@ function shippingRateRow(overrides: Record<string, any> = {}) {
 }
 
 beforeEach(() => {
-  cartFindFirstMock.mockResolvedValue(null);
-  cartCreateMock.mockImplementation(async (args: any) => cartRow(args.data));
-  cartUpdateMock.mockImplementation(async (args: any) => cartRow({ id: args.where.id, ...args.data }));
-  cartUpsertMock.mockImplementation(async (args: any) => cartRow({ cartToken: args.where.cartToken, ...args.create }));
-  cartFindUniqueMock.mockResolvedValue(cartRow({ items: [cartItemRow()] }));
-  cartFindUniqueOrThrowMock.mockResolvedValue(cartRow({ items: [cartItemRow()] }));
-  cartItemFindFirstMock.mockResolvedValue(cartItemRow());
   categoryFindManyMock.mockResolvedValue([
     categoryRow({
       id: "cat-featured",
@@ -304,7 +244,7 @@ beforeEach(() => {
   categoryAttributeFindManyMock.mockResolvedValue([]);
   productCountMock.mockResolvedValue(1);
   productFindManyMock.mockResolvedValue([productRow()]);
-  productVariantFindUniqueMock.mockResolvedValue(variantRow());
+  productVariantFindManyMock.mockResolvedValue([variantRow()]);
   orderFindUniqueMock.mockResolvedValue(null);
   orderFindManyMock.mockResolvedValue([]);
   shippingRateFindFirstMock.mockResolvedValue(shippingRateRow());
@@ -315,22 +255,10 @@ beforeEach(() => {
 
 afterEach(() => {
   for (const fn of [
-    cartFindFirstMock,
-    cartCreateMock,
-    cartUpdateMock,
-    cartUpsertMock,
-    cartFindUniqueMock,
-    cartFindUniqueOrThrowMock,
-    cartDeleteMock,
-    cartItemUpsertMock,
-    cartItemFindFirstMock,
-    cartItemUpdateMock,
-    cartItemDeleteMock,
-    cartItemDeleteManyMock,
     productCountMock,
     productFindManyMock,
     productFindFirstMock,
-    productVariantFindUniqueMock,
+    productVariantFindManyMock,
     categoryFindManyMock,
     categoryAttributeFindManyMock,
     orderCreateMock,
@@ -350,9 +278,9 @@ afterEach(() => {
 
 describe("shop service", () => {
   it("lists only public active categories with product counts", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { categoryService } = await import("../src/modules/shop/services/category.service.ts");
 
-    const result = await shopService.listCategories();
+    const result = await categoryService.listCategories();
 
     expect(categoryFindManyMock).toHaveBeenCalledWith({
       where: { isActive: true },
@@ -403,7 +331,7 @@ describe("shop service", () => {
   });
 
   it("lists common public filters without category attributes by default", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { productService } = await import("../src/modules/shop/services/product.service.ts");
 
     productFindManyMock.mockResolvedValueOnce([
       productRow({
@@ -412,7 +340,7 @@ describe("shop service", () => {
       }),
     ]);
 
-    const result = await shopService.listFilters();
+    const result = await productService.listFilters();
 
     expect(result.categories).toHaveLength(2);
     expect(result.brands).toEqual([
@@ -425,7 +353,7 @@ describe("shop service", () => {
   });
 
   it("lists selected category public filterable attributes", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { productService } = await import("../src/modules/shop/services/product.service.ts");
 
     categoryFindManyMock
       .mockResolvedValueOnce([
@@ -462,7 +390,7 @@ describe("shop service", () => {
       }),
     ]);
 
-    const result = await shopService.listFilters({ categoryId: "cat-parent" });
+    const result = await productService.listFilters({ categoryId: "cat-parent" });
 
     expect(categoryAttributeFindManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -482,7 +410,7 @@ describe("shop service", () => {
   });
 
   it("applies category descendants, price, stock, brand, and dynamic filters to products", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { productService } = await import("../src/modules/shop/services/product.service.ts");
 
     categoryFindManyMock.mockResolvedValueOnce([
       categoryRow({ id: "cat-parent", parentId: null }),
@@ -492,7 +420,7 @@ describe("shop service", () => {
       categoryAttributeRow({ categoryId: "cat-parent", attributeId: "attr-1" }),
     ]);
 
-    await shopService.listProducts({
+    await productService.listProducts({
       categoryId: "cat-parent",
       brandId: "brand-1",
       minPrice: 10,
@@ -532,7 +460,7 @@ describe("shop service", () => {
   });
 
   it("applies multiple categories, brands, and out-of-stock availability to products", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { productService } = await import("../src/modules/shop/services/product.service.ts");
 
     categoryFindManyMock.mockResolvedValueOnce([
       categoryRow({ id: "cat-a", parentId: null }),
@@ -540,7 +468,7 @@ describe("shop service", () => {
       categoryRow({ id: "cat-b", parentId: null }),
     ]);
 
-    await shopService.listProducts({
+    await productService.listProducts({
       categoryIds: "cat-a,cat-b",
       brandIds: "brand-1,brand-2",
       availability: "out-of-stock",
@@ -566,49 +494,13 @@ describe("shop service", () => {
     });
   });
 
-  it("creates a guest cart and maps server-calculated totals", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
-
-    const result = await shopService.getCart({});
-
-    expect(cartUpsertMock).toHaveBeenCalled();
-    expect(result.context.shouldSetCookie).toBe(true);
-    expect(result.cart.itemCount).toBe(2);
-    expect(result.cart.totalAmount).toBe("240.00");
-  });
-
-  it("adds sellable variants to the cart", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
-
-    await shopService.addCartItem({ cartToken: "cart-token-123456789012345" }, {
-      variantId: "variant-1",
-      quantity: 1,
-    });
-
-    expect(cartItemUpsertMock).toHaveBeenCalledWith({
-      where: {
-        cartId_variantId: {
-          cartId: "cart-1",
-          variantId: "variant-1",
-        },
-      },
-      create: {
-        cartId: "cart-1",
-        variantId: "variant-1",
-        quantity: 1,
-      },
-      update: {
-        quantity: { increment: 1 },
-      },
-    });
-  });
-
   it("creates an order and reserves stock during checkout", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { orderService } = await import("../src/modules/shop/services/order.service.ts");
 
-    const result = await shopService.checkout(
-      { cartToken: "cart-token-123456789012345", userId: "user-1" },
+    const result = await orderService.checkout(
+      "user-1",
       {
+        items: [{ variantId: "variant-1", quantity: 2 }],
         customerName: "Customer",
         customerEmail: "customer@example.com",
         customerPhone: null,
@@ -659,11 +551,14 @@ describe("shop service", () => {
         referenceId: "order-1",
       }),
     });
-    expect(cartItemDeleteManyMock).toHaveBeenCalledWith({ where: { cartId: "cart-1" } });
+    expect(productVariantFindManyMock).toHaveBeenCalledWith({
+      where: { id: { in: ["variant-1"] } },
+      include: expect.any(Object),
+    });
   });
 
   it("returns an existing order for a duplicate idempotency key", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
+    const { orderService } = await import("../src/modules/shop/services/order.service.ts");
     orderFindUniqueMock.mockResolvedValueOnce({
       id: "order-existing",
       orderNumber: "ORD-EXISTING",
@@ -671,9 +566,10 @@ describe("shop service", () => {
       currency: "BDT",
     });
 
-    const result = await shopService.checkout(
-      { cartToken: "cart-token-123456789012345", userId: "user-1" },
+    const result = await orderService.checkout(
+      "user-1",
       {
+        items: [{ variantId: "variant-1", quantity: 2 }],
         customerName: "Customer",
         customerEmail: "customer@example.com",
         shippingAddress: { line1: "House 1" },
@@ -687,13 +583,16 @@ describe("shop service", () => {
   });
 
   it("fails checkout when stock cannot be reserved", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
-    inventoryStockFindManyMock.mockResolvedValueOnce([stockRow({ quantityOnHand: 1 })]);
+    const { orderService } = await import("../src/modules/shop/services/order.service.ts");
+    productVariantFindManyMock.mockResolvedValueOnce([
+      variantRow({ inventoryStocks: [stockRow({ quantityOnHand: 1 })] }),
+    ]);
 
     await expect(
-      shopService.checkout(
-        { cartToken: "cart-token-123456789012345" },
+      orderService.checkout(
+        "user-1",
         {
+          items: [{ variantId: "variant-1", quantity: 2 }],
           customerName: "Customer",
           customerEmail: "customer@example.com",
           shippingAddress: { line1: "House 1", city: "Dhaka" },
@@ -702,15 +601,22 @@ describe("shop service", () => {
       ),
     ).rejects.toThrow("Not enough stock");
 
-    expect(cartItemDeleteManyMock).not.toHaveBeenCalled();
+    expect(orderCreateMock).not.toHaveBeenCalled();
+    expect(inventoryStockUpdateMock).not.toHaveBeenCalled();
   });
 
   it("rejects inactive variants", async () => {
-    const { shopService } = await import("../src/modules/shop/shop.service");
-    productVariantFindUniqueMock.mockResolvedValueOnce(variantRow({ isActive: false }));
+    const { orderService } = await import("../src/modules/shop/services/order.service.ts");
+    productVariantFindManyMock.mockResolvedValueOnce([variantRow({ isActive: false })]);
 
     await expect(
-      shopService.addCartItem({}, { variantId: "variant-1", quantity: 1 }),
-    ).rejects.toThrow("Product variant is not available");
+      orderService.checkout("user-1", {
+        items: [{ variantId: "variant-1", quantity: 1 }],
+        customerName: "Customer",
+        customerEmail: "customer@example.com",
+        shippingAddress: { line1: "House 1", city: "Dhaka" },
+      }),
+    ).rejects.toThrow("is no longer available");
+    expect(orderCreateMock).not.toHaveBeenCalled();
   });
 });

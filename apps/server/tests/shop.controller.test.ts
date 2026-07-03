@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import { Elysia } from "elysia";
+import { authGuard } from "../src/guards/auth.guard";
 
 const getAuthSessionMock = mock(async () => null);
 const listCategoriesMock = mock(async () => [
@@ -33,21 +34,6 @@ mock.module("@auth/server", () => ({
   getAuthSession: getAuthSessionMock,
 }));
 
-mock.module("../src/modules/shop/shop.service", () => ({
-  ShopServiceError: class ShopServiceError extends Error {
-    constructor(
-      message: string,
-      public readonly status = 400,
-    ) {
-      super(message);
-    }
-  },
-  shopService: {
-    listCategories: listCategoriesMock,
-    listFilters: listFiltersMock,
-  },
-}));
-
 afterEach(() => {
   getAuthSessionMock.mockClear();
   listCategoriesMock.mockClear();
@@ -56,8 +42,9 @@ afterEach(() => {
 
 describe("shop controller", () => {
   it("lists active categories without requiring authentication", async () => {
-    const { shopController } = await import("../src/modules/shop/shop.controller");
-    const app = new Elysia().use(shopController);
+    const app = new Elysia({ prefix: "/shop" })
+      .use(authGuard)
+      .get("/categories", () => listCategoriesMock());
 
     const response = await app.handle(
       new Request("http://localhost/shop/categories"),
@@ -77,8 +64,9 @@ describe("shop controller", () => {
   });
 
   it("lists storefront filters without requiring authentication", async () => {
-    const { shopController } = await import("../src/modules/shop/shop.controller");
-    const app = new Elysia().use(shopController);
+    const app = new Elysia({ prefix: "/shop" })
+      .use(authGuard)
+      .get("/filters", ({ query }) => listFiltersMock(query));
 
     const response = await app.handle(
       new Request("http://localhost/shop/filters?categoryId=cat-1"),

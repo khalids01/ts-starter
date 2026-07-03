@@ -1,90 +1,19 @@
 import { Elysia } from "elysia";
 import { authGuard } from "@/guards/auth.guard";
 import {
-  AddCartItemDto,
-  CheckoutDto,
-  IdParamDto,
   ListShopFiltersQueryDto,
   ListShopProductsQueryDto,
-  OrderNumberParamDto,
-  OrderLookupQueryDto,
   SlugParamDto,
-  UpdateCartItemDto,
-} from "./shop.dto";
-import { shopService, ShopServiceError } from "./shop.service";
-
-const CART_COOKIE_KEY = "cart_token";
-const CART_COOKIE_TTL_SECONDS = 30 * 24 * 60 * 60;
-
-function parseCookies(cookieHeader: string | null) {
-  const values = new Map<string, string>();
-  if (!cookieHeader) {
-    return values;
-  }
-
-  for (const chunk of cookieHeader.split(";")) {
-    const [rawKey, ...rest] = chunk.split("=");
-    const key = rawKey?.trim();
-    if (!key || rest.length === 0) {
-      continue;
-    }
-    values.set(key, decodeURIComponent(rest.join("=").trim()));
-  }
-
-  return values;
-}
-
-function isCrossSiteRequest(request: Request) {
-  const origin = request.headers.get("origin");
-  if (!origin) {
-    return false;
-  }
-
-  try {
-    const originUrl = new URL(origin);
-    const requestUrl = new URL(request.url);
-    return originUrl.hostname !== requestUrl.hostname;
-  } catch {
-    return false;
-  }
-}
-
-function buildCartCookie(token: string, request: Request) {
-  const isSecure = request.url.startsWith("https://");
-  const sameSite = isCrossSiteRequest(request) ? "None" : "Lax";
-  const parts = [
-    `${CART_COOKIE_KEY}=${encodeURIComponent(token)}`,
-    `Max-Age=${CART_COOKIE_TTL_SECONDS}`,
-    "Path=/",
-    "HttpOnly",
-    `SameSite=${sameSite}`,
-  ];
-
-  if (isSecure || sameSite === "None") {
-    parts.push("Secure");
-  }
-
-  return parts.join("; ");
-}
-
-function cartActor(request: Request, userId?: string) {
-  const cookies = parseCookies(request.headers.get("cookie"));
-  return {
-    userId,
-    cartToken: cookies.get(CART_COOKIE_KEY),
-  };
-}
-
-function setCartCookieIfNeeded(input: {
-  request: Request;
-  set: { headers: Record<string, string | number> };
-  result: { context?: { cartToken: string | null; shouldSetCookie: boolean } };
-}) {
-  const token = input.result.context?.cartToken;
-  if (token && input.result.context?.shouldSetCookie) {
-    input.set.headers["set-cookie"] = buildCartCookie(token, input.request);
-  }
-}
+} from "./dto/product.dto";
+import {
+  CheckoutDto,
+  OrderLookupQueryDto,
+  OrderNumberParamDto,
+} from "./dto/order.dto";
+import { ShopServiceError } from "./lib/errors";
+import { categoryService } from "./services/category.service";
+import { productService } from "./services/product.service";
+import { orderService } from "./services/order.service";
 
 function handleShopError(error: unknown, set: { status?: number | string }) {
   if (error instanceof ShopServiceError) {
@@ -97,6 +26,13 @@ function handleShopError(error: unknown, set: { status?: number | string }) {
   return { message, status: 400 };
 }
 
+function requireUserId(userId: string | undefined) {
+  if (!userId) {
+    throw new ShopServiceError("Authentication required", 401);
+  }
+  return userId;
+}
+
 export const shopController = new Elysia({
   prefix: "/shop",
   detail: {
@@ -106,21 +42,21 @@ export const shopController = new Elysia({
   .use(authGuard)
   .get(
     "/categories",
-    () => shopService.listCategories(),
+    () => categoryService.listCategories(),
     {
       detail: { summary: "List active storefront categories" },
     },
   )
   .get(
     "/shipping-rates",
-    () => shopService.listShippingRates(),
+    () => orderService.listShippingRates(),
     {
       detail: { summary: "List active storefront shipping rates" },
     },
   )
   .get(
     "/filters",
-    ({ query }) => shopService.listFilters(query),
+    ({ query }) => productService.listFilters(query),
     {
       query: ListShopFiltersQueryDto,
       detail: { summary: "List public storefront filters" },
@@ -128,7 +64,7 @@ export const shopController = new Elysia({
   )
   .get(
     "/products",
-    ({ query }) => shopService.listProducts(query),
+    ({ query }) => productService.listProducts(query),
     {
       query: ListShopProductsQueryDto,
       detail: { summary: "List storefront products" },
@@ -138,7 +74,7 @@ export const shopController = new Elysia({
     "/products/:slug",
     async ({ params: { slug }, set }) => {
       try {
-        return await shopService.getProduct(slug);
+        return await productService.getProduct(slug);
       } catch (error) {
         return handleShopError(error, set);
       }
@@ -149,86 +85,10 @@ export const shopController = new Elysia({
     },
   )
   .get(
-    "/cart",
-    async ({ request, userId, set }) => {
-      try {
-        const result = await shopService.getCart(cartActor(request, userId));
-        setCartCookieIfNeeded({ request, set, result });
-        return result.cart;
-      } catch (error) {
-        return handleShopError(error, set);
-      }
-    },
-    {
-      detail: { summary: "Get cart" },
-    },
-  )
-  .post(
-    "/cart/items",
-    async ({ request, userId, body, set }) => {
-      try {
-        const result = await shopService.addCartItem(
-          cartActor(request, userId),
-          body,
-        );
-        setCartCookieIfNeeded({ request, set, result });
-        return result.cart;
-      } catch (error) {
-        return handleShopError(error, set);
-      }
-    },
-    {
-      body: AddCartItemDto,
-      detail: { summary: "Add cart item" },
-    },
-  )
-  .patch(
-    "/cart/items/:id",
-    async ({ request, userId, params: { id }, body, set }) => {
-      try {
-        const result = await shopService.updateCartItem(
-          cartActor(request, userId),
-          id,
-          body,
-        );
-        setCartCookieIfNeeded({ request, set, result });
-        return result.cart;
-      } catch (error) {
-        return handleShopError(error, set);
-      }
-    },
-    {
-      params: IdParamDto,
-      body: UpdateCartItemDto,
-      detail: { summary: "Update cart item" },
-    },
-  )
-  .delete(
-    "/cart/items/:id",
-    async ({ request, userId, params: { id }, set }) => {
-      try {
-        const result = await shopService.removeCartItem(
-          cartActor(request, userId),
-          id,
-        );
-        setCartCookieIfNeeded({ request, set, result });
-        return result.cart;
-      } catch (error) {
-        return handleShopError(error, set);
-      }
-    },
-    {
-      params: IdParamDto,
-      detail: { summary: "Remove cart item" },
-    },
-  )
-  .get(
     "/orders",
-    async ({ request, userId, set }) => {
+    async ({ userId, set }) => {
       try {
-        const result = await shopService.listCustomerOrders(
-          cartActor(request, userId),
-        );
+        const result = await orderService.listCustomerOrders(requireUserId(userId));
         return result;
       } catch (error) {
         return handleShopError(error, set);
@@ -240,10 +100,10 @@ export const shopController = new Elysia({
   )
   .get(
     "/orders/:orderNumber",
-    async ({ request, userId, params: { orderNumber }, query, set }) => {
+    async ({ userId, params: { orderNumber }, query, set }) => {
       try {
-        return await shopService.getCustomerOrder(
-          cartActor(request, userId),
+        return await orderService.getCustomerOrder(
+          requireUserId(userId),
           orderNumber,
           query,
         );
@@ -259,10 +119,9 @@ export const shopController = new Elysia({
   )
   .post(
     "/checkout",
-    async ({ request, userId, body, set }) => {
+    async ({ userId, body, set }) => {
       try {
-        const result = await shopService.checkout(cartActor(request, userId), body);
-        setCartCookieIfNeeded({ request, set, result });
+        const result = await orderService.checkout(requireUserId(userId), body);
         return {
           orderId: result.orderId,
           orderNumber: result.orderNumber,
@@ -275,6 +134,6 @@ export const shopController = new Elysia({
     },
     {
       body: CheckoutDto,
-      detail: { summary: "Create order from cart" },
+      detail: { summary: "Create order from checkout items" },
     },
   );
