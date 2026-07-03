@@ -42,6 +42,9 @@ export const brandConfig = {
   textLogo: "Ecommerce",
   contact: {
     email: "support@example.com",
+    phone: "+880123456789",
+    whatsapp: "+880123456789",
+    supportUrl: "https://example.com/support",
   },
   location: {
     city: "Dhaka",

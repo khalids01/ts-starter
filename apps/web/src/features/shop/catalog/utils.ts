@@ -1,5 +1,5 @@
 import { sortOptions } from "./constants";
-import type { DynamicFilterState,  } from "./types";
+import type { DynamicFilterState } from "./types";
 
 export function parseDynamicFilters(value: string | undefined): DynamicFilterState {
   if (!value?.trim()) {
@@ -48,3 +48,35 @@ export function sortLabel(value: string) {
   return sortOptions.find((option) => option.value === value)?.label ?? "Newest";
 }
 
+export function optionalNumeric(value: string | undefined) {
+  if (!value?.trim()) {
+    return undefined;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export function clampNumber(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function percentBetween(value: number, min: number, max: number) {
+  if (max <= min) {
+    return 0;
+  }
+  return clampNumber(((value - min) / (max - min)) * 100, 0, 100);
+}
+
+export function formatShortMoney(value: number, currency?: string) {
+  if (!currency) {
+    return String(Math.round(value));
+  }
+  const rounded = Math.round(value);
+  if (Math.abs(rounded) >= 1000) {
+    return `${currency} ${new Intl.NumberFormat("en", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(rounded)}`;
+  }
+  return `${currency} ${rounded}`;
+}

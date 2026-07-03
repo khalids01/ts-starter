@@ -85,7 +85,7 @@ function SavedCard(props: { item: SavedProduct; onRemove: () => void }) {
           </p>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <p className="font-semibold">{formatMoney(props.item.price, props.item.currency)}</p>
+          <p className="font-semibold">{formatMoney(props.item.price, props.item.currency as string)}</p>
           <Button type="button" size="icon-sm" variant="ghost" onClick={props.onRemove}>
             <Trash2 className="size-4" />
             <span className="sr-only">Remove saved item</span>

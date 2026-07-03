@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -6,27 +6,27 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
-import type { ShopFilterAttribute, ShopFilters } from "../types";
+import type { ShopFilterAttribute } from "../types";
 import { formatMoney } from "../utils";
 import type { DynamicFilterState } from "./types";
+import { useFilterForm } from "./filter-context";
 import {
   encodeDynamicFilters,
   encodeIdList,
   hasDynamicFilterValue,
   parseIdList,
 } from "./utils";
-import { useFilterForm } from "./filter-context";
-import { useStore } from "@tanstack/react-form";
 
-
-export function FilterPanel(
-) {
- const form  = useFilterForm();
- const isDirty = useStore(form.store, (state) => state.isDirty);
-
+export function FilterPanel() {
+  const form = useFilterForm();
 
   return (
-    <form onSubmit={form.handleSubmit}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.applyFilters();
+      }}
+    >
       <div className="grid gap-3">
         <CategoryFilter />
         <PriceRangeFilter />
@@ -35,13 +35,10 @@ export function FilterPanel(
         <AttributeFilters />
 
         <div className="sticky bottom-0 grid grid-cols-2 gap-2 border-t bg-background/95 py-3 backdrop-blur">
-          <Button type="button" variant="outline" onClick={()=>form.reset()}>
+          <Button type="button" variant="outline" onClick={form.resetFilters}>
             Reset
           </Button>
-          <Button
-            type="submit"
-            disabled={!isDirty}
-          >
+          <Button type="submit" disabled={!form.formState.isDirty}>
             Apply filters
           </Button>
         </div>
@@ -51,10 +48,10 @@ export function FilterPanel(
 }
 
 function CategoryFilter() {
-  const { filters, draftFilters, updateFilters } = useFilterForm();
+  const { filters, values, updateFilters } = useFilterForm();
   const categoryIds = useMemo(
-    () => parseIdList(draftFilters.categoryIds),
-    [draftFilters.categoryIds],
+    () => parseIdList(values.categoryIds),
+    [values.categoryIds],
   );
 
   return (
@@ -79,38 +76,51 @@ function CategoryFilter() {
 }
 
 function PriceRangeFilter() {
-  const { filters, draftFilters, updateFilters,  } = useFilterForm();
+  const { filters, values, updateFilters } = useFilterForm();
+  const priceRange = filters?.priceRange;
+  const minAvailable = priceRange?.min ?? 0;
+  const maxAvailable =
+    priceRange && priceRange.max > priceRange.min ? priceRange.max : 100000;
+  const minPrice = parsePriceValue(values.minPrice, minAvailable);
+  const maxPrice = parsePriceValue(values.maxPrice, maxAvailable);
 
   return (
     <div className="rounded-md border bg-card">
       <FilterHeader title="Price range" />
       <div className="grid gap-3 p-3">
-        <Slider
-
-          step={1}
-          value={[]}
-          onValueChange={(value) => {
-            const [nextMin, nextMax] = Array.isArray(value)
-              ? value
-              : [currentMin, currentMax];
-            updateRange(Number(nextMin), Number(nextMax));
-          }}
-          className="py-3"
-        />
-
+        <div className="rounded-md bg-muted/40 px-3 py-3">
+          <Slider
+            min={minAvailable}
+            max={maxAvailable}
+            step={100}
+            value={[minPrice, maxPrice]}
+            onValueChange={(value) => {
+              const [nextMin, nextMax] = Array.isArray(value)
+                ? value
+                : [minPrice, maxPrice];
+              updateFilters({
+                minPrice: String(nextMin),
+                maxPrice: String(nextMax),
+              });
+            }}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <Input
-
             placeholder="Min"
             type="number"
-            value={String(Math.round(currentMin))}
-            onChange={(event) => updateInput("min", event.target.value)}
+            value={String(Math.round(minPrice))}
+            onChange={(event) =>
+              updateFilters({ minPrice: event.target.value })
+            }
           />
           <Input
             placeholder="Max"
             type="number"
-            value={String(Math.round(currentMax))}
-            onChange={(event) => updateInput("max", event.target.value)}
+            value={String(Math.round(maxPrice))}
+            onChange={(event) =>
+              updateFilters({ maxPrice: event.target.value })
+            }
           />
         </div>
         <p className="text-xs text-muted-foreground">
@@ -122,17 +132,23 @@ function PriceRangeFilter() {
   );
 }
 
-
+function parsePriceValue(value: string, fallback: number) {
+  if (!value.trim()) {
+    return fallback;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
 
 function AvailabilityFilter() {
-  const { filters, draftFilters, updateFilters } = useFilterForm();
+  const { filters, values, updateFilters } = useFilterForm();
   const counts = filters?.availability;
 
   return (
     <div className="rounded-md border bg-card">
       <FilterHeader title="Availability" />
       <RadioGroup
-        value={draftFilters.availability}
+        value={values.availability}
         onValueChange={(availability) => updateFilters({ availability })}
         className="gap-1 p-3"
       >
@@ -151,10 +167,10 @@ function AvailabilityFilter() {
 }
 
 function BrandFilter() {
-  const { filters, draftFilters, updateFilters } = useFilterForm();
+  const { filters, values, updateFilters } = useFilterForm();
   const brandIds = useMemo(
-    () => parseIdList(draftFilters.brandIds),
-    [draftFilters.brandIds],
+    () => parseIdList(values.brandIds),
+    [values.brandIds],
   );
 
   return (
