@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Heart, PackageCheck, ShoppingCart, Smartphone } from "lucide-react";
+import { ArrowLeft, Heart, PackageCheck, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
@@ -215,20 +215,10 @@ function ProductMedia(props: { product: ShopProduct; variant: ShopVariant | null
   );
 }
 
-function FallbackProductVisual(props: { category?: string | null }) {
-  const isGadget = /phone|laptop|gadget|pc|computer/i.test(props.category ?? "");
+function FallbackProductVisual(_props: { category?: string | null }) {
   return (
-    <div
-      className={cn(
-        "grid h-full w-full place-items-center",
-        isGadget ? "bg-cyan-100 dark:bg-cyan-950/40" : "bg-emerald-100 dark:bg-emerald-950/40",
-      )}
-    >
-      {isGadget ? (
-        <Smartphone className="size-14 text-cyan-700" />
-      ) : (
-        <PackageCheck className="size-14 text-emerald-700" />
-      )}
+    <div className="grid h-full w-full place-items-center bg-muted">
+      <PackageCheck className="size-14 text-muted-foreground" />
     </div>
   );
 }

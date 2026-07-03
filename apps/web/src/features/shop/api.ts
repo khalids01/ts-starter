@@ -13,6 +13,8 @@ async function unwrap<T>(request: Promise<{ data?: T; error?: any }>, fallback: 
 export const shopApi = {
   categories: () =>
     unwrap(api.shop.categories.get(), "Failed to load categories"),
+  filters: (query?: Record<string, unknown>) =>
+    unwrap(api.shop.filters.get({ query }), "Failed to load filters"),
   products: (query?: Record<string, unknown>) =>
     unwrap(api.shop.products.get({ query }), "Failed to load products"),
   product: (slug: string) =>

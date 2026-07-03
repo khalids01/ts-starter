@@ -5,15 +5,9 @@ import {
   ArrowRight,
   BadgeCheck,
   PackageCheck,
-  Search,
-  ShoppingCart,
-  Smartphone,
-  Store,
+  Tags,
 } from "lucide-react";
-import { brandConfig } from "@config/brand";
 import { Img } from "@/components/core/img";
-import UserMenu from "@/components/core/user-menu";
-import { ThemeToggle } from "@/components/core/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { queryKeys } from "@/constants/query-keys";
@@ -27,29 +21,29 @@ const asset = (path: string) => `/ecommerce/${path}`;
 
 const fallbackCategories: ShopCategory[] = [
   {
-    id: "fallback-food",
-    name: "Fresh Food",
-    slug: "food",
-    description: "Fruits, honey, packaged food, and daily essentials.",
+    id: "fallback-featured",
+    name: "Featured Products",
+    slug: "featured-products",
+    description: "Curated products ready for browsing and checkout.",
     iconUrl: asset("icons/groceries.png"),
     isFeatured: true,
     sortOrder: 1,
   },
   {
-    id: "fallback-gadgets",
-    name: "Gadgets",
-    slug: "gadgets",
-    description: "Phones, laptops, accessories, and smart devices.",
+    id: "fallback-new",
+    name: "New Arrivals",
+    slug: "new-arrivals",
+    description: "Recently added products and variants.",
     iconUrl: asset("icons/top-rated.png"),
     isFeatured: true,
     sortOrder: 2,
   },
   {
-    id: "fallback-mango",
-    name: "Mango",
-    slug: "mango",
-    description: "Seasonal batches with origin and pack-size choices.",
-    iconUrl: asset("icons/mango.png"),
+    id: "fallback-popular",
+    name: "Popular Picks",
+    slug: "popular-picks",
+    description: "Products customers often view and save.",
+    iconUrl: asset("icons/handle-with-care.png"),
     isFeatured: false,
     sortOrder: 3,
   },
@@ -58,7 +52,7 @@ const fallbackCategories: ShopCategory[] = [
 const promises = [
   {
     title: "Secure packaging",
-    description: "Fresh food and fragile gadgets packed with care.",
+    description: "Products are prepared and packed with care.",
     icon: asset("icons/handle-with-care.png"),
   },
   {
@@ -68,7 +62,7 @@ const promises = [
   },
   {
     title: "Quality checked",
-    description: "Batch-aware food inventory and SKU-aware gadget stock.",
+    description: "Inventory, variants, and prices stay clear before checkout.",
     icon: asset("icons/top-rated.png"),
   },
   {
@@ -80,22 +74,22 @@ const promises = [
 
 const fallbackProducts = [
   {
-    name: "Rajshahi Mango Box",
-    category: "Fresh Food",
+    name: "Featured Product",
+    category: "Featured Products",
     imageUrl: asset("images/slider1.jpg"),
     price: "BDT 1,250",
-    badge: "Seasonal",
+    badge: "Featured",
   },
   {
-    name: "Raw Honey Pack",
-    category: "Food",
+    name: "Catalog Item",
+    category: "New Arrivals",
     imageUrl: asset("images/slider2.jpg"),
     price: "BDT 650",
-    badge: "Store brand",
+    badge: "New",
   },
   {
-    name: "Smartphone Starter SKU",
-    category: "Gadgets",
+    name: "Variant Product",
+    category: "Popular Picks",
     imageUrl: null,
     price: "BDT 24,500",
     badge: "Variant ready",
@@ -130,61 +124,6 @@ export const Home = () => {
   );
 };
 
-function LandingHeader(props: { categories: ShopCategory[] }) {
-  return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 md:px-6">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="grid size-9 place-items-center rounded-md bg-emerald-600 text-sm font-bold text-white">
-            {brandConfig.textLogo.slice(0, 1)}
-          </span>
-          <span className="hidden text-lg font-semibold sm:inline">
-            {brandConfig.textLogo}
-          </span>
-        </Link>
-
-        <nav className="hidden min-w-0 flex-1 items-center gap-5 text-sm font-medium lg:flex">
-          <Link to="/shop" className="text-muted-foreground transition-colors hover:text-foreground">
-            Shop
-          </Link>
-          {props.categories.slice(0, 5).map((category) => (
-            <a
-              key={category.id}
-              href={`/shop?categoryId=${encodeURIComponent(category.id)}`}
-              className="truncate text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {category.name}
-            </a>
-          ))}
-        </nav>
-
-        <form action="/shop" className="hidden flex-1 md:block lg:max-w-xs">
-          <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              name="search"
-              placeholder="Search mango, honey, phone..."
-              className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none transition focus:border-foreground"
-            />
-          </label>
-        </form>
-
-        <div className="ml-auto flex items-center gap-2">
-          <Link to="/cart" className={buttonVariants({ variant: "outline", size: "icon" })}>
-            <ShoppingCart className="size-4" />
-            <span className="sr-only">Cart</span>
-          </Link>
-          <Link to="/admin/overview" className={buttonVariants({ variant: "outline", size: "sm", className: "hidden sm:inline-flex" })}>
-            Admin
-          </Link>
-          <ThemeToggle />
-          <UserMenu />
-        </div>
-      </div>
-    </header>
-  );
-}
-
 function Hero(props: { categories: ShopCategory[] }) {
   return (
     <section className="relative overflow-hidden">
@@ -202,14 +141,14 @@ function Hero(props: { categories: ShopCategory[] }) {
       <div className="relative mx-auto grid min-h-[660px] w-full max-w-7xl content-center gap-8 px-4 py-12 md:px-6 lg:grid-cols-[1fr_360px]">
         <div className="max-w-3xl">
           <Badge variant="secondary" className="mb-5 border bg-background/80">
-            Fresh food + gadget store
+            Dynamic product catalog
           </Badge>
           <h1 className="text-4xl font-semibold leading-tight tracking-normal sm:text-5xl lg:text-6xl">
-            Fresh food and sharp gadgets delivered from one simple shop.
+            Products, categories, and variants ready for a complete storefront.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Browse seasonal mango, honey, phones, laptops, and daily essentials
-            with clear prices, stock-aware variants, and quick checkout.
+            Browse active products with clear prices, category-aware filters,
+            stock-aware variants, saved items, cart, and checkout.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link to="/shop" className={buttonVariants({ size: "lg", className: "border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800 dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400" })}>
@@ -224,15 +163,15 @@ function Hero(props: { categories: ShopCategory[] }) {
 
         <div className="grid gap-3 self-end">
           <PromoTile
-            title="Seasonal food batches"
-            description="Expiry, origin, and pack-size data are already modeled."
+            title="Category properties"
+            description="Filterable attributes can be attached to categories and products."
             imageUrl={asset("images/slider2.jpg")}
             href="/shop"
           />
           <PromoTile
-            title="Gadget SKU variants"
-            description="Color, RAM, storage, barcode, price, and stock per variant."
-            icon={<Smartphone className="size-8 text-cyan-700" />}
+            title="Variant inventory"
+            description="Options, prices, stock, barcodes, and images are variant-aware."
+            icon={<Tags className="size-8 text-cyan-700" />}
             href="/shop"
           />
         </div>
@@ -313,8 +252,8 @@ function CategoryBrowse(props: { categories: ShopCategory[]; loading: boolean })
     <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-12 md:px-6">
       <SectionHeader
         eyebrow="Browse categories"
-        title="Fresh food and technical products by category"
-        description="Shop by the categories available in this store, from seasonal food to phones, PCs, laptops, and accessories."
+        title="Products organized by category"
+        description="Shop by the categories available in this store, with filters and product data driven by the catalog."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -332,7 +271,7 @@ function CategoryBrowse(props: { categories: ShopCategory[]; loading: boolean })
             </div>
             <h3 className="font-medium">{category.name}</h3>
             <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">
-              {category.description ?? categoryCopy(category.slug)}
+              {category.description ?? "Browse products in this category."}
             </p>
           </a>
         ))}
@@ -449,16 +388,16 @@ function MixedCatalogPromo() {
   return (
     <section className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-12 md:px-6 lg:grid-cols-2">
       <CatalogBand
-        title="Food commerce that understands batches"
-        description="Mango, honey, fruit, and packaged food can carry origin, expiry, supplier, and pack-size details without custom code per product."
+        title="Flexible category modeling"
+        description="Create categories with filterable properties so each catalog can expose the right buying information."
         icon={<PackageCheck className="size-8 text-emerald-700" />}
         href="/shop"
         tone="emerald"
       />
       <CatalogBand
-        title="Gadget catalogs with proper SKU options"
-        description="Phones, laptops, and accessories can use brands, variant specs, compare-at prices, weights, images, and searchable SKU data."
-        icon={<Smartphone className="size-8 text-cyan-700" />}
+        title="Variant-ready product pages"
+        description="Products can use brands, compare-at prices, weights, images, searchable SKUs, and stock-aware variants."
+        icon={<Tags className="size-8 text-cyan-700" />}
         href="/shop"
         tone="cyan"
       />
@@ -495,58 +434,6 @@ function CatalogBand(props: {
   );
 }
 
-function LandingFooter(props: { categories: ShopCategory[] }) {
-  return (
-    <footer className="border-t bg-background">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr_1fr] md:px-6">
-        <div>
-          <Link to="/" className="text-xl font-semibold">{brandConfig.name}</Link>
-          <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-            {brandConfig.description}
-          </p>
-          <div className="mt-5 flex gap-2 text-sm text-muted-foreground">
-            <Store className="size-4" />
-            <span>{brandConfig.location.city ?? "Dhaka"}, {brandConfig.location.country ?? "Bangladesh"}</span>
-          </div>
-        </div>
-
-        <FooterList title="Shop">
-          <Link to="/shop">All products</Link>
-          <Link to="/cart">Cart</Link>
-          <Link to="/checkout">Checkout</Link>
-        </FooterList>
-
-        <FooterList title="Categories">
-          {props.categories.slice(0, 5).map((category) => (
-            <a key={category.id} href={`/shop?categoryId=${encodeURIComponent(category.id)}`}>
-              {category.name}
-            </a>
-          ))}
-        </FooterList>
-
-        <div>
-          <h3 className="font-medium">Contact</h3>
-          <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-            {brandConfig.contact.email ? <a href={`mailto:${brandConfig.contact.email}`}>{brandConfig.contact.email}</a> : null}
-            {brandConfig.contact.phone ? <a href={`tel:${brandConfig.contact.phone}`}>{brandConfig.contact.phone}</a> : null}
-            {brandConfig.contact.whatsapp ? <a href={brandConfig.contact.whatsapp}>WhatsApp</a> : null}
-          </div>
-        </div>
-      </div>
-      <div className="border-t py-5">
-        <div className="mx-auto flex w-full max-w-7xl flex-col justify-between gap-3 px-4 text-sm text-muted-foreground md:flex-row md:px-6">
-          <p>© {new Date().getFullYear()} {brandConfig.name}. All rights reserved.</p>
-          <div className="flex gap-5">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Shipping</a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 function SectionHeader(props: {
   eyebrow: string;
   title: string;
@@ -575,52 +462,14 @@ function CategoryIcon(props: { category: ShopCategory }) {
   );
 }
 
-function FallbackProductVisual(props: { category?: string | null }) {
-  const isGadget = /phone|laptop|gadget|pc|computer/i.test(props.category ?? "");
+function FallbackProductVisual(_props: { category?: string | null }) {
   return (
-    <div className={cn(
-      "grid h-full w-full place-items-center",
-      isGadget ? "bg-cyan-100 dark:bg-cyan-950/40" : "bg-emerald-100 dark:bg-emerald-950/40",
-    )}>
-      {isGadget ? (
-        <Smartphone className="size-12 text-cyan-700" />
-      ) : (
-        <PackageCheck className="size-12 text-emerald-700" />
-      )}
-    </div>
-  );
-}
-
-function FooterList(props: { title: string; children: ReactNode }) {
-  return (
-    <div>
-      <h3 className="font-medium">{props.title}</h3>
-      <div className="mt-4 grid gap-2 text-sm text-muted-foreground [&_a:hover]:text-foreground">
-        {props.children}
-      </div>
+    <div className="grid h-full w-full place-items-center bg-muted">
+      <PackageCheck className="size-12 text-muted-foreground" />
     </div>
   );
 }
 
 function categoryFallbackIcon(slug: string) {
-  if (/mango/i.test(slug)) {
-    return asset("icons/mango.png");
-  }
-  if (/food|fruit|honey|packaged/i.test(slug)) {
-    return asset("icons/groceries.png");
-  }
-  if (/phone|laptop|gadget|pc|computer/i.test(slug)) {
-    return asset("icons/top-rated.png");
-  }
-  return null;
-}
-
-function categoryCopy(slug: string) {
-  if (/food|fruit|mango|honey/i.test(slug)) {
-    return "Fresh, batch-aware products with pack-size and expiry details.";
-  }
-  if (/phone|laptop|gadget|pc|computer/i.test(slug)) {
-    return "Brand, SKU, and variant-ready products for gadget shops.";
-  }
-  return "Reusable catalog setup for physical ecommerce products.";
+  return slug ? asset("icons/top-rated.png") : null;
 }

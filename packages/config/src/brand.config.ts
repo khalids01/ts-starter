@@ -38,7 +38,7 @@ export type BrandConfig = {
 export const brandConfig = {
   slug: "ecommerce-starter",
   name: "Ecommerce Starter",
-  description: "A flexible ecommerce starter for food, gadgets, and mixed catalogs.",
+  description: "A flexible ecommerce starter for dynamic product catalogs.",
   textLogo: "Ecommerce",
   contact: {
     email: "support@example.com",
@@ -55,6 +55,6 @@ export const brandConfig = {
   },
   seo: {
     title: "Ecommerce Starter",
-    description: "A flexible ecommerce starter for food, gadgets, and mixed catalogs.",
+    description: "A flexible ecommerce starter for dynamic product catalogs.",
   },
 } satisfies BrandConfig;

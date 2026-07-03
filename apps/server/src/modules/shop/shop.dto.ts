@@ -17,7 +17,20 @@ export const ListShopProductsQueryDto = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20 })),
   search: t.Optional(t.String()),
   categoryId: t.Optional(t.String()),
+  categoryIds: t.Optional(t.String()),
   brandId: t.Optional(t.String()),
+  brandIds: t.Optional(t.String()),
+  minPrice: t.Optional(t.Numeric({ minimum: 0 })),
+  maxPrice: t.Optional(t.Numeric({ minimum: 0 })),
+  inStock: t.Optional(t.Boolean()),
+  availability: t.Optional(t.String()),
+  sort: t.Optional(t.String()),
+  filters: t.Optional(t.String()),
+});
+
+export const ListShopFiltersQueryDto = t.Object({
+  categoryId: t.Optional(t.String()),
+  categoryIds: t.Optional(t.String()),
 });
 
 export const AddCartItemDto = t.Object({
@@ -68,6 +81,7 @@ export const CheckoutDto = t.Object({
 });
 
 export type ListShopProductsQuery = typeof ListShopProductsQueryDto.static;
+export type ListShopFiltersQuery = typeof ListShopFiltersQueryDto.static;
 export type AddCartItemInput = typeof AddCartItemDto.static;
 export type UpdateCartItemInput = typeof UpdateCartItemDto.static;
 export type CheckoutInput = typeof CheckoutDto.static;

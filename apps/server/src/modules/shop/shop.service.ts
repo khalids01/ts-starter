@@ -2,6 +2,7 @@ import prisma, { type Prisma } from "@db/server";
 import type {
   AddCartItemInput,
   CheckoutInput,
+  ListShopFiltersQuery,
   ListShopProductsQuery,
   OrderLookupQuery,
   UpdateCartItemInput,
@@ -28,6 +29,13 @@ type CartContext = {
   cartId: string;
   cartToken: string | null;
   shouldSetCookie: boolean;
+};
+
+type ParsedDynamicFilter = {
+  valueIds?: string[];
+  min?: number;
+  max?: number;
+  boolean?: boolean;
 };
 
 function normalizePagination(page?: number, limit?: number) {
@@ -78,6 +86,14 @@ function decimalToNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function optionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return undefined;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function money(value: number) {
   return value.toFixed(2);
 }
@@ -91,8 +107,90 @@ function nullableTrimmed(value: string | null | undefined) {
   return trimmed ? trimmed : null;
 }
 
+function csvValues(value: string | null | undefined) {
+  return [
+    ...new Set(
+      (value ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item && item !== "all"),
+    ),
+  ];
+}
+
+function selectedCategoryIds(query: Pick<ListShopProductsQuery, "categoryId" | "categoryIds">) {
+  const ids = csvValues(query.categoryIds);
+  const legacyId = nullableTrimmed(query.categoryId);
+  if (legacyId && legacyId !== "all") {
+    ids.push(legacyId);
+  }
+  return [...new Set(ids)];
+}
+
+function selectedBrandIds(query: Pick<ListShopProductsQuery, "brandId" | "brandIds">) {
+  const ids = csvValues(query.brandIds);
+  const legacyId = nullableTrimmed(query.brandId);
+  if (legacyId && legacyId !== "all") {
+    ids.push(legacyId);
+  }
+  return [...new Set(ids)];
+}
+
 function normalizedEmail(value: string | null | undefined) {
   return nullableTrimmed(value)?.toLowerCase() ?? null;
+}
+
+function parseDynamicFilters(value: string | undefined) {
+  if (!value?.trim()) {
+    return {} as Record<string, ParsedDynamicFilter>;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    const output: Record<string, ParsedDynamicFilter> = {};
+    for (const [attributeId, raw] of Object.entries(parsed)) {
+      if (!attributeId) {
+        continue;
+      }
+      if (Array.isArray(raw)) {
+        const valueIds = raw.map(String).filter(Boolean);
+        if (valueIds.length > 0) {
+          output[attributeId] = { valueIds };
+        }
+        continue;
+      }
+      if (typeof raw === "string") {
+        if (raw.trim()) {
+          output[attributeId] = { valueIds: [raw.trim()] };
+        }
+        continue;
+      }
+      if (typeof raw === "boolean") {
+        output[attributeId] = { boolean: raw };
+        continue;
+      }
+      if (raw && typeof raw === "object") {
+        const input = raw as Record<string, unknown>;
+        const valueIds = Array.isArray(input.valueIds)
+          ? input.valueIds.map(String).filter(Boolean)
+          : undefined;
+        const min = optionalNumber(input.min);
+        const max = optionalNumber(input.max);
+        const boolean =
+          typeof input.boolean === "boolean" ? input.boolean : undefined;
+        if (valueIds?.length || min !== undefined || max !== undefined || boolean !== undefined) {
+          output[attributeId] = { valueIds, min, max, boolean };
+        }
+      }
+    }
+    return output;
+  } catch {
+    return {};
+  }
 }
 
 function normalizedCheckoutKey(actor: ShopActor, context: CartContext, key?: string) {
@@ -165,6 +263,18 @@ function productInclude() {
     },
     highlights: {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    },
+    attributeAssignments: {
+      include: {
+        attribute: {
+          select: { id: true, name: true, slug: true, type: true, sortOrder: true },
+        },
+        attributeValue: true,
+        values: {
+          include: { attributeValue: true },
+        },
+      },
+      orderBy: [{ createdAt: "asc" }],
     },
   } satisfies Prisma.ProductInclude;
 }
@@ -264,6 +374,41 @@ function mapVariant(row: any) {
 }
 
 function mapProduct(row: any) {
+  const specs = [...(row.attributeAssignments ?? [])]
+    .sort((left: any, right: any) => {
+      const leftOrder = left.attribute?.sortOrder ?? 0;
+      const rightOrder = right.attribute?.sortOrder ?? 0;
+      return leftOrder - rightOrder;
+    })
+    .map((assignment: any) => {
+      const value =
+        assignment.displayValue ??
+        assignment.attributeValue?.label ??
+        assignment.values
+          ?.map((entry: any) => entry.attributeValue?.label)
+          .filter(Boolean)
+          .join(", ") ??
+        assignment.rawText ??
+        decimalToString(assignment.rawNumber) ??
+        (typeof assignment.rawBoolean === "boolean"
+          ? assignment.rawBoolean
+            ? "Yes"
+            : "No"
+          : null) ??
+        toIso(assignment.rawDate);
+      if (!assignment.attribute || !value) {
+        return null;
+      }
+      return {
+        attributeId: assignment.attributeId,
+        name: assignment.attribute.name,
+        slug: assignment.attribute.slug,
+        value,
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 5);
+
   return {
     id: row.id,
     name: row.name,
@@ -293,6 +438,7 @@ function mapProduct(row: any) {
       imageUrl: highlight.imageUrl,
       sortOrder: highlight.sortOrder,
     })),
+    specs,
     updatedAt: toIso(row.updatedAt),
   };
 }
@@ -596,42 +742,457 @@ function shippingAmountForRate(rate: any, subtotal: number) {
   return decimalToNumber(rate.amount);
 }
 
-export const shopService = {
-  async listCategories() {
-    const categories = await prisma.category.findMany({
-      where: {
-        isActive: true,
+async function categoryIdsForSelection(selectedIds: string[]) {
+  if (selectedIds.length === 0) {
+    return undefined;
+  }
+
+  const categories = await prisma.category.findMany({
+    where: { isActive: true },
+    select: { id: true, parentId: true },
+  });
+  const activeIds = new Set(categories.map((category) => category.id));
+  const validSelectedIds = selectedIds.filter((id) => activeIds.has(id));
+  if (validSelectedIds.length === 0) {
+    return [] as string[];
+  }
+
+  const byParent = new Map<string | null, string[]>();
+  for (const category of categories) {
+    const list = byParent.get(category.parentId ?? null) ?? [];
+    list.push(category.id);
+    byParent.set(category.parentId ?? null, list);
+  }
+
+  const ids = new Set<string>(validSelectedIds);
+  const queue = [...validSelectedIds];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const childId of byParent.get(current) ?? []) {
+      if (!ids.has(childId)) {
+        ids.add(childId);
+        queue.push(childId);
+      }
+    }
+  }
+  return [...ids];
+}
+
+function variantPriceWhere(query: ListShopProductsQuery) {
+  const price: Prisma.DecimalFilter = {};
+  if (query.minPrice !== undefined) {
+    price.gte = query.minPrice;
+  }
+  if (query.maxPrice !== undefined) {
+    price.lte = query.maxPrice;
+  }
+  return Object.keys(price).length > 0 ? price : undefined;
+}
+
+async function publicFilterableAttributes(categoryId?: string | null) {
+  const selectedId = nullableTrimmed(categoryId);
+  if (!selectedId || selectedId === "all") {
+    return [] as any[];
+  }
+
+  return prisma.categoryAttribute.findMany({
+    where: {
+      categoryId: selectedId,
+      filterable: true,
+      attribute: { filterable: true },
+    },
+    include: {
+      attribute: {
+        include: {
+          values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] },
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        imageUrl: true,
-        iconUrl: true,
-        parentId: true,
-        isFeatured: true,
-        sortOrder: true,
-        _count: {
-          select: {
-            products: {
-              where: {
-                status: "active",
-                isActive: true,
-                variants: { some: { isActive: true } },
+    },
+    orderBy: [{ sortOrder: "asc" }],
+  });
+}
+
+function dynamicFilterWhere(
+  filterableAttributes: any[],
+  filters: Record<string, ParsedDynamicFilter>,
+) {
+  const publicAttributes = new Map(
+    filterableAttributes.map((row) => [row.attributeId, row]),
+  );
+  const output: Prisma.ProductWhereInput[] = [];
+
+  for (const [attributeId, filter] of Object.entries(filters)) {
+    const categoryAttribute = publicAttributes.get(attributeId);
+    if (!categoryAttribute) {
+      continue;
+    }
+
+    const valueIds = filter.valueIds?.filter(Boolean) ?? [];
+    if (valueIds.length > 0) {
+      if (categoryAttribute.scope === "variant") {
+        output.push({
+          variants: {
+            some: {
+              isActive: true,
+              attributeValues: {
+                some: { attributeValueId: { in: valueIds } },
               },
+            },
+          },
+        });
+      } else {
+        output.push({
+          attributeAssignments: {
+            some: {
+              attributeId,
+              OR: [
+                { attributeValueId: { in: valueIds } },
+                { values: { some: { attributeValueId: { in: valueIds } } } },
+              ],
+            },
+          },
+        });
+      }
+      continue;
+    }
+
+    if (typeof filter.boolean === "boolean" && categoryAttribute.scope === "product") {
+      output.push({
+        attributeAssignments: {
+          some: { attributeId, rawBoolean: filter.boolean },
+        },
+      });
+      continue;
+    }
+
+    if (
+      categoryAttribute.scope === "product" &&
+      (filter.min !== undefined || filter.max !== undefined)
+    ) {
+      const rawNumber: Prisma.DecimalNullableFilter = {};
+      if (filter.min !== undefined) {
+        rawNumber.gte = filter.min;
+      }
+      if (filter.max !== undefined) {
+        rawNumber.lte = filter.max;
+      }
+      output.push({
+        attributeAssignments: {
+          some: { attributeId, rawNumber },
+        },
+      });
+    }
+  }
+
+  return output;
+}
+
+async function buildProductWhere(query: ListShopProductsQuery = {}) {
+  const where: Prisma.ProductWhereInput = {
+    status: "active",
+    isActive: true,
+    category: { isActive: true },
+    OR: [{ brandId: null }, { brand: { isActive: true } }],
+    variants: { some: { isActive: true } },
+  };
+
+  const and: Prisma.ProductWhereInput[] = [];
+  if (query.search?.trim()) {
+    const search = query.search.trim();
+    and.push({
+      OR: [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { searchKeywords: { has: search } },
+        { variants: { some: { sku: { contains: search, mode: "insensitive" } } } },
+      ],
+    });
+  }
+
+  const selectedCategories = selectedCategoryIds(query);
+  const categoryIds = await categoryIdsForSelection(selectedCategories);
+  if (categoryIds) {
+    and.push({ categoryId: { in: categoryIds } });
+  }
+  const brandIds = selectedBrandIds(query);
+  if (brandIds.length > 0) {
+    and.push({ brandId: { in: brandIds } });
+  }
+
+  const price = variantPriceWhere(query);
+  if (price) {
+    and.push({ variants: { some: { isActive: true, price } } });
+  }
+
+  const availability = query.availability ?? (query.inStock === true ? "in-stock" : query.inStock === false ? "out-of-stock" : "all");
+  if (availability === "in-stock" || availability === "out-of-stock") {
+    const stockWhere = {
+      variants: {
+        some: {
+          isActive: true,
+          inventoryStocks: { some: { quantityOnHand: { gt: 0 } } },
+        },
+      },
+    };
+    and.push(availability === "in-stock" ? stockWhere : { NOT: stockWhere });
+  }
+
+  const dynamicFilters = parseDynamicFilters(query.filters);
+  if (selectedCategories.length === 1 && Object.keys(dynamicFilters).length > 0) {
+    const filterableAttributes = await publicFilterableAttributes(selectedCategories[0]);
+    and.push(...dynamicFilterWhere(filterableAttributes, dynamicFilters));
+  }
+
+  if (and.length > 0) {
+    where.AND = and;
+  }
+
+  return where;
+}
+
+function productOrderBy(sort?: string): Prisma.ProductOrderByWithRelationInput[] {
+  switch (sort) {
+    case "name_asc":
+      return [{ name: "asc" }];
+    case "name_desc":
+      return [{ name: "desc" }];
+    case "oldest":
+      return [{ updatedAt: "asc" }];
+    case "featured":
+      return [{ isFeatured: "desc" }, { updatedAt: "desc" }];
+    case "newest":
+    default:
+      return [{ isFeatured: "desc" }, { updatedAt: "desc" }];
+  }
+}
+
+async function listPublicCategories() {
+  const categories = await prisma.category.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      imageUrl: true,
+      iconUrl: true,
+      parentId: true,
+      isFeatured: true,
+      sortOrder: true,
+      _count: {
+        select: {
+          products: {
+            where: {
+              status: "active",
+              isActive: true,
+              variants: { some: { isActive: true } },
             },
           },
         },
       },
-      orderBy: [
-        { isFeatured: "desc" },
-        { sortOrder: "asc" },
-        { name: "asc" },
-      ],
-    });
+    },
+    orderBy: [
+      { isFeatured: "desc" },
+      { sortOrder: "asc" },
+      { name: "asc" },
+    ],
+  });
 
-    return categories.map(mapCategory);
+  return categories.map(mapCategory);
+}
+
+function productHasStock(product: any) {
+  return (product.variants ?? []).some((variant: any) =>
+    (variant.inventoryStocks ?? []).some(
+      (stock: any) => stock.quantityOnHand > stock.quantityReserved,
+    ),
+  );
+}
+
+function defaultVariantPrice(product: any) {
+  const variant = (product.variants ?? [])[0];
+  return variant ? decimalToNumber(variant.price) : null;
+}
+
+function mapFilterAttribute(row: any, products: any[]) {
+  const valueCounts = new Map<string, number>();
+  let min: number | null = null;
+  let max: number | null = null;
+  let trueCount = 0;
+  let falseCount = 0;
+
+  for (const product of products) {
+    if (row.scope === "variant") {
+      for (const variant of product.variants ?? []) {
+        for (const entry of variant.attributeValues ?? []) {
+          if (entry.attributeValue?.attributeId === row.attributeId) {
+            valueCounts.set(
+              entry.attributeValueId,
+              (valueCounts.get(entry.attributeValueId) ?? 0) + 1,
+            );
+          }
+        }
+      }
+      continue;
+    }
+
+    const assignment = (product.attributeAssignments ?? []).find(
+      (item: any) => item.attributeId === row.attributeId,
+    );
+    if (!assignment) {
+      continue;
+    }
+    if (assignment.attributeValueId) {
+      valueCounts.set(
+        assignment.attributeValueId,
+        (valueCounts.get(assignment.attributeValueId) ?? 0) + 1,
+      );
+    }
+    for (const entry of assignment.values ?? []) {
+      valueCounts.set(
+        entry.attributeValueId,
+        (valueCounts.get(entry.attributeValueId) ?? 0) + 1,
+      );
+    }
+    const numberValue = optionalNumber(assignment.rawNumber);
+    if (numberValue !== undefined) {
+      min = min === null ? numberValue : Math.min(min, numberValue);
+      max = max === null ? numberValue : Math.max(max, numberValue);
+    }
+    if (typeof assignment.rawBoolean === "boolean") {
+      if (assignment.rawBoolean) {
+        trueCount += 1;
+      } else {
+        falseCount += 1;
+      }
+    }
+  }
+
+  return {
+    id: row.id,
+    attributeId: row.attributeId,
+    name: row.attribute.name,
+    slug: row.attribute.slug,
+    type: row.attribute.type,
+    scope: row.scope,
+    inputType: row.inputType,
+    unit: row.unit,
+    sortOrder: row.sortOrder,
+    values: (row.attribute.values ?? []).map((value: any) => ({
+      id: value.id,
+      attributeId: value.attributeId,
+      value: value.value,
+      label: value.label,
+      sortOrder: value.sortOrder,
+      productCount: valueCounts.get(value.id) ?? 0,
+    })),
+    range: min !== null && max !== null ? { min, max } : null,
+    booleanCounts: trueCount || falseCount ? { true: trueCount, false: falseCount } : null,
+  };
+}
+
+export const shopService = {
+  async listCategories() {
+    return listPublicCategories();
+  },
+
+  async listFilters(query: ListShopFiltersQuery = {}) {
+    const selectedCategories = selectedCategoryIds(query);
+    const singleSelectedCategoryId = selectedCategories.length === 1 ? selectedCategories[0] : undefined;
+    const productWhere = await buildProductWhere({
+      categoryIds: selectedCategories.join(","),
+    });
+    const [categories, products, attributes] = await Promise.all([
+      listPublicCategories(),
+      prisma.product.findMany({
+        where: productWhere,
+        include: {
+          brand: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true,
+              isActive: true,
+            },
+          },
+          variants: {
+            where: { isActive: true },
+            include: {
+              inventoryStocks: {
+                where: { location: { isActive: true } },
+                select: {
+                  quantityOnHand: true,
+                  quantityReserved: true,
+                },
+              },
+              attributeValues: {
+                include: { attributeValue: true },
+              },
+            },
+            orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+          },
+          attributeAssignments: {
+            include: {
+              attributeValue: true,
+              values: { include: { attributeValue: true } },
+            },
+          },
+        },
+      }),
+      publicFilterableAttributes(singleSelectedCategoryId),
+    ]);
+
+    const brandCounts = new Map<string, { brand: any; productCount: number }>();
+    const prices: number[] = [];
+    let inStock = 0;
+    let outOfStock = 0;
+    let currency = "BDT";
+
+    for (const product of products) {
+      if (product.brand?.isActive) {
+        const existing = brandCounts.get(product.brand.id);
+        brandCounts.set(product.brand.id, {
+          brand: product.brand,
+          productCount: (existing?.productCount ?? 0) + 1,
+        });
+      }
+      const price = defaultVariantPrice(product);
+      if (price !== null) {
+        prices.push(price);
+        currency = product.variants[0]?.currency ?? currency;
+      }
+      if (productHasStock(product)) {
+        inStock += 1;
+      } else {
+        outOfStock += 1;
+      }
+    }
+
+    return {
+      categories,
+      brands: [...brandCounts.values()]
+        .sort((left, right) => left.brand.name.localeCompare(right.brand.name))
+        .map(({ brand, productCount }) => ({
+          id: brand.id,
+          name: brand.name,
+          slug: brand.slug,
+          logoUrl: brand.logoUrl,
+          productCount,
+        })),
+      priceRange: {
+        min: prices.length ? Math.min(...prices) : 0,
+        max: prices.length ? Math.max(...prices) : 0,
+        currency,
+      },
+      availability: {
+        inStock,
+        outOfStock,
+      },
+      attributes: attributes.map((attribute) => mapFilterAttribute(attribute, products)),
+    };
   },
 
   async listShippingRates() {
@@ -644,35 +1205,7 @@ export const shopService = {
 
   async listProducts(query: ListShopProductsQuery = {}) {
     const { limit, requestedPage } = normalizePagination(query.page, query.limit);
-    const where: Prisma.ProductWhereInput = {
-      status: "active",
-      isActive: true,
-      category: { isActive: true },
-      OR: [{ brandId: null }, { brand: { isActive: true } }],
-      variants: { some: { isActive: true } },
-    };
-
-    const and: Prisma.ProductWhereInput[] = [];
-    if (query.search?.trim()) {
-      const search = query.search.trim();
-      and.push({
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { description: { contains: search, mode: "insensitive" } },
-          { searchKeywords: { has: search } },
-          { variants: { some: { sku: { contains: search, mode: "insensitive" } } } },
-        ],
-      });
-    }
-    if (query.categoryId) {
-      and.push({ categoryId: query.categoryId });
-    }
-    if (query.brandId) {
-      and.push({ brandId: query.brandId });
-    }
-    if (and.length > 0) {
-      where.AND = and;
-    }
+    const where = await buildProductWhere(query);
 
     const total = await prisma.product.count({ where });
     const pages = Math.max(1, Math.ceil(total / limit));
@@ -680,7 +1213,7 @@ export const shopService = {
     const items = await prisma.product.findMany({
       where,
       include: productInclude(),
-      orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
+      orderBy: productOrderBy(query.sort),
       skip: (page - 1) * limit,
       take: limit,
     });

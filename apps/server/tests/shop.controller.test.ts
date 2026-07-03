@@ -16,6 +16,13 @@ const listCategoriesMock = mock(async () => [
     productCount: 2,
   },
 ]);
+const listFiltersMock = mock(async () => ({
+  categories: [],
+  brands: [],
+  priceRange: { min: 0, max: 0, currency: "BDT" },
+  availability: { inStock: 0, outOfStock: 0 },
+  attributes: [],
+}));
 
 mock.module("@auth/server", () => ({
   auth: {
@@ -37,12 +44,14 @@ mock.module("../src/modules/shop/shop.service", () => ({
   },
   shopService: {
     listCategories: listCategoriesMock,
+    listFilters: listFiltersMock,
   },
 }));
 
 afterEach(() => {
   getAuthSessionMock.mockClear();
   listCategoriesMock.mockClear();
+  listFiltersMock.mockClear();
 });
 
 describe("shop controller", () => {
@@ -65,5 +74,25 @@ describe("shop controller", () => {
     ]);
     expect(getAuthSessionMock).toHaveBeenCalled();
     expect(listCategoriesMock).toHaveBeenCalled();
+  });
+
+  it("lists storefront filters without requiring authentication", async () => {
+    const { shopController } = await import("../src/modules/shop/shop.controller");
+    const app = new Elysia().use(shopController);
+
+    const response = await app.handle(
+      new Request("http://localhost/shop/filters?categoryId=cat-1"),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual(
+      expect.objectContaining({
+        priceRange: { min: 0, max: 0, currency: "BDT" },
+        attributes: [],
+      }),
+    );
+    expect(getAuthSessionMock).toHaveBeenCalled();
+    expect(listFiltersMock).toHaveBeenCalledWith({ categoryId: "cat-1" });
   });
 });

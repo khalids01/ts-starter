@@ -198,7 +198,7 @@ function ShopSearch(props: { className?: string; onSubmitDone?: () => void }) {
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           name="search"
-          placeholder="Search mango, honey, phone..."
+          placeholder="Search products"
           className="pl-9"
         />
       </div>
@@ -220,7 +220,7 @@ function MobileMenu(props: { categories: ShopCategory[] }) {
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>Shop food, gadgets, and customer pages.</SheetDescription>
+          <SheetDescription>Open product, category, and customer pages.</SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 px-4 pb-4">
           <ShopSearch />
@@ -265,7 +265,7 @@ function CategorySheet(props: { categories: ShopCategory[] }) {
       <SheetContent side="right">
         <SheetHeader>
           <SheetTitle>Categories</SheetTitle>
-          <SheetDescription>Browse by food, gadgets, and product families.</SheetDescription>
+          <SheetDescription>Browse by category and product family.</SheetDescription>
         </SheetHeader>
         <div className="grid gap-2 px-4 pb-4">
           <Link to="/shop" className={buttonVariants({ variant: "outline", className: "justify-start" })}>

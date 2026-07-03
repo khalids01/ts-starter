@@ -24,7 +24,7 @@ export function SavedPage() {
               Products you saved
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-              Keep mango boxes, phone SKUs, laptop options, and other favorites ready for later.
+              Keep product options and other favorites ready for later.
             </p>
           </div>
           <Link to="/shop" className={buttonVariants({ variant: "outline" })}>

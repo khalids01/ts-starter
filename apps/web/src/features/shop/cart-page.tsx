@@ -50,7 +50,7 @@ export function CartPage() {
       <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-normal">Cart</h1>
-          <p className="text-sm text-muted-foreground">Review your food and gadget items before checkout.</p>
+          <p className="text-sm text-muted-foreground">Review your items before checkout.</p>
         </div>
 
         {cartQuery.isLoading ? (

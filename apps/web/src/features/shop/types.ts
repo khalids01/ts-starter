@@ -70,6 +70,49 @@ export type ShopProduct = {
     iconUrl?: string | null;
     sortOrder: number;
   }>;
+  specs?: Array<{
+    attributeId: string;
+    name: string;
+    slug: string;
+    value: string;
+  }>;
+};
+
+export type ShopFilterAttribute = {
+  id: string;
+  attributeId: string;
+  name: string;
+  slug: string;
+  type: "text" | "number" | "boolean" | "color";
+  scope: "product" | "variant" | "batch";
+  inputType: "text" | "textarea" | "number" | "boolean" | "select" | "multiselect" | "color" | "date";
+  unit?: string | null;
+  sortOrder: number;
+  values: Array<{
+    id: string;
+    attributeId: string;
+    value: string;
+    label: string;
+    sortOrder: number;
+    productCount: number;
+  }>;
+  range?: { min: number; max: number } | null;
+  booleanCounts?: { true: number; false: number } | null;
+};
+
+export type ShopFilters = {
+  categories: ShopCategory[];
+  brands: Array<ShopBrand & { productCount: number }>;
+  priceRange: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  availability: {
+    inStock: number;
+    outOfStock: number;
+  };
+  attributes: ShopFilterAttribute[];
 };
 
 export type ShopCartItem = {

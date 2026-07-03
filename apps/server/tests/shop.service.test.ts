@@ -34,6 +34,7 @@ const categoryFindManyMock = mock(async () => [
     sortOrder: 30,
   }),
 ]);
+const categoryAttributeFindManyMock = mock(async () => []);
 
 const orderCreateMock = mock(async () => ({
   id: "order-1",
@@ -61,6 +62,9 @@ const prismaMock = {
   },
   category: {
     findMany: categoryFindManyMock,
+  },
+  categoryAttribute: {
+    findMany: categoryAttributeFindManyMock,
   },
   cart: {
     findFirst: cartFindFirstMock,
@@ -126,6 +130,7 @@ function productRow(overrides: Record<string, any> = {}) {
     seoDescription: overrides.seoDescription ?? null,
     variants: overrides.variants ?? [variantRow({ product: undefined })],
     highlights: overrides.highlights ?? [],
+    attributeAssignments: overrides.attributeAssignments ?? [],
     updatedAt: new Date("2026-06-15T10:00:00.000Z"),
   };
 }
@@ -142,6 +147,45 @@ function categoryRow(overrides: Record<string, any> = {}) {
     isFeatured: overrides.isFeatured ?? false,
     sortOrder: overrides.sortOrder ?? 10,
     _count: overrides._count ?? { products: 2 },
+  };
+}
+
+function attributeValueRow(overrides: Record<string, any> = {}) {
+  return {
+    id: overrides.id ?? "value-1",
+    attributeId: overrides.attributeId ?? "attr-1",
+    value: overrides.value ?? "value-1",
+    label: overrides.label ?? "Value 1",
+    sortOrder: overrides.sortOrder ?? 10,
+  };
+}
+
+function categoryAttributeRow(overrides: Record<string, any> = {}) {
+  return {
+    id: overrides.id ?? "category-attribute-1",
+    categoryId: overrides.categoryId ?? "cat-1",
+    attributeId: overrides.attributeId ?? "attr-1",
+    scope: overrides.scope ?? "product",
+    required: overrides.required ?? false,
+    filterable: overrides.filterable ?? true,
+    variantDefining: overrides.variantDefining ?? false,
+    comparable: overrides.comparable ?? false,
+    inputType: overrides.inputType ?? "select",
+    unit: overrides.unit ?? null,
+    groupName: overrides.groupName ?? null,
+    helpText: overrides.helpText ?? null,
+    placeholder: overrides.placeholder ?? null,
+    sortOrder: overrides.sortOrder ?? 10,
+    attribute: overrides.attribute ?? {
+      id: "attr-1",
+      name: "Specification",
+      slug: "specification",
+      type: "text",
+      filterable: true,
+      variantDefining: false,
+      sortOrder: 10,
+      values: [attributeValueRow()],
+    },
   };
 }
 
@@ -257,6 +301,9 @@ beforeEach(() => {
       sortOrder: 30,
     }),
   ]);
+  categoryAttributeFindManyMock.mockResolvedValue([]);
+  productCountMock.mockResolvedValue(1);
+  productFindManyMock.mockResolvedValue([productRow()]);
   productVariantFindUniqueMock.mockResolvedValue(variantRow());
   orderFindUniqueMock.mockResolvedValue(null);
   orderFindManyMock.mockResolvedValue([]);
@@ -285,6 +332,7 @@ afterEach(() => {
     productFindFirstMock,
     productVariantFindUniqueMock,
     categoryFindManyMock,
+    categoryAttributeFindManyMock,
     orderCreateMock,
     orderFindUniqueMock,
     orderFindManyMock,
@@ -352,6 +400,170 @@ describe("shop service", () => {
     ]);
     expect(result[0]).not.toHaveProperty("attributes");
     expect(result[0]).not.toHaveProperty("brandPolicy");
+  });
+
+  it("lists common public filters without category attributes by default", async () => {
+    const { shopService } = await import("../src/modules/shop/shop.service");
+
+    productFindManyMock.mockResolvedValueOnce([
+      productRow({
+        brand: { id: "brand-1", name: "Acme", slug: "acme", logoUrl: null, isActive: true },
+        variants: [variantRow({ price: "100.00" })],
+      }),
+    ]);
+
+    const result = await shopService.listFilters();
+
+    expect(result.categories).toHaveLength(2);
+    expect(result.brands).toEqual([
+      expect.objectContaining({ id: "brand-1", name: "Acme", productCount: 1 }),
+    ]);
+    expect(result.priceRange).toEqual({ min: 100, max: 100, currency: "BDT" });
+    expect(result.availability).toEqual({ inStock: 1, outOfStock: 0 });
+    expect(result.attributes).toEqual([]);
+    expect(categoryAttributeFindManyMock).not.toHaveBeenCalled();
+  });
+
+  it("lists selected category public filterable attributes", async () => {
+    const { shopService } = await import("../src/modules/shop/shop.service");
+
+    categoryFindManyMock
+      .mockResolvedValueOnce([
+        categoryRow({ id: "cat-parent", parentId: null }),
+        categoryRow({ id: "cat-child", parentId: "cat-parent" }),
+      ])
+      .mockResolvedValueOnce([categoryRow({ id: "cat-parent" })]);
+    categoryAttributeFindManyMock.mockResolvedValueOnce([
+      categoryAttributeRow({
+        categoryId: "cat-parent",
+        attributeId: "attr-1",
+        attribute: {
+          id: "attr-1",
+          name: "Size",
+          slug: "size",
+          type: "text",
+          filterable: true,
+          variantDefining: false,
+          sortOrder: 10,
+          values: [attributeValueRow({ id: "value-1", label: "Large" })],
+        },
+      }),
+    ]);
+    productFindManyMock.mockResolvedValueOnce([
+      productRow({
+        attributeAssignments: [
+          {
+            attributeId: "attr-1",
+            attributeValueId: "value-1",
+            attributeValue: attributeValueRow({ id: "value-1", label: "Large" }),
+            values: [],
+          },
+        ],
+      }),
+    ]);
+
+    const result = await shopService.listFilters({ categoryId: "cat-parent" });
+
+    expect(categoryAttributeFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          categoryId: "cat-parent",
+          filterable: true,
+        }),
+      }),
+    );
+    expect(result.attributes).toEqual([
+      expect.objectContaining({
+        attributeId: "attr-1",
+        name: "Size",
+        values: [expect.objectContaining({ id: "value-1", productCount: 1 })],
+      }),
+    ]);
+  });
+
+  it("applies category descendants, price, stock, brand, and dynamic filters to products", async () => {
+    const { shopService } = await import("../src/modules/shop/shop.service");
+
+    categoryFindManyMock.mockResolvedValueOnce([
+      categoryRow({ id: "cat-parent", parentId: null }),
+      categoryRow({ id: "cat-child", parentId: "cat-parent" }),
+    ]);
+    categoryAttributeFindManyMock.mockResolvedValueOnce([
+      categoryAttributeRow({ categoryId: "cat-parent", attributeId: "attr-1" }),
+    ]);
+
+    await shopService.listProducts({
+      categoryId: "cat-parent",
+      brandId: "brand-1",
+      minPrice: 10,
+      maxPrice: 99,
+      inStock: true,
+      filters: JSON.stringify({ "attr-1": ["value-1"] }),
+    });
+
+    expect(productCountMock).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        AND: expect.arrayContaining([
+          { categoryId: { in: ["cat-parent", "cat-child"] } },
+          { brandId: { in: ["brand-1"] } },
+          { variants: { some: { isActive: true, price: { gte: 10, lte: 99 } } } },
+          {
+            variants: {
+              some: {
+                isActive: true,
+                inventoryStocks: { some: { quantityOnHand: { gt: 0 } } },
+              },
+            },
+          },
+          {
+            attributeAssignments: {
+              some: {
+                attributeId: "attr-1",
+                OR: [
+                  { attributeValueId: { in: ["value-1"] } },
+                  { values: { some: { attributeValueId: { in: ["value-1"] } } } },
+                ],
+              },
+            },
+          },
+        ]),
+      }),
+    });
+  });
+
+  it("applies multiple categories, brands, and out-of-stock availability to products", async () => {
+    const { shopService } = await import("../src/modules/shop/shop.service");
+
+    categoryFindManyMock.mockResolvedValueOnce([
+      categoryRow({ id: "cat-a", parentId: null }),
+      categoryRow({ id: "cat-a-child", parentId: "cat-a" }),
+      categoryRow({ id: "cat-b", parentId: null }),
+    ]);
+
+    await shopService.listProducts({
+      categoryIds: "cat-a,cat-b",
+      brandIds: "brand-1,brand-2",
+      availability: "out-of-stock",
+    });
+
+    expect(productCountMock).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        AND: expect.arrayContaining([
+          { categoryId: { in: ["cat-a", "cat-b", "cat-a-child"] } },
+          { brandId: { in: ["brand-1", "brand-2"] } },
+          {
+            NOT: {
+              variants: {
+                some: {
+                  isActive: true,
+                  inventoryStocks: { some: { quantityOnHand: { gt: 0 } } },
+                },
+              },
+            },
+          },
+        ]),
+      }),
+    });
   });
 
   it("creates a guest cart and maps server-calculated totals", async () => {

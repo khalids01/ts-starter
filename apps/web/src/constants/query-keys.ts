@@ -118,6 +118,7 @@ export const queryKeys = {
   },
   shop: {
     categories: () => ["shop-categories"] as const,
+    filters: (params?: unknown) => ["shop-filters", params] as const,
     products: (params?: unknown) => ["shop-products", params] as const,
     product: (slug: string) => ["shop-product", slug] as const,
     cart: () => ["shop-cart"] as const,

@@ -4,6 +4,7 @@ import {
   AddCartItemDto,
   CheckoutDto,
   IdParamDto,
+  ListShopFiltersQueryDto,
   ListShopProductsQueryDto,
   OrderNumberParamDto,
   OrderLookupQueryDto,
@@ -115,6 +116,14 @@ export const shopController = new Elysia({
     () => shopService.listShippingRates(),
     {
       detail: { summary: "List active storefront shipping rates" },
+    },
+  )
+  .get(
+    "/filters",
+    ({ query }) => shopService.listFilters(query),
+    {
+      query: ListShopFiltersQueryDto,
+      detail: { summary: "List public storefront filters" },
     },
   )
   .get(
