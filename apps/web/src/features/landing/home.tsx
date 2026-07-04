@@ -84,7 +84,7 @@ export const Home = () => {
   const products = productsQuery.data?.items ?? [];
 
   return (
-    <PublicShopShell footer={<PublicShopFooter categories={categories} />}>
+    <PublicShopShell footer={<PublicShopFooter/>}>
       <main>
         <Hero categories={categories} />
         <ServiceStrip />

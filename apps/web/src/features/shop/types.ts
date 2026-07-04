@@ -117,7 +117,6 @@ export type ShopFilters = {
 
 export type ShopCartItem = {
   id: string;
-  cartId: string;
   variantId: string;
   quantity: number;
   unitPrice: string;
@@ -127,9 +126,6 @@ export type ShopCartItem = {
 };
 
 export type ShopCart = {
-  id: string;
-  cartToken?: string | null;
-  userId?: string | null;
   items: ShopCartItem[];
   itemCount: number;
   subtotalAmount: string;
@@ -138,8 +134,6 @@ export type ShopCart = {
   shippingAmount: string;
   totalAmount: string;
   currency: string;
-  expiresAt: string;
-  updatedAt: string;
 };
 
 export type ShopShippingRate = {

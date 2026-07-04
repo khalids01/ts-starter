@@ -1,9 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -16,11 +13,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import type { ShopCart, ShopCartItem } from "./types";
-import { formatMoney } from "./utils";
-import { useCartSheetStore } from "./cart-sheet-store";
+import type { ShopCartItem } from "../types";
+import { formatMoney } from "../utils";
+import { useCart, useCartStore } from "./store";
+import { useCartSheetStore } from "./sheet-store";
 
 export function CartTriggerButton(props: {
   className?: string;
@@ -28,18 +25,9 @@ export function CartTriggerButton(props: {
   variant?: "outline" | "ghost";
 }) {
   const openCart = useCartSheetStore((state) => state.openCart);
-  const cartQuery = useQuery({
-    queryKey: queryKeys.shop.cart(),
-    queryFn: async () => {
-      const { data, error } = await client.shop.cart.get();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
-      }
-      return data as ShopCart;
-    },
-    staleTime: 30_000,
-  });
-  const itemCount = cartQuery.data?.itemCount ?? 0;
+  const itemCount = useCartStore((state) =>
+    state.items.reduce((total, item) => total + item.quantity, 0),
+  );
 
   return (
     <Button
@@ -61,53 +49,12 @@ export function CartTriggerButton(props: {
 }
 
 export function CartSheet() {
-  const queryClient = useQueryClient();
   const open = useCartSheetStore((state) => state.open);
   const setOpen = useCartSheetStore((state) => state.setOpen);
   const closeCart = useCartSheetStore((state) => state.closeCart);
-  const cartQuery = useQuery({
-    queryKey: queryKeys.shop.cart(),
-    queryFn: async () => {
-      const { data, error } = await client.shop.cart.get();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
-      }
-      return data as ShopCart;
-    },
-  });
-  const cart = cartQuery.data;
-
-  const invalidateCart = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
-  };
-
-  const updateItem = useMutation({
-    mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      const { data, error } = await client.shop.cart.items({ id }).patch({ quantity });
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to update cart"));
-      }
-      return data as ShopCart;
-    },
-    onSuccess: invalidateCart,
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Failed to update cart"),
-  });
-
-  const removeItem = useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await client.shop.cart.items({ id }).delete();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to remove item"));
-      }
-      return data as ShopCart;
-    },
-    onSuccess: invalidateCart,
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Failed to remove item"),
-  });
-
-  const isUpdating = updateItem.isPending || removeItem.isPending;
+  const cart = useCart();
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -120,9 +67,7 @@ export function CartSheet() {
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-          {cartQuery.isLoading ? (
-            <CartState>Loading cart...</CartState>
-          ) : !cart || cart.items.length === 0 ? (
+          {cart.items.length === 0 ? (
             <CartState>
               <p>Your cart is empty.</p>
               <Link
@@ -140,9 +85,8 @@ export function CartSheet() {
                   key={item.id}
                   item={item}
                   currency={cart.currency}
-                  updating={isUpdating}
-                  onQuantity={(quantity) => updateItem.mutate({ id: item.id, quantity })}
-                  onRemove={() => removeItem.mutate(item.id)}
+                  onQuantity={(quantity) => updateQuantity(item.id, quantity)}
+                  onRemove={() => removeItem(item.id)}
                   onNavigate={closeCart}
                 />
               ))}
@@ -150,7 +94,7 @@ export function CartSheet() {
           )}
         </div>
 
-        {cart && cart.items.length > 0 ? (
+        {cart.items.length > 0 ? (
           <SheetFooter className="border-t">
             <div className="grid gap-2 text-sm">
               <SummaryRow label="Subtotal" value={cart.subtotalAmount} currency={cart.currency} />
@@ -180,7 +124,6 @@ export function CartSheet() {
 function CartSheetItem(props: {
   item: ShopCartItem;
   currency: string;
-  updating: boolean;
   onQuantity: (quantity: number) => void;
   onRemove: () => void;
   onNavigate: () => void;
@@ -222,7 +165,6 @@ function CartSheetItem(props: {
             type="button"
             size="icon-xs"
             variant="ghost"
-            disabled={props.updating}
             onClick={props.onRemove}
           >
             <Trash2 className="size-3.5" />
@@ -236,7 +178,7 @@ function CartSheetItem(props: {
               type="button"
               size="icon-xs"
               variant="outline"
-              disabled={props.updating || props.item.quantity <= 1}
+              disabled={props.item.quantity <= 1}
               onClick={() => props.onQuantity(props.item.quantity - 1)}
             >
               <Minus className="size-3" />
@@ -248,7 +190,6 @@ function CartSheetItem(props: {
               type="button"
               size="icon-xs"
               variant="outline"
-              disabled={props.updating}
               onClick={() => props.onQuantity(props.item.quantity + 1)}
             >
               <Plus className="size-3" />

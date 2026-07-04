@@ -1,20 +1,18 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, PackageCheck, ShoppingCart, Zap } from "lucide-react";
 import { toast } from "sonner";
-import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import { useCartSheetStore } from "../cart-sheet-store";
+import { useCartSheetStore } from "../cart/sheet-store";
+import { useCartStore } from "../cart/store";
 import {
   savedProductFromProduct,
   useSavedItemsStore,
 } from "../saved-items-store";
-import type { ShopCart, ShopProduct, ShopVariant } from "../types";
+import type { ShopProduct, ShopVariant } from "../types";
 import { formatMoney, productImage } from "../utils";
 
 export function StoreProductCard(props: { product: ShopProduct; className?: string }) {
@@ -96,56 +94,40 @@ export function StoreProductCard(props: { product: ShopProduct; className?: stri
 }
 
 function ProductCardActions(props: { product: ShopProduct; variant?: ShopVariant }) {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const openCart = useCartSheetStore((state) => state.openCart);
+  const addItem = useCartStore((state) => state.addItem);
   const disabled = !props.variant || props.variant.availableQuantity <= 0;
-  const addToCart = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await client.shop.cart.items.post({
-        variantId: props.variant!.id,
-        quantity: 1,
-      });
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to add item"));
-      }
-      return data as ShopCart;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
-    },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Failed to add item"),
-  });
+
+  const addToCart = () => {
+    if (!props.variant) {
+      return;
+    }
+    addItem({ product: props.product, variant: props.variant });
+  };
 
   return (
     <div className="grid grid-cols-2 gap-2">
       <Button
         type="button"
         variant="outline"
-        disabled={disabled || addToCart.isPending}
-        onClick={() =>
-          addToCart.mutate(undefined, {
-            onSuccess: () => {
-              toast.success("Added to cart");
-              openCart();
-            },
-          })
-        }
+        disabled={disabled}
+        onClick={() => {
+          addToCart();
+          toast.success("Added to cart");
+          openCart();
+        }}
       >
         <ShoppingCart className="size-4" />
         Cart
       </Button>
       <Button
         type="button"
-        disabled={disabled || addToCart.isPending}
-        onClick={() =>
-          addToCart.mutate(undefined, {
-            onSuccess: () => {
-              void navigate({ to: "/checkout" });
-            },
-          })
-        }
+        disabled={disabled}
+        onClick={() => {
+          addToCart();
+          void navigate({ to: "/checkout" });
+        }}
       >
         <Zap className="size-4" />
         Buy

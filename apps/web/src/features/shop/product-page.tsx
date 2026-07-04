@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Heart, PackageCheck, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import type { ShopCart, ShopProduct, ShopVariant } from "./types";
+import type { ShopProduct, ShopVariant } from "./types";
 import { formatMoney, productImage } from "./utils";
-import { useCartSheetStore } from "./cart-sheet-store";
+import { useCartSheetStore } from "./cart/sheet-store";
+import { useCartStore } from "./cart/store";
 import {
   PublicShopFooter,
   PublicShopShell,
-  useShopCategories,
 } from "./public-shop-shell";
 import {
   savedProductFromProduct,
@@ -24,9 +24,8 @@ import {
 } from "./saved-items-store";
 
 export function ShopProductPage(props: { slug: string }) {
-  const queryClient = useQueryClient();
   const openCart = useCartSheetStore((state) => state.openCart);
-  const categoriesQuery = useShopCategories();
+  const addItem = useCartStore((state) => state.addItem);
   const productQuery = useQuery({
     queryKey: queryKeys.shop.product(props.slug),
     queryFn: async () => {
@@ -49,24 +48,17 @@ export function ShopProductPage(props: { slug: string }) {
   const toggleSaved = useSavedItemsStore((state) => state.toggle);
   const isSaved = useSavedItemsStore((state) => (product ? state.isSaved(product.id) : false));
 
-  const addToCart = useMutation({
-    mutationFn: async (variant: ShopVariant) => {
-      const { data, error } = await client.shop.cart.items.post({ variantId: variant.id, quantity: 1 });
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to add item"));
-      }
-      return data as ShopCart;
-    },
-    onSuccess: () => {
-      toast.success("Added to cart");
-      void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
-      openCart();
-    },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to add item"),
-  });
+  const addToCart = (variant: ShopVariant) => {
+    if (!product) {
+      return;
+    }
+    addItem({ product, variant });
+    toast.success("Added to cart");
+    openCart();
+  };
 
   return (
-    <PublicShopShell footer={<PublicShopFooter categories={categoriesQuery.data ?? []} />}>
+    <PublicShopShell footer={<PublicShopFooter />}>
       <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
         <Link to="/shop" className={buttonVariants({ variant: "ghost" })}>
           <ArrowLeft className="size-4" />
@@ -148,11 +140,11 @@ export function ShopProductPage(props: { slug: string }) {
                   ) : null}
                 </div>
                 <Button
-                  disabled={!selectedVariant || selectedVariant.availableQuantity <= 0 || addToCart.isPending}
-                  onClick={() => selectedVariant && addToCart.mutate(selectedVariant)}
+                  disabled={!selectedVariant || selectedVariant.availableQuantity <= 0}
+                  onClick={() => selectedVariant && addToCart(selectedVariant)}
                 >
                   <ShoppingCart className="size-4" />
-                  {addToCart.isPending ? "Adding..." : "Add to cart"}
+                  Add to cart
                 </Button>
               </section>
 

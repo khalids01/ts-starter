@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { queryKeys } from "@/constants/query-keys";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,9 +9,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import type { CheckoutResult, ShopCart, ShopShippingRate } from "./types";
-import { formatMoney } from "./utils";
-import { PublicShopFooter, PublicShopShell, useShopCategories } from "./public-shop-shell";
+import type { CheckoutResult, ShopCart, ShopShippingRate } from "../types";
+import { formatMoney } from "../utils";
+import { PublicShopFooter, PublicShopShell } from "../public-shop-shell";
+import { cartItemsForCheckout, useCart, useCartStore } from "../cart/store";
 
 type CheckoutForm = {
   customerName: string;
@@ -44,20 +44,10 @@ const initialForm: CheckoutForm = {
 
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const categoriesQuery = useShopCategories();
   const [form, setForm] = useState(initialForm);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
-  const cartQuery = useQuery({
-    queryKey: queryKeys.shop.cart(),
-    queryFn: async () => {
-      const { data, error } = await client.shop.cart.get();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
-      }
-      return data as ShopCart;
-    },
-  });
+  const cart = useCart();
+  const clearCart = useCartStore((state) => state.clearCart);
   const shippingRatesQuery = useQuery({
     queryKey: ["shop", "shipping-rates"],
     queryFn: async () => {
@@ -68,7 +58,6 @@ export function CheckoutPage() {
       return data as ShopShippingRate[];
     },
   });
-  const cart = cartQuery.data;
   const shippingRates = shippingRatesQuery.data ?? [];
   const selectedShippingRate =
     shippingRates.find((rate) => rate.id === form.shippingRateId) ??
@@ -78,6 +67,7 @@ export function CheckoutPage() {
   const checkout = useMutation({
     mutationFn: async () => {
       const { data, error } = await client.shop.checkout.post({
+        items: cartItemsForCheckout(cart.items),
         customerName: form.customerName,
         customerEmail: form.customerEmail,
         customerPhone: form.customerPhone || null,
@@ -105,7 +95,7 @@ export function CheckoutPage() {
     },
     onSuccess: (result) => {
       toast.success("Order placed");
-      void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
+      clearCart();
       void navigate({ to: "/checkout/success/$orderId", params: { orderId: result.orderId } });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to place order"),
@@ -118,19 +108,17 @@ export function CheckoutPage() {
     Boolean(form.city.trim()) &&
     Boolean(form.country.trim()) &&
     Boolean(selectedShippingRate) &&
-    Boolean(cart?.items.length);
+    Boolean(cart.items.length);
 
   return (
-    <PublicShopShell footer={<PublicShopFooter categories={categoriesQuery.data ?? []} />}>
+    <PublicShopShell footer={<PublicShopFooter />}>
       <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-normal">Checkout</h1>
           <p className="text-sm text-muted-foreground">Cash on delivery / manual payment for this version.</p>
         </div>
 
-        {cartQuery.isLoading ? (
-          <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">Loading checkout...</div>
-        ) : !cart || cart.items.length === 0 ? (
+        {cart.items.length === 0 ? (
           <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
             <p>Your cart is empty.</p>
             <Link to="/shop" className={buttonVariants({ className: "mt-4" })}>Continue shopping</Link>

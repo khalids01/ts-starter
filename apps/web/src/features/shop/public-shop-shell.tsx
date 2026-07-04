@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import type { FormEvent, ReactNode } from "react";
 import {
   Grid3X3,
@@ -24,38 +23,26 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { queryKeys } from "@/constants/query-keys";
-import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/providers/session-provider";
-import { CartSheet, CartTriggerButton } from "./cart-sheet";
+import { CartSheet, CartTriggerButton } from "./cart/sheet";
 import type { ShopCategory } from "./types";
-
-export function useShopCategories() {
-  return useQuery({
-    queryKey: queryKeys.shop.categories(),
-    queryFn: async () => {
-      const { data, error } = await client.shop.categories.get();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to load categories"));
-      }
-      return data as ShopCategory[];
-    },
-    staleTime: 60_000,
-  });
-}
+import { usePublicData } from "@/providers/public-data-provider";
 
 export function PublicShopShell(props: {
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
 }) {
-  const categoriesQuery = useShopCategories();
-  const categories = categoriesQuery.data ?? [];
 
   return (
-    <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
-      <PublicShopHeader categories={categories} />
+    <div
+      className={cn(
+        "min-h-screen bg-background text-foreground",
+        props.className,
+      )}
+    >
+      <PublicShopHeader />
       <div className="pb-20 md:pb-0">{props.children}</div>
       {props.footer}
       <MobileBottomNav />
@@ -64,9 +51,8 @@ export function PublicShopShell(props: {
   );
 }
 
-export function PublicShopFooter(props: { categories?: ShopCategory[] }) {
-  const categoriesQuery = useShopCategories();
-  const categories = props.categories ?? categoriesQuery.data ?? [];
+export function PublicShopFooter() {
+  const { categories } = usePublicData();
 
   return (
     <footer className="border-t bg-background">
@@ -79,7 +65,8 @@ export function PublicShopFooter(props: { categories?: ShopCategory[] }) {
             {brandConfig.description}
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            {brandConfig.location.city ?? "Dhaka"}, {brandConfig.location.country ?? "Bangladesh"}
+            {brandConfig.location.city ?? "Dhaka"},{" "}
+            {brandConfig.location.country ?? "Bangladesh"}
           </p>
         </div>
 
@@ -105,10 +92,14 @@ export function PublicShopFooter(props: { categories?: ShopCategory[] }) {
           <h3 className="font-medium">Contact</h3>
           <div className="mt-4 grid gap-2 text-sm text-muted-foreground [&_a:hover]:text-foreground">
             {brandConfig.contact.email ? (
-              <a href={`mailto:${brandConfig.contact.email}`}>{brandConfig.contact.email}</a>
+              <a href={`mailto:${brandConfig.contact.email}`}>
+                {brandConfig.contact.email}
+              </a>
             ) : null}
             {brandConfig.contact.phone ? (
-              <a href={`tel:${brandConfig.contact.phone}`}>{brandConfig.contact.phone}</a>
+              <a href={`tel:${brandConfig.contact.phone}`}>
+                {brandConfig.contact.phone}
+              </a>
             ) : null}
             {brandConfig.contact.whatsapp ? (
               <a href={brandConfig.contact.whatsapp}>WhatsApp</a>
@@ -118,7 +109,10 @@ export function PublicShopFooter(props: { categories?: ShopCategory[] }) {
       </div>
       <div className="border-t py-5">
         <div className="mx-auto flex w-full max-w-7xl flex-col justify-between gap-3 px-4 text-sm text-muted-foreground md:flex-row md:px-6">
-          <p>© {new Date().getFullYear()} {brandConfig.name}. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {brandConfig.name}. All rights
+            reserved.
+          </p>
           <div className="flex gap-5">
             <Link to="/track-order">Orders</Link>
             <Link to="/cart">Cart</Link>
@@ -130,8 +124,9 @@ export function PublicShopFooter(props: { categories?: ShopCategory[] }) {
   );
 }
 
-function PublicShopHeader(props: { categories: ShopCategory[] }) {
-  const featuredCategories = props.categories
+function PublicShopHeader() {
+  const { categories } = usePublicData();
+  const featuredCategories = categories
     .filter((category) => category.isFeatured)
     .slice(0, 5);
 
@@ -140,7 +135,10 @@ function PublicShopHeader(props: { categories: ShopCategory[] }) {
       <div className="mx-auto hidden h-16 w-full max-w-7xl items-center gap-4 px-4 md:flex md:px-6">
         <BrandLink />
         <nav className="flex min-w-0 flex-1 items-center gap-5 text-sm font-medium">
-          <Link to="/shop" className="text-muted-foreground transition-colors hover:text-foreground">
+          <Link
+            to="/shop"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
             Shop
           </Link>
           {featuredCategories.map((category) => (
@@ -161,9 +159,9 @@ function PublicShopHeader(props: { categories: ShopCategory[] }) {
       </div>
 
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-2 px-4 md:hidden">
-        <MobileMenu categories={props.categories} />
+        <MobileMenu categories={categories} />
         <BrandLink className="min-w-0 flex-1" compact />
-        <CategorySheet categories={props.categories} />
+        <CategorySheet categories={categories} />
         <CartTriggerButton variant="ghost" />
         <UserMenu />
       </div>
@@ -177,7 +175,12 @@ function BrandLink(props: { className?: string; compact?: boolean }) {
       <span className="grid size-9 shrink-0 place-items-center rounded-md bg-emerald-600 text-sm font-bold text-white">
         {brandConfig.textLogo.slice(0, 1)}
       </span>
-      <span className={cn("truncate text-lg font-semibold", props.compact ? "text-base" : "")}>
+      <span
+        className={cn(
+          "truncate text-lg font-semibold",
+          props.compact ? "text-base" : "",
+        )}
+      >
         {brandConfig.textLogo}
       </span>
     </Link>
@@ -199,14 +202,13 @@ function ShopSearch(props: { className?: string; onSubmitDone?: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className={cn("flex w-full items-center gap-2", props.className)}>
+    <form
+      onSubmit={submit}
+      className={cn("flex w-full items-center gap-2", props.className)}
+    >
       <div className="relative min-w-0 flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          name="search"
-          placeholder="Search products"
-          className="pl-9"
-        />
+        <Input name="search" placeholder="Search products" className="pl-9" />
       </div>
       <Button type="submit" size="icon">
         <Search className="size-4" />
@@ -219,36 +221,54 @@ function ShopSearch(props: { className?: string; onSubmitDone?: () => void }) {
 function MobileMenu(props: { categories: ShopCategory[] }) {
   return (
     <Sheet>
-      <SheetTrigger render={<Button type="button" variant="ghost" size="icon" />}>
+      <SheetTrigger
+        render={<Button type="button" variant="ghost" size="icon" />}
+      >
         <Menu className="size-5" />
         <span className="sr-only">Menu</span>
       </SheetTrigger>
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>Open product, category, and customer pages.</SheetDescription>
+          <SheetDescription>
+            Open product, category, and customer pages.
+          </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 px-4 pb-4">
           <ShopSearch />
           <nav className="grid gap-1">
-            <MobileDrawerLink to="/" icon={<Home className="size-4" />}>Home</MobileDrawerLink>
-            <MobileDrawerLink to="/shop" icon={<Grid3X3 className="size-4" />}>Shop</MobileDrawerLink>
-            <MobileDrawerLink to="/saved" icon={<Heart className="size-4" />}>Saved items</MobileDrawerLink>
-            <MobileDrawerLink to="/track-order" icon={<PackageSearch className="size-4" />}>Track order</MobileDrawerLink>
+            <MobileDrawerLink to="/" icon={<Home className="size-4" />}>
+              Home
+            </MobileDrawerLink>
+            <MobileDrawerLink to="/shop" icon={<Grid3X3 className="size-4" />}>
+              Shop
+            </MobileDrawerLink>
+            <MobileDrawerLink to="/saved" icon={<Heart className="size-4" />}>
+              Saved items
+            </MobileDrawerLink>
+            <MobileDrawerLink
+              to="/track-order"
+              icon={<PackageSearch className="size-4" />}
+            >
+              Track order
+            </MobileDrawerLink>
           </nav>
           <div>
             <p className="mb-2 text-sm font-medium">Featured categories</p>
             <div className="grid gap-1">
-              {props.categories.filter((category) => category.isFeatured).slice(0, 8).map((category) => (
-                <Link
-                  key={category.id}
-                  to="/shop"
-                  search={{ categoryId: category.id }}
-                  className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  {category.name}
-                </Link>
-              ))}
+              {props.categories
+                .filter((category) => category.isFeatured)
+                .slice(0, 8)
+                .map((category) => (
+                  <Link
+                    key={category.id}
+                    to="/shop"
+                    search={{ categoryId: category.id }}
+                    className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    {category.name}
+                  </Link>
+                ))}
             </div>
           </div>
           <div className="flex items-center justify-between rounded-md border p-3">
@@ -264,17 +284,27 @@ function MobileMenu(props: { categories: ShopCategory[] }) {
 function CategorySheet(props: { categories: ShopCategory[] }) {
   return (
     <Sheet>
-      <SheetTrigger render={<Button type="button" variant="ghost" size="icon" />}>
+      <SheetTrigger
+        render={<Button type="button" variant="ghost" size="icon" />}
+      >
         <List className="size-5" />
         <span className="sr-only">Categories</span>
       </SheetTrigger>
       <SheetContent side="right">
         <SheetHeader>
           <SheetTitle>Categories</SheetTitle>
-          <SheetDescription>Browse by category and product family.</SheetDescription>
+          <SheetDescription>
+            Browse by category and product family.
+          </SheetDescription>
         </SheetHeader>
         <div className="grid gap-2 px-4 pb-4">
-          <Link to="/shop" className={buttonVariants({ variant: "outline", className: "justify-start" })}>
+          <Link
+            to="/shop"
+            className={buttonVariants({
+              variant: "outline",
+              className: "justify-start",
+            })}
+          >
             All products
           </Link>
           {props.categories.map((category) => (
@@ -282,7 +312,10 @@ function CategorySheet(props: { categories: ShopCategory[] }) {
               key={category.id}
               to="/shop"
               search={{ categoryId: category.id }}
-              className={buttonVariants({ variant: "ghost", className: "justify-start" })}
+              className={buttonVariants({
+                variant: "ghost",
+                className: "justify-start",
+              })}
             >
               {category.name}
             </Link>
@@ -300,7 +333,11 @@ function MobileBottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
       <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
-        <BottomNavLink to="/saved" label="Saved" icon={<Heart className="size-5" />} />
+        <BottomNavLink
+          to="/saved"
+          label="Saved"
+          icon={<Heart className="size-5" />}
+        />
         <CartBottomButton />
         <BottomNavLink
           to="/"
@@ -308,8 +345,16 @@ function MobileBottomNav() {
           icon={<Home className="size-5" />}
           className="-mt-5 rounded-full bg-emerald-600 py-3 text-white shadow-lg hover:bg-emerald-700"
         />
-        <BottomNavLink to={profileTo} label="Profile" icon={<User className="size-5" />} />
-        <BottomNavLink to="/track-order" label="Track" icon={<PackageSearch className="size-5" />} />
+        <BottomNavLink
+          to={profileTo}
+          label="Profile"
+          icon={<User className="size-5" />}
+        />
+        <BottomNavLink
+          to="/track-order"
+          label="Track"
+          icon={<PackageSearch className="size-5" />}
+        />
       </div>
     </nav>
   );
@@ -347,7 +392,11 @@ function BottomNavLink(props: {
   );
 }
 
-function MobileDrawerLink(props: { to: string; icon: ReactNode; children: ReactNode }) {
+function MobileDrawerLink(props: {
+  to: string;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <Link
       to={props.to}

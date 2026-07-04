@@ -62,6 +62,7 @@ export type ShopInitialData = {
 };
 
 export function ShopPage(props: { initialData: ShopInitialData }) {
+
   const rawSearch = useSearch({ from: "/shop" }) as ShopRouteSearch;
   const navigate = useNavigate();
   const routeSearch = normalizeShopSearch(rawSearch);
@@ -87,24 +88,6 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
     ],
   );
 
-  const filtersQueryParams = {
-    categoryIds: routeSearch.categoryIds || undefined,
-  };
-  const filtersQuery = useQuery({
-    queryKey: queryKeys.shop.filters(filtersQueryParams),
-    queryFn: async () => {
-      const { data, error } = await client.shop.filters.get({
-        query: filtersQueryParams,
-      });
-      if (error) {
-        throw new Error(
-          String(error.value?.message || error.message || "Failed to load filters"),
-        );
-      }
-      return data as ShopFilters;
-    },
-  });
-  const filters = filtersQuery.data;
 
   const productsQueryParams = {
     limit: 100,
@@ -131,10 +114,11 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
       }
       return data as PageResult<ShopProduct>;
     },
+    initialData: props.initialData.products,
   });
 
   const products = productsQuery.data?.items ?? [];
-  const categories = filters?.categories ?? [];
+  const categories = props.initialData.filters?.categories ?? [];
 
   const updateFilters = (next: Partial<ShopSearchState>) => {
     const nextSearch = normalizeShopSearch({ ...routeSearch, ...next });
@@ -168,34 +152,17 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
   }, [debouncedSearch, routeSearch.search]);
 
   return (
-    <PublicShopShell footer={<PublicShopFooter categories={categories} />}>
+    <PublicShopShell footer={<PublicShopFooter />}>
       <FilterFormProvider
-        filters={filters}
+        filters={props.initialData.filters}
         values={appliedFilterDraft}
         onApply={updateFilters}
         onReset={resetFilters}
       >
         <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
-          <section className="grid gap-2">
-            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-              <Link
-                to="/track-order"
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "hidden md:inline-flex",
-                )}
-              >
-                Track an order
-                <ArrowRight className="size-4" />
-              </Link>
-            </div>
-          </section>
-
-          <section className="grid gap-5 lg:h-[calc(100dvh-13rem)] lg:min-h-[560px] lg:grid-cols-[280px_1fr]">
+          <section className="grid gap-5  lg:grid-cols-[280px_1fr]">
             <aside className="hidden lg:block">
-              <div className="max-h-[calc(100vh-7rem)] pr-1">
                 <FilterPanel />
-              </div>
             </aside>
 
             <div className="grid min-w-0 gap-4 lg:min-h-0 lg:grid-rows-[auto_1fr]">

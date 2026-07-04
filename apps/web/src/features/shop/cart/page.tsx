@@ -1,13 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { client } from "@/lib/client";
 import {
   Table,
   TableBody,
@@ -16,63 +12,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ShopCart, ShopCartItem } from "./types";
-import { formatMoney } from "./utils";
-import { PublicShopFooter, PublicShopShell, useShopCategories } from "./public-shop-shell";
+import type { ShopCart, ShopCartItem } from "../types";
+import { formatMoney } from "../utils";
+import { PublicShopFooter, PublicShopShell } from "../public-shop-shell";
+import { useCart, useCartStore } from "./store";
 
 export function CartPage() {
-  const queryClient = useQueryClient();
-  const categoriesQuery = useShopCategories();
-  const cartQuery = useQuery({
-    queryKey: queryKeys.shop.cart(),
-    queryFn: async () => {
-      const { data, error } = await client.shop.cart.get();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to load cart"));
-      }
-      return data as ShopCart;
-    },
-  });
-  const cart = cartQuery.data;
-
-  const invalidateCart = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.shop.cart() });
-  };
-  const updateItem = useMutation({
-    mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      const { data, error } = await client.shop.cart.items({ id }).patch({ quantity });
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to update cart"));
-      }
-      return data as ShopCart;
-    },
-    onSuccess: invalidateCart,
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to update cart"),
-  });
-  const removeItem = useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await client.shop.cart.items({ id }).delete();
-      if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to remove item"));
-      }
-      return data as ShopCart;
-    },
-    onSuccess: invalidateCart,
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to remove item"),
-  });
-  const updating = updateItem.isPending || removeItem.isPending;
+  const cart = useCart();
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
 
   return (
-    <PublicShopShell footer={<PublicShopFooter categories={categoriesQuery.data ?? []} />}>
+    <PublicShopShell footer={<PublicShopFooter />}>
       <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-normal">Cart</h1>
           <p className="text-sm text-muted-foreground">Review your items before checkout.</p>
         </div>
 
-        {cartQuery.isLoading ? (
-          <StateCard>Loading cart...</StateCard>
-        ) : !cart || cart.items.length === 0 ? (
+        {cart.items.length === 0 ? (
           <StateCard>
             <p>Your cart is empty.</p>
             <Link to="/shop" className={buttonVariants({ className: "mt-4" })}>Continue shopping</Link>
@@ -97,9 +55,8 @@ export function CartPage() {
                         key={item.id}
                         item={item}
                         currency={cart.currency}
-                        updating={updating}
-                        onQuantity={(quantity) => updateItem.mutate({ id: item.id, quantity })}
-                        onRemove={() => removeItem.mutate(item.id)}
+                        onQuantity={(quantity) => updateQuantity(item.id, quantity)}
+                        onRemove={() => removeItem(item.id)}
                       />
                     ))}
                   </TableBody>
@@ -112,9 +69,8 @@ export function CartPage() {
                     key={item.id}
                     item={item}
                     currency={cart.currency}
-                    updating={updating}
-                    onQuantity={(quantity) => updateItem.mutate({ id: item.id, quantity })}
-                    onRemove={() => removeItem.mutate(item.id)}
+                    onQuantity={(quantity) => updateQuantity(item.id, quantity)}
+                    onRemove={() => removeItem(item.id)}
                   />
                 ))}
               </div>
@@ -130,7 +86,6 @@ export function CartPage() {
 function CartItemTableRow(props: {
   item: ShopCartItem;
   currency: string;
-  updating: boolean;
   onQuantity: (quantity: number) => void;
   onRemove: () => void;
 }) {
@@ -161,7 +116,6 @@ function CartItemTableRow(props: {
       <TableCell>
         <QuantityControl
           quantity={props.item.quantity}
-          disabled={props.updating}
           onQuantity={props.onQuantity}
         />
       </TableCell>
@@ -169,7 +123,7 @@ function CartItemTableRow(props: {
         {formatMoney(props.item.lineTotal, props.currency)}
       </TableCell>
       <TableCell>
-        <Button type="button" size="icon-sm" variant="ghost" disabled={props.updating} onClick={props.onRemove}>
+        <Button type="button" size="icon-sm" variant="ghost" onClick={props.onRemove}>
           <Trash2 className="size-4" />
           <span className="sr-only">Remove</span>
         </Button>
@@ -181,7 +135,6 @@ function CartItemTableRow(props: {
 function CartItemMobileCard(props: {
   item: ShopCartItem;
   currency: string;
-  updating: boolean;
   onQuantity: (quantity: number) => void;
   onRemove: () => void;
 }) {
@@ -205,12 +158,11 @@ function CartItemMobileCard(props: {
         <div className="flex items-center justify-between gap-3">
           <QuantityControl
             quantity={props.item.quantity}
-            disabled={props.updating}
             onQuantity={props.onQuantity}
           />
           <p className="font-semibold">{formatMoney(props.item.lineTotal, props.currency)}</p>
         </div>
-        <Button type="button" variant="destructive" disabled={props.updating} onClick={props.onRemove}>
+        <Button type="button" variant="destructive" onClick={props.onRemove}>
           <Trash2 className="size-4" />
           Remove
         </Button>
@@ -221,7 +173,6 @@ function CartItemMobileCard(props: {
 
 function QuantityControl(props: {
   quantity: number;
-  disabled: boolean;
   onQuantity: (quantity: number) => void;
 }) {
   return (
@@ -230,7 +181,7 @@ function QuantityControl(props: {
         type="button"
         size="icon-sm"
         variant="outline"
-        disabled={props.disabled || props.quantity <= 1}
+        disabled={props.quantity <= 1}
         onClick={() => props.onQuantity(props.quantity - 1)}
       >
         <Minus className="size-4" />
@@ -242,7 +193,6 @@ function QuantityControl(props: {
         type="button"
         size="icon-sm"
         variant="outline"
-        disabled={props.disabled}
         onClick={() => props.onQuantity(props.quantity + 1)}
       >
         <Plus className="size-4" />
