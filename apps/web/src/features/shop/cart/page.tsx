@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/table";
 import type { ShopCart, ShopCartItem } from "../types";
 import { formatMoney } from "../utils";
-import { PublicShopFooter, PublicShopShell } from "../public-shop-shell";
+import {  PublicShopShell } from "../public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 import { useCart, useCartStore } from "./store";
 
 export function CartPage() {

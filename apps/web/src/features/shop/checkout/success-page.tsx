@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { PublicShopFooter, PublicShopShell } from "../public-shop-shell";
+import { PublicShopShell } from "../public-shop-shell";
+import { PublicShopFooter } from "@/components/public-footer";
 
 export function CheckoutSuccessPage(props: { orderId: string }) {
   return (

@@ -3,7 +3,9 @@ import { Heart, Trash2 } from "lucide-react";
 import { Img } from "@/components/core/img";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { PublicShopFooter, PublicShopShell } from "./public-shop-shell";
+import { PublicShopShell } from "./public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 import type { SavedProduct } from "./saved-items-store";
 import { useSavedItemsStore } from "./saved-items-store";
 import { formatMoney } from "./utils";

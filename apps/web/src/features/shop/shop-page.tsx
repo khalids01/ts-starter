@@ -1,9 +1,9 @@
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import {  useNavigate, useSearch } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import {  Search, SlidersHorizontal } from "lucide-react";
+import { Button, } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,9 +22,7 @@ import {
 import { queryKeys } from "@/constants/query-keys";
 import { useDebounce } from "@/hooks/use-debounce";
 import { client } from "@/lib/client";
-import { cn } from "@/lib/utils";
 import {
-  defaultFilterDraft,
   FilterFormProvider,
   FilterPanel,
   sortLabel,
@@ -34,7 +32,9 @@ import {
   type FilterDraftState,
   type ShopSearchState,
 } from "./catalog";
-import { PublicShopFooter, PublicShopShell } from "./public-shop-shell";
+import { PublicShopShell } from "./public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 import type { PageResult, ShopFilters, ShopProduct } from "./types";
 
 type ShopRouteSearch = Partial<ShopSearchState> & {
@@ -118,7 +118,6 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
   });
 
   const products = productsQuery.data?.items ?? [];
-  const categories = props.initialData.filters?.categories ?? [];
 
   const updateFilters = (next: Partial<ShopSearchState>) => {
     const nextSearch = normalizeShopSearch({ ...routeSearch, ...next });

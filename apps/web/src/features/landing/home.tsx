@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils";
 import { client } from "@/lib/client";
 import type { PageResult, ShopCategory, ShopProduct } from "@/features/shop/types";
 import { formatMoney, productImage } from "@/features/shop/utils";
-import { PublicShopFooter, PublicShopShell } from "@/features/shop/public-shop-shell";
+import {  PublicShopShell } from "@/features/shop/public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 import { usePublicData } from "@/providers/public-data-provider";
 
 const asset = (path: string) => `/ecommerce/${path}`;

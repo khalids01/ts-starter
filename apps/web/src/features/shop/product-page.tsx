@@ -15,9 +15,10 @@ import { formatMoney, productImage } from "./utils";
 import { useCartSheetStore } from "./cart/sheet-store";
 import { useCartStore } from "./cart/store";
 import {
-  PublicShopFooter,
   PublicShopShell,
 } from "./public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 import {
   savedProductFromProduct,
   useSavedItemsStore,

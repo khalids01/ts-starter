@@ -57,7 +57,6 @@ function RootDocument() {
           </TanstackQueryProvider>
           <VisitorTracker />
           <Toaster richColors position="top-center"/>
-          {/* {isDevelopment && <TanStackRouterDevtools position="bottom-left" />} */}
         </ThemeProvider>
         <Scripts />
       </body>

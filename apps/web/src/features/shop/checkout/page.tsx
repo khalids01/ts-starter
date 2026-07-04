@@ -11,7 +11,9 @@ import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
 import type { CheckoutResult, ShopCart, ShopShippingRate } from "../types";
 import { formatMoney } from "../utils";
-import { PublicShopFooter, PublicShopShell } from "../public-shop-shell";
+import { PublicShopShell } from "../public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 import { cartItemsForCheckout, useCart, useCartStore } from "../cart/store";
 
 type CheckoutForm = {

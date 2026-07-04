@@ -12,7 +12,9 @@ import { Img } from "@/components/core/img";
 import { client } from "@/lib/client";
 import type { ShopOrder } from "./types";
 import { formatMoney } from "./utils";
-import { PublicShopFooter, PublicShopShell } from "./public-shop-shell";
+import {  PublicShopShell } from "./public-shop-shell";
+
+import { PublicShopFooter } from "@/components/public-footer";
 
 export function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
