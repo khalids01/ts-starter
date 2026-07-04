@@ -18,7 +18,7 @@ const getShopInitialData = createServerFn({ method: "GET" }).handler(async (): P
   };
 });
 
-export const Route = createFileRoute("/shop")({
+export const Route = createFileRoute("/_public/shop")({
   loader: async () => await getShopInitialData(),
   component: ShopRoute,
 });

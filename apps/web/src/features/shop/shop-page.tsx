@@ -63,7 +63,7 @@ export type ShopInitialData = {
 
 export function ShopPage(props: { initialData: ShopInitialData }) {
 
-  const rawSearch = useSearch({ from: "/shop" }) as ShopRouteSearch;
+  const rawSearch = useSearch({ from: "/_public/shop" }) as ShopRouteSearch;
   const navigate = useNavigate();
   const routeSearch = normalizeShopSearch(rawSearch);
   const [searchInput, setSearchInput] = useState(routeSearch.search);

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckoutSuccessPage } from "@/features/shop";
 
-export const Route = createFileRoute("/checkout/success/$orderId")({
+export const Route = createFileRoute("/_public/checkout/success/$orderId")({
   component: SuccessRoute,
 });
 

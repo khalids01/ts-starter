@@ -10,12 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrackOrderRouteImport } from './routes/track-order'
-import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CartRouteImport } from './routes/cart'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInvitationRouteImport } from './routes/accept-invitation'
 import { Route as PublicRouteImport } from './routes/_public'
@@ -36,6 +33,9 @@ import { Route as AdminImagesRouteImport } from './routes/admin/images'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
 import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
+import { Route as PublicShopRouteImport } from './routes/_public/shop'
+import { Route as PublicCheckoutRouteImport } from './routes/_public/checkout'
+import { Route as PublicCartRouteImport } from './routes/_public/cart'
 import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedBillingRouteImport } from './routes/_protected/billing'
@@ -43,21 +43,16 @@ import { Route as ProtectedAccountRouteImport } from './routes/_protected/accoun
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
-import { Route as ShopProductsSlugRouteImport } from './routes/shop/products/$slug'
-import { Route as CheckoutSuccessOrderIdRouteImport } from './routes/checkout/success/$orderId'
 import { Route as AdminRolesRoleIdRouteImport } from './routes/admin/roles/$roleId'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
 import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products/$productId'
 import { Route as AdminOrdersOrderIdRouteImport } from './routes/admin/orders/$orderId'
+import { Route as PublicShopProductsSlugRouteImport } from './routes/_public/shop/products/$slug'
+import { Route as PublicCheckoutSuccessOrderIdRouteImport } from './routes/_public/checkout/success/$orderId'
 
 const TrackOrderRoute = TrackOrderRouteImport.update({
   id: '/track-order',
   path: '/track-order',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShopRoute = ShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SetupRoute = SetupRouteImport.update({
@@ -73,16 +68,6 @@ const SavedRoute = SavedRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartRoute = CartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -183,6 +168,21 @@ const AdminActivityRoute = AdminActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AdminRoute,
 } as any)
+const PublicShopRoute = PublicShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicCheckoutRoute = PublicCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicCartRoute = PublicCartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => PublicRoute,
+} as any)
 const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -218,16 +218,6 @@ const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminProductsRoute,
 } as any)
-const ShopProductsSlugRoute = ShopProductsSlugRouteImport.update({
-  id: '/products/$slug',
-  path: '/products/$slug',
-  getParentRoute: () => ShopRoute,
-} as any)
-const CheckoutSuccessOrderIdRoute = CheckoutSuccessOrderIdRouteImport.update({
-  id: '/success/$orderId',
-  path: '/success/$orderId',
-  getParentRoute: () => CheckoutRoute,
-} as any)
 const AdminRolesRoleIdRoute = AdminRolesRoleIdRouteImport.update({
   id: '/$roleId',
   path: '/$roleId',
@@ -248,17 +238,25 @@ const AdminOrdersOrderIdRoute = AdminOrdersOrderIdRouteImport.update({
   path: '/$orderId',
   getParentRoute: () => AdminOrdersRoute,
 } as any)
+const PublicShopProductsSlugRoute = PublicShopProductsSlugRouteImport.update({
+  id: '/products/$slug',
+  path: '/products/$slug',
+  getParentRoute: () => PublicShopRoute,
+} as any)
+const PublicCheckoutSuccessOrderIdRoute =
+  PublicCheckoutSuccessOrderIdRouteImport.update({
+    id: '/success/$orderId',
+    path: '/success/$orderId',
+    getParentRoute: () => PublicCheckoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
   '/admin': typeof AdminRouteWithChildren
-  '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
-  '/shop': typeof ShopRouteWithChildren
   '/track-order': typeof TrackOrderRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
@@ -266,6 +264,9 @@ export interface FileRoutesByFullPath {
   '/billing': typeof ProtectedBillingRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/settings': typeof ProtectedSettingsRoute
+  '/cart': typeof PublicCartRoute
+  '/checkout': typeof PublicCheckoutRouteWithChildren
+  '/shop': typeof PublicShopRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
@@ -285,19 +286,16 @@ export interface FileRoutesByFullPath {
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
-  '/checkout/success/$orderId': typeof CheckoutSuccessOrderIdRoute
-  '/shop/products/$slug': typeof ShopProductsSlugRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/checkout/success/$orderId': typeof PublicCheckoutSuccessOrderIdRoute
+  '/shop/products/$slug': typeof PublicShopProductsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
-  '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
-  '/shop': typeof ShopRouteWithChildren
   '/track-order': typeof TrackOrderRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
@@ -305,6 +303,9 @@ export interface FileRoutesByTo {
   '/billing': typeof ProtectedBillingRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/settings': typeof ProtectedSettingsRoute
+  '/cart': typeof PublicCartRoute
+  '/checkout': typeof PublicCheckoutRouteWithChildren
+  '/shop': typeof PublicShopRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
@@ -323,9 +324,9 @@ export interface FileRoutesByTo {
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
-  '/checkout/success/$orderId': typeof CheckoutSuccessOrderIdRoute
-  '/shop/products/$slug': typeof ShopProductsSlugRoute
   '/admin/products': typeof AdminProductsIndexRoute
+  '/checkout/success/$orderId': typeof PublicCheckoutSuccessOrderIdRoute
+  '/shop/products/$slug': typeof PublicShopProductsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -333,12 +334,9 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteWithChildren
   '/accept-invitation': typeof AcceptInvitationRoute
   '/admin': typeof AdminRouteWithChildren
-  '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
-  '/shop': typeof ShopRouteWithChildren
   '/track-order': typeof TrackOrderRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
@@ -346,6 +344,9 @@ export interface FileRoutesById {
   '/_protected/billing': typeof ProtectedBillingRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/_protected/settings': typeof ProtectedSettingsRoute
+  '/_public/cart': typeof PublicCartRoute
+  '/_public/checkout': typeof PublicCheckoutRouteWithChildren
+  '/_public/shop': typeof PublicShopRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/feedback': typeof AdminFeedbackRoute
@@ -366,9 +367,9 @@ export interface FileRoutesById {
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
-  '/checkout/success/$orderId': typeof CheckoutSuccessOrderIdRoute
-  '/shop/products/$slug': typeof ShopProductsSlugRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/_public/checkout/success/$orderId': typeof PublicCheckoutSuccessOrderIdRoute
+  '/_public/shop/products/$slug': typeof PublicShopProductsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -376,12 +377,9 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invitation'
     | '/admin'
-    | '/cart'
-    | '/checkout'
     | '/onboarding'
     | '/saved'
     | '/setup'
-    | '/shop'
     | '/track-order'
     | '/login'
     | '/signup'
@@ -389,6 +387,9 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/settings'
+    | '/cart'
+    | '/checkout'
+    | '/shop'
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/feedback'
@@ -408,19 +409,16 @@ export interface FileRouteTypes {
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
+    | '/admin/products/'
     | '/checkout/success/$orderId'
     | '/shop/products/$slug'
-    | '/admin/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/accept-invitation'
-    | '/cart'
-    | '/checkout'
     | '/onboarding'
     | '/saved'
     | '/setup'
-    | '/shop'
     | '/track-order'
     | '/login'
     | '/signup'
@@ -428,6 +426,9 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/settings'
+    | '/cart'
+    | '/checkout'
+    | '/shop'
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/feedback'
@@ -446,21 +447,18 @@ export interface FileRouteTypes {
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
+    | '/admin/products'
     | '/checkout/success/$orderId'
     | '/shop/products/$slug'
-    | '/admin/products'
   id:
     | '__root__'
     | '/_protected'
     | '/_public'
     | '/accept-invitation'
     | '/admin'
-    | '/cart'
-    | '/checkout'
     | '/onboarding'
     | '/saved'
     | '/setup'
-    | '/shop'
     | '/track-order'
     | '/_auth/login'
     | '/_auth/signup'
@@ -468,6 +466,9 @@ export interface FileRouteTypes {
     | '/_protected/billing'
     | '/_protected/dashboard'
     | '/_protected/settings'
+    | '/_public/cart'
+    | '/_public/checkout'
+    | '/_public/shop'
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/feedback'
@@ -488,9 +489,9 @@ export interface FileRouteTypes {
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
-    | '/checkout/success/$orderId'
-    | '/shop/products/$slug'
     | '/admin/products/'
+    | '/_public/checkout/success/$orderId'
+    | '/_public/shop/products/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -498,12 +499,9 @@ export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   AcceptInvitationRoute: typeof AcceptInvitationRoute
   AdminRoute: typeof AdminRouteWithChildren
-  CartRoute: typeof CartRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   SavedRoute: typeof SavedRoute
   SetupRoute: typeof SetupRoute
-  ShopRoute: typeof ShopRouteWithChildren
   TrackOrderRoute: typeof TrackOrderRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignupRoute: typeof AuthSignupRoute
@@ -517,13 +515,6 @@ declare module '@tanstack/react-router' {
       path: '/track-order'
       fullPath: '/track-order'
       preLoaderRoute: typeof TrackOrderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shop': {
-      id: '/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/setup': {
@@ -545,20 +536,6 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cart': {
-      id: '/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -701,6 +678,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminActivityRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_public/shop': {
+      id: '/_public/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof PublicShopRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/checkout': {
+      id: '/_public/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof PublicCheckoutRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/cart': {
+      id: '/_public/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof PublicCartRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_protected/settings': {
       id: '/_protected/settings'
       path: '/settings'
@@ -750,20 +748,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIndexRouteImport
       parentRoute: typeof AdminProductsRoute
     }
-    '/shop/products/$slug': {
-      id: '/shop/products/$slug'
-      path: '/products/$slug'
-      fullPath: '/shop/products/$slug'
-      preLoaderRoute: typeof ShopProductsSlugRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/checkout/success/$orderId': {
-      id: '/checkout/success/$orderId'
-      path: '/success/$orderId'
-      fullPath: '/checkout/success/$orderId'
-      preLoaderRoute: typeof CheckoutSuccessOrderIdRouteImport
-      parentRoute: typeof CheckoutRoute
-    }
     '/admin/roles/$roleId': {
       id: '/admin/roles/$roleId'
       path: '/$roleId'
@@ -792,6 +776,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersOrderIdRouteImport
       parentRoute: typeof AdminOrdersRoute
     }
+    '/_public/shop/products/$slug': {
+      id: '/_public/shop/products/$slug'
+      path: '/products/$slug'
+      fullPath: '/shop/products/$slug'
+      preLoaderRoute: typeof PublicShopProductsSlugRouteImport
+      parentRoute: typeof PublicShopRoute
+    }
+    '/_public/checkout/success/$orderId': {
+      id: '/_public/checkout/success/$orderId'
+      path: '/success/$orderId'
+      fullPath: '/checkout/success/$orderId'
+      preLoaderRoute: typeof PublicCheckoutSuccessOrderIdRouteImport
+      parentRoute: typeof PublicCheckoutRoute
+    }
   }
 }
 
@@ -813,11 +811,41 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
   ProtectedRouteChildren,
 )
 
+interface PublicCheckoutRouteChildren {
+  PublicCheckoutSuccessOrderIdRoute: typeof PublicCheckoutSuccessOrderIdRoute
+}
+
+const PublicCheckoutRouteChildren: PublicCheckoutRouteChildren = {
+  PublicCheckoutSuccessOrderIdRoute: PublicCheckoutSuccessOrderIdRoute,
+}
+
+const PublicCheckoutRouteWithChildren = PublicCheckoutRoute._addFileChildren(
+  PublicCheckoutRouteChildren,
+)
+
+interface PublicShopRouteChildren {
+  PublicShopProductsSlugRoute: typeof PublicShopProductsSlugRoute
+}
+
+const PublicShopRouteChildren: PublicShopRouteChildren = {
+  PublicShopProductsSlugRoute: PublicShopProductsSlugRoute,
+}
+
+const PublicShopRouteWithChildren = PublicShopRoute._addFileChildren(
+  PublicShopRouteChildren,
+)
+
 interface PublicRouteChildren {
+  PublicCartRoute: typeof PublicCartRoute
+  PublicCheckoutRoute: typeof PublicCheckoutRouteWithChildren
+  PublicShopRoute: typeof PublicShopRouteWithChildren
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicCartRoute: PublicCartRoute,
+  PublicCheckoutRoute: PublicCheckoutRouteWithChildren,
+  PublicShopRoute: PublicShopRouteWithChildren,
   PublicIndexRoute: PublicIndexRoute,
 }
 
@@ -900,39 +928,14 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface CheckoutRouteChildren {
-  CheckoutSuccessOrderIdRoute: typeof CheckoutSuccessOrderIdRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutSuccessOrderIdRoute: CheckoutSuccessOrderIdRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
-interface ShopRouteChildren {
-  ShopProductsSlugRoute: typeof ShopProductsSlugRoute
-}
-
-const ShopRouteChildren: ShopRouteChildren = {
-  ShopProductsSlugRoute: ShopProductsSlugRoute,
-}
-
-const ShopRouteWithChildren = ShopRoute._addFileChildren(ShopRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,
   PublicRoute: PublicRouteWithChildren,
   AcceptInvitationRoute: AcceptInvitationRoute,
   AdminRoute: AdminRouteWithChildren,
-  CartRoute: CartRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   SavedRoute: SavedRoute,
   SetupRoute: SetupRoute,
-  ShopRoute: ShopRouteWithChildren,
   TrackOrderRoute: TrackOrderRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthSignupRoute: AuthSignupRoute,
