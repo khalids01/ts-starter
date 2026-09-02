@@ -62,6 +62,15 @@ export async function getPrimaryRoleSlug(userId: string): Promise<RoleSlug> {
   return assignment.role.slug as RoleSlug;
 }
 
+export async function hasRoleAssignment(userId: string): Promise<boolean> {
+  const assignment = await prisma.rbacUserRole.findFirst({
+    where: { userId },
+    select: { userId: true },
+  });
+
+  return assignment !== null;
+}
+
 export async function hasPlatformOwner(): Promise<boolean> {
   const count = await prisma.user.count({
     where: {
