@@ -6,6 +6,7 @@ import { client } from "@/lib/client";
 import { useObject } from "@/hooks/use-object";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InviteDialog } from "./invite-dialog";
+import { AuthSettingsDialog } from "./auth-settings-dialog";
 import { UsersListTab } from "./users-list-tab";
 import { InvitationsTab } from "./invitations-tab";
 import type { InvitationsListResponse, UsersListResponse } from "./types";
@@ -93,10 +94,13 @@ export function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">User Management</h1>
-        <InviteDialog
+        <div className="flex items-center gap-2">
+          <AuthSettingsDialog />
+          <InviteDialog
           onInvite={(email, roleSlug) => inviteMutation.mutate({ email, roleSlug })}
           isLoading={inviteMutation.isPending}
-        />
+          />
+        </div>
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">

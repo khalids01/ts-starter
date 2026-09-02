@@ -15,6 +15,7 @@ import { adminVisitorsController } from "./admin/visitors/visitors.controller";
 import { adminActivityController } from "./admin/activity/activity.controller";
 import { adminWebhooksController } from "./admin/webhooks/webhooks.controller";
 import { rolesController } from "./admin/roles/roles.controller";
+import { authSettingsController } from "./admin/auth-settings/auth-settings.controller";
 
 export const app = new Elysia()
   .use(authController)
@@ -22,6 +23,7 @@ export const app = new Elysia()
   .use(ownerController)
   .use(usersController)
   .use(rolesController)
+  .use(authSettingsController)
   .use(adminInvitationsController)
   .use(metadataController)
   .use(rateLimitController)

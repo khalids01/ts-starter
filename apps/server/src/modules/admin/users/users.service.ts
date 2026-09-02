@@ -38,6 +38,12 @@ const adminUserSelect = {
   onboardingComplete: true,
   plan: true,
   subscriptionStatus: true,
+  accounts: {
+    select: { providerId: true },
+  },
+  authMethods: {
+    select: { method: true },
+  },
   rbacRoles: {
     take: 1,
     select: {
@@ -54,12 +60,21 @@ const adminUserSelect = {
 function mapAdminUser<
   T extends {
     rbacRoles: Array<{ role: { slug: string; name: string } }>;
+    accounts: Array<{ providerId: string }> ;
+    authMethods: Array<{ method: string }> ;
   },
 >(user: T) {
-  const { rbacRoles, ...rest } = user;
+  const { rbacRoles, accounts, authMethods, ...rest } = user;
+  const authenticationMethods = Array.from(
+    new Set([
+      ...accounts.map((account) => account.providerId),
+      ...authMethods.map((authMethod) => authMethod.method),
+    ]),
+  );
   const assignment = rbacRoles[0]?.role;
   return {
     ...rest,
+    authenticationMethods,
     role: assignment
       ? { slug: assignment.slug, name: assignment.name }
       : { slug: Roles.PlatformUser, name: formatRoleLabel(Roles.PlatformUser) },

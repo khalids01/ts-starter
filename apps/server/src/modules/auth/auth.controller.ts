@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { auth } from "@auth/server";
-import prisma from "@db/server";
+import prisma, { getAuthSettings } from "@db/server";
 import { env } from "@env/server";
 import {
   CheckEmailDto,
@@ -43,6 +43,12 @@ export const authController = new Elysia({ prefix: "/auth" })
   .post(
     "/magic-link/login",
     async ({ body, request, set }) => {
+      const settings = await getAuthSettings();
+      if (!settings.magicLinkSignInEnabled) {
+        set.status = 403;
+        return { message: "Magic Link sign-in is currently disabled" };
+      }
+
       const user = await prisma.user.findUnique({
         where: { email: body.email },
       });
@@ -66,6 +72,12 @@ export const authController = new Elysia({ prefix: "/auth" })
   .post(
     "/magic-link/signup",
     async ({ body, request, set }) => {
+      const settings = await getAuthSettings();
+      if (!settings.magicLinkSignUpEnabled) {
+        set.status = 403;
+        return { message: "Magic Link sign-up is currently disabled" };
+      }
+
       const user = await prisma.user.findUnique({
         where: { email: body.email },
       });
