@@ -38,6 +38,12 @@ export const authOptions = {
     },
   },
   trustedOrigins: [env.CORS_ORIGIN],
+  socialProviders: {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
+  },
   advanced: {
     cookies: {
       session_token: {

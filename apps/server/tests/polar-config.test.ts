@@ -6,6 +6,8 @@ const baseEnv = {
   REDIS_URL: "redis://localhost:6379",
   BETTER_AUTH_SECRET: "test-secret-at-least-32-characters",
   BETTER_AUTH_URL: "http://localhost:3000",
+  GITHUB_CLIENT_ID: "test-github-client-id",
+  GITHUB_CLIENT_SECRET: "test-github-client-secret",
   CORS_ORIGIN: "http://localhost:3000",
   NODE_ENV: "test",
   POLAR_ACCESS_TOKEN: "",
