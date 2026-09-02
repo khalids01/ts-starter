@@ -1,13 +1,17 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { z } from "zod";
 
 import Logo from "@/components/core/logo";
 import SignUpForm from "@/features/auth/sign-up-form";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 
 export const Route = createFileRoute("/_auth/signup")({
-  beforeLoad: async ({ context }) => {
+  validateSearch: z.object({
+    oauthError: z.string().optional(),
+  }),
+  beforeLoad: async ({ context, search }) => {
     const session = context.session ?? (await getRootSession());
-    if (session) {
+    if (session && search.oauthError !== "account_exists") {
       throw redirect({ to: "/dashboard" });
     }
   },
@@ -15,6 +19,8 @@ export const Route = createFileRoute("/_auth/signup")({
 });
 
 function RouteComponent() {
+  const { oauthError } = Route.useSearch();
+
   return (
     <>
       <header className="border-b">
@@ -27,7 +33,7 @@ function RouteComponent() {
           </div>
         </div>
       </header>
-      <SignUpForm />
+      <SignUpForm oauthError={oauthError} />
     </>
   );
 }

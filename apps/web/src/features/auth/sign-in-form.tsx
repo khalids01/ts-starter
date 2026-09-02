@@ -12,7 +12,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function SignInForm() {
+type SignInFormProps = {
+  oauthError?: string;
+};
+
+function getOAuthErrorMessage(oauthError?: string) {
+  if (oauthError === "signup_required") {
+    return "No account exists for this GitHub email. Create an account first, then sign in.";
+  }
+
+  return null;
+}
+
+export default function SignInForm({ oauthError }: SignInFormProps) {
+  const oauthErrorMessage = getOAuthErrorMessage(oauthError);
   const [isGitHubSubmitting, setIsGitHubSubmitting] = useState(false);
 
   const signInWithGitHub = async () => {
@@ -21,6 +34,7 @@ export default function SignInForm() {
     const { data, error } = await authClient.signIn.social({
       provider: "github",
       callbackURL: window.location.origin,
+      errorCallbackURL: window.location.origin + "/login?oauthError=signup_required",
       disableRedirect: true,
     });
 
@@ -67,6 +81,14 @@ export default function SignInForm() {
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">
       <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+      {oauthErrorMessage ? (
+        <div
+          role="alert"
+          className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+        >
+          {oauthErrorMessage}
+        </div>
+      ) : null}
       <form
         onSubmit={(e) => {
           e.preventDefault();

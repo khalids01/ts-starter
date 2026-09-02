@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import z from "zod";
@@ -12,15 +12,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function SignUpForm() {
+type SignUpFormProps = {
+  oauthError?: string;
+};
+
+export default function SignUpForm({ oauthError }: SignUpFormProps) {
   const [isGitHubSubmitting, setIsGitHubSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (oauthError === "account_exists") {
+      void authClient.signOut();
+    }
+  }, [oauthError]);
+
+  if (oauthError === "account_exists") {
+    return (
+      <div className="mx-auto mt-10 w-full max-w-md p-6 text-center">
+        <h1 className="text-3xl font-bold">Account already exists</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          This GitHub account is already registered. Please sign in instead.
+        </p>
+        <Link
+          to="/login"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+        >
+          Go to sign in
+        </Link>
+      </div>
+    );
+  }
 
   const signUpWithGitHub = async () => {
     setIsGitHubSubmitting(true);
 
     const { data, error } = await authClient.signIn.social({
       provider: "github",
-      callbackURL: window.location.origin,
+      callbackURL: window.location.origin + "/signup?oauthError=account_exists",
+      newUserCallbackURL: window.location.origin,
+      errorCallbackURL: window.location.origin + "/signup?oauthError=github_error",
+      requestSignUp: true,
       disableRedirect: true,
     });
 

@@ -41,6 +41,7 @@ export const authOptions = {
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID,
+      disableImplicitSignUp: true,
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
