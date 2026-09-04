@@ -4,9 +4,15 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import {
+  isAuthMethodEnabled,
+  LastUsedBadge,
+  type AuthMethod,
+  type AuthMode,
+  type PublicAuthSettings,
+} from "./auth-methods";
 
 type SocialProvider = "github" | "google" | "discord";
-type AuthMode = "sign-in" | "sign-up";
 
 const providers: Array<{
   id: SocialProvider;
@@ -59,7 +65,15 @@ function ProviderIcon({ provider, ...props }: SVGProps<SVGSVGElement> & { provid
   );
 }
 
-export function SocialAuthButtons({ mode }: { mode: AuthMode }) {
+export function SocialAuthButtons({
+  mode,
+  settings,
+  lastAuthMethod,
+}: {
+  mode: AuthMode;
+  settings: PublicAuthSettings;
+  lastAuthMethod: AuthMethod | null;
+}) {
   const [submittingProvider, setSubmittingProvider] = useState<SocialProvider | null>(null);
   const isSignUp = mode === "sign-up";
 
@@ -69,12 +83,10 @@ export function SocialAuthButtons({ mode }: { mode: AuthMode }) {
 
     const { data, error } = await authClient.signIn.social({
       provider,
-      callbackURL: isSignUp
-        ? origin
-        : origin,
+      callbackURL: `${origin}/auth-complete?method=${provider}`,
       ...(isSignUp
         ? {
-            newUserCallbackURL: origin,
+            newUserCallbackURL: `${origin}/auth-complete?method=${provider}`,
             requestSignUp: true,
           }
         : {}),
@@ -99,7 +111,7 @@ export function SocialAuthButtons({ mode }: { mode: AuthMode }) {
 
   return (
     <div className="space-y-3">
-      {providers.map((provider) => {
+      {providers.filter((provider) => isAuthMethodEnabled(settings, provider.id, mode)).map((provider) => {
         const isSubmitting = submittingProvider === provider.id;
 
         return (
@@ -121,7 +133,7 @@ export function SocialAuthButtons({ mode }: { mode: AuthMode }) {
             )}
             {isSubmitting
               ? `Opening ${provider.label}…`
-              : `Continue with ${provider.label}`}
+              : <span>Continue with {provider.label}<LastUsedBadge visible={lastAuthMethod === provider.id} /></span>}
           </Button>
         );
       })}

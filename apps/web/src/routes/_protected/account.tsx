@@ -41,6 +41,8 @@ function AccountPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstPassword, setFirstPassword] = useState("");
+  const [confirmFirstPassword, setConfirmFirstPassword] = useState("");
   const [disablePassword, setDisablePassword] = useState("");
   const [otp, setOtp] = useState("");
   const [awaitingOtp, setAwaitingOtp] = useState(false);
@@ -92,12 +94,18 @@ function AccountPage() {
     toast.success(`${providers.find((item) => item.id === provider)?.label} disconnected`);
   };
 
-  const requestSetPassword = async () => {
-    if (!session?.user.email) return;
+  const setInitialPassword = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (firstPassword.length < 8) return toast.error("Password must be at least 8 characters");
+    if (firstPassword !== confirmFirstPassword) return toast.error("Passwords do not match");
     setBusy("set-password");
-    await authClient.requestPasswordReset({ email: session.user.email, redirectTo: "/reset-password" });
+    const { error } = await authClient.setPassword({ newPassword: firstPassword });
     setBusy(null);
-    toast.success("Check your email for a link to set your password.");
+    if (error) return toast.error(error.message || "Could not set password");
+    setFirstPassword("");
+    setConfirmFirstPassword("");
+    await loadAccounts();
+    toast.success("Password login enabled for your account");
   };
 
   const changePassword = async (event: React.FormEvent) => {
@@ -172,9 +180,9 @@ function AccountPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Password</CardTitle><CardDescription>{hasPassword ? "Change your password. Other sessions will be signed out." : "Add password login to this account through a secure email link."}</CardDescription></CardHeader>
-        {hasPassword ? <CardContent><form id="password-form" onSubmit={changePassword} className="space-y-4"><div className="space-y-2"><Label htmlFor="current-password">Current password</Label><Input id="current-password" type="password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /></div><div className="space-y-2"><Label htmlFor="account-new-password">New password</Label><Input id="account-new-password" type="password" minLength={8} maxLength={128} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></div><div className="space-y-2"><Label htmlFor="account-confirm-password">Confirm new password</Label><Input id="account-confirm-password" type="password" required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></div></form></CardContent> : null}
-        <CardFooter>{hasPassword ? <Button type="submit" form="password-form" disabled={busy === "password"}>{busy === "password" ? "Changing..." : "Change password"}</Button> : <Button type="button" onClick={requestSetPassword} disabled={busy === "set-password"}>{busy === "set-password" ? "Sending..." : "Email me a set-password link"}</Button>}</CardFooter>
+        <CardHeader><CardTitle>Password</CardTitle><CardDescription>{hasPassword ? "Change your password. Other sessions will be signed out." : "Create a password here to enable password login for this account."}</CardDescription></CardHeader>
+        <CardContent>{hasPassword ? <form id="password-form" onSubmit={changePassword} className="space-y-4"><div className="space-y-2"><Label htmlFor="current-password">Current password</Label><Input id="current-password" type="password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /></div><div className="space-y-2"><Label htmlFor="account-new-password">New password</Label><Input id="account-new-password" type="password" minLength={8} maxLength={128} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></div><div className="space-y-2"><Label htmlFor="account-confirm-password">Confirm new password</Label><Input id="account-confirm-password" type="password" required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></div></form> : <form id="set-password-form" onSubmit={setInitialPassword} className="space-y-4"><div className="space-y-2"><Label htmlFor="first-password">Password</Label><Input id="first-password" type="password" minLength={8} maxLength={128} required value={firstPassword} onChange={(event) => setFirstPassword(event.target.value)} autoComplete="new-password" /></div><div className="space-y-2"><Label htmlFor="confirm-first-password">Confirm password</Label><Input id="confirm-first-password" type="password" required value={confirmFirstPassword} onChange={(event) => setConfirmFirstPassword(event.target.value)} autoComplete="new-password" /></div></form>}</CardContent>
+        <CardFooter>{hasPassword ? <Button type="submit" form="password-form" disabled={busy === "password"}>{busy === "password" ? "Changing..." : "Change password"}</Button> : <Button type="submit" form="set-password-form" disabled={busy === "set-password"}>{busy === "set-password" ? "Saving..." : "Set password"}</Button>}</CardFooter>
       </Card>
 
       <Card>

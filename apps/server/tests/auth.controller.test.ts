@@ -53,6 +53,27 @@ afterEach(() => {
 });
 
 describe("authController", () => {
+  it("exposes authentication availability to logged-out pages", async () => {
+    const { authController } = await import("../src/modules/auth/auth.controller");
+    const response = await authController.handle(
+      new Request("http://localhost/auth/settings"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      passwordSignInEnabled: true,
+      passwordSignUpEnabled: true,
+      magicLinkSignInEnabled: true,
+      magicLinkSignUpEnabled: true,
+      githubSignInEnabled: true,
+      githubSignUpEnabled: true,
+      googleSignInEnabled: true,
+      googleSignUpEnabled: true,
+      discordSignInEnabled: true,
+      discordSignUpEnabled: true,
+    });
+  });
+
   it("returns normalized account authentication methods for password guidance", async () => {
     findUniqueMock.mockResolvedValue({
       accounts: [{ providerId: "github" }, { providerId: "github" }],

@@ -28,6 +28,21 @@ function resolveCallbackURL(callbackURL?: string) {
 }
 
 export const authController = new Elysia({ prefix: "/auth" })
+  .get("/settings", async () => {
+    const settings = await getAuthSettings();
+    return {
+      passwordSignInEnabled: settings.passwordSignInEnabled,
+      passwordSignUpEnabled: settings.passwordSignUpEnabled,
+      magicLinkSignInEnabled: settings.magicLinkSignInEnabled,
+      magicLinkSignUpEnabled: settings.magicLinkSignUpEnabled,
+      githubSignInEnabled: settings.githubSignInEnabled,
+      githubSignUpEnabled: settings.githubSignUpEnabled,
+      googleSignInEnabled: settings.googleSignInEnabled,
+      googleSignUpEnabled: settings.googleSignUpEnabled,
+      discordSignInEnabled: settings.discordSignInEnabled,
+      discordSignUpEnabled: settings.discordSignUpEnabled,
+    };
+  })
   .post(
     "/check-email",
     async ({ body }) => {

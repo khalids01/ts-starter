@@ -34,6 +34,7 @@ import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AuthAuthCompleteRouteImport } from './routes/_auth/auth-complete'
 import { Route as AdminRolesRoleIdRouteImport } from './routes/admin/roles/$roleId'
 
 const SetupRoute = SetupRouteImport.update({
@@ -160,6 +161,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthAuthCompleteRoute = AuthAuthCompleteRouteImport.update({
+  id: '/_auth/auth-complete',
+  path: '/auth-complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRolesRoleIdRoute = AdminRolesRoleIdRouteImport.update({
   id: '/$roleId',
   path: '/$roleId',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
+  '/auth-complete': typeof AuthAuthCompleteRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/reset-password': typeof AuthResetPasswordRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/accept-invitation': typeof AcceptInvitationRoute
   '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
+  '/auth-complete': typeof AuthAuthCompleteRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/reset-password': typeof AuthResetPasswordRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
+  '/_auth/auth-complete': typeof AuthAuthCompleteRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/onboarding'
     | '/setup'
+    | '/auth-complete'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/accept-invitation'
     | '/onboarding'
     | '/setup'
+    | '/auth-complete'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/onboarding'
     | '/setup'
+    | '/_auth/auth-complete'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/reset-password'
@@ -338,6 +350,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   SetupRoute: typeof SetupRoute
+  AuthAuthCompleteRoute: typeof AuthAuthCompleteRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
@@ -524,6 +537,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/auth-complete': {
+      id: '/_auth/auth-complete'
+      path: '/auth-complete'
+      fullPath: '/auth-complete'
+      preLoaderRoute: typeof AuthAuthCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/roles/$roleId': {
       id: '/admin/roles/$roleId'
       path: '/$roleId'
@@ -596,6 +616,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   SetupRoute: SetupRoute,
+  AuthAuthCompleteRoute: AuthAuthCompleteRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
