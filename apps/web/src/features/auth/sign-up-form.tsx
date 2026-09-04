@@ -1,171 +1,62 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { toast } from "sonner";
-import z from "zod";
-
-import { client } from "@/lib/client";
-import { authClient } from "@/lib/auth-client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+import { client } from "@/lib/client";
 import { SocialAuthButtons } from "./social-auth-buttons";
 
-type SignUpFormProps = {
-  oauthError?: string;
-};
+export default function SignUpForm({ error, errorDescription }: { error?: string; errorDescription?: string }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordPending, setIsPasswordPending] = useState(false);
+  const [isMagicPending, setIsMagicPending] = useState(false);
 
-export default function SignUpForm({ oauthError }: SignUpFormProps) {
-  const oauthErrorMessage =
-    oauthError === "social_error"
-      ? "Social sign-up could not be completed. Please try again."
-      : null;
+  const handlePasswordSignup = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (password.length < 8) return toast.error("Password must be at least 8 characters");
+    if (password !== confirmPassword) return toast.error("Passwords do not match");
+    setIsPasswordPending(true);
+    const { error: signupError } = await authClient.signUp.email({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+      callbackURL: "/login?verified=true",
+    });
+    setIsPasswordPending(false);
+    if (signupError) return toast.error(signupError.message || "Could not create account");
+    toast.success("Account created. Check your email to verify it.");
+  };
 
-  useEffect(() => {
-    if (oauthError === "account_exists") {
-      void authClient.signOut();
-    }
-  }, [oauthError]);
-
-  if (oauthError === "account_exists") {
-    return (
-      <div className="mx-auto mt-10 w-full max-w-md p-6 text-center">
-        <h1 className="text-3xl font-bold">Account already exists</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          This social account is already registered. Please sign in instead.
-        </p>
-        <Link
-          to="/login"
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-        >
-          Go to sign in
-        </Link>
-      </div>
-    );
-  }
-
-  const magicLinkForm = useForm({
-    defaultValues: {
-      email: "",
-      name: "",
-    },
-    onSubmit: async ({ value }) => {
-      const { error } = await client.auth["magic-link"].signup.post({
-        email: value.email,
-        name: value.name,
-      });
-
-      if (error) {
-        // @ts-ignore
-        const message = error.value?.message || "Failed to send magic link";
-        toast.error(message);
-        return;
-      }
-
-      toast.success("Magic link sent! Check your email to confirm.");
-    },
-    validators: {
-      onSubmit: z.object({
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.email("Invalid email address"),
-      }),
-    },
-  });
+  const handleMagicSignup = async () => {
+    if (name.trim().length < 2 || !email.trim()) return toast.error("Enter your name and email first");
+    setIsMagicPending(true);
+    const { error: magicError } = await client.auth["magic-link"].signup.post({ name: name.trim(), email: email.trim().toLowerCase() });
+    setIsMagicPending(false);
+    if (magicError) return toast.error((magicError.value as { message?: string })?.message || "Failed to send magic link");
+    toast.success("Magic link sent. Check your email to confirm.");
+  };
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
+    <div className="mx-auto mt-10 w-full max-w-md p-6">
       <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
-      {oauthErrorMessage ? (
-        <div
-          role="alert"
-          className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-950"
-        >
-          {oauthErrorMessage}
-        </div>
-      ) : null}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          magicLinkForm.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <magicLinkForm.Field name="name">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor="magic-signup-name">Name</Label>
-                <Input
-                  id="magic-signup-name"
-                  name={field.name}
-                  placeholder="Your name"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-sm">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </magicLinkForm.Field>
-        </div>
-
-        <div>
-          <magicLinkForm.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor="magic-signup-email">Email</Label>
-                <Input
-                  id="magic-signup-email"
-                  name={field.name}
-                  type="email"
-                  placeholder="you@example.com"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-sm">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </magicLinkForm.Field>
-        </div>
-
-        <magicLinkForm.Subscribe>
-          {(state) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-            >
-              {state.isSubmitting ? "Sending..." : "Send Magic Link"}
-            </Button>
-          )}
-        </magicLinkForm.Subscribe>
+      {error ? <div role="alert" className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">{errorDescription || "Social sign-up could not be completed. If this email already has an account, sign in first and connect the provider from Account settings."}</div> : null}
+      <form onSubmit={handlePasswordSignup} className="space-y-4">
+        <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" required minLength={2} value={name} onChange={(event) => setName(event.target.value)} /></div>
+        <div className="space-y-2"><Label htmlFor="signup-email">Email</Label><Input id="signup-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></div>
+        <div className="space-y-2"><Label htmlFor="signup-password">Password</Label><Input id="signup-password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} /></div>
+        <div className="space-y-2"><Label htmlFor="confirm-password">Confirm password</Label><Input id="confirm-password" type="password" required autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></div>
+        <Button type="submit" className="w-full" disabled={isPasswordPending}>{isPasswordPending ? "Creating account..." : "Create account with password"}</Button>
       </form>
-
-      <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-        <div className="h-px flex-1 bg-border" />
-        <span>or</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+      <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><div className="h-px flex-1 bg-border" /><span>or</span><div className="h-px flex-1 bg-border" /></div>
+      <Button type="button" variant="outline" className="mb-3 w-full" disabled={isMagicPending} onClick={handleMagicSignup}>{isMagicPending ? "Sending..." : "Sign up with a magic link"}</Button>
       <SocialAuthButtons mode="sign-up" />
-      <div className="mt-4 text-center">
-        <Link
-          to="/login"
-          className="text-sm text-indigo-600 hover:text-indigo-800"
-        >
-          Already have an account? Sign In
-        </Link>
-      </div>
+      <div className="mt-4 text-center"><Link to="/login" className="text-sm text-indigo-600 hover:text-indigo-800">Already have an account? Sign In</Link></div>
     </div>
   );
 }

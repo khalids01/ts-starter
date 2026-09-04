@@ -18,6 +18,7 @@ export function toClientSession(
       onboardingComplete: session.user.onboardingComplete,
       plan: session.user.plan ?? null,
       subscriptionStatus: session.user.subscriptionStatus ?? null,
+      twoFactorEnabled: Boolean(session.user.twoFactorEnabled),
     },
     permissions: session.permissions,
     roles: session.roles,

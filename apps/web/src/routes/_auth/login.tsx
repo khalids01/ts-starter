@@ -7,7 +7,9 @@ import { getRootSession } from "@/features/user/lib/get-root-session";
 
 export const Route = createFileRoute("/_auth/login")({
   validateSearch: z.object({
-    oauthError: z.string().optional(),
+    error: z.string().optional(),
+    error_description: z.string().optional(),
+    verified: z.coerce.boolean().optional(),
   }),
   beforeLoad: async ({ context }) => {
     const session = context.session ?? (await getRootSession());
@@ -19,7 +21,7 @@ export const Route = createFileRoute("/_auth/login")({
 });
 
 function RouteComponent() {
-  const { oauthError } = Route.useSearch();
+  const { error, error_description, verified } = Route.useSearch();
 
   return (
     <>
@@ -33,7 +35,7 @@ function RouteComponent() {
           </div>
         </div>
       </header>
-      <SignInForm oauthError={oauthError} />
+      <SignInForm error={error} errorDescription={error_description} verified={verified} />
     </>
   )
 }

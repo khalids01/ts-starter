@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
 export const UpdateAuthSettingsDto = t.Object({
+  passwordSignInEnabled: t.Boolean(),
+  passwordSignUpEnabled: t.Boolean(),
   githubSignInEnabled: t.Boolean(),
   githubSignUpEnabled: t.Boolean(),
   googleSignInEnabled: t.Boolean(),

@@ -7,11 +7,12 @@ import { getRootSession } from "@/features/user/lib/get-root-session";
 
 export const Route = createFileRoute("/_auth/signup")({
   validateSearch: z.object({
-    oauthError: z.string().optional(),
+    error: z.string().optional(),
+    error_description: z.string().optional(),
   }),
-  beforeLoad: async ({ context, search }) => {
+  beforeLoad: async ({ context }) => {
     const session = context.session ?? (await getRootSession());
-    if (session && search.oauthError !== "account_exists") {
+    if (session) {
       throw redirect({ to: "/dashboard" });
     }
   },
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_auth/signup")({
 });
 
 function RouteComponent() {
-  const { oauthError } = Route.useSearch();
+  const { error, error_description } = Route.useSearch();
 
   return (
     <>
@@ -33,7 +34,7 @@ function RouteComponent() {
           </div>
         </div>
       </header>
-      <SignUpForm oauthError={oauthError} />
+      <SignUpForm error={error} errorDescription={error_description} />
     </>
   );
 }

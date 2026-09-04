@@ -10,6 +10,7 @@ export type AuthClientSessionUser = {
   onboardingComplete: boolean;
   plan: string | null;
   subscriptionStatus: string | null;
+  twoFactorEnabled?: boolean | null;
 };
 
 export type AuthSessionRecord = {
@@ -32,7 +33,7 @@ export type AuthClientSession = {
 
 export type ClientSessionUser = Pick<
   AuthClientSessionUser,
-  "id" | "name" | "email" | "onboardingComplete" | "plan" | "subscriptionStatus"
+  "id" | "name" | "email" | "onboardingComplete" | "plan" | "subscriptionStatus" | "twoFactorEnabled"
 >;
 
 export type ClientSession = {

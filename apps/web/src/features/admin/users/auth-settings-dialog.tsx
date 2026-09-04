@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Switch } from "@/components/ui/switch";
 
 type AuthSettings = {
+  passwordSignInEnabled: boolean;
+  passwordSignUpEnabled: boolean;
   githubSignInEnabled: boolean;
   githubSignUpEnabled: boolean;
   googleSignInEnabled: boolean;
@@ -22,6 +24,7 @@ type AuthSettings = {
 type SettingKey = keyof AuthSettings;
 
 const methods: Array<{ label: string; signIn: SettingKey; signUp: SettingKey }> = [
+  { label: "Password", signIn: "passwordSignInEnabled", signUp: "passwordSignUpEnabled" },
   { label: "GitHub", signIn: "githubSignInEnabled", signUp: "githubSignUpEnabled" },
   { label: "Google", signIn: "googleSignInEnabled", signUp: "googleSignUpEnabled" },
   { label: "Discord", signIn: "discordSignInEnabled", signUp: "discordSignUpEnabled" },

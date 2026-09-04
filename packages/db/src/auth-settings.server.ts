@@ -2,9 +2,11 @@ import prisma from "./client.server";
 
 const AUTH_SETTINGS_ID = "default";
 
-export type AuthMethod = "github" | "google" | "discord" | "magic-link";
+export type AuthMethod = "github" | "google" | "discord" | "magic-link" | "password";
 
 export type AuthSettingsInput = {
+  passwordSignInEnabled: boolean;
+  passwordSignUpEnabled: boolean;
   githubSignInEnabled: boolean;
   githubSignUpEnabled: boolean;
   googleSignInEnabled: boolean;
@@ -16,6 +18,8 @@ export type AuthSettingsInput = {
 };
 
 const defaults: AuthSettingsInput = {
+  passwordSignInEnabled: true,
+  passwordSignUpEnabled: true,
   githubSignInEnabled: true,
   githubSignUpEnabled: true,
   googleSignInEnabled: true,

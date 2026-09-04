@@ -9,6 +9,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
   authMethods   UserAuthMethod[]
+  twoFactors    TwoFactor[]
+  twoFactorEnabled Boolean @default(false)
   banned        Boolean   @default(false)
   banReason     String?
   archived      Boolean   @default(false)
@@ -114,8 +116,22 @@ model Verification {
   @@map("verification")
 }
 
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("twoFactor")
+}
+
 model AuthSettings {
   id                     String   @id
+  passwordSignInEnabled  Boolean  @default(true)
+  passwordSignUpEnabled  Boolean  @default(true)
   githubSignInEnabled    Boolean  @default(true)
   githubSignUpEnabled    Boolean  @default(true)
   googleSignInEnabled    Boolean  @default(true)

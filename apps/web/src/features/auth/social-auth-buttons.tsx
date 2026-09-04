@@ -70,7 +70,7 @@ export function SocialAuthButtons({ mode }: { mode: AuthMode }) {
     const { data, error } = await authClient.signIn.social({
       provider,
       callbackURL: isSignUp
-        ? `${origin}/signup?oauthError=account_exists`
+        ? origin
         : origin,
       ...(isSignUp
         ? {
@@ -78,9 +78,7 @@ export function SocialAuthButtons({ mode }: { mode: AuthMode }) {
             requestSignUp: true,
           }
         : {}),
-      errorCallbackURL: isSignUp
-        ? `${origin}/signup?oauthError=social_error`
-        : `${origin}/login?oauthError=signup_required`,
+      errorCallbackURL: `${origin}/${isSignUp ? "signup" : "login"}`,
       disableRedirect: true,
     });
 

@@ -28,6 +28,7 @@ const getAuthSessionMock = mock(
         onboardingComplete: true,
         plan: null,
         subscriptionStatus: null,
+        twoFactorEnabled: false,
       },
       session: {
         id: "session-1",
@@ -75,6 +76,7 @@ describe("sessionController", () => {
         onboardingComplete: true,
         plan: null,
         subscriptionStatus: null,
+        twoFactorEnabled: false,
       },
       permissions: [Permissions.FeedbackSubmit],
       roles: [{ id: "role-user", slug: Roles.PlatformUser, name: "User" }],

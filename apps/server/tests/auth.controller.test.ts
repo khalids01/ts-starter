@@ -21,6 +21,8 @@ mock.module("@db/server", () => ({
   },
   Prisma,
   getAuthSettings: mock(async () => ({
+    passwordSignInEnabled: true,
+    passwordSignUpEnabled: true,
     githubSignInEnabled: true,
     githubSignUpEnabled: true,
     googleSignInEnabled: true,
@@ -51,6 +53,35 @@ afterEach(() => {
 });
 
 describe("authController", () => {
+  it("returns normalized account authentication methods for password guidance", async () => {
+    findUniqueMock.mockResolvedValue({
+      accounts: [{ providerId: "github" }, { providerId: "github" }],
+      authMethods: [{ method: "magic-link" }],
+    });
+
+    const { authController } = await import("../src/modules/auth/auth.controller");
+    const response = await authController.handle(
+      new Request("http://localhost/auth/check-email", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: "  USER@Example.COM " }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      exists: true,
+      authenticationMethods: ["github", "magic-link"],
+    });
+    expect(findUniqueMock).toHaveBeenCalledWith({
+      where: { email: "user@example.com" },
+      select: {
+        accounts: { select: { providerId: true } },
+        authMethods: { select: { method: true } },
+      },
+    });
+  });
+
   it("returns 400 when magic-link login is requested for an unknown user", async () => {
     findUniqueMock.mockResolvedValue(null);
 

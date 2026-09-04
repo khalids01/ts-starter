@@ -1,13 +1,19 @@
 import { polar, checkout, portal, webhooks } from "@polar-sh/better-auth";
 import type { WebhookSubscriptionCreatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptioncreatedpayload";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload";
-import { magicLink } from "better-auth/plugins";
+import { magicLink, twoFactor } from "better-auth/plugins";
 import prisma from "../../db/src/client.server";
 import { getUserSessionCacheVersion } from "../../db/src/session-revocation.server";
 import { env } from "../../env/src/env.server";
 import type { BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { sendEmail, magicLinkTemplate } from "../../email/src/index.server";
+import {
+  sendEmail,
+  magicLinkTemplate,
+  passwordResetEmailTemplate,
+  twoFactorCodeEmailTemplate,
+  verificationEmailTemplate,
+} from "../../email/src/index.server";
 
 import { authAvailability } from "./lib/auth-availability.server";
 import { defaultUserRoleOnSignup } from "./lib/default-user-role.server";
@@ -40,6 +46,40 @@ export const authOptions = {
     },
   },
   trustedOrigins: [env.CORS_ORIGIN],
+  account: {
+    accountLinking: {
+      enabled: true,
+      disableImplicitLinking: false,
+      allowDifferentEmails: false,
+      allowUnlinkingAll: false,
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your TS Starter password",
+        html: await passwordResetEmailTemplate(url),
+      });
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: false,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your TS Starter email",
+        html: await verificationEmailTemplate(url),
+      });
+    },
+  },
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID,
@@ -185,6 +225,22 @@ export const authOptions = {
           subject: "Sign in to TS Starter",
           html: await magicLinkTemplate(url),
         });
+      },
+    }),
+    twoFactor({
+      issuer: "TS Starter",
+      otpOptions: {
+        period: 5,
+        digits: 6,
+        allowedAttempts: 5,
+        storeOTP: "hashed",
+        sendOTP: async ({ user, otp }) => {
+          await sendEmail({
+            to: user.email,
+            subject: "Your TS Starter verification code",
+            html: await twoFactorCodeEmailTemplate(otp),
+          });
+        },
       },
     }),
     authAvailability(),

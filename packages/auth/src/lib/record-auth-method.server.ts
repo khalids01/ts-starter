@@ -9,6 +9,10 @@ function resolveAuthMethod(context: { path?: string; params?: { id?: string } })
     }
   }
 
+  if (context.path === "/sign-in/email") {
+    return "password";
+  }
+
   return context.path === "/magic-link/verify" ? "magic-link" : null;
 }
 
