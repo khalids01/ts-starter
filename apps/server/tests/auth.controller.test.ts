@@ -23,6 +23,10 @@ mock.module("@db/server", () => ({
   getAuthSettings: mock(async () => ({
     githubSignInEnabled: true,
     githubSignUpEnabled: true,
+    googleSignInEnabled: true,
+    googleSignUpEnabled: true,
+    discordSignInEnabled: true,
+    discordSignUpEnabled: true,
     magicLinkSignInEnabled: true,
     magicLinkSignUpEnabled: true,
   })),

@@ -2,8 +2,11 @@ import type { BetterAuthPlugin } from "better-auth";
 import { recordUserAuthMethod, type AuthMethod } from "@db/server";
 
 function resolveAuthMethod(context: { path?: string; params?: { id?: string } }): AuthMethod | null {
-  if (context.path === "/callback/:id" && context.params?.id === "github") {
-    return "github";
+  if (context.path === "/callback/:id") {
+    const provider = context.params?.id;
+    if (provider === "github" || provider === "google" || provider === "discord") {
+      return provider;
+    }
   }
 
   return context.path === "/magic-link/verify" ? "magic-link" : null;

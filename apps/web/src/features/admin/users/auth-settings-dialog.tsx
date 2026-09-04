@@ -11,6 +11,10 @@ import { Switch } from "@/components/ui/switch";
 type AuthSettings = {
   githubSignInEnabled: boolean;
   githubSignUpEnabled: boolean;
+  googleSignInEnabled: boolean;
+  googleSignUpEnabled: boolean;
+  discordSignInEnabled: boolean;
+  discordSignUpEnabled: boolean;
   magicLinkSignInEnabled: boolean;
   magicLinkSignUpEnabled: boolean;
 };
@@ -19,6 +23,8 @@ type SettingKey = keyof AuthSettings;
 
 const methods: Array<{ label: string; signIn: SettingKey; signUp: SettingKey }> = [
   { label: "GitHub", signIn: "githubSignInEnabled", signUp: "githubSignUpEnabled" },
+  { label: "Google", signIn: "googleSignInEnabled", signUp: "googleSignUpEnabled" },
+  { label: "Discord", signIn: "discordSignInEnabled", signUp: "discordSignUpEnabled" },
   { label: "Magic Link", signIn: "magicLinkSignInEnabled", signUp: "magicLinkSignUpEnabled" },
 ];
 

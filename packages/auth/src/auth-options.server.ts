@@ -47,6 +47,18 @@ export const authOptions = {
       clientSecret: env.GITHUB_CLIENT_SECRET,
       prompt: "select_account",
     },
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      disableImplicitSignUp: true,
+      prompt: "select_account",
+    },
+    discord: {
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
+      disableImplicitSignUp: true,
+      prompt: "consent",
+    },
   },
   advanced: {
     cookies: {

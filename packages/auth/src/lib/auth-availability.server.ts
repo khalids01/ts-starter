@@ -8,6 +8,24 @@ type AuthRequestBody = {
   name?: string;
 };
 
+const socialProviderSettings = {
+  github: {
+    label: "GitHub",
+    signIn: "githubSignInEnabled",
+    signUp: "githubSignUpEnabled",
+  },
+  google: {
+    label: "Google",
+    signIn: "googleSignInEnabled",
+    signUp: "googleSignUpEnabled",
+  },
+  discord: {
+    label: "Discord",
+    signIn: "discordSignInEnabled",
+    signUp: "discordSignUpEnabled",
+  },
+} as const;
+
 export function authAvailability(): BetterAuthPlugin {
   return {
     id: "auth-availability",
@@ -19,11 +37,15 @@ export function authAvailability(): BetterAuthPlugin {
           const isSignUp = body.requestSignUp === true || Boolean(body.name);
           const settings = await getAuthSettings();
 
-          if (body.provider === "github") {
-            const enabled = isSignUp ? settings.githubSignUpEnabled : settings.githubSignInEnabled;
+          const provider = body.provider as keyof typeof socialProviderSettings;
+          const providerSettings = socialProviderSettings[provider];
+
+          if (providerSettings) {
+            const settingKey = isSignUp ? providerSettings.signUp : providerSettings.signIn;
+            const enabled = settings[settingKey];
             if (!enabled) {
               throw new APIError("FORBIDDEN", {
-                message: `GitHub ${isSignUp ? "sign-up" : "sign-in"} is currently disabled`,
+                message: `${providerSettings.label} ${isSignUp ? "sign-up" : "sign-in"} is currently disabled`,
               });
             }
           }

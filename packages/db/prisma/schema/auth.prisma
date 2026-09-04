@@ -118,6 +118,10 @@ model AuthSettings {
   id                     String   @id
   githubSignInEnabled    Boolean  @default(true)
   githubSignUpEnabled    Boolean  @default(true)
+  googleSignInEnabled    Boolean  @default(true)
+  googleSignUpEnabled    Boolean  @default(true)
+  discordSignInEnabled   Boolean  @default(true)
+  discordSignUpEnabled   Boolean  @default(true)
   magicLinkSignInEnabled Boolean  @default(true)
   magicLinkSignUpEnabled Boolean  @default(true)
   updatedAt              DateTime @updatedAt
