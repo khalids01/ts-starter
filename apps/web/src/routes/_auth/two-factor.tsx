@@ -13,7 +13,7 @@ function TwoFactorPage() {
   const [code, setCode] = useState("");
   const [pending, setPending] = useState(false);
   const sendCode = async () => {
-    const { error } = await authClient.twoFactor.sendOtp({ trustDevice: false });
+    const { error } = await authClient.twoFactor.sendOtp();
     if (error) toast.error(error.message || "Could not send verification code");
     else toast.success("Verification code sent to your email.");
   };

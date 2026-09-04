@@ -99,7 +99,10 @@ function AccountPage() {
     if (firstPassword.length < 8) return toast.error("Password must be at least 8 characters");
     if (firstPassword !== confirmFirstPassword) return toast.error("Passwords do not match");
     setBusy("set-password");
-    const { error } = await authClient.setPassword({ newPassword: firstPassword });
+    const { error } = await authClient.$fetch<{ status: boolean }>("/set-password", {
+      method: "POST",
+      body: { newPassword: firstPassword },
+    });
     setBusy(null);
     if (error) return toast.error(error.message || "Could not set password");
     setFirstPassword("");
@@ -128,7 +131,7 @@ function AccountPage() {
 
   const sendEnableCode = async () => {
     setBusy("enable-2fa");
-    const { error } = await authClient.twoFactor.sendOtp({ trustDevice: false });
+    const { error } = await authClient.twoFactor.sendOtp();
     setBusy(null);
     if (error) return toast.error(error.message || "Could not send verification code");
     setAwaitingOtp(true);
