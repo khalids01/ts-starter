@@ -28,7 +28,8 @@ const providers: Array<{
   {
     id: "google",
     label: "Google",
-    className: "bg-white text-[#1f1f1f] shadow-sm hover:bg-[#f8f9fa]",
+    className:
+      "bg-[#202124] text-white shadow-sm hover:bg-[#303134] focus-visible:ring-[#8ab4f8]",
   },
   {
     id: "discord",

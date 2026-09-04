@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { useSession } from "@/providers/session-provider";
 
@@ -36,6 +37,7 @@ function AccountPage() {
   const { session, refresh } = useSession();
   const { error, error_description } = Route.useSearch();
   const [name, setName] = useState(session?.user?.name || "");
+  const [image, setImage] = useState(session?.user?.image || "");
   const [accounts, setAccounts] = useState<Array<{ id: string; providerId: string }>>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -63,7 +65,20 @@ function AccountPage() {
   const updateProfile = async (event: React.FormEvent) => {
     event.preventDefault();
     setBusy("profile");
-    const { error } = await authClient.updateUser({ name: name.trim() });
+    const normalizedImage = image.trim();
+    if (normalizedImage) {
+      try {
+        const parsed = new URL(normalizedImage);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error();
+      } catch {
+        setBusy(null);
+        return toast.error("Avatar URL must be a valid http or https URL");
+      }
+    }
+    const { error } = await authClient.updateUser({
+      name: name.trim(),
+      image: normalizedImage || null,
+    });
     setBusy(null);
     if (error) return toast.error(error.message || "Failed to update profile");
     await refresh();
@@ -168,7 +183,7 @@ function AccountPage() {
 
       <Card>
         <CardHeader><CardTitle>Public Profile</CardTitle><CardDescription>This is how others will see you on the site.</CardDescription></CardHeader>
-        <CardContent><form id="profile-form" onSubmit={updateProfile} className="space-y-4"><div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={session?.user?.email || ""} disabled /></div><div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" value={name} onChange={(event) => setName(event.target.value)} /></div></form></CardContent>
+        <CardContent><form id="profile-form" onSubmit={updateProfile} className="space-y-5"><div className="flex items-center gap-4"><Avatar className="size-16"><AvatarImage src={image.trim() || undefined} alt={name || "User avatar"} /><AvatarFallback className="text-lg">{name.trim().charAt(0).toUpperCase() || "U"}</AvatarFallback></Avatar><div><p className="font-medium">Profile picture</p><p className="text-sm text-muted-foreground">OAuth images are used automatically, or enter your own URL below.</p></div></div><div className="space-y-2"><Label htmlFor="avatar-url">Avatar URL</Label><Input id="avatar-url" type="url" value={image} onChange={(event) => setImage(event.target.value)} placeholder="https://example.com/avatar.jpg" /></div><div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={session?.user?.email || ""} disabled /></div><div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" value={name} onChange={(event) => setName(event.target.value)} /></div></form></CardContent>
         <CardFooter><Button type="submit" form="profile-form" disabled={busy === "profile"}>{busy === "profile" ? "Saving..." : "Save changes"}</Button></CardFooter>
       </Card>
 

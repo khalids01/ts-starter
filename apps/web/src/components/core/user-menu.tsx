@@ -13,7 +13,7 @@ import { authClient } from "@/lib/auth-client";
 import { useSession } from "@/providers/session-provider";
 
 import { Button } from "../ui/button";
-import { User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { cn } from "@/lib/utils";
 import { Permissions } from "@rbac";
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
@@ -81,9 +81,12 @@ export default function UserMenu() {
         render={
           <Button
             variant="outline"
-            className="h-10 w-10 shrink-0 rounded-md"
+            className="h-10 w-10 shrink-0 rounded-full p-0"
           >
-            <User className="size-5" />
+            <Avatar className="size-9">
+              <AvatarImage src={session.user.image ?? undefined} alt={session.user.name} />
+              <AvatarFallback>{session.user.name.trim().charAt(0).toUpperCase() || "U"}</AvatarFallback>
+            </Avatar>
           </Button>
         }
       ></DropdownMenuTrigger>

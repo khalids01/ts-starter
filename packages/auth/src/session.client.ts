@@ -15,6 +15,7 @@ export function toClientSession(
       id: session.user.id,
       name: session.user.name,
       email: session.user.email,
+      image: session.user.image ?? null,
       onboardingComplete: session.user.onboardingComplete,
       plan: session.user.plan ?? null,
       subscriptionStatus: session.user.subscriptionStatus ?? null,
