@@ -20,6 +20,12 @@ mock.module("@db/server", () => ({
     },
   },
   Prisma,
+  getAuthSettings: mock(async () => ({
+    githubSignInEnabled: true,
+    githubSignUpEnabled: true,
+    magicLinkSignInEnabled: true,
+    magicLinkSignUpEnabled: true,
+  })),
 }));
 
 mock.module("@auth/server", () => ({

@@ -1,4 +1,4 @@
-import prisma from "@db/server";
+import prisma, { revokeAllUserSessions } from "@db/server";
 import { getRoleIdBySlug } from "@db/server/rbac/assignments";
 import { isAssignableRoleSlug } from "@db/server/rbac/roles";
 import {
@@ -370,6 +370,8 @@ export class UsersService {
       select: adminUserSelect,
     });
 
+    await revokeAllUserSessions(id);
+
     await activityService.record({
       type: "user.banned",
       actorUserId: actor.id,
@@ -417,6 +419,8 @@ export class UsersService {
       data: { archived: true },
       select: adminUserSelect,
     });
+
+    await revokeAllUserSessions(id);
 
     await activityService.record({
       type: "user.archived",

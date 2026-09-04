@@ -9,8 +9,8 @@ import { TanstackQueryProvider } from "@/providers/tanstack-query";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 import { VisitorTracker } from "@/features/visitors/visitor-tracker";
+import { SessionProvider } from "@/providers/session-provider";
 import type { ClientSessionResult } from "@auth/client";
-
 
 export interface RouterAppContext {
   session?: ClientSessionResult;
@@ -35,16 +35,14 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     const session = await getRootSession();
     return { session: session ?? null };
   },
-  staleTime: Infinity,
-  gcTime: Infinity,
-  shouldReload: false,
+  staleTime: 30_000,
+  gcTime: 5 * 60_000,
 
   component: RootDocument,
 });
 
 function RootDocument() {
-
-
+  const { session } = Route.useLoaderData();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -52,9 +50,11 @@ function RootDocument() {
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TanstackQueryProvider>
-            <Outlet />
-          </TanstackQueryProvider>
+          <SessionProvider initialSession={session}>
+            <TanstackQueryProvider>
+              <Outlet />
+            </TanstackQueryProvider>
+          </SessionProvider>
           <VisitorTracker />
           <Toaster richColors position="top-center"/>
           {/* {isDevelopment && <TanStackRouterDevtools position="bottom-left" />} */}

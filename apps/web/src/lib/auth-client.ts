@@ -1,5 +1,5 @@
 import { polarClient } from "@polar-sh/better-auth/client";
-import { magicLinkClient} from "better-auth/client/plugins";
+import { magicLinkClient } from "better-auth/client/plugins";
 import type { AuthClientSession } from "@auth/client";
 import { env } from "@env/client";
 import { createAuthClient } from "better-auth/react";
@@ -13,8 +13,10 @@ export const authClient = createAuthClient({
     magicLinkClient(),
     polarClient(),
   ],
-  advanced: {
-    useCheckSession: true,
+  sessionOptions: {
+    refetchInterval: 4 * 60,
+    refetchOnWindowFocus: true,
+    refetchWhenOffline: false,
   },
 });
 

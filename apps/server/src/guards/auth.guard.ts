@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import type { Permission } from "@rbac";
 import {
   getAuthSession,
+  getSetCookieHeaders,
   type AuthGetSessionResult,
   type AuthSessionData,
   type AuthUser,
@@ -33,26 +34,37 @@ export type AuthGuardContext = {
 };
 
 export const authGuard = new Elysia()
-  .derive({ as: "scoped" }, async ({ request }): Promise<AuthGuardContext> => {
-    const session: AuthGetSessionResult = await getAuthSession(request.headers);
+  .derive(
+    { as: "scoped" },
+    async ({ request, set }): Promise<AuthGuardContext> => {
+      const session: AuthGetSessionResult = await getAuthSession(
+        request.headers,
+        (headers) => {
+          const cookies = getSetCookieHeaders(headers);
+          if (cookies.length > 0) {
+            set.headers["set-cookie"] = cookies;
+          }
+        },
+      );
 
-    const userId = session?.user.id;
-    const permissions =
-      getPermissionsFromSession(session) ??
-      (userId
-        ? await getEffectivePermissions(userId)
-        : emptyPermissions);
+      const userId = session?.user.id;
+      const permissions =
+        getPermissionsFromSession(session) ??
+        (userId
+          ? await getEffectivePermissions(userId)
+          : emptyPermissions);
 
-    const user: AuthUser | undefined = session?.user;
+      const user: AuthUser | undefined = session?.user;
 
-    return {
-      session,
-      user,
-      userId,
-      permissions,
-      hasPermission: createPermissionChecker(permissions),
-    };
-  })
+      return {
+        session,
+        user,
+        userId,
+        permissions,
+        hasPermission: createPermissionChecker(permissions),
+      };
+    },
+  )
   .onBeforeHandle({ as: "scoped" }, ({ session, set }) => {
     const rejection = getAccountStatusRejection(session?.user);
     if (!rejection) {

@@ -16,29 +16,8 @@ import { Button } from "../ui/button";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Permissions } from "@rbac";
-import { env } from "@env/client";
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
-
-function expireCookie(name: string) {
-  document.cookie = `${name}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-}
-
-function clearAuthCookies() {
-  const sessionCookieName = env.AUTH_SESSION_COOKIE_NAME;
-
-  const authCookieNames = new Set([
-    sessionCookieName,
-    `__Secure-${sessionCookieName}`,
-    "better-auth.session_token",
-    "__Secure-better-auth.session_token",
-    "better-auth.session_data",
-    "__Secure-better-auth.session_data",
-  ]);
-
-  for (const cookieName of authCookieNames) {
-    expireCookie(cookieName);
-  }
-}
+import { toast } from "sonner";
 
 export default function UserMenu() {
   const navigate = useNavigate();
@@ -87,9 +66,8 @@ export default function UserMenu() {
               });
               await router.invalidate();
             },
-            onError() {
-              clearAuthCookies();
-              window.location.assign("/");
+            onError(error) {
+              toast.error(error.error.message ?? "Failed to sign out");
             },
           },
         });

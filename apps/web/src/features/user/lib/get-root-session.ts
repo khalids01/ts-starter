@@ -1,5 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
+import {
+  getRequestHeaders,
+  setResponseHeader,
+} from "@tanstack/react-start/server";
 
 import type { ClientSession, ClientSessionResult } from "@auth/client";
 import { env } from "@env/client";
@@ -14,8 +17,6 @@ type BackendSessionContext =
       primaryRoleId: null;
     };
 
-const sessionRequests = new Map<string, Promise<ClientSessionResult>>();
-
 function normalizeSessionContext(
   session: BackendSessionContext,
 ): ClientSessionResult {
@@ -24,42 +25,34 @@ function normalizeSessionContext(
 
 export const getRootSession = createServerFn({ method: "GET" }).handler(
   async (): Promise<ClientSessionResult> => {
-    return getRootSessionForHeaders(getRequestHeaders());
+    return getRootSessionForHeaders(getRequestHeaders(), (cookies) => {
+      setResponseHeader("set-cookie", cookies);
+    });
   },
 );
 
 export async function getRootSessionForHeaders(
   headers: Headers,
+  onSetCookie?: (cookies: string[]) => void,
 ): Promise<ClientSessionResult> {
-    const requestHeaders = new Headers();
+  const requestHeaders = new Headers();
 
-    const cookie = headers.get("cookie");
-    const authorization = headers.get("authorization");
-    const cacheKey = `${cookie ?? ""}\n${authorization ?? ""}`;
+  const cookie = headers.get("cookie");
+  const authorization = headers.get("authorization");
+  if (cookie) {
+    requestHeaders.set("cookie", cookie);
+  }
 
-    if (cookie) {
-      requestHeaders.set("cookie", cookie);
-    }
+  if (authorization) {
+    requestHeaders.set("authorization", authorization);
+  }
 
-    if (authorization) {
-      requestHeaders.set("authorization", authorization);
-    }
-
-    const existing = sessionRequests.get(cacheKey);
-    if (existing) {
-      return existing;
-    }
-
-    const request = fetchRootSession(requestHeaders).finally(() => {
-      sessionRequests.delete(cacheKey);
-    });
-
-    sessionRequests.set(cacheKey, request);
-    return request;
+  return fetchRootSession(requestHeaders, onSetCookie);
 }
 
 async function fetchRootSession(
   requestHeaders: Headers,
+  onSetCookie?: (cookies: string[]) => void,
 ): Promise<ClientSessionResult> {
   try {
     const response = await fetch(`${env.VITE_SERVER_URL}/session/context`, {
@@ -67,13 +60,26 @@ async function fetchRootSession(
     });
 
     if (!response.ok) {
-      return null;
+      throw new Error(`Session service returned ${response.status}`);
+    }
+
+    const responseHeaders = response.headers as Headers & {
+      getSetCookie?: () => string[];
+    };
+    const cookies =
+      responseHeaders.getSetCookie?.() ??
+      (response.headers.get("set-cookie")
+        ? [response.headers.get("set-cookie")!]
+        : []);
+
+    if (cookies.length > 0) {
+      onSetCookie?.(cookies);
     }
 
     const session = (await response.json()) as BackendSessionContext;
     return normalizeSessionContext(session);
   } catch (error) {
     console.error("[getRootSession] session context request failed", error);
-    return null;
+    throw new Error("Authentication service is unavailable", { cause: error });
   }
 }

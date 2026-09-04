@@ -45,6 +45,7 @@ export const authOptions = {
       clientId: env.GITHUB_CLIENT_ID,
       disableImplicitSignUp: true,
       clientSecret: env.GITHUB_CLIENT_SECRET,
+      prompt: "select_account",
     },
   },
   advanced: {
@@ -54,6 +55,7 @@ export const authOptions = {
       },
     },
     defaultCookieAttributes: {
+      domain: env.AUTH_COOKIE_DOMAIN,
       sameSite: env.NODE_ENV === "production" ? "none" : "lax",
       secure: env.NODE_ENV === "production",
       httpOnly: true,

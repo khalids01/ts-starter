@@ -12,6 +12,7 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     AUTH_SESSION_COOKIE_NAME: z.string().min(1).default("better-auth.session_token"),
+    AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
     POLAR_ACCESS_TOKEN: z.string().optional(),
     POLAR_WEBHOOK_SECRET: z.string().optional(),
     POLAR_SUCCESS_URL: z.string().url().optional(),
