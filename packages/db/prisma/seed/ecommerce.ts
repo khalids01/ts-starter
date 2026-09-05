@@ -53,6 +53,32 @@ type ShippingRateSeed = {
   sortOrder?: number;
 };
 
+type ProductSeed = {
+  slug: string;
+  name: string;
+  description: string;
+  categorySlug: string;
+  brandSlug?: string;
+  coverImageUrl: string;
+  badgeLabel?: string;
+  isFeatured?: boolean;
+  isTrending?: boolean;
+  searchKeywords: string[];
+  attributes: Record<string, { value?: string; text?: string; number?: string }>;
+  highlights: Array<{ title: string; description: string }>;
+  variants: Array<{
+    sku: string;
+    name: string;
+    price: string;
+    compareAtPrice?: string;
+    costPrice?: string;
+    weightValue?: string;
+    weightUnit?: "g" | "kg" | "lb" | "oz";
+    attributes: Record<string, string>;
+    quantity: number;
+  }>;
+};
+
 const attributes: AttributeSeed[] = [
   {
     slug: "color",
@@ -266,6 +292,161 @@ const shippingRates: ShippingRateSeed[] = [
     amount: "120.00",
     freeOverAmount: "3000.00",
     sortOrder: 20,
+  },
+];
+
+const products: ProductSeed[] = [
+  {
+    slug: "samsung-galaxy-a55-5g",
+    name: "Samsung Galaxy A55 5G",
+    description: "A balanced 5G smartphone with a vivid display, capable camera, and practical storage options.",
+    categorySlug: "phones",
+    brandSlug: "samsung",
+    coverImageUrl: "/ecommerce/images/slider2.jpg",
+    badgeLabel: "Popular",
+    isFeatured: true,
+    isTrending: true,
+    searchKeywords: ["phone", "android", "5g", "samsung", "galaxy"],
+    attributes: {
+      processor: { text: "Exynos 1480" },
+      camera: { text: "50 MP main camera" },
+      "display-size": { number: "6.6" },
+      warranty: { number: "12" },
+    },
+    highlights: [
+      { title: "Everyday performance", description: "Responsive performance for work, entertainment, and daily apps." },
+      { title: "Flexible storage", description: "Choose the storage option that suits your needs." },
+    ],
+    variants: [
+      {
+        sku: "SAMSUNG-A55-8-128-BLK",
+        name: "8 GB / 128 GB / Black",
+        price: "49990.00",
+        compareAtPrice: "52990.00",
+        costPrice: "44500.00",
+        attributes: { ram: "8gb", storage: "128gb", color: "black" },
+        quantity: 18,
+      },
+      {
+        sku: "SAMSUNG-A55-8-256-BLU",
+        name: "8 GB / 256 GB / Blue",
+        price: "55990.00",
+        costPrice: "50000.00",
+        attributes: { ram: "8gb", storage: "256gb", color: "blue" },
+        quantity: 12,
+      },
+    ],
+  },
+  {
+    slug: "dell-inspiron-15",
+    name: "Dell Inspiron 15",
+    description: "A dependable laptop configuration for study, office work, and everyday productivity.",
+    categorySlug: "laptops",
+    brandSlug: "dell",
+    coverImageUrl: "/ecommerce/images/slider1.jpg",
+    badgeLabel: "Work ready",
+    isFeatured: true,
+    searchKeywords: ["laptop", "dell", "inspiron", "office", "student"],
+    attributes: {
+      processor: { text: "Intel Core i5" },
+      "display-size": { number: "15.6" },
+      warranty: { number: "12" },
+    },
+    highlights: [
+      { title: "Productivity focused", description: "A practical configuration for documents, browsing, and meetings." },
+      { title: "Room to grow", description: "Generous memory and storage for everyday workloads." },
+    ],
+    variants: [
+      {
+        sku: "DELL-INS15-16-512-BLK",
+        name: "16 GB / 512 GB / Black",
+        price: "78990.00",
+        compareAtPrice: "82990.00",
+        costPrice: "71000.00",
+        attributes: { ram: "16gb", storage: "512gb", color: "black" },
+        quantity: 8,
+      },
+    ],
+  },
+  {
+    slug: "rajshahi-premium-mango",
+    name: "Rajshahi Premium Mango",
+    description: "Fresh seasonal mangoes presented in convenient family-size packs.",
+    categorySlug: "mango",
+    coverImageUrl: "/ecommerce/icons/mango.png",
+    badgeLabel: "Seasonal",
+    isFeatured: true,
+    isTrending: true,
+    searchKeywords: ["mango", "fruit", "rajshahi", "fresh", "seasonal"],
+    attributes: {
+      origin: { value: "rajshahi" },
+      grade: { value: "premium" },
+    },
+    highlights: [
+      { title: "Selected quality", description: "Premium-grade fruit selected for a consistently enjoyable pack." },
+      { title: "Fresh packs", description: "Stocked in practical pack sizes for home and gifting." },
+    ],
+    variants: [
+      {
+        sku: "MANGO-RAJ-PREM-1KG",
+        name: "1 kg pack",
+        price: "350.00",
+        costPrice: "250.00",
+        weightValue: "1",
+        weightUnit: "kg",
+        attributes: { "weight-pack": "1kg" },
+        quantity: 40,
+      },
+      {
+        sku: "MANGO-RAJ-PREM-5KG",
+        name: "5 kg family box",
+        price: "1590.00",
+        compareAtPrice: "1750.00",
+        costPrice: "1200.00",
+        weightValue: "5",
+        weightUnit: "kg",
+        attributes: { "weight-pack": "5kg" },
+        quantity: 16,
+      },
+    ],
+  },
+  {
+    slug: "sundarbans-natural-honey",
+    name: "Sundarbans Natural Honey",
+    description: "A pantry-ready honey product offered in two useful pack sizes.",
+    categorySlug: "honey",
+    coverImageUrl: "/ecommerce/icons/groceries.png",
+    badgeLabel: "Store pick",
+    isFeatured: true,
+    searchKeywords: ["honey", "sundarbans", "food", "natural", "pantry"],
+    attributes: { origin: { value: "sundarbans" } },
+    highlights: [
+      { title: "Convenient sizes", description: "Choose a smaller jar or a family-size pack." },
+      { title: "Simple pantry staple", description: "Suitable for drinks, breakfast, and everyday recipes." },
+    ],
+    variants: [
+      {
+        sku: "HONEY-SUN-500G",
+        name: "500 g jar",
+        price: "650.00",
+        costPrice: "450.00",
+        weightValue: "500",
+        weightUnit: "g",
+        attributes: { "weight-pack": "500g" },
+        quantity: 25,
+      },
+      {
+        sku: "HONEY-SUN-1KG",
+        name: "1 kg jar",
+        price: "1190.00",
+        compareAtPrice: "1300.00",
+        costPrice: "850.00",
+        weightValue: "1",
+        weightUnit: "kg",
+        attributes: { "weight-pack": "1kg" },
+        quantity: 14,
+      },
+    ],
   },
 ];
 
@@ -595,8 +776,13 @@ const brands = [
   { slug: "hp", name: "HP" },
 ];
 
+type SavedAttribute = {
+  id: string;
+  values: Map<string, string>;
+};
+
 async function seedAttributes() {
-  const saved = new Map<string, { id: string }>();
+  const saved = new Map<string, SavedAttribute>();
 
   for (const attribute of attributes) {
     const row = await prisma.productAttribute.upsert({
@@ -617,10 +803,11 @@ async function seedAttributes() {
       select: { id: true },
     });
 
-    saved.set(attribute.slug, row);
+    const savedAttribute: SavedAttribute = { id: row.id, values: new Map() };
+    saved.set(attribute.slug, savedAttribute);
 
     for (const [index, value] of (attribute.values ?? []).entries()) {
-      await prisma.productAttributeValue.upsert({
+      const savedValue = await prisma.productAttributeValue.upsert({
         where: {
           attributeId_value: {
             attributeId: row.id,
@@ -637,7 +824,9 @@ async function seedAttributes() {
           label: value.label,
           sortOrder: value.sortOrder ?? index,
         },
+        select: { id: true },
       });
+      savedAttribute.values.set(value.value, savedValue.id);
     }
   }
 
@@ -682,7 +871,7 @@ async function seedCategories() {
 
 async function seedCategoryTemplates(
   categoryBySlug: Map<string, { id: string }>,
-  attributeBySlug: Map<string, { id: string }>,
+  attributeBySlug: Map<string, SavedAttribute>,
 ) {
   for (const [categorySlug, template] of Object.entries(categoryTemplates)) {
     const category = categoryBySlug.get(categorySlug);
@@ -737,8 +926,9 @@ async function seedCategoryTemplates(
 }
 
 async function seedBrands() {
+  const saved = new Map<string, { id: string }>();
   for (const brand of brands) {
-    await prisma.productBrand.upsert({
+    const row = await prisma.productBrand.upsert({
       where: { slug: brand.slug },
       create: {
         name: brand.name,
@@ -749,12 +939,15 @@ async function seedBrands() {
         name: brand.name,
         isFeatured: brand.isFeatured ?? false,
       },
+      select: { id: true },
     });
+    saved.set(brand.slug, row);
   }
+  return saved;
 }
 
 async function seedInventoryLocations() {
-  await prisma.inventoryLocation.upsert({
+  return prisma.inventoryLocation.upsert({
     where: { code: "main" },
     create: {
       name: "Main Warehouse",
@@ -765,6 +958,7 @@ async function seedInventoryLocations() {
       name: "Main Warehouse",
       isActive: true,
     },
+    select: { id: true },
   });
 }
 
@@ -793,13 +987,199 @@ async function seedShippingRates() {
   }
 }
 
+function requiredSeedEntry<T>(value: T | undefined, message: string): T {
+  if (!value) {
+    throw new Error(message);
+  }
+  return value;
+}
+
+async function seedProducts(
+  categoryBySlug: Map<string, { id: string }>,
+  attributeBySlug: Map<string, SavedAttribute>,
+  brandBySlug: Map<string, { id: string }>,
+  location: { id: string },
+) {
+  for (const item of products) {
+    const category = requiredSeedEntry(
+      categoryBySlug.get(item.categorySlug),
+      `Missing seeded category: ${item.categorySlug}`,
+    );
+    const brand = item.brandSlug
+      ? requiredSeedEntry(
+          brandBySlug.get(item.brandSlug),
+          `Missing seeded brand: ${item.brandSlug}`,
+        )
+      : undefined;
+
+    const product = await prisma.product.upsert({
+      where: { slug: item.slug },
+      create: {
+        slug: item.slug,
+        name: item.name,
+        description: item.description,
+        categoryId: category.id,
+        brandId: brand?.id,
+        status: "active",
+        isActive: true,
+        isFeatured: item.isFeatured ?? false,
+        isTrending: item.isTrending ?? false,
+        badgeLabel: item.badgeLabel,
+        coverImageUrl: item.coverImageUrl,
+        searchKeywords: item.searchKeywords,
+        seoTitle: item.name,
+        seoDescription: item.description,
+      },
+      update: {
+        name: item.name,
+        description: item.description,
+        categoryId: category.id,
+        brandId: brand?.id ?? null,
+        status: "active",
+        isActive: true,
+        isFeatured: item.isFeatured ?? false,
+        isTrending: item.isTrending ?? false,
+        badgeLabel: item.badgeLabel ?? null,
+        coverImageUrl: item.coverImageUrl,
+        searchKeywords: item.searchKeywords,
+        seoTitle: item.name,
+        seoDescription: item.description,
+      },
+      select: { id: true },
+    });
+
+    for (const [attributeSlug, input] of Object.entries(item.attributes)) {
+      const attribute = requiredSeedEntry(
+        attributeBySlug.get(attributeSlug),
+        `Missing seeded attribute: ${attributeSlug}`,
+      );
+      const valueId = input.value
+        ? requiredSeedEntry(
+            attribute.values.get(input.value),
+            `Missing seeded attribute value: ${attributeSlug}.${input.value}`,
+          )
+        : undefined;
+
+      await prisma.productAttributeAssignment.upsert({
+        where: {
+          productId_attributeId: {
+            productId: product.id,
+            attributeId: attribute.id,
+          },
+        },
+        create: {
+          productId: product.id,
+          attributeId: attribute.id,
+          attributeValueId: valueId,
+          rawText: input.text,
+          rawNumber: input.number,
+        },
+        update: {
+          attributeValueId: valueId ?? null,
+          rawText: input.text ?? null,
+          rawNumber: input.number ?? null,
+          rawBoolean: null,
+          rawDate: null,
+        },
+      });
+    }
+
+    await prisma.productHighlight.deleteMany({ where: { productId: product.id } });
+    await prisma.productHighlight.createMany({
+      data: item.highlights.map((highlight, index) => ({
+        productId: product.id,
+        title: highlight.title,
+        description: highlight.description,
+        sortOrder: index,
+      })),
+    });
+
+    for (const [index, variantInput] of item.variants.entries()) {
+      const snapshot: Record<string, string> = {};
+      const valueIds: string[] = [];
+      for (const [attributeSlug, value] of Object.entries(variantInput.attributes)) {
+        const attribute = requiredSeedEntry(
+          attributeBySlug.get(attributeSlug),
+          `Missing seeded attribute: ${attributeSlug}`,
+        );
+        valueIds.push(
+          requiredSeedEntry(
+            attribute.values.get(value),
+            `Missing seeded attribute value: ${attributeSlug}.${value}`,
+          ),
+        );
+        snapshot[attributeSlug] = value;
+      }
+
+      const variant = await prisma.productVariant.upsert({
+        where: { sku: variantInput.sku },
+        create: {
+          productId: product.id,
+          sku: variantInput.sku,
+          name: variantInput.name,
+          attributesSnapshot: snapshot,
+          price: variantInput.price,
+          compareAtPrice: variantInput.compareAtPrice,
+          costPrice: variantInput.costPrice,
+          isDefault: index === 0,
+          isActive: true,
+          imageUrls: [item.coverImageUrl],
+          weightValue: variantInput.weightValue,
+          weightUnit: variantInput.weightUnit,
+        },
+        update: {
+          productId: product.id,
+          name: variantInput.name,
+          attributesSnapshot: snapshot,
+          price: variantInput.price,
+          compareAtPrice: variantInput.compareAtPrice ?? null,
+          costPrice: variantInput.costPrice ?? null,
+          isDefault: index === 0,
+          isActive: true,
+          imageUrls: [item.coverImageUrl],
+          weightValue: variantInput.weightValue ?? null,
+          weightUnit: variantInput.weightUnit ?? null,
+        },
+        select: { id: true },
+      });
+
+      await prisma.productVariantAttributeValue.deleteMany({
+        where: { variantId: variant.id },
+      });
+      await prisma.productVariantAttributeValue.createMany({
+        data: valueIds.map((attributeValueId) => ({
+          variantId: variant.id,
+          attributeValueId,
+        })),
+      });
+
+      const stockKey = `${variant.id}:${location.id}:no_batch`;
+      await prisma.inventoryStock.upsert({
+        where: { stockKey },
+        create: {
+          stockKey,
+          variantId: variant.id,
+          locationId: location.id,
+          quantityOnHand: variantInput.quantity,
+          quantityReserved: 0,
+          reorderLevel: 5,
+        },
+        update: {
+          reorderLevel: 5,
+        },
+      });
+    }
+  }
+}
+
 export async function seedEcommerce() {
   const attributeBySlug = await seedAttributes();
   const categoryBySlug = await seedCategories();
   await seedCategoryTemplates(categoryBySlug, attributeBySlug);
-  await seedBrands();
-  await seedInventoryLocations();
+  const brandBySlug = await seedBrands();
+  const location = await seedInventoryLocations();
   await seedShippingRates();
+  await seedProducts(categoryBySlug, attributeBySlug, brandBySlug, location);
 }
 
 if (import.meta.main) {

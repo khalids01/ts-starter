@@ -6,6 +6,7 @@
     "./*": "./src/*.ts"
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:reset": "prisma migrate reset",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
