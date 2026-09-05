@@ -35,7 +35,7 @@
     "db:migrate": "turbo -F @db db:migrate",
     "db:seed": "turbo -F @db db:seed",
     "db:seed:rbac": "turbo -F @db db:seed:rbac",
-    "db:seed:ecommerce": "turbo -F @db db:seed:ecommerce",
+    "db:seed:ecommerce": "bun run --cwd packages/db db:seed:ecommerce",
     "make-owner": "bun run --cwd packages/db db:make-owner"
   },
   "dependencies": {

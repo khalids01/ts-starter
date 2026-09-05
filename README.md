@@ -38,6 +38,22 @@ bun run db:migrate
 bun run db:seed
 ```
 
+### Seed a specific ecommerce catalog
+
+Each scoped command seeds the selected catalog together with its required categories, attributes, brands, products, variants, inventory, and shipping data.
+
+```bash
+bun db:seed:ecommerce --catalog=gadgets
+bun db:seed:ecommerce --catalog=phones
+bun db:seed:ecommerce --catalog=laptops
+bun db:seed:ecommerce --catalog=food
+bun db:seed:ecommerce --catalog=mango
+bun db:seed:ecommerce --catalog=honey
+bun db:seed:ecommerce --catalog=packaged-food
+bun db:seed:ecommerce --catalog=generic-gadget
+bun db:seed:ecommerce --catalog=generic-product
+```
+
 Then, run the development server:
 
 ```bash

@@ -448,7 +448,161 @@ const products: ProductSeed[] = [
       },
     ],
   },
+  {
+    slug: "xiaomi-wireless-earbuds",
+    name: "Xiaomi Wireless Earbuds",
+    description: "Compact wireless earbuds for calls, music, and everyday listening.",
+    categorySlug: "generic-gadget",
+    brandSlug: "xiaomi",
+    coverImageUrl: "/ecommerce/images/slider2.jpg",
+    badgeLabel: "Everyday gadget",
+    searchKeywords: ["earbuds", "wireless", "audio", "xiaomi", "gadget"],
+    attributes: { warranty: { number: "6" } },
+    highlights: [
+      { title: "Wireless listening", description: "A compact everyday audio option for music and calls." },
+    ],
+    variants: [
+      {
+        sku: "XIAOMI-EARBUDS-BLK",
+        name: "Black",
+        price: "2490.00",
+        costPrice: "1800.00",
+        attributes: { color: "black" },
+        quantity: 24,
+      },
+      {
+        sku: "XIAOMI-EARBUDS-WHT",
+        name: "White",
+        price: "2490.00",
+        costPrice: "1800.00",
+        attributes: { color: "white" },
+        quantity: 20,
+      },
+    ],
+  },
+  {
+    slug: "premium-aromatic-rice",
+    name: "Premium Aromatic Rice",
+    description: "A pantry staple packed for convenient everyday cooking.",
+    categorySlug: "packaged-food",
+    coverImageUrl: "/ecommerce/icons/groceries.png",
+    badgeLabel: "Pantry essential",
+    searchKeywords: ["rice", "food", "pantry", "aromatic", "grocery"],
+    attributes: {},
+    highlights: [
+      { title: "Convenient pack", description: "A practical family-size pack for regular meals." },
+    ],
+    variants: [
+      {
+        sku: "RICE-AROMATIC-5KG",
+        name: "5 kg pack",
+        price: "890.00",
+        costPrice: "720.00",
+        weightValue: "5",
+        weightUnit: "kg",
+        attributes: { "weight-pack": "5kg" },
+        quantity: 30,
+      },
+    ],
+  },
+  {
+    slug: "everyday-value-pack",
+    name: "Everyday Value Pack",
+    description: "A simple example product demonstrating the reusable generic catalog template.",
+    categorySlug: "generic-product",
+    coverImageUrl: "/ecommerce/images/slider1.jpg",
+    searchKeywords: ["generic", "value", "example", "product"],
+    attributes: {},
+    highlights: [
+      { title: "Reusable template", description: "A ready-to-edit example for a simple product catalog." },
+    ],
+    variants: [
+      {
+        sku: "GENERIC-VALUE-1KG",
+        name: "1 kg pack",
+        price: "199.00",
+        costPrice: "140.00",
+        weightValue: "1",
+        weightUnit: "kg",
+        attributes: { "weight-pack": "1kg" },
+        quantity: 20,
+      },
+    ],
+  },
 ];
+
+function readOption(name: string) {
+  const prefix = `--${name}=`;
+  const inline = process.argv.find((argument) => argument.startsWith(prefix));
+  if (inline) {
+    return inline.slice(prefix.length);
+  }
+  const index = process.argv.indexOf(`--${name}`);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
+function categoryIsWithin(categorySlug: string, rootSlug: string) {
+  let current = categories.find((category) => category.slug === categorySlug);
+  while (current) {
+    if (current.slug === rootSlug) {
+      return true;
+    }
+    current = current.parentSlug
+      ? categories.find((category) => category.slug === current?.parentSlug)
+      : undefined;
+  }
+  return false;
+}
+
+function ecommerceSeedSelection(requestedCatalog?: string) {
+  const catalog = (requestedCatalog ?? "all").trim().toLowerCase();
+  const validCatalogs = new Set(["all", ...categories.map((category) => category.slug)]);
+  if (!validCatalogs.has(catalog)) {
+    throw new Error(
+      `Unknown ecommerce catalog "${catalog}". Choose one of: ${[...validCatalogs].join(", ")}`,
+    );
+  }
+
+  const selectedCategories =
+    catalog === "all"
+      ? [...categories]
+      : categories.filter((category) => categoryIsWithin(category.slug, catalog));
+  const categorySlugs = new Set(selectedCategories.map((category) => category.slug));
+
+  if (catalog !== "all") {
+    let current = categories.find((category) => category.slug === catalog);
+    while (current?.parentSlug) {
+      const parent = categories.find((category) => category.slug === current?.parentSlug);
+      if (!parent) break;
+      categorySlugs.add(parent.slug);
+      current = parent;
+    }
+  }
+
+  const selectedProducts = products.filter(
+    (product) => catalog === "all" || categoryIsWithin(product.categorySlug, catalog),
+  );
+  const attributeSlugs = new Set<string>();
+  for (const categorySlug of categorySlugs) {
+    for (const template of categoryTemplates[categorySlug] ?? []) {
+      attributeSlugs.add(template.attributeSlug);
+    }
+  }
+  for (const product of selectedProducts) {
+    Object.keys(product.attributes).forEach((slug) => attributeSlugs.add(slug));
+    product.variants.forEach((variant) =>
+      Object.keys(variant.attributes).forEach((slug) => attributeSlugs.add(slug)),
+    );
+  }
+
+  return {
+    catalog,
+    categories: categories.filter((category) => categorySlugs.has(category.slug)),
+    attributes: attributes.filter((attribute) => attributeSlugs.has(attribute.slug)),
+    products: selectedProducts,
+    brandSlugs: new Set(selectedProducts.flatMap((product) => product.brandSlug ?? [])),
+  };
+}
 
 const categoryTemplates: Record<string, TemplateAttributeSeed[]> = {
   phones: [
@@ -781,10 +935,10 @@ type SavedAttribute = {
   values: Map<string, string>;
 };
 
-async function seedAttributes() {
+async function seedAttributes(selectedAttributes: AttributeSeed[]) {
   const saved = new Map<string, SavedAttribute>();
 
-  for (const attribute of attributes) {
+  for (const attribute of selectedAttributes) {
     const row = await prisma.productAttribute.upsert({
       where: { slug: attribute.slug },
       create: {
@@ -833,10 +987,10 @@ async function seedAttributes() {
   return saved;
 }
 
-async function seedCategories() {
+async function seedCategories(selectedCategories: CategorySeed[]) {
   const saved = new Map<string, { id: string }>();
 
-  for (const category of categories) {
+  for (const category of selectedCategories) {
     const parent = category.parentSlug ? saved.get(category.parentSlug) : undefined;
 
     const row = await prisma.category.upsert({
@@ -876,7 +1030,7 @@ async function seedCategoryTemplates(
   for (const [categorySlug, template] of Object.entries(categoryTemplates)) {
     const category = categoryBySlug.get(categorySlug);
     if (!category) {
-      throw new Error(`Missing seeded category: ${categorySlug}`);
+      continue;
     }
 
     for (const item of template) {
@@ -925,9 +1079,9 @@ async function seedCategoryTemplates(
   }
 }
 
-async function seedBrands() {
+async function seedBrands(selectedBrandSlugs: Set<string>) {
   const saved = new Map<string, { id: string }>();
-  for (const brand of brands) {
+  for (const brand of brands.filter((item) => selectedBrandSlugs.has(item.slug))) {
     const row = await prisma.productBrand.upsert({
       where: { slug: brand.slug },
       create: {
@@ -995,12 +1149,13 @@ function requiredSeedEntry<T>(value: T | undefined, message: string): T {
 }
 
 async function seedProducts(
+  selectedProducts: ProductSeed[],
   categoryBySlug: Map<string, { id: string }>,
   attributeBySlug: Map<string, SavedAttribute>,
   brandBySlug: Map<string, { id: string }>,
   location: { id: string },
 ) {
-  for (const item of products) {
+  for (const item of selectedProducts) {
     const category = requiredSeedEntry(
       categoryBySlug.get(item.categorySlug),
       `Missing seeded category: ${item.categorySlug}`,
@@ -1172,18 +1327,37 @@ async function seedProducts(
   }
 }
 
-export async function seedEcommerce() {
-  const attributeBySlug = await seedAttributes();
-  const categoryBySlug = await seedCategories();
+export async function seedEcommerce(requestedCatalog?: string) {
+  const selection = ecommerceSeedSelection(
+    requestedCatalog ?? readOption("catalog") ?? process.env.ECOMMERCE_SEED_CATALOG,
+  );
+  const attributeBySlug = await seedAttributes(selection.attributes);
+  const categoryBySlug = await seedCategories(selection.categories);
   await seedCategoryTemplates(categoryBySlug, attributeBySlug);
-  const brandBySlug = await seedBrands();
+  const brandBySlug = await seedBrands(selection.brandSlugs);
   const location = await seedInventoryLocations();
   await seedShippingRates();
-  await seedProducts(categoryBySlug, attributeBySlug, brandBySlug, location);
+  await seedProducts(
+    selection.products,
+    categoryBySlug,
+    attributeBySlug,
+    brandBySlug,
+    location,
+  );
+  console.log(
+    `Seeded ecommerce catalog "${selection.catalog}": ${selection.categories.length} categories, ${selection.products.length} products.`,
+  );
 }
 
 if (import.meta.main) {
-  await seedEcommerce();
-  console.log("Ecommerce seed completed");
-  await prisma.$disconnect();
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    console.log("Usage: bun db:seed:ecommerce [--catalog all|gadgets|phones|laptops|food|fresh-fruit|mango|honey|packaged-food|generic-gadget|generic-product]");
+  } else {
+    try {
+      await seedEcommerce();
+      console.log("Ecommerce seed completed");
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
 }
