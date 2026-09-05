@@ -13,19 +13,21 @@ const [{ default: prisma }, { getRedis }, { seedRbac }, { seedEcommerce }] =
     import("./ecommerce"),
   ]);
 
-await seedRbac();
-console.log("RBAC seed completed");
-
-await seedEcommerce();
-console.log("Ecommerce seed completed");
-
-await prisma.$disconnect();
-
 try {
-  const redis = getRedis();
-  if (redis.status === "ready") {
-    await redis.quit();
+  await seedRbac();
+  console.log("RBAC seed completed");
+
+  await seedEcommerce();
+  console.log("Ecommerce seed completed");
+} finally {
+  await prisma.$disconnect();
+
+  try {
+    const redis = getRedis();
+    if (redis.status === "ready") {
+      await redis.quit();
+    }
+  } catch {
+    // Redis optional during seed
   }
-} catch {
-  // Redis optional during seed
 }

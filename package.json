@@ -34,7 +34,9 @@
     "db:reset": "turbo -F @db db:reset",
     "db:migrate": "turbo -F @db db:migrate",
     "db:seed": "turbo -F @db db:seed",
-    "make-owner": "bun run packages/db/scripts/make-owner.ts"
+    "db:seed:rbac": "turbo -F @db db:seed:rbac",
+    "db:seed:ecommerce": "turbo -F @db db:seed:ecommerce",
+    "make-owner": "bun run --cwd packages/db db:make-owner"
   },
   "dependencies": {
     "@env": "workspace:*",

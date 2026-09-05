@@ -10,8 +10,10 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "bun run prisma/seed/index.ts",
-    "db:make-owner": "bun run scripts/make-owner.ts"
+    "db:seed": "prisma generate && bun run prisma/seed/index.ts",
+    "db:seed:rbac": "prisma generate && bun --env-file=../../apps/server/.env run prisma/seed/rbac.ts",
+    "db:seed:ecommerce": "prisma generate && bun --env-file=../../apps/server/.env run prisma/seed/ecommerce.ts",
+    "db:make-owner": "prisma generate && bun run scripts/make-owner.ts"
   },
   "devDependencies": {
     "@config": "workspace:*",

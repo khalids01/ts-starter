@@ -36,6 +36,12 @@
     },
     "db:seed": {
       "cache": false
+    },
+    "db:seed:rbac": {
+      "cache": false
+    },
+    "db:seed:ecommerce": {
+      "cache": false
     }
   }
 }
