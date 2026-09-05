@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {"title": "Storefront Browse and Checkout Sequence", "quality_profile": "showcase", "column_fit": "spread", "viewBox": [1180, 820]},
+  "participants": [
+    {"id": "customer", "type": "external", "label": "Customer"},
+    {"id": "web", "type": "frontend", "label": "Shop UI"},
+    {"id": "api", "type": "backend", "label": "Shop API"},
+    {"id": "product", "type": "backend", "label": "Product Service"},
+    {"id": "order", "type": "backend", "label": "Order Service"},
+    {"id": "db", "type": "database", "label": "PostgreSQL"}
+  ],
+  "segments": [
+    {"from": 150, "to": 385, "label": "Browse"},
+    {"from": 405, "to": 715, "label": "Checkout transaction"}
+  ],
+  "messages": [
+    {"id": "open_shop", "from": "customer", "to": "web", "y": 185, "label": "open /shop"},
+    {"id": "list_products", "from": "web", "to": "api", "y": 225, "label": "GET /shop/products", "variant": "emphasis"},
+    {"id": "query_products", "from": "api", "to": "product", "y": 265, "label": "filters + pagination"},
+    {"id": "read_catalog", "from": "product", "to": "db", "y": 305, "label": "active products, variants, stock"},
+    {"id": "catalog_rows", "from": "db", "to": "product", "y": 345, "label": "catalog rows", "variant": "return"},
+    {"id": "render_products", "from": "api", "to": "web", "y": 385, "label": "mapped storefront products", "variant": "return"},
+    {"id": "checkout", "from": "customer", "to": "web", "y": 445, "label": "submit cart + address"},
+    {"id": "create_order", "from": "web", "to": "api", "y": 485, "label": "POST /shop/orders", "variant": "emphasis"},
+    {"id": "validate_cart", "from": "api", "to": "order", "y": 525, "label": "validate variants and totals"},
+    {"id": "reserve", "from": "order", "to": "db", "y": 565, "label": "transaction: reserve stock + create order", "variant": "emphasis"},
+    {"id": "order_rows", "from": "db", "to": "order", "y": 615, "label": "order and reservation", "variant": "return"},
+    {"id": "order_response", "from": "api", "to": "web", "y": 665, "label": "order number + status", "variant": "return"},
+    {"id": "success", "from": "web", "to": "customer", "y": 710, "label": "checkout success", "variant": "return"}
+  ],
+  "activations": [
+    {"participant": "web", "from": 220, "to": 715, "type": "frontend"},
+    {"participant": "api", "from": 225, "to": 670, "type": "backend"},
+    {"participant": "product", "from": 260, "to": 370, "type": "backend"},
+    {"participant": "order", "from": 520, "to": 640, "type": "backend"},
+    {"participant": "db", "from": 300, "to": 620, "type": "database"}
+  ],
+  "cards": [
+    {"dot": "cyan", "title": "Public Read Path", "items": ["Browsing does not require authentication", "Filters derive from the same category and attribute data as admin catalog"]},
+    {"dot": "amber", "title": "Checkout Safety", "items": ["Order creation validates sellability and available stock", "Reservation and order rows are written transactionally"]}
+  ]
+}

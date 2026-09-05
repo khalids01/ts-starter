@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {"title": "Product and Inventory Data Flow", "quality_profile": "showcase", "viewBox": [1180, 760]},
+  "stages": [{"label": "Define"}, {"label": "Build"}, {"label": "Stock"}, {"label": "Sell"}, {"label": "Fulfill"}],
+  "nodes": [
+    {"id": "catalog", "type": "backend", "label": "Catalog", "sublabel": "category, brand, template", "stage": 0, "row": 1},
+    {"id": "rbac", "type": "security", "label": "RBAC", "sublabel": "authorize admin writes", "stage": 0, "row": 3},
+    {"id": "product", "type": "backend", "label": "Product", "sublabel": "details and attributes", "stage": 1, "row": 0},
+    {"id": "variant", "type": "backend", "label": "Variants", "sublabel": "SKU, price, options", "stage": 1, "row": 2},
+    {"id": "inventory", "type": "database", "label": "InventoryStock", "sublabel": "location and available qty", "stage": 2, "row": 1},
+    {"id": "movement", "type": "database", "label": "Movements", "sublabel": "receive, adjust, sale", "stage": 2, "row": 3},
+    {"id": "shop", "type": "frontend", "label": "Public Shop", "sublabel": "cards, filters, detail", "stage": 3, "row": 0},
+    {"id": "cart", "type": "frontend", "label": "Cart", "sublabel": "variant and quantity", "stage": 3, "row": 2},
+    {"id": "order", "type": "database", "label": "Order", "sublabel": "line items and totals", "stage": 4, "row": 1},
+    {"id": "reservation", "type": "database", "label": "Reservation", "sublabel": "hold then commit or release", "stage": 4, "row": 3}
+  ],
+  "flows": [
+    {"id": "catalog_product", "from": "catalog", "to": "product", "label": "category + template", "classification": "catalog metadata", "variant": "emphasis"},
+    {"id": "rbac_catalog", "from": "rbac", "to": "catalog", "label": "authorized mutation", "classification": "permission decision", "variant": "security"},
+    {"id": "product_variant", "from": "product", "to": "variant", "label": "variant definitions", "classification": "merchandise"},
+    {"id": "variant_stock", "from": "variant", "to": "inventory", "label": "SKU stock key", "classification": "inventory"},
+    {"id": "inventory_movement", "from": "inventory", "to": "movement", "label": "quantity change", "classification": "audit trail", "variant": "dashed"},
+    {"id": "product_shop", "from": "product", "to": "shop", "label": "active product data", "classification": "public catalog", "variant": "emphasis"},
+    {"id": "inventory_shop", "from": "inventory", "to": "shop", "label": "availability", "classification": "computed stock"},
+    {"id": "shop_cart", "from": "shop", "to": "cart", "label": "selected variant", "classification": "client state"},
+    {"id": "cart_order", "from": "cart", "to": "order", "label": "checkout lines", "classification": "purchase"},
+    {"id": "order_reservation", "from": "order", "to": "reservation", "label": "reserve requested qty", "classification": "transaction", "variant": "emphasis"},
+    {"id": "reservation_inventory", "from": "reservation", "to": "inventory", "label": "reserved quantity", "classification": "stock hold", "variant": "dashed"}
+  ],
+  "cards": [
+    {"dot": "emerald", "title": "Single Model", "items": ["Admin catalog and public shop read the same ecommerce tables", "Variants connect product choices to price and inventory"]},
+    {"dot": "orange", "title": "Inventory Accounting", "items": ["Stock stores current quantities", "Movements explain changes; reservations protect checkout quantities"]}
+  ]
+}

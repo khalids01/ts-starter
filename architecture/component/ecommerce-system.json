@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {"title": "Ecommerce System Architecture", "quality_profile": "showcase", "viewBox": [1180, 720]},
+  "layout": {"mode": "grid", "origin": [70, 80], "cols": 4, "gapX": 58, "gapY": 70, "cellW": 220, "cellH": 100},
+  "components": [
+    {"id": "admin_ui", "type": "frontend", "label": "Admin Ecommerce UI", "sublabel": "catalog, products, inventory, orders", "row": 0, "col": 0},
+    {"id": "shop_ui", "type": "frontend", "label": "Public Shop", "sublabel": "browse, cart, checkout", "row": 1, "col": 0},
+    {"id": "api", "type": "backend", "label": "Elysia API", "sublabel": "admin and public controllers", "row": 0, "col": 1},
+    {"id": "auth", "type": "security", "label": "Auth + RBAC Guards", "sublabel": "session, role, permission", "row": 1, "col": 1},
+    {"id": "catalog", "type": "backend", "label": "Catalog Service", "sublabel": "categories, brands, templates", "row": 0, "col": 2},
+    {"id": "products", "type": "backend", "label": "Product Service", "sublabel": "products, variants, highlights", "row": 1, "col": 2},
+    {"id": "inventory", "type": "backend", "label": "Inventory Service", "sublabel": "locations, batches, stock", "row": 2, "col": 2},
+    {"id": "orders", "type": "backend", "label": "Order Service", "sublabel": "checkout, reservation, status", "row": 3, "col": 2},
+    {"id": "postgres", "type": "database", "label": "PostgreSQL", "sublabel": "ecommerce source of truth", "row": 1, "col": 3},
+    {"id": "redis", "type": "database", "label": "Redis", "sublabel": "RBAC permission cache", "row": 3, "col": 3}
+  ],
+  "boundaries": [
+    {"kind": "security-group", "label": "Protected admin boundary", "wraps": ["admin_ui", "api", "auth", "catalog", "products", "inventory", "orders"], "pad": 22}
+  ],
+  "connections": [
+    {"id": "admin_api", "from": "admin_ui", "to": "api", "label": "admin API calls", "variant": "emphasis"},
+    {"id": "shop_api", "from": "shop_ui", "to": "api", "label": "public shop API"},
+    {"id": "api_auth", "from": "api", "to": "auth", "label": "guard protected routes", "variant": "security"},
+    {"id": "api_catalog", "from": "api", "to": "catalog", "label": "manage taxonomy"},
+    {"id": "api_products", "from": "api", "to": "products", "label": "manage merchandise"},
+    {"id": "api_inventory", "from": "api", "to": "inventory", "label": "receive and adjust stock"},
+    {"id": "api_orders", "from": "api", "to": "orders", "label": "checkout and fulfillment"},
+    {"id": "catalog_db", "from": "catalog", "to": "postgres", "label": "Category + ProductBrand"},
+    {"id": "products_db", "from": "products", "to": "postgres", "label": "Product + ProductVariant"},
+    {"id": "inventory_db", "from": "inventory", "to": "postgres", "label": "InventoryStock + movements"},
+    {"id": "orders_db", "from": "orders", "to": "postgres", "label": "Order + reservations"},
+    {"id": "auth_cache", "from": "auth", "to": "redis", "label": "effective permissions", "variant": "security"}
+  ],
+  "cards": [
+    {"dot": "cyan", "title": "Catalog Meaning", "items": ["Catalog is a management module, not a second product model", "Categories, brands, and attribute templates shape products"]},
+    {"dot": "emerald", "title": "Sellable Product", "items": ["Product and category are active", "At least one active variant exists with available stock"]},
+    {"dot": "rose", "title": "Authorization", "items": ["Public shop reads are open", "Admin writes require authenticated RBAC permissions"]}
+  ]
+}

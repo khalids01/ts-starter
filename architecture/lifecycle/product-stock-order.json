@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {"title": "Product, Stock, and Order Lifecycle", "quality_profile": "showcase", "viewBox": [1080, 720]},
+  "lanes": [
+    {"id": "main", "label": "Commerce lifecycle"},
+    {"id": "inventory", "label": "Inventory conditions"},
+    {"id": "recovery", "label": "Recovery paths"},
+    {"id": "terminal", "label": "Terminal states"}
+  ],
+  "states": [
+    {"id": "draft", "type": "start", "label": "Draft Product", "sublabel": "details incomplete", "lane": "main", "col": 0, "step": "01"},
+    {"id": "active", "type": "active", "label": "Active Product", "sublabel": "publicly sellable", "lane": "main", "col": 1, "step": "02"},
+    {"id": "stocked", "type": "active", "label": "In Stock", "sublabel": "available quantity", "lane": "main", "col": 2, "step": "03"},
+    {"id": "reserved", "type": "decision", "label": "Reserved", "sublabel": "checkout hold", "lane": "main", "col": 3, "step": "04"},
+    {"id": "completed", "type": "success", "label": "Completed", "sublabel": "stock committed", "lane": "main", "col": 4, "step": "05"},
+    {"id": "out_of_stock", "type": "waiting", "label": "Out of Stock", "sublabel": "await receipt", "lane": "inventory", "col": 0},
+    {"id": "low_stock", "type": "waiting", "label": "Low Stock", "sublabel": "at reorder level", "lane": "inventory", "col": 1},
+    {"id": "released", "type": "failure", "label": "Reservation Released", "sublabel": "cancelled or expired", "lane": "recovery", "col": 0, "yOffset": 70},
+    {"id": "cancelled", "type": "failure", "label": "Order Cancelled", "sublabel": "terminal order state", "lane": "terminal", "col": 1},
+    {"id": "archived", "type": "failure", "label": "Product Archived", "sublabel": "hidden from shop", "lane": "terminal", "col": 2}
+  ],
+  "transitions": [
+    {"id": "draft_active", "from": "draft", "to": "active", "label": "validate and publish", "variant": "emphasis"},
+    {"id": "active_stocked", "from": "active", "to": "stocked", "label": "receive inventory"},
+    {"id": "stocked_reserved", "from": "stocked", "to": "reserved", "label": "checkout"},
+    {"id": "reserved_completed", "from": "reserved", "to": "completed", "label": "commit sale", "variant": "emphasis"},
+    {"id": "stocked_low", "from": "stocked", "to": "low_stock", "label": "qty reaches threshold"},
+    {"id": "low_empty", "from": "low_stock", "to": "out_of_stock", "label": "available qty reaches zero"},
+    {"id": "empty_stocked", "from": "out_of_stock", "to": "stocked", "label": "receive stock", "variant": "emphasis"},
+    {"id": "reserved_release", "from": "reserved", "to": "released", "label": "cancel or expire", "variant": "security"},
+    {"id": "released_stocked", "from": "released", "to": "stocked", "label": "restore availability", "variant": "emphasis"},
+    {"id": "released_cancelled", "from": "released", "to": "cancelled", "label": "close order", "variant": "security"},
+    {"id": "active_archived", "from": "active", "to": "archived", "label": "archive product", "variant": "security"}
+  ],
+  "cards": [
+    {"dot": "emerald", "title": "Happy Path", "items": ["Draft becomes active after category, brand policy, attributes, and variants validate", "Checkout reserves stock before an order can complete"]},
+    {"dot": "rose", "title": "Recovery", "items": ["Cancelled or expired reservations restore availability", "Archived products remain stored but disappear from public selling paths"]}
+  ]
+}

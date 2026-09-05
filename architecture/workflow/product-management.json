@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {"title": "Admin Product and Inventory Workflow", "quality_profile": "showcase", "viewBox": [1180, 760]},
+  "lanes": [
+    {"id": "admin", "label": "Admin UI"},
+    {"id": "security", "label": "Auth and RBAC", "variant": "exception"},
+    {"id": "services", "label": "Ecommerce Services"},
+    {"id": "data", "label": "PostgreSQL"}
+  ],
+  "phases": [
+    {"id": "taxonomy", "label": "Catalog setup", "fromCol": 0, "toCol": 1},
+    {"id": "merchandise", "label": "Product setup", "fromCol": 2, "toCol": 3, "variant": "emphasis"},
+    {"id": "stock", "label": "Stock and publish", "fromCol": 4, "toCol": 5}
+  ],
+  "mainPath": ["category", "template", "product", "variant", "receive", "publish"],
+  "nodes": [
+    {"id": "category", "lane": "admin", "col": 0, "type": "frontend", "label": "Create Category", "sublabel": "hierarchy + brand policy"},
+    {"id": "template", "lane": "services", "col": 1, "type": "backend", "label": "Assign Template", "sublabel": "product, variant, batch fields"},
+    {"id": "product", "lane": "admin", "col": 2, "type": "frontend", "label": "Create Product", "sublabel": "draft details + attributes"},
+    {"id": "variant", "lane": "services", "col": 3, "type": "backend", "label": "Create Variants", "sublabel": "SKU, price, options"},
+    {"id": "receive", "lane": "services", "col": 4, "type": "backend", "label": "Receive Stock", "sublabel": "location, batch, quantity"},
+    {"id": "publish", "lane": "admin", "col": 5, "type": "frontend", "label": "Activate Product", "sublabel": "visible in public shop"},
+    {"id": "guard", "lane": "security", "col": 2, "type": "security", "label": "Permission Gate", "sublabel": "manage permission required"},
+    {"id": "reject", "lane": "security", "col": 3, "type": "security", "label": "Reject", "sublabel": "401 or 403"},
+    {"id": "database", "lane": "data", "col": 3, "type": "database", "label": "Ecommerce Tables", "sublabel": "one relational model"}
+  ],
+  "edges": [
+    {"id": "category_template", "from": "category", "to": "template", "label": "define required fields", "variant": "default"},
+    {"id": "template_product", "from": "template", "to": "product", "label": "builder schema", "variant": "emphasis"},
+    {"id": "product_variant", "from": "product", "to": "variant", "label": "save options", "variant": "emphasis"},
+    {"id": "variant_receive", "from": "variant", "to": "receive", "label": "stock by SKU", "variant": "default"},
+    {"id": "receive_publish", "from": "receive", "to": "publish", "label": "available quantity", "variant": "emphasis"},
+    {"id": "guard_product", "from": "guard", "to": "product", "label": "allowed", "variant": "security"},
+    {"id": "guard_reject", "from": "guard", "to": "reject", "label": "missing permission", "variant": "security", "role": "error"},
+    {"id": "variant_db", "from": "variant", "to": "database", "label": "transactional writes", "variant": "dashed"},
+    {"id": "receive_db", "from": "receive", "to": "database", "label": "stock + movement", "variant": "dashed"}
+  ],
+  "cards": [
+    {"dot": "emerald", "title": "Visibility Gate", "items": ["Active product, category, brand, and variant are required", "Stock controls availability but out-of-stock products can still be listed"]},
+    {"dot": "rose", "title": "RBAC Gate", "items": ["Read and manage permissions are separate", "Controller guards run before service mutations"]}
+  ]
+}

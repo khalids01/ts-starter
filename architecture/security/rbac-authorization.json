@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {"title": "RBAC Authorization Architecture", "quality_profile": "showcase", "viewBox": [1120, 680]},
+  "layout": {"mode": "grid", "origin": [70, 80], "cols": 4, "gapX": 62, "gapY": 82, "cellW": 210, "cellH": 94},
+  "components": [
+    {"id": "admin", "type": "external", "label": "Admin User", "sublabel": "authenticated session", "row": 0, "col": 0},
+    {"id": "session", "type": "security", "label": "authGuard", "sublabel": "resolve user and session", "row": 0, "col": 1},
+    {"id": "permission_guard", "type": "security", "label": "requirePermission", "sublabel": "route permission check", "row": 0, "col": 2},
+    {"id": "controller", "type": "backend", "label": "Admin Controllers", "sublabel": "catalog, products, inventory, orders", "row": 0, "col": 3},
+    {"id": "assignments", "type": "backend", "label": "RBAC Resolver", "sublabel": "roles plus user overrides", "row": 1, "col": 1},
+    {"id": "rbac_db", "type": "database", "label": "RBAC Tables", "sublabel": "roles, permissions, assignments", "row": 2, "col": 1},
+    {"id": "redis", "type": "database", "label": "Redis Cache", "sublabel": "effective permission set", "row": 2, "col": 2},
+    {"id": "seed", "type": "backend", "label": "RBAC Seed", "sublabel": "system roles and ecommerce grants", "row": 2, "col": 0}
+  ],
+  "connections": [
+    {"id": "request", "from": "admin", "to": "session", "label": "request + cookie", "variant": "security"},
+    {"id": "resolve", "from": "session", "to": "assignments", "label": "resolve effective access", "variant": "security"},
+    {"id": "check", "from": "session", "to": "permission_guard", "label": "user + permissions", "variant": "security"},
+    {"id": "allow", "from": "permission_guard", "to": "controller", "label": "allow or 403", "variant": "security"},
+    {"id": "read_assignments", "from": "assignments", "to": "rbac_db", "label": "role and override rows"},
+    {"id": "cache_read", "from": "assignments", "to": "redis", "label": "read/write effective set"},
+    {"id": "seed_roles", "from": "seed", "to": "rbac_db", "label": "upsert protected roles"},
+    {"id": "warm_cache", "from": "seed", "to": "redis", "label": "warm role permissions", "variant": "dashed"}
+  ],
+  "cards": [
+    {"dot": "rose", "title": "Admin Permission Families", "items": ["catalog, products, inventory, orders, and images each have read/manage permissions", "Platform owner and admin receive ecommerce admin permissions from the seed"]},
+    {"dot": "amber", "title": "Runtime Rule", "items": ["PostgreSQL is authoritative", "Redis is only a regeneratable permission cache"]}
+  ]
+}
