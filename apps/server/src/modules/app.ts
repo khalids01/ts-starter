@@ -21,6 +21,7 @@ import { adminProductsController } from "./admin/products/products.controller";
 import { adminInventoryController } from "./admin/inventory/inventory.controller";
 import { adminOrdersController } from "./admin/orders/orders.controller";
 import { adminImagesController } from "./admin/images/images.controller";
+import { authSettingsController } from "./admin/auth-settings/auth-settings.controller";
 
 export const app = new Elysia()
   .use(authController)
@@ -28,6 +29,7 @@ export const app = new Elysia()
   .use(ownerController)
   .use(usersController)
   .use(rolesController)
+  .use(authSettingsController)
   .use(adminInvitationsController)
   .use(metadataController)
   .use(rateLimitController)

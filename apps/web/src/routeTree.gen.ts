@@ -40,8 +40,12 @@ import { Route as ProtectedSettingsRouteImport } from './routes/_protected/setti
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedBillingRouteImport } from './routes/_protected/billing'
 import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
+import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
+import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AuthAuthCompleteRouteImport } from './routes/_auth/auth-complete'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
 import { Route as AdminRolesRoleIdRouteImport } from './routes/admin/roles/$roleId'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
@@ -203,14 +207,34 @@ const ProtectedAccountRoute = ProtectedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const AuthTwoFactorRoute = AuthTwoFactorRouteImport.update({
+  id: '/_auth/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/_auth/signup',
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/_auth/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/_auth/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/_auth/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthAuthCompleteRoute = AuthAuthCompleteRouteImport.update({
+  id: '/_auth/auth-complete',
+  path: '/auth-complete',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
@@ -258,8 +282,12 @@ export interface FileRoutesByFullPath {
   '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
   '/track-order': typeof TrackOrderRoute
+  '/auth-complete': typeof AuthAuthCompleteRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
+  '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
+  '/two-factor': typeof AuthTwoFactorRoute
   '/account': typeof ProtectedAccountRoute
   '/billing': typeof ProtectedBillingRoute
   '/dashboard': typeof ProtectedDashboardRoute
@@ -297,8 +325,12 @@ export interface FileRoutesByTo {
   '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
   '/track-order': typeof TrackOrderRoute
+  '/auth-complete': typeof AuthAuthCompleteRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
+  '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
+  '/two-factor': typeof AuthTwoFactorRoute
   '/account': typeof ProtectedAccountRoute
   '/billing': typeof ProtectedBillingRoute
   '/dashboard': typeof ProtectedDashboardRoute
@@ -338,8 +370,12 @@ export interface FileRoutesById {
   '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
   '/track-order': typeof TrackOrderRoute
+  '/_auth/auth-complete': typeof AuthAuthCompleteRoute
+  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
+  '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/signup': typeof AuthSignupRoute
+  '/_auth/two-factor': typeof AuthTwoFactorRoute
   '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/billing': typeof ProtectedBillingRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
@@ -381,8 +417,12 @@ export interface FileRouteTypes {
     | '/saved'
     | '/setup'
     | '/track-order'
+    | '/auth-complete'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
+    | '/two-factor'
     | '/account'
     | '/billing'
     | '/dashboard'
@@ -420,8 +460,12 @@ export interface FileRouteTypes {
     | '/saved'
     | '/setup'
     | '/track-order'
+    | '/auth-complete'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
+    | '/two-factor'
     | '/account'
     | '/billing'
     | '/dashboard'
@@ -460,8 +504,12 @@ export interface FileRouteTypes {
     | '/saved'
     | '/setup'
     | '/track-order'
+    | '/_auth/auth-complete'
+    | '/_auth/forgot-password'
     | '/_auth/login'
+    | '/_auth/reset-password'
     | '/_auth/signup'
+    | '/_auth/two-factor'
     | '/_protected/account'
     | '/_protected/billing'
     | '/_protected/dashboard'
@@ -503,8 +551,12 @@ export interface RootRouteChildren {
   SavedRoute: typeof SavedRoute
   SetupRoute: typeof SetupRoute
   TrackOrderRoute: typeof TrackOrderRoute
+  AuthAuthCompleteRoute: typeof AuthAuthCompleteRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignupRoute: typeof AuthSignupRoute
+  AuthTwoFactorRoute: typeof AuthTwoFactorRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
 }
 
@@ -727,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedAccountRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_auth/two-factor': {
+      id: '/_auth/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof AuthTwoFactorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_auth/signup': {
       id: '/_auth/signup'
       path: '/signup'
@@ -734,11 +793,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/reset-password': {
+      id: '/_auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_auth/login': {
       id: '/_auth/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/auth-complete': {
+      id: '/_auth/auth-complete'
+      path: '/auth-complete'
+      fullPath: '/auth-complete'
+      preLoaderRoute: typeof AuthAuthCompleteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/products/': {
@@ -937,8 +1017,12 @@ const rootRouteChildren: RootRouteChildren = {
   SavedRoute: SavedRoute,
   SetupRoute: SetupRoute,
   TrackOrderRoute: TrackOrderRoute,
+  AuthAuthCompleteRoute: AuthAuthCompleteRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignupRoute: AuthSignupRoute,
+  AuthTwoFactorRoute: AuthTwoFactorRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
 }
 export const routeTree = rootRouteImport

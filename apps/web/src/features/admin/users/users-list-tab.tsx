@@ -35,6 +35,7 @@ export function UsersListTab(props: {
               <TableHead>User</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Authentication</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -42,13 +43,13 @@ export function UsersListTab(props: {
           <TableBody>
             {props.isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : props.users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -68,6 +69,19 @@ export function UsersListTab(props: {
                     >
                       {user.role?.name ?? user.role?.slug ?? "User"}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {user.authenticationMethods?.length ? (
+                        user.authenticationMethods.map((method: string) => (
+                          <Badge key={method} variant="outline">
+                            {method === "magic-link" ? "Magic Link" : method}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not recorded</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {user.banned ? (

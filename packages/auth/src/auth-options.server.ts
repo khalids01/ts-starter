@@ -1,15 +1,23 @@
 import { polar, checkout, portal, webhooks } from "@polar-sh/better-auth";
 import type { WebhookSubscriptionCreatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptioncreatedpayload";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload";
-import { magicLink } from "better-auth/plugins";
+import { magicLink, twoFactor } from "better-auth/plugins";
 import prisma from "../../db/src/client.server";
 import { getUserSessionCacheVersion } from "../../db/src/session-revocation.server";
 import { env } from "../../env/src/env.server";
 import type { BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { sendEmail, magicLinkTemplate } from "../../email/src/index.server";
+import {
+  sendEmail,
+  magicLinkTemplate,
+  passwordResetEmailTemplate,
+  twoFactorCodeEmailTemplate,
+  verificationEmailTemplate,
+} from "../../email/src/index.server";
 
+import { authAvailability } from "./lib/auth-availability.server";
 import { defaultUserRoleOnSignup } from "./lib/default-user-role.server";
+import { recordAuthMethodOnSession } from "./lib/record-auth-method.server";
 import { polarClient } from "./lib/payments.server";
 import { polarCustomersForBillingUsers } from "./lib/polar-customers.server";
 
@@ -29,13 +37,69 @@ export const authOptions = {
     max: 100,
   },
   session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    updateAge: 60 * 60 * 24, // refresh active sessions daily
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 24 * 30, // 1 month
+      maxAge: 5 * 60, // cache only; does not control login lifetime
       version: (_session, user) => getUserSessionCacheVersion(user.id),
     },
   },
   trustedOrigins: [env.CORS_ORIGIN],
+  account: {
+    accountLinking: {
+      enabled: true,
+      disableImplicitLinking: false,
+      allowDifferentEmails: false,
+      allowUnlinkingAll: false,
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your TS Starter password",
+        html: await passwordResetEmailTemplate(url),
+      });
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: false,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your TS Starter email",
+        html: await verificationEmailTemplate(url),
+      });
+    },
+  },
+  socialProviders: {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID,
+      disableImplicitSignUp: true,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+      prompt: "select_account",
+    },
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      disableImplicitSignUp: true,
+      prompt: "select_account",
+    },
+    discord: {
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
+      disableImplicitSignUp: true,
+      prompt: "consent",
+    },
+  },
   advanced: {
     cookies: {
       session_token: {
@@ -43,6 +107,7 @@ export const authOptions = {
       },
     },
     defaultCookieAttributes: {
+      domain: env.AUTH_COOKIE_DOMAIN,
       sameSite: env.NODE_ENV === "production" ? "none" : "lax",
       secure: env.NODE_ENV === "production",
       httpOnly: true,
@@ -162,7 +227,25 @@ export const authOptions = {
         });
       },
     }),
+    twoFactor({
+      issuer: "TS Starter",
+      otpOptions: {
+        period: 5,
+        digits: 6,
+        allowedAttempts: 5,
+        storeOTP: "hashed",
+        sendOTP: async ({ user, otp }) => {
+          await sendEmail({
+            to: user.email,
+            subject: "Your TS Starter verification code",
+            html: await twoFactorCodeEmailTemplate(otp),
+          });
+        },
+      },
+    }),
+    authAvailability(),
     defaultUserRoleOnSignup(),
+    recordAuthMethodOnSession(),
   ],
 } satisfies BetterAuthOptions;
 

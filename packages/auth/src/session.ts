@@ -4,12 +4,14 @@ export type AuthClientSessionUser = {
   id: string;
   name: string;
   email: string;
+  image?: string | null;
   banned: boolean;
   banReason: string | null;
   archived: boolean;
   onboardingComplete: boolean;
   plan: string | null;
   subscriptionStatus: string | null;
+  twoFactorEnabled?: boolean | null;
 };
 
 export type AuthSessionRecord = {
@@ -32,7 +34,7 @@ export type AuthClientSession = {
 
 export type ClientSessionUser = Pick<
   AuthClientSessionUser,
-  "id" | "name" | "email" | "onboardingComplete" | "plan" | "subscriptionStatus"
+  "id" | "name" | "email" | "image" | "onboardingComplete" | "plan" | "subscriptionStatus" | "twoFactorEnabled"
 >;
 
 export type ClientSession = {

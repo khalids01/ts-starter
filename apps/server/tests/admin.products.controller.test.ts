@@ -19,6 +19,7 @@ mock.module("@auth/server", () => ({
     },
   },
   getAuthSession: getAuthSessionMock,
+  getSetCookieHeaders: () => [],
 }));
 
 afterEach(() => {

@@ -1,5 +1,5 @@
 import { cors } from "@elysiajs/cors";
-import { auth } from "@auth/server";
+import { handleAuthRequest } from "@auth/server";
 import { env } from "@env/server";
 import { connectRedis } from "@redis/server";
 import { Elysia } from "elysia";
@@ -46,7 +46,7 @@ const server = new Elysia()
   .all("/api/auth/*", async (context) => {
     const { request, status } = context;
     if (["POST", "GET"].includes(request.method)) {
-      return auth.handler(request);
+      return handleAuthRequest(request);
     }
     return status(405);
   }, {

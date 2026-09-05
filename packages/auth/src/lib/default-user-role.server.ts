@@ -1,5 +1,8 @@
 import type { BetterAuthPlugin, User } from "better-auth";
-import { assignUserRole } from "../../../db/src/rbac/assignments.server";
+import {
+  assignUserRole,
+  hasRoleAssignment,
+} from "../../../db/src/rbac/assignments.server";
 import { Roles } from "@rbac";
 
 type AuthUser = Partial<User> & {
@@ -7,12 +10,22 @@ type AuthUser = Partial<User> & {
 };
 
 type AssignUserRole = typeof assignUserRole;
+type HasRoleAssignment = typeof hasRoleAssignment;
+
+type AuthSession = {
+  userId?: string;
+};
 
 async function assignDefaultUserRole(
   user: AuthUser,
   assignRole: AssignUserRole,
+  hasRole: HasRoleAssignment,
 ) {
   if (!user.id) {
+    return;
+  }
+
+  if (await hasRole(user.id)) {
     return;
   }
 
@@ -21,6 +34,7 @@ async function assignDefaultUserRole(
 
 export function defaultUserRoleOnSignup(
   assignRole: AssignUserRole = assignUserRole,
+  hasRole: HasRoleAssignment = hasRoleAssignment,
 ): BetterAuthPlugin {
   return {
     id: "default-user-role-on-signup",
@@ -28,9 +42,14 @@ export function defaultUserRoleOnSignup(
       return {
         options: {
           databaseHooks: {
-            user: {
+            session: {
               create: {
-                after: (user) => assignDefaultUserRole(user, assignRole),
+                after: (session: AuthSession) =>
+                  assignDefaultUserRole(
+                    { id: session.userId },
+                    assignRole,
+                    hasRole,
+                  ),
               },
             },
           },

@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  optimizeDeps: {
+    exclude: ["@tanstack/router-core"],
+  },
   server: {
     port: 3001,
   },

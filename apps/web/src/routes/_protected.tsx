@@ -39,11 +39,10 @@ import { useSession } from "@/providers/session-provider";
 export const Route = createFileRoute("/_protected")({
   component: ProtectedLayout,
   beforeLoad: async ({ context, cause }) => {
-    if (cause === "stay") {
-      return;
-    }
-
-    const session = context.session ?? (await getRootSession());
+    const session =
+      cause === "stay"
+        ? await getRootSession()
+        : context.session ?? (await getRootSession());
     // console.log("session from gcprotected layout : ", session);
 
     if (!session) {

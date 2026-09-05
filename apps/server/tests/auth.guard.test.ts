@@ -28,6 +28,7 @@ async function runAuthGuardCase(sessionUser: Record<string, unknown>) {
               })),
             },
           },
+          getSetCookieHeaders: () => [],
           getAuthSession: mock(async () => ({
             user: ${JSON.stringify(sessionUser)},
             session: {

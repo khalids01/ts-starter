@@ -8,6 +8,9 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  authMethods   UserAuthMethod[]
+  twoFactors    TwoFactor[]
+  twoFactorEnabled Boolean @default(false)
   banned        Boolean   @default(false)
   banReason     String?
   archived      Boolean   @default(false)
@@ -71,6 +74,19 @@ model Session {
   @@map("session")
 }
 
+model UserAuthMethod {
+  id        String   @id @default(cuid())
+  userId    String
+  method    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, method])
+  @@index([method])
+  @@map("user_auth_method")
+}
+
 model Account {
   id                    String    @id
   accountId             String
@@ -101,4 +117,33 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+model AuthSettings {
+  id                     String   @id
+  passwordSignInEnabled  Boolean  @default(true)
+  passwordSignUpEnabled  Boolean  @default(true)
+  githubSignInEnabled    Boolean  @default(true)
+  githubSignUpEnabled    Boolean  @default(true)
+  googleSignInEnabled    Boolean  @default(true)
+  googleSignUpEnabled    Boolean  @default(true)
+  discordSignInEnabled   Boolean  @default(true)
+  discordSignUpEnabled   Boolean  @default(true)
+  magicLinkSignInEnabled Boolean  @default(true)
+  magicLinkSignUpEnabled Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
+
+  @@map("auth_settings")
 }

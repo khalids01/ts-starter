@@ -7,6 +7,7 @@ const sessionFindManyMock = mock(async () => []);
 const sessionFindUniqueMock = mock(async (): Promise<any> => null);
 const sessionDeleteMock = mock(async (): Promise<any> => null);
 const sessionDeleteManyMock = mock(async () => ({ count: 0 }));
+const revokeAllUserSessionsMock = mock(async () => ({ count: 1 }));
 const userFindManyMock = mock(async () => []);
 const userCountMock = mock(async () => 0);
 const userFindUniqueMock = mock(async (): Promise<any> => null);
@@ -53,6 +54,12 @@ const safeAdminUserSelect = {
   onboardingComplete: true,
   plan: true,
   subscriptionStatus: true,
+  accounts: {
+    select: { providerId: true },
+  },
+  authMethods: {
+    select: { method: true },
+  },
   rbacRoles: {
     take: 1,
     select: {
@@ -98,6 +105,7 @@ mock.module("@db/server", () => ({
     },
   },
   Prisma,
+  revokeAllUserSessions: revokeAllUserSessionsMock,
 }));
 
 mock.module("@db/server/rbac/roles", () => ({
@@ -142,9 +150,12 @@ beforeEach(() => {
   sessionFindUniqueMock.mockResolvedValue(null);
   sessionDeleteMock.mockResolvedValue(null);
   sessionDeleteManyMock.mockResolvedValue({ count: 0 });
+  revokeAllUserSessionsMock.mockResolvedValue({ count: 1 });
   userFindUniqueMock.mockResolvedValue({
     id: "user-1",
     rbacRoles: sampleRbacRoles,
+    accounts: [],
+    authMethods: [],
   });
   userCountMock.mockResolvedValue(2);
   userUpdateMock.mockResolvedValue({
@@ -156,6 +167,8 @@ beforeEach(() => {
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
     rbacRoles: sampleRbacRoles,
+    accounts: [],
+    authMethods: [],
     banned: false,
     banReason: null,
     archived: false,
@@ -174,6 +187,8 @@ beforeEach(() => {
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
     rbacRoles: sampleRbacRoles,
+    accounts: [],
+    authMethods: [],
     banned: false,
     banReason: null,
     archived: false,
@@ -188,6 +203,7 @@ afterEach(() => {
   sessionFindUniqueMock.mockReset();
   sessionDeleteMock.mockReset();
   sessionDeleteManyMock.mockReset();
+  revokeAllUserSessionsMock.mockReset();
   userFindManyMock.mockReset();
   userCountMock.mockReset();
   userFindUniqueMock.mockReset();
@@ -245,6 +261,8 @@ describe("UsersService", () => {
     userFindUniqueMock.mockResolvedValueOnce({
       id: "user-1",
       rbacRoles: sampleRbacRoles,
+    accounts: [],
+    authMethods: [],
       invitations: [],
     });
 
@@ -318,6 +336,9 @@ describe("UsersService", () => {
       where: { id: "user-1" },
       select: safeAdminUserSelect,
     });
+    expect(revokeAllUserSessionsMock).toHaveBeenCalledTimes(2);
+    expect(revokeAllUserSessionsMock).toHaveBeenNthCalledWith(1, "user-1");
+    expect(revokeAllUserSessionsMock).toHaveBeenNthCalledWith(2, "user-1");
   });
 
   it("rejects OWNER role updates from admin user management", async () => {

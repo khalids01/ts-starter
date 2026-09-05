@@ -8,6 +8,7 @@ export const queryKeys = {
   admin: {
     overview: () => ["admin-overview"] as const,
     rateLimit: () => ["admin-rate-limit"] as const,
+    authSettings: () => ["admin-auth-settings"] as const,
     feedback: (page: number) => ["admin-feedback", page] as const,
     activity: {
       list: (params: {

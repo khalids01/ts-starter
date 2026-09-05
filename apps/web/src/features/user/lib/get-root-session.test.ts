@@ -8,13 +8,18 @@ afterEach(() => {
 });
 
 describe("getRootSessionForHeaders", () => {
-  it("dedupes concurrent session context requests for the same credentials", async () => {
-    let calls = 0;
+  it("forwards refreshed session cookies", async () => {
+    const responseHeaders = new Headers();
+    responseHeaders.append(
+      "set-cookie",
+      "better-auth.session_token=renewed; Path=/; HttpOnly",
+    );
+    responseHeaders.append(
+      "set-cookie",
+      "better-auth.session_data=cached; Path=/; HttpOnly",
+    );
 
     globalThis.fetch = mock(async () => {
-      calls += 1;
-      await Promise.resolve();
-
       return new Response(
         JSON.stringify({
           user: null,
@@ -23,18 +28,30 @@ describe("getRootSessionForHeaders", () => {
           primaryRoleSlug: null,
           primaryRoleId: null,
         }),
-        { status: 200 },
+        { status: 200, headers: responseHeaders },
       );
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
     const headers = new Headers({ cookie: "session=token" });
-    const [first, second] = await Promise.all([
-      getRootSessionForHeaders(headers),
-      getRootSessionForHeaders(headers),
-    ]);
+    let forwardedCookies: string[] = [];
+    const session = await getRootSessionForHeaders(headers, (cookies) => {
+      forwardedCookies = cookies;
+    });
 
-    expect(first).toBeNull();
-    expect(second).toBeNull();
-    expect(calls).toBe(1);
+    expect(session).toBeNull();
+    expect(forwardedCookies).toEqual([
+      "better-auth.session_token=renewed; Path=/; HttpOnly",
+      "better-auth.session_data=cached; Path=/; HttpOnly",
+    ]);
+  });
+
+  it("does not turn an auth service failure into an anonymous session", async () => {
+    globalThis.fetch = mock(async () => {
+      return new Response("Unavailable", { status: 503 });
+    }) as unknown as typeof fetch;
+
+    await expect(
+      getRootSessionForHeaders(new Headers({ cookie: "session=token" })),
+    ).rejects.toThrow("Authentication service is unavailable");
   });
 });
