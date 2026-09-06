@@ -20,7 +20,7 @@
     {"id": "query_products", "from": "api", "to": "product", "y": 265, "label": "filters + pagination"},
     {"id": "read_catalog", "from": "product", "to": "db", "y": 305, "label": "active products, variants, stock"},
     {"id": "catalog_rows", "from": "db", "to": "product", "y": 345, "label": "catalog rows", "variant": "return"},
-    {"id": "render_products", "from": "api", "to": "web", "y": 385, "label": "mapped storefront products", "variant": "return"},
+    {"id": "render_products", "from": "api", "to": "web", "y": 375, "label": "mapped storefront products", "variant": "return"},
     {"id": "checkout", "from": "customer", "to": "web", "y": 445, "label": "submit cart + address"},
     {"id": "create_order", "from": "web", "to": "api", "y": 485, "label": "POST /shop/orders", "variant": "emphasis"},
     {"id": "validate_cart", "from": "api", "to": "order", "y": 525, "label": "validate variants and totals"},

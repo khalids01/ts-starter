@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "diagram_type": "workflow",
-  "meta": {"title": "Admin Product and Inventory Workflow", "quality_profile": "showcase", "viewBox": [1180, 760]},
+  "meta": {"title": "Admin Product and Inventory Workflow", "quality_profile": "showcase", "viewBox": [1240, 760]},
   "lanes": [
     {"id": "admin", "label": "Admin UI"},
     {"id": "security", "label": "Auth and RBAC", "variant": "exception"},
@@ -15,15 +15,15 @@
   ],
   "mainPath": ["category", "template", "product", "variant", "receive", "publish"],
   "nodes": [
-    {"id": "category", "lane": "admin", "col": 0, "type": "frontend", "label": "Create Category", "sublabel": "hierarchy + brand policy"},
-    {"id": "template", "lane": "services", "col": 1, "type": "backend", "label": "Assign Template", "sublabel": "product, variant, batch fields"},
-    {"id": "product", "lane": "admin", "col": 2, "type": "frontend", "label": "Create Product", "sublabel": "draft details + attributes"},
-    {"id": "variant", "lane": "services", "col": 3, "type": "backend", "label": "Create Variants", "sublabel": "SKU, price, options"},
-    {"id": "receive", "lane": "services", "col": 4, "type": "backend", "label": "Receive Stock", "sublabel": "location, batch, quantity"},
-    {"id": "publish", "lane": "admin", "col": 5, "type": "frontend", "label": "Activate Product", "sublabel": "visible in public shop"},
-    {"id": "guard", "lane": "security", "col": 2, "type": "security", "label": "Permission Gate", "sublabel": "manage permission required"},
-    {"id": "reject", "lane": "security", "col": 3, "type": "security", "label": "Reject", "sublabel": "401 or 403"},
-    {"id": "database", "lane": "data", "col": 3, "type": "database", "label": "Ecommerce Tables", "sublabel": "one relational model"}
+    {"id": "category", "lane": "admin", "col": 0, "type": "frontend", "label": "Category", "sublabel": "catalog setup", "width": 112},
+    {"id": "template", "lane": "admin", "col": 1, "type": "backend", "label": "Template", "sublabel": "field rules", "width": 112},
+    {"id": "product", "lane": "admin", "col": 2, "type": "frontend", "label": "Product", "sublabel": "details + attributes", "width": 112},
+    {"id": "variant", "lane": "admin", "col": 3, "type": "backend", "label": "Variants", "sublabel": "SKU + price", "width": 112},
+    {"id": "receive", "lane": "admin", "col": 4, "type": "backend", "label": "Receive Stock", "sublabel": "location + quantity", "width": 112},
+    {"id": "publish", "lane": "admin", "col": 5, "type": "frontend", "label": "Publish", "sublabel": "public shop", "width": 112},
+    {"id": "guard", "lane": "security", "col": 2, "type": "security", "label": "Permission Gate", "sublabel": "manage required", "width": 112},
+    {"id": "reject", "lane": "security", "col": 3, "type": "security", "label": "Reject", "sublabel": "401 or 403", "width": 112},
+    {"id": "database", "lane": "data", "col": 3, "type": "database", "label": "Commerce Tables", "sublabel": "shared model", "width": 112}
   ],
   "edges": [
     {"id": "category_template", "from": "category", "to": "template", "label": "define required fields", "variant": "default"},
@@ -33,8 +33,7 @@
     {"id": "receive_publish", "from": "receive", "to": "publish", "label": "available quantity", "variant": "emphasis"},
     {"id": "guard_product", "from": "guard", "to": "product", "label": "allowed", "variant": "security"},
     {"id": "guard_reject", "from": "guard", "to": "reject", "label": "missing permission", "variant": "security", "role": "error"},
-    {"id": "variant_db", "from": "variant", "to": "database", "label": "transactional writes", "variant": "dashed"},
-    {"id": "receive_db", "from": "receive", "to": "database", "label": "stock + movement", "variant": "dashed"}
+    {"id": "variant_db", "from": "variant", "to": "database", "label": "transactional writes", "variant": "dashed"}
   ],
   "cards": [
     {"dot": "emerald", "title": "Visibility Gate", "items": ["Active product, category, brand, and variant are required", "Stock controls availability but out-of-stock products can still be listed"]},

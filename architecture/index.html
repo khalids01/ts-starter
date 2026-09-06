@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ts-starter Architecture Hub</title>
+    <style>
+      :root { color-scheme: dark; --bg:#0a0f1d; --panel:#10182a; --panel-2:#17213a; --text:#e7edf9; --muted:#96a5c0; --line:#283653; --accent:#4fd1c5; }
+      :root[data-theme="light"] { color-scheme: light; --bg:#f5f7fb; --panel:#fff; --panel-2:#edf2fa; --text:#17213a; --muted:#60708b; --line:#d7dfed; --accent:#087f78; }
+      * { box-sizing:border-box; }
+      body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font:14px/1.45 Inter, ui-sans-serif, system-ui, sans-serif; }
+      .app { display:grid; grid-template-columns:280px 1fr; min-height:100vh; transition:grid-template-columns .18s ease; }
+      .app.collapsed { grid-template-columns:0 1fr; }
+      aside { overflow:hidden; background:var(--panel); border-right:1px solid var(--line); padding:24px 16px; white-space:nowrap; }
+      .brand { font-weight:750; font-size:16px; letter-spacing:-.02em; }
+      .brand span { color:var(--accent); }
+      .intro { color:var(--muted); margin:8px 0 24px; }
+      .section { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.08em; margin:18px 10px 7px; text-transform:uppercase; }
+      button { font:inherit; cursor:pointer; }
+      .nav-item { display:block; width:100%; border:0; border-radius:8px; background:transparent; color:var(--text); padding:10px; text-align:left; }
+      .nav-item:hover, .nav-item.active { background:var(--panel-2); }
+      .nav-item small { display:block; color:var(--muted); margin-top:2px; }
+      main { min-width:0; display:grid; grid-template-rows:auto 1fr; }
+      header { display:flex; align-items:center; gap:10px; min-height:64px; padding:12px 18px; border-bottom:1px solid var(--line); background:color-mix(in srgb, var(--panel) 92%, transparent); }
+      .icon { border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); padding:7px 10px; }
+      #title { flex:1; font-size:15px; font-weight:700; }
+      #description { color:var(--muted); font-size:12px; }
+      .viewer { min-height:0; padding:16px; }
+      iframe { width:100%; height:calc(100vh - 96px); min-height:660px; border:1px solid var(--line); border-radius:12px; background:var(--panel); }
+      @media (max-width:760px) { .app { grid-template-columns:0 1fr; } aside { position:fixed; z-index:10; width:280px; height:100vh; transform:translateX(-100%); transition:transform .18s ease; } .app.menu-open aside { transform:translateX(0); box-shadow:18px 0 50px #0005; } #description { display:none; } .viewer { padding:8px; } iframe { height:calc(100vh - 80px); min-height:620px; } }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <aside>
+        <div class="brand">ts-starter <span>architecture</span></div>
+        <p class="intro">A guided map of the ecommerce and RBAC system.</p>
+        <div class="section">System maps</div>
+        <button class="nav-item active" data-page="component/ecommerce-system.html" data-title="Ecommerce System Architecture" data-description="Components, boundaries, and the product-to-order services.">System architecture<small>Components and boundaries</small></button>
+        <button class="nav-item" data-page="security/rbac-authorization.html" data-title="RBAC Authorization Architecture" data-description="How admin access is resolved, checked, and cached.">RBAC authorization<small>Roles, permissions, guards</small></button>
+        <div class="section">Operational views</div>
+        <button class="nav-item" data-page="workflow/product-management.html" data-title="Admin Product and Inventory Workflow" data-description="The management path from category setup to published stock.">Product workflow<small>Admin write path</small></button>
+        <button class="nav-item" data-page="sequence/storefront-checkout.html" data-title="Storefront Browse and Checkout Sequence" data-description="Public browsing and transactional stock reservation.">Checkout sequence<small>Shop request path</small></button>
+        <button class="nav-item" data-page="dataflow/product-inventory.html" data-title="Product and Inventory Data Flow" data-description="How catalog data becomes a sellable, stocked order line.">Product data flow<small>Data lineage</small></button>
+        <button class="nav-item" data-page="lifecycle/product-stock-order.html" data-title="Product, Stock, and Order Lifecycle" data-description="Publish, stock, reserve, release, and complete states.">Product lifecycle<small>State changes</small></button>
+      </aside>
+      <main>
+        <header>
+          <button class="icon" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+          <div><div id="title">Ecommerce System Architecture</div><div id="description">Components, boundaries, and the product-to-order services.</div></div>
+          <button class="icon" id="theme-toggle" aria-label="Toggle theme">◐ Theme</button>
+        </header>
+        <div class="viewer"><iframe id="diagram" title="Architecture diagram" src="component/ecommerce-system.html"></iframe></div>
+      </main>
+    </div>
+    <script>
+      const app = document.querySelector('#app');
+      const frame = document.querySelector('#diagram');
+      const title = document.querySelector('#title');
+      const description = document.querySelector('#description');
+      const items = [...document.querySelectorAll('.nav-item')];
+      document.querySelector('#nav-toggle').addEventListener('click', () => {
+        if (matchMedia('(max-width: 760px)').matches) app.classList.toggle('menu-open');
+        else app.classList.toggle('collapsed');
+      });
+      document.querySelector('#theme-toggle').addEventListener('click', () => {
+        document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      });
+      items.forEach((item) => item.addEventListener('click', () => {
+        frame.src = item.dataset.page;
+        title.textContent = item.dataset.title;
+        description.textContent = item.dataset.description;
+        items.forEach((entry) => entry.classList.toggle('active', entry === item));
+        app.classList.remove('menu-open');
+      }));
+    </script>
+  </body>
+</html>
