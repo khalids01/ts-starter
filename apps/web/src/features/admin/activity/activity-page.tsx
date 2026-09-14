@@ -19,6 +19,7 @@ import {
 import { queryKeys } from "@/constants/query-keys";
 import { useObject } from "@/hooks/use-object";
 import { client } from "@/lib/client";
+import { UserAvatar } from "@/components/core/user-avatar";
 
 type ActivitySeverity = "info" | "warning" | "error";
 type SeverityFilter = "all" | ActivitySeverity;
@@ -227,16 +228,25 @@ function ActivityRow({ item }: { item: ActivityItem }) {
         <div className="break-words text-sm font-medium">{item.message}</div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           {item.actorUser ? (
-            <span>Actor: {formatUser(item.actorUser)}</span>
+            <ActivityUserBadge label="Actor" user={item.actorUser} />
           ) : null}
           {item.targetUser ? (
-            <span>Target: {formatUser(item.targetUser)}</span>
+            <ActivityUserBadge label="Target" user={item.targetUser} />
           ) : null}
           {item.visitorId ? <span>Visitor: {item.visitorId}</span> : null}
         </div>
       </div>
       <MetadataPreview metadata={item.metadata} />
     </div>
+  );
+}
+
+function ActivityUserBadge({ label, user }: { label: string; user: ActivityUser }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <UserAvatar className="size-5" image={user.image} name={user.name} />
+      <span>{label}: {formatUser(user)}</span>
+    </span>
   );
 }
 

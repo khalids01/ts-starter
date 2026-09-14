@@ -6,6 +6,7 @@ import { ArrowLeft, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
+import { UserAvatar } from "@/components/core/user-avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -482,9 +483,16 @@ function Timeline(props: { order: Order }) {
                 </span>
               </div>
               {event.note ? <p className="mt-2">{event.note}</p> : null}
-              <p className="mt-2 text-xs text-muted-foreground">
-                {formatDate(event.createdAt)} · {event.actorUser?.email ?? "System"}
-              </p>
+              {event.actorUser ? (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <UserAvatar className="size-5" image={event.actorUser.image} name={event.actorUser.name} />
+                  <span>{formatDate(event.createdAt)} · {event.actorUser.email}</span>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {formatDate(event.createdAt)} · System
+                </p>
+              )}
             </article>
           ))}
         </div>

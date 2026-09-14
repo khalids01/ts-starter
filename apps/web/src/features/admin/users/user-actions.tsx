@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Ban, History, MoreHorizontal, Shield, Trash2 } from "lucide-react";
+import { Ban, Eye, History, MoreHorizontal, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Roles } from "@rbac";
+import { Permissions, Roles } from "@rbac";
 import { queryKeys } from "@/constants/query-keys";
+import { sessionHasPermission } from "@/features/user/lib/session-permissions";
+import { useSession } from "@/providers/session-provider";
 import { client } from "@/lib/client";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/core/user-avatar";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +35,25 @@ import {
 } from "@/components/ui/select";
 import type { AssignableRole } from "@/features/admin/roles/types";
 
+type AdminUserDetails = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  banned: boolean;
+  banReason: string | null;
+  archived: boolean;
+  onboardingComplete: boolean;
+  plan: string | null;
+  subscriptionStatus: string | null;
+  authenticationMethods: string[];
+  role: { slug: string; name: string };
+  invitations: Array<{ id: string; email: string; status: string; expiresAt: string | Date; role: { slug: string; name: string } }>;
+};
+
 type UserSession = {
   id: string;
   expiresAt: string | Date;
@@ -41,6 +63,14 @@ type UserSession = {
   userAgent: string | null;
   isCurrent?: boolean;
 };
+
+function Detail({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return <div className="min-w-0"><dt className="text-xs text-muted-foreground">{label}</dt><dd className={mono ? "break-all font-mono text-xs" : "break-words"}>{value}</dd></div>;
+}
+
+function formatUserDate(value: string | Date) {
+  return new Date(value).toLocaleString();
+}
 
 function getDeviceLabel(userAgent: string | null) {
   if (!userAgent) {
@@ -72,10 +102,22 @@ function getDeviceLabel(userAgent: string | null) {
 }
 
 export function UserActions({ user }: { user: any }) {
+  const { session } = useSession();
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [sessionsOpen, setSessionsOpen] = useState(false);
   const [roleOpen, setRoleOpen] = useState(false);
   const [roleSlug, setRoleSlug] = useState<string>(user.role.slug);
   const queryClient = useQueryClient();
+
+  const { data: details, isLoading: detailsLoading, isError: detailsError } = useQuery({
+    queryKey: queryKeys.admin.users.detail(user.id),
+    queryFn: async () => {
+      const { data, error } = await client.admin.users({ id: user.id }).get();
+      if (error) throw new Error(error.value ? JSON.stringify(error.value) : "Could not load user details");
+      return data as AdminUserDetails;
+    },
+    enabled: detailsOpen,
+  });
 
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
     queryKey: queryKeys.admin.users.sessions(user.id),
@@ -166,6 +208,11 @@ export function UserActions({ user }: { user: any }) {
     },
   });
 
+  const canManageOwnerAccounts = sessionHasPermission(
+    session?.permissions ?? [],
+    Permissions.AdminUsersGrantAdmin,
+  );
+  const canViewSessions = user.role.slug !== Roles.PlatformOwner || canManageOwnerAccounts;
   const canChangeRole = user.role.slug !== Roles.PlatformOwner;
   const canUseDestructiveActions = user.role.slug !== Roles.PlatformOwner;
   const hasRevocableSessions = sessions?.some((session) => !session.isCurrent);
@@ -184,10 +231,16 @@ export function UserActions({ user }: { user: any }) {
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => setSessionsOpen(true)}>
-              <History className="mr-2 h-4 w-4" />
-              View Sessions
+            <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
+              <Eye className="mr-2 h-4 w-4" />
+              View details
             </DropdownMenuItem>
+{canViewSessions ? (
+              <DropdownMenuItem onClick={() => setSessionsOpen(true)}>
+                <History className="mr-2 h-4 w-4" />
+                View Sessions
+              </DropdownMenuItem>
+            ) : null}
             {canChangeRole ? (
               <DropdownMenuItem
                 onClick={() => {
@@ -211,6 +264,66 @@ export function UserActions({ user }: { user: any }) {
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>User details</DialogTitle>
+            <DialogDescription>
+              Read-only account information. Owner accounts can be viewed here but retain their protected actions.
+            </DialogDescription>
+          </DialogHeader>
+          {detailsLoading ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">Loading user details...</div>
+          ) : detailsError || !details ? (
+            <div className="py-10 text-center text-sm text-destructive">Could not load user details.</div>
+          ) : (
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <UserAvatar className="size-16" fallbackClassName="text-lg" image={details.image} name={details.name} />
+                <div className="min-w-0">
+                  <p className="font-medium">{details.name}</p>
+                  <p className="break-all text-sm text-muted-foreground">{details.email}</p>
+                </div>
+              </div>
+              <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+                <Detail label="User ID" value={details.id} mono />
+                <Detail label="Role" value={details.role.name + " (" + details.role.slug + ")"} />
+                <Detail label="Email verified" value={details.emailVerified ? "Yes" : "No"} />
+                <Detail label="Status" value={details.banned ? "Banned" : details.archived ? "Archived" : "Active"} />
+                <Detail label="Onboarding" value={details.onboardingComplete ? "Complete" : "Not complete"} />
+                <Detail label="Plan" value={details.plan ?? "None"} />
+                <Detail label="Subscription" value={details.subscriptionStatus ?? "None"} />
+                <Detail label="Authentication" value={details.authenticationMethods.length ? details.authenticationMethods.join(", ") : "Not recorded"} />
+                <Detail label="Created" value={formatUserDate(details.createdAt)} />
+                <Detail label="Last updated" value={formatUserDate(details.updatedAt)} />
+                {details.banReason ? <Detail label="Ban reason" value={details.banReason} /> : null}
+              </dl>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Avatar URL</p>
+                {details.image ? (
+                  <a className="block break-all rounded-md border bg-muted/40 p-2 font-mono text-xs text-primary underline-offset-4 hover:underline" href={details.image} target="_blank" rel="noreferrer">{details.image}</a>
+                ) : (
+                  <p className="rounded-md border bg-muted/40 p-2 text-sm text-muted-foreground">No avatar URL is stored for this user.</p>
+                )}
+              </div>
+              {details.invitations.length ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Invitations</p>
+                  {details.invitations.map((invitation) => (
+                    <div key={invitation.id} className="rounded-md border p-2 text-xs text-muted-foreground">
+                      {invitation.email} · {invitation.role.name} · {invitation.status} · expires {formatUserDate(invitation.expiresAt)}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetailsOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={sessionsOpen} onOpenChange={setSessionsOpen}>
         <DialogContent className="max-w-2xl overflow-hidden">

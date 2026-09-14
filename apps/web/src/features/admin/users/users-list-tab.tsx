@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserActions } from "./user-actions";
+import { UserAvatar } from "@/components/core/user-avatar";
 
 export function UsersListTab(props: {
   search: string;
@@ -56,7 +57,12 @@ export function UsersListTab(props: {
             ) : (
               props.users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar className="size-9" image={user.image} name={user.name} />
+                      <span className="font-medium">{user.name}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Badge

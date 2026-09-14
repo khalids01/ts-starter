@@ -52,6 +52,7 @@ export const queryKeys = {
     users: {
       all: () => ["admin-users"] as const,
       list: (search: string) => [...queryKeys.admin.users.all(), search] as const,
+      detail: (userId: string) => [...queryKeys.admin.users.all(), "detail", userId] as const,
       sessions: (userId: string) => ["user-sessions", userId] as const,
     },
     invitations: {

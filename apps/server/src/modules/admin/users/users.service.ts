@@ -19,8 +19,6 @@ import {
   assertNotSelfTarget,
   assertOwnerAccountCannotBeDisabled,
   assertOwnerRoleIsImmutable,
-  filterOwnerUsers,
-  isOwnerRole,
 } from "@/rbac/policies/owner.policy";
 import { assignUserRoleAndInvalidate } from "@/rbac/assignments";
 
@@ -206,7 +204,7 @@ export class UsersService {
       banned?: boolean;
       archived?: boolean;
     },
-    actor?: AdminActor,
+    _actor?: AdminActor,
   ) {
     const { search, roleSlug, banned, archived } = query;
     const { page, limit } = normalizePagination(query.page, query.limit);
@@ -242,21 +240,18 @@ export class UsersService {
       prisma.user.count({ where }),
     ]);
 
-    const users = (actor
-      ? filterOwnerUsers(
-          rawUsers.map((user) => mapAdminUser(user)),
-          actor.permissions,
-        )
-      : rawUsers.map((user) => mapAdminUser(user)));
+    // User details, including owner records, are readable to authorized admins.
+    // Mutation policies below still protect privileged and owner accounts.
+    const users = rawUsers.map((user) => mapAdminUser(user));
 
     return {
       users,
-      total: actor ? users.length : total,
-      pages: Math.ceil((actor ? users.length : total) / limit),
+      total,
+      pages: Math.ceil(total / limit),
     };
   }
 
-  async getUserById(id: string, actor?: AdminActor) {
+  async getUserById(id: string, _actor?: AdminActor) {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -284,17 +279,6 @@ export class UsersService {
     }
 
     const mapped = mapAdminUser(user);
-
-    if (actor && isOwnerRole(mapped.role.slug)) {
-      try {
-        assertActorCanAccessOwnerTarget({
-          actorPermissions: actor.permissions,
-          targetRoleSlug: mapped.role.slug,
-        });
-      } catch {
-        return null;
-      }
-    }
 
     return {
       ...mapped,

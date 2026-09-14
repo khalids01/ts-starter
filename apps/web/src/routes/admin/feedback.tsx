@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/core/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import Loader from "@/components/loader";
 import { toast } from "sonner";
@@ -91,12 +91,7 @@ function AdminFeedbackPage() {
             <Card key={item.id}>
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={item.user.image ?? undefined} />
-                    <AvatarFallback>
-                      {item.user.name?.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar image={item.user.image} name={item.user.name} />
                   <div>
                     <CardTitle className="text-base">
                       {item.user.name}
