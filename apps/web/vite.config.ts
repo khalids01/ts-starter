@@ -11,6 +11,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["@tanstack/router-core"],
   },
+  ssr: {
+    noExternal: ["@tanstack/history", "@tanstack/router-core"],
+  },
   server: {
     port: 3001,
   },
