@@ -130,6 +130,13 @@ export const adminCatalogController = new Elysia({
     },
   )
   .delete(
+    "/attributes/:id",
+    async ({ params: { id }, set }) => {
+      try { return await adminCatalogService.deleteAttribute(id); } catch (error) { return handleCatalogError(error, set); }
+    },
+    { beforeHandle: manageCatalog, params: IdParamDto, detail: { summary: "Delete product attribute" } },
+  )
+  .delete(
     "/categories/:id",
     async ({ params: { id }, set }) => {
       try {
@@ -191,6 +198,13 @@ export const adminCatalogController = new Elysia({
         summary: "Update product attribute",
       },
     },
+  )
+  .delete(
+    "/attribute-values/:id",
+    async ({ params: { id }, set }) => {
+      try { return await adminCatalogService.deleteAttributeValue(id); } catch (error) { return handleCatalogError(error, set); }
+    },
+    { beforeHandle: manageCatalog, params: IdParamDto, detail: { summary: "Delete attribute value" } },
   )
   .post(
     "/attributes/:id/values",

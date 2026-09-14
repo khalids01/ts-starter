@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession } from "@/providers/session-provider";
 import { ecommerceApi } from "../apiCall";
-import type { PageResult, ProductAttribute } from "../types";
+import type { Category, PageResult, ProductAttribute } from "../types";
 import { EcommerceHeader, ecommercePermissions, readError } from "../ui";
 import { AttributeDialog } from "./attribute-dialog";
 import { AttributesTable } from "./attributes-table";
@@ -28,6 +28,10 @@ export function AdminCatalogPage() {
     queryKey: queryKeys.admin.ecommerce.catalog.attributes({ limit: 100 }),
     queryFn: () => ecommerceApi.catalog.attributes({ limit: 100 }) as Promise<PageResult<ProductAttribute>>,
   });
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.admin.ecommerce.catalog.categories({ limit: 100 }),
+    queryFn: () => ecommerceApi.catalog.categories({ limit: 100 }) as Promise<PageResult<Category>>,
+  });
 
   const attributes = attributesQuery.data?.items ?? [];
 
@@ -44,6 +48,7 @@ export function AdminCatalogPage() {
         filterable: draft.filterable,
         variantDefining: draft.variantDefining,
         sortOrder: Number(draft.sortOrder || 0),
+        categoryIds: draft.categoryIds,
       };
 
       return draft.id
@@ -104,6 +109,7 @@ export function AdminCatalogPage() {
         loading={saveAttribute.isPending}
         onChange={setAttributeDialog}
         onSubmit={(draft) => saveAttribute.mutate(draft)}
+        categories={categoriesQuery.data?.items ?? []}
       />
     </div>
   );

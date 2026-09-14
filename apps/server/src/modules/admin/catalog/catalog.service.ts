@@ -1,5 +1,6 @@
 import prisma, { type Prisma } from "@db/server";
 import { brandConfig } from "@config/brand";
+import { getEffectiveCategoryAttributes } from "@/modules/catalog/category-template";
 import type {
   AssignCategoryAttributeInput,
   CreateAttributeInput,
@@ -97,6 +98,9 @@ function mapAttribute(row: any) {
     filterable: row.filterable,
     variantDefining: row.variantDefining,
     sortOrder: row.sortOrder,
+    categoryIds: (row.categoryAttributes ?? [])
+      .filter((entry: any) => entry.scope === "product")
+      .map((entry: any) => entry.categoryId),
     values: (row.values ?? []).map(mapAttributeValue),
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
@@ -226,6 +230,14 @@ export class AdminCatalogService {
     const rows = await prisma.category.findMany({
       where,
       include: {
+        attributes: {
+          include: {
+            attribute: {
+              include: { values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] } },
+            },
+          },
+          orderBy: [{ scope: "asc" }, { sortOrder: "asc" }],
+        },
         parent: { select: { id: true, name: true, slug: true } },
         _count: { select: { products: true, attributes: true, children: true } },
       },
@@ -285,9 +297,7 @@ export class AdminCatalogService {
         attributes: {
           include: {
             attribute: {
-              include: {
-                values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] },
-              },
+              include: { values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] } },
             },
           },
           orderBy: [{ scope: "asc" }, { sortOrder: "asc" }],
@@ -299,14 +309,18 @@ export class AdminCatalogService {
       throw new CatalogServiceError("Category not found", 404);
     }
 
+    const fields = await getEffectiveCategoryAttributes(id, category);
+    if (!fields) {
+      throw new CatalogServiceError("Category not found", 404);
+    }
     const grouped = {
       product: [] as ReturnType<typeof mapCategoryAttribute>[],
       variant: [] as ReturnType<typeof mapCategoryAttribute>[],
       batch: [] as ReturnType<typeof mapCategoryAttribute>[],
     };
 
-    for (const row of category.attributes) {
-      grouped[row.scope].push(mapCategoryAttribute(row));
+    for (const row of fields) {
+      grouped[row.scope as "product" | "variant" | "batch"].push(mapCategoryAttribute(row));
     }
 
     return {
@@ -366,6 +380,23 @@ export class AdminCatalogService {
 
     if (input.parentId) {
       await assertCategoryExists(input.parentId);
+      const descendants = new Set<string>([id]);
+      const categories = await prisma.category.findMany({
+        select: { id: true, parentId: true },
+      });
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const category of categories) {
+          if (category.parentId && descendants.has(category.parentId) && !descendants.has(category.id)) {
+            descendants.add(category.id);
+            changed = true;
+          }
+        }
+      }
+      if (descendants.has(input.parentId)) {
+        throw new CatalogServiceError("Category cannot use one of its descendants as parent");
+      }
     }
 
     const data: Prisma.CategoryUpdateInput = {};
@@ -442,9 +473,7 @@ export class AdminCatalogService {
     const page = Math.min(requestedPage, pages);
     const rows = await prisma.productAttribute.findMany({
       where,
-      include: {
-        values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] },
-      },
+      include: { values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] }, categoryAttributes: { select: { categoryId: true, scope: true } } },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       skip: (page - 1) * limit,
       take: limit,
@@ -459,16 +488,23 @@ export class AdminCatalogService {
   }
 
   async createAttribute(input: CreateAttributeInput) {
-    const attribute = await prisma.productAttribute.create({
-      data: {
+    const attribute = await prisma.$transaction(async (tx) => {
+      const created = await tx.productAttribute.create({ data: {
         name: input.name.trim(),
         slug: normalizeSlug({ slug: input.slug, name: input.name }),
         type: input.type ?? "text",
         filterable: input.filterable ?? false,
         variantDefining: input.variantDefining ?? false,
         sortOrder: input.sortOrder ?? 0,
-      },
-      include: { values: true },
+      } });
+      await this.syncAttributeCategories(tx, created.id, input.categoryIds, {
+        inputType: input.type ?? "text",
+        filterable: input.filterable ?? false,
+      });
+      return tx.productAttribute.findUniqueOrThrow({
+        where: { id: created.id },
+        include: { values: true, categoryAttributes: { select: { categoryId: true, scope: true } } },
+      });
     });
 
     return mapAttribute(attribute);
@@ -485,9 +521,8 @@ export class AdminCatalogService {
             select: { name: true },
           });
 
-    const attribute = await prisma.productAttribute.update({
-      where: { id },
-      data: {
+    const attribute = await prisma.$transaction(async (tx) => {
+      const updated = await tx.productAttribute.update({ where: { id }, data: {
         name: input.name?.trim(),
         slug:
           input.slug !== undefined || input.name !== undefined
@@ -500,10 +535,17 @@ export class AdminCatalogService {
         filterable: input.filterable,
         variantDefining: input.variantDefining,
         sortOrder: input.sortOrder,
-      },
-      include: {
-        values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] },
-      },
+      } });
+      if (input.categoryIds !== undefined) {
+        await this.syncAttributeCategories(tx, id, input.categoryIds, {
+          inputType: input.type ?? updated.type,
+          filterable: input.filterable ?? updated.filterable,
+        });
+      }
+      return tx.productAttribute.findUniqueOrThrow({
+        where: { id },
+        include: { values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] }, categoryAttributes: { select: { categoryId: true, scope: true } } },
+      });
     });
 
     return mapAttribute(attribute);
@@ -548,6 +590,52 @@ export class AdminCatalogService {
     });
 
     return mapAttributeValue(value);
+  }
+
+  private async syncAttributeCategories(
+    tx: any,
+    attributeId: string,
+    categoryIds: string[] | undefined,
+    defaults: { inputType: string; filterable: boolean },
+  ) {
+    if (categoryIds === undefined) return;
+    const ids = [...new Set(categoryIds)];
+    const found = await tx.category.findMany({ where: { id: { in: ids } }, select: { id: true } });
+    if (found.length !== ids.length) throw new CatalogServiceError("One or more categories were not found", 404);
+    await tx.categoryAttribute.deleteMany({ where: { attributeId, categoryId: { notIn: ids } } });
+    for (const categoryId of ids) {
+      await tx.categoryAttribute.upsert({
+        where: { categoryId_attributeId_scope: { categoryId, attributeId, scope: "product" } },
+        create: { categoryId, attributeId, scope: "product", inputType: defaults.inputType, filterable: defaults.filterable },
+        update: {},
+      });
+    }
+  }
+
+  async deleteAttributeValue(id: string) {
+    const [variantCount, assignmentCount, multiSelectCount, batchCount] = await Promise.all([
+      prisma.productVariantAttributeValue.count({ where: { attributeValueId: id } }),
+      prisma.productAttributeAssignment.count({ where: { attributeValueId: id } }),
+      prisma.productAttributeAssignmentValue.count({ where: { attributeValueId: id } }),
+      prisma.inventoryBatchAttributeAssignment.count({ where: { attributeValueId: id } }),
+    ]);
+    if (variantCount + assignmentCount + multiSelectCount + batchCount > 0) {
+      throw new CatalogServiceError("Cannot delete an attribute value that is in use");
+    }
+    await prisma.productAttributeValue.delete({ where: { id } });
+    return { message: "Attribute value deleted", status: 200 };
+  }
+
+  async deleteAttribute(id: string) {
+    const [assignmentCount, batchCount, values] = await Promise.all([
+      prisma.productAttributeAssignment.count({ where: { attributeId: id } }),
+      prisma.inventoryBatchAttributeAssignment.count({ where: { attributeId: id } }),
+      prisma.productAttributeValue.findMany({ where: { attributeId: id }, select: { id: true } }),
+    ]);
+    if (assignmentCount + batchCount > 0) throw new CatalogServiceError("Cannot delete an attribute that is in use");
+    for (const value of values) await this.deleteAttributeValue(value.id);
+    await prisma.productAttribute.delete({ where: { id } });
+    return { message: "Attribute deleted", status: 200 };
   }
 
   async assignCategoryAttribute(

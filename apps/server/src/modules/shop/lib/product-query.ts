@@ -1,4 +1,5 @@
 import prisma, { type Prisma } from "@db/server";
+import { getEffectiveCategoryAttributes } from "@/modules/catalog/category-template";
 import type { ListShopProductsQuery } from "../dto/product.dto";
 import { nullableTrimmed, optionalNumber } from "./format";
 
@@ -144,21 +145,10 @@ export async function publicFilterableAttributes(categoryId?: string | null) {
     return [] as any[];
   }
 
-  return prisma.categoryAttribute.findMany({
-    where: {
-      categoryId: selectedId,
-      filterable: true,
-      attribute: { filterable: true },
-    },
-    include: {
-      attribute: {
-        include: {
-          values: { orderBy: [{ sortOrder: "asc" }, { label: "asc" }] },
-        },
-      },
-    },
-    orderBy: [{ sortOrder: "asc" }],
-  });
+  const fields = await getEffectiveCategoryAttributes(selectedId);
+  return (fields ?? []).filter(
+    (field: any) => field.filterable && field.attribute.filterable,
+  );
 }
 
 function dynamicFilterWhere(

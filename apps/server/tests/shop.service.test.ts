@@ -23,6 +23,7 @@ const categoryFindManyMock = mock(async () => [
   }),
 ]);
 const categoryAttributeFindManyMock = mock(async () => []);
+const categoryFindUniqueMock = mock(async () => null as any);
 
 const orderCreateMock = mock(async () => ({
   id: "order-1",
@@ -50,6 +51,7 @@ const prismaMock = {
   },
   category: {
     findMany: categoryFindManyMock,
+    findUnique: categoryFindUniqueMock,
   },
   categoryAttribute: {
     findMany: categoryAttributeFindManyMock,
@@ -115,6 +117,7 @@ function categoryRow(overrides: Record<string, any> = {}) {
     imageUrl: overrides.imageUrl ?? null,
     iconUrl: overrides.iconUrl ?? null,
     parentId: overrides.parentId ?? null,
+    attributes: overrides.attributes ?? [],
     isFeatured: overrides.isFeatured ?? false,
     sortOrder: overrides.sortOrder ?? 10,
     _count: overrides._count ?? { products: 2 },
@@ -242,6 +245,7 @@ beforeEach(() => {
     }),
   ]);
   categoryAttributeFindManyMock.mockResolvedValue([]);
+  categoryFindUniqueMock.mockResolvedValue(null);
   productCountMock.mockResolvedValue(1);
   productFindManyMock.mockResolvedValue([productRow()]);
   productVariantFindManyMock.mockResolvedValue([variantRow()]);
@@ -260,6 +264,7 @@ afterEach(() => {
     productFindFirstMock,
     productVariantFindManyMock,
     categoryFindManyMock,
+    categoryFindUniqueMock,
     categoryAttributeFindManyMock,
     orderCreateMock,
     orderFindUniqueMock,
@@ -361,8 +366,9 @@ describe("shop service", () => {
         categoryRow({ id: "cat-child", parentId: "cat-parent" }),
       ])
       .mockResolvedValueOnce([categoryRow({ id: "cat-parent" })]);
-    categoryAttributeFindManyMock.mockResolvedValueOnce([
-      categoryAttributeRow({
+    categoryFindUniqueMock.mockResolvedValueOnce(categoryRow({
+      id: "cat-parent",
+      attributes: [categoryAttributeRow({
         categoryId: "cat-parent",
         attributeId: "attr-1",
         attribute: {
@@ -375,8 +381,8 @@ describe("shop service", () => {
           sortOrder: 10,
           values: [attributeValueRow({ id: "value-1", label: "Large" })],
         },
-      }),
-    ]);
+      })],
+    }));
     productFindManyMock.mockResolvedValueOnce([
       productRow({
         attributeAssignments: [
@@ -392,14 +398,7 @@ describe("shop service", () => {
 
     const result = await productService.listFilters({ categoryId: "cat-parent" });
 
-    expect(categoryAttributeFindManyMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          categoryId: "cat-parent",
-          filterable: true,
-        }),
-      }),
-    );
+    expect(categoryFindUniqueMock).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "cat-parent" } }));
     expect(result.attributes).toEqual([
       expect.objectContaining({
         attributeId: "attr-1",
@@ -416,9 +415,10 @@ describe("shop service", () => {
       categoryRow({ id: "cat-parent", parentId: null }),
       categoryRow({ id: "cat-child", parentId: "cat-parent" }),
     ]);
-    categoryAttributeFindManyMock.mockResolvedValueOnce([
-      categoryAttributeRow({ categoryId: "cat-parent", attributeId: "attr-1" }),
-    ]);
+    categoryFindUniqueMock.mockResolvedValueOnce(categoryRow({
+      id: "cat-parent",
+      attributes: [categoryAttributeRow({ categoryId: "cat-parent", attributeId: "attr-1" })],
+    }));
 
     await productService.listProducts({
       categoryId: "cat-parent",

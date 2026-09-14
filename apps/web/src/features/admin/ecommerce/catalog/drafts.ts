@@ -27,6 +27,7 @@ export type AttributeDraft = {
   filterable: boolean;
   variantDefining: boolean;
   sortOrder: string;
+  categoryIds: string[];
 };
 
 export type BrandDraft = {
@@ -65,6 +66,7 @@ export function attributeDraft(attribute?: ProductAttribute): AttributeDraft {
     filterable: attribute?.filterable ?? false,
     variantDefining: attribute?.variantDefining ?? false,
     sortOrder: String(attribute?.sortOrder ?? 0),
+    categoryIds: attribute?.categoryIds ?? [],
   };
 }
 

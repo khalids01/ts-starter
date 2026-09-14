@@ -30,8 +30,14 @@ export const ecommerceApi = {
       unwrap(api.admin.catalog.attributes.post(body), "Failed to create attribute"),
     updateAttribute: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.catalog.attributes({ id }).patch(body), "Failed to update attribute"),
+    deleteAttribute: (id: string) =>
+      unwrap(api.admin.catalog.attributes({ id }).delete(), "Failed to delete attribute"),
     upsertAttributeValue: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.catalog.attributes({ id }).values.post(body), "Failed to save value"),
+    updateAttributeValue: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.catalog["attribute-values"]({ id }).patch(body), "Failed to update attribute value"),
+    deleteAttributeValue: (id: string) =>
+      unwrap(api.admin.catalog["attribute-values"]({ id }).delete(), "Failed to delete attribute value"),
     assignCategoryAttribute: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.catalog.categories({ id }).attributes.post(body), "Failed to assign attribute"),
     updateCategoryAttribute: (id: string, body: Record<string, unknown>) =>

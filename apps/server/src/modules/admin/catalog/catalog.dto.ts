@@ -65,6 +65,7 @@ export const CreateAttributeDto = t.Object({
   filterable: t.Optional(t.Boolean()),
   variantDefining: t.Optional(t.Boolean()),
   sortOrder: t.Optional(t.Number()),
+  categoryIds: t.Optional(t.Array(t.String({ minLength: 1 }))),
 });
 
 export const UpdateAttributeDto = t.Partial(CreateAttributeDto);

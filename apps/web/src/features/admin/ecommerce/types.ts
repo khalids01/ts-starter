@@ -48,6 +48,7 @@ export type ProductAttribute = {
   filterable: boolean;
   variantDefining: boolean;
   sortOrder: number;
+  categoryIds?: string[];
   values?: ProductAttributeValue[];
 };
 

@@ -1,4 +1,5 @@
 import prisma, { type Prisma } from "@db/server";
+import { fieldsForScope, getEffectiveCategoryAttributes } from "@/modules/catalog/category-template";
 import type {
   CreateProductInput,
   ListProductsQuery,
@@ -16,19 +17,6 @@ export class AdminProductServiceError extends Error {
     super(message);
   }
 }
-
-type CategoryTemplateField = {
-  attributeId: string;
-  scope: "product" | "variant" | "batch";
-  required: boolean;
-  variantDefining: boolean;
-  inputType: string;
-  attribute?: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-};
 
 function slugify(input: string) {
   return input
@@ -353,7 +341,8 @@ async function getCategoryForProduct(categoryId: string) {
     throw new AdminProductServiceError("Category is inactive");
   }
 
-  return category;
+  const attributes = await getEffectiveCategoryAttributes(categoryId);
+  return { ...category, attributes: attributes ?? [] };
 }
 
 async function assertActiveBrand(brandId: string) {
@@ -383,13 +372,6 @@ async function resolveBrandId(
   }
 
   return brandId ?? null;
-}
-
-function getTemplateFields(
-  category: { attributes?: CategoryTemplateField[] },
-  scope: "product" | "variant" | "batch",
-) {
-  return (category.attributes ?? []).filter((field) => field.scope === scope);
 }
 
 function getAttributeIdsFromVariant(variant: any) {
@@ -733,8 +715,9 @@ export class AdminProductsService {
       throw new AdminProductServiceError("Product not found", 404);
     }
 
+    const effectiveFields = await getEffectiveCategoryAttributes(product.categoryId);
     const fieldsByAttribute = new Map(
-      product.category.attributes.map((field: any) => [field.attributeId, field]),
+      fieldsForScope(effectiveFields ?? [], "product").map((field: any) => [field.attributeId, field]),
     );
     const seen = new Set<string>();
     for (const assignment of input.assignments) {
@@ -867,7 +850,10 @@ export class AdminProductsService {
       throw new AdminProductServiceError("Variant does not belong to product", 404);
     }
 
-    const variantFields = product.category.attributes;
+    const variantFields = fieldsForScope(
+      (await getEffectiveCategoryAttributes(product.categoryId)) ?? [],
+      "variant",
+    );
     const allowedAttributeIds = new Set(
       variantFields.map((field: any) => field.attributeId),
     );
@@ -1234,7 +1220,8 @@ export class AdminProductsService {
       });
     }
 
-    const productFields = getTemplateFields(category, "product");
+    const effectiveFields = (await getEffectiveCategoryAttributes(category.id)) ?? [];
+    const productFields = fieldsForScope(effectiveFields, "product");
     const assignmentsByAttribute = new Map(
       product.attributeAssignments.map((assignment) => [
         assignment.attributeId,
@@ -1270,7 +1257,7 @@ export class AdminProductsService {
     }
 
     const skuSet = new Set<string>();
-    const variantFields = getTemplateFields(category, "variant");
+    const variantFields = fieldsForScope(effectiveFields, "variant");
     const requiredVariantAttributeIds = variantFields
       .filter((field) => field.variantDefining || field.required)
       .map((field) => field.attributeId);
