@@ -5,7 +5,6 @@ type AttributeSeed = {
   name: string;
   type: "text" | "number" | "boolean" | "color";
   filterable?: boolean;
-  variantDefining?: boolean;
   values?: Array<{ value: string; label: string; sortOrder?: number }>;
 };
 
@@ -85,7 +84,6 @@ const attributes: AttributeSeed[] = [
     name: "Color",
     type: "color",
     filterable: true,
-    variantDefining: true,
     values: [
       { value: "black", label: "Black" },
       { value: "white", label: "White" },
@@ -99,7 +97,6 @@ const attributes: AttributeSeed[] = [
     name: "Storage",
     type: "text",
     filterable: true,
-    variantDefining: true,
     values: [
       { value: "64gb", label: "64 GB" },
       { value: "128gb", label: "128 GB" },
@@ -113,7 +110,6 @@ const attributes: AttributeSeed[] = [
     name: "RAM",
     type: "text",
     filterable: true,
-    variantDefining: true,
     values: [
       { value: "4gb", label: "4 GB" },
       { value: "6gb", label: "6 GB" },
@@ -160,7 +156,6 @@ const attributes: AttributeSeed[] = [
     name: "Weight Pack",
     type: "text",
     filterable: true,
-    variantDefining: true,
     values: [
       { value: "250g", label: "250 g" },
       { value: "500g", label: "500 g" },
@@ -946,13 +941,11 @@ async function seedAttributes(selectedAttributes: AttributeSeed[]) {
         slug: attribute.slug,
         type: attribute.type,
         filterable: attribute.filterable ?? false,
-        variantDefining: attribute.variantDefining ?? false,
       },
       update: {
         name: attribute.name,
         type: attribute.type,
         filterable: attribute.filterable ?? false,
-        variantDefining: attribute.variantDefining ?? false,
       },
       select: { id: true },
     });

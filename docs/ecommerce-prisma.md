@@ -1,6 +1,6 @@
 # Ecommerce Prisma Reference
 
-This is the compact reference for `packages/db/prisma/schema/ecommerce.prisma`.
+This is the compact reference for the domain files under `packages/db/prisma/schema/ecommerce-*.prisma`.
 
 ## Catalog
 
@@ -12,13 +12,15 @@ This is the compact reference for `packages/db/prisma/schema/ecommerce.prisma`.
 
 ## Category Templates
 
-- `ProductAttribute` defines reusable fields such as color, storage, RAM, origin, grade, or expiry date.
+- `ProductAttribute` defines reusable fields such as color, storage, RAM, origin, grade, or expiry date. It owns the base type and allowed values, not category-specific behavior.
 - `ProductAttributeValue` stores reusable selectable values for attributes.
-- `CategoryAttribute` connects a category to an attribute and decides how the admin UI should render it.
+- `CategoryAttribute` is the explicit category-to-attribute join model. It owns contextual scope, required/filterable/comparable behavior, input type, variant-defining behavior, help text, grouping, unit, and ordering.
 - Attribute scopes:
   - `product`: shared specs stored in `ProductAttributeAssignment`
   - `variant`: SKU choices stored in `ProductVariantAttributeValue`
   - `batch`: inventory facts stored in `InventoryBatchAttributeAssignment`
+
+Only a `variant`-scope `CategoryAttribute` can be variant defining. A variant-defining field requires every active variant to select one value and participates in the unique active-variant combination. Product and batch fields cannot be variant defining.
 
 Category template product fields are the source of truth for structured specifications and filters. Do not duplicate those specs into free-form product HTML.
 

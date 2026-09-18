@@ -231,8 +231,9 @@ flowchart TD
   CREATE_BRAND --> CREATE_PROD[Create Product<br/>status: draft<br/>categoryId required<br/>cover image, keywords, SEO fields]
 
   CREATE_PROD --> ATTRS{Variant attributes?<br/>size, color, etc.}
-  ATTRS -->|Yes| CREATE_ATTR[Create ProductAttribute<br/>variantDefining = true]
-  CREATE_ATTR --> CREATE_VAL[Create ProductAttributeValue]
+  ATTRS -->|Yes| CREATE_ATTR[Create ProductAttribute<br/>and allowed values]
+  CREATE_ATTR --> TEMPLATE_ATTR[Assign CategoryAttribute<br/>scope = variant<br/>variantDefining = true]
+  TEMPLATE_ATTR --> CREATE_VAL[Create ProductAttributeValue]
   ATTRS -->|No| CREATE_VAR
 
   CREATE_VAL --> CREATE_VAR[Create ProductVariant(s)<br/>sku, price, currency<br/>optional image URLs<br/>attributesSnapshot JSON]

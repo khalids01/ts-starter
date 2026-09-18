@@ -176,15 +176,14 @@ model ProductHighlight {
 }
 
 model ProductAttribute {
-  id              String               @id @default(cuid())
-  name            String
-  slug            String               @unique
-  type            ProductAttributeType @default(text)
-  filterable      Boolean              @default(false)
-  variantDefining Boolean              @default(false)
-  sortOrder       Int                  @default(0)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  id         String               @id @default(cuid())
+  name       String
+  slug       String               @unique
+  type       ProductAttributeType @default(text)
+  filterable Boolean              @default(false)
+  sortOrder  Int                  @default(0)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
 
   values             ProductAttributeValue[]
   categoryAttributes CategoryAttribute[]
@@ -192,7 +191,6 @@ model ProductAttribute {
   batchAssignments   InventoryBatchAttributeAssignment[]
 
   @@index([filterable])
-  @@index([variantDefining])
   @@index([sortOrder])
   @@map("product_attribute")
 }

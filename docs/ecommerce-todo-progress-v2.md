@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-19
 
-Status: Step 0 implemented and verified; awaiting user review and commit.
+Status: Step 1 implemented and verified; awaiting user migration and review.
 
 ## Goal
 
@@ -104,8 +104,8 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 
 | Step | Work | Status | Schema change | Permission seed |
 | --- | --- | --- | --- | --- |
-| 0 | Split ecommerce Prisma schema by domain | Implemented; awaiting review | Organizational only | No |
-| 1 | Final catalog attribute schema cleanup | Not started | Yes | No |
+| 0 | Split ecommerce Prisma schema by domain | Completed | Organizational only | No |
+| 1 | Final catalog attribute schema cleanup | Implemented; migration and review required | Yes | No |
 | 2 | Shipping-rate management | Not started | Likely small extension | Yes |
 | 3 | Order fulfillment and tracking | Not started | Yes | Yes |
 | 4 | Cancellation and refund workflow | Not started | Yes | Yes |

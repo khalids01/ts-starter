@@ -63,7 +63,6 @@ const categoryAttributeUpsertMock = mock(async (args: any) => ({
     slug: "color",
     type: "color",
     filterable: true,
-    variantDefining: true,
     sortOrder: 0,
     values: [],
     createdAt: new Date("2026-06-12T10:00:00.000Z"),
@@ -239,7 +238,6 @@ describe("AdminCatalogService", () => {
             slug: "origin",
             type: "text",
             filterable: true,
-            variantDefining: false,
             sortOrder: 0,
             values: [],
             createdAt: new Date("2026-06-12T10:00:00.000Z"),
@@ -269,7 +267,6 @@ describe("AdminCatalogService", () => {
             slug: "weight-pack",
             type: "text",
             filterable: true,
-            variantDefining: true,
             sortOrder: 0,
             values: [],
             createdAt: new Date("2026-06-12T10:00:00.000Z"),
@@ -299,7 +296,6 @@ describe("AdminCatalogService", () => {
             slug: "expiry-date",
             type: "text",
             filterable: false,
-            variantDefining: false,
             sortOrder: 0,
             values: [],
             createdAt: new Date("2026-06-12T10:00:00.000Z"),
@@ -398,12 +394,14 @@ describe("AdminCatalogService", () => {
       "../src/modules/admin/catalog/catalog.service"
     );
 
-    await expect(
-      adminCatalogService.assignCategoryAttribute("cat-1", {
-        attributeId: "attr-1",
-        scope: "product",
-        variantDefining: true,
-      }),
-    ).rejects.toBeInstanceOf(CatalogServiceError);
+    for (const scope of ["product", "batch"] as const) {
+      await expect(
+        adminCatalogService.assignCategoryAttribute("cat-1", {
+          attributeId: "attr-1",
+          scope,
+          variantDefining: true,
+        }),
+      ).rejects.toBeInstanceOf(CatalogServiceError);
+    }
   });
 });
