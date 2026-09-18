@@ -141,6 +141,7 @@ export type ShopShippingRate = {
   code: string;
   label: string;
   amount: string;
+  currency: string;
   freeOverAmount?: string | null;
   isDefault: boolean;
   isActive: boolean;

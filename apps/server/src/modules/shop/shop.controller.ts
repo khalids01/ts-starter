@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { authGuard } from "@/guards/auth.guard";
 import {
   ListShopFiltersQueryDto,
@@ -49,8 +49,9 @@ export const shopController = new Elysia({
   )
   .get(
     "/shipping-rates",
-    () => orderService.listShippingRates(),
+    ({ query }) => orderService.listShippingRates(query.currency),
     {
+      query: t.Object({ currency: t.Optional(t.String({ minLength: 3, maxLength: 3 })) }),
       detail: { summary: "List active storefront shipping rates" },
     },
   )

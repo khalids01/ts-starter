@@ -51,7 +51,8 @@ InventoryStock.quantityOnHand - InventoryStock.quantityReserved
 ## Orders And Checkout
 
 - `Cart` and `CartItem` hold guest or signed-in customer cart state. Guest carts use a cart token; signed-in carts attach to `User`.
-- `ShippingRate` stores editable V1 shipping methods such as inside-city and outside-city rates. Checkout snapshots the selected method on `Order`.
+- `ShippingRate` stores editable shipping methods such as inside-city and outside-city rates, including currency and an optional free-shipping threshold. Admin mutations keep one active default per currency, and checkout only exposes rates matching the cart currency.
+- Checkout snapshots the selected shipping code, label, and amount on `Order`, so later rate edits do not rewrite historical orders.
 - `Order` stores customer contact, totals, `paymentMethod`, order/payment/delivery statuses, and `inventoryStatus`.
 - `Order.checkoutKey` makes checkout idempotent so a double submit can return the same order instead of creating duplicates.
 - `OrderAddress` stores structured shipping and billing snapshots. It replaces loose address JSON.

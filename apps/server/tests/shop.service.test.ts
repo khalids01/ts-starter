@@ -219,6 +219,7 @@ function shippingRateRow(overrides: Record<string, any> = {}) {
     code: overrides.code ?? "inside_city",
     label: overrides.label ?? "Inside city",
     amount: overrides.amount ?? "60.00",
+    currency: overrides.currency ?? "BDT",
     freeOverAmount: overrides.freeOverAmount ?? null,
     isDefault: overrides.isDefault ?? true,
     isActive: overrides.isActive ?? true,

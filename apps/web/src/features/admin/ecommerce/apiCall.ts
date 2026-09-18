@@ -99,6 +99,16 @@ export const ecommerceApi = {
     adjust: (body: Record<string, unknown>) =>
       unwrap(api.admin.inventory.adjust.post(body), "Failed to adjust stock"),
   },
+  shipping: {
+    rates: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.shipping.rates.get({ query }), "Failed to load shipping rates"),
+    createRate: (body: Record<string, unknown>) =>
+      unwrap(api.admin.shipping.rates.post(body), "Failed to create shipping rate"),
+    updateRate: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.shipping.rates({ id }).patch(body), "Failed to update shipping rate"),
+    disableRate: (id: string) =>
+      unwrap(api.admin.shipping.rates({ id }).delete(), "Failed to disable shipping rate"),
+  },
   orders: {
     list: (query?: Record<string, unknown>) =>
       unwrap(api.admin.orders.get({ query }), "Failed to load orders"),

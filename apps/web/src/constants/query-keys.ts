@@ -99,6 +99,11 @@ export const queryKeys = {
         locations: (params?: unknown) =>
           [...queryKeys.admin.ecommerce.inventory.all(), "locations", params] as const,
       },
+      shipping: {
+        all: () => ["admin-ecommerce-shipping"] as const,
+        rates: (params?: unknown) =>
+          [...queryKeys.admin.ecommerce.shipping.all(), "rates", params] as const,
+      },
       orders: {
         all: () => ["admin-ecommerce-orders"] as const,
         list: (params?: unknown) =>

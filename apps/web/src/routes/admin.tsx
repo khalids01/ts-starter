@@ -32,6 +32,7 @@ import {
   Warehouse,
   ReceiptText,
   Images,
+  Truck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
@@ -51,6 +52,7 @@ import {
   canShowInventoryNav,
   canShowOrdersNav,
   canShowImagesNav,
+  canShowShippingNav,
 } from "@/features/admin/lib/admin-access";
 import { adminMiddleware } from "@/middleware/admin";
 import { useSession } from "@/providers/session-provider";
@@ -122,6 +124,12 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       icon: ReceiptText,
       url: "/admin/orders",
       show: canShowOrdersNav(session),
+    },
+    {
+      title: "Shipping",
+      icon: Truck,
+      url: "/admin/shipping",
+      show: canShowShippingNav(session),
     },
     {
       title: "Images",

@@ -51,9 +51,11 @@ export function CheckoutPage() {
   const cart = useCart();
   const clearCart = useCartStore((state) => state.clearCart);
   const shippingRatesQuery = useQuery({
-    queryKey: ["shop", "shipping-rates"],
+    queryKey: ["shop", "shipping-rates", cart.currency],
     queryFn: async () => {
-      const { data, error } = await client.shop["shipping-rates"].get();
+      const { data, error } = await client.shop["shipping-rates"].get({
+        query: { currency: cart.currency },
+      });
       if (error) {
         throw new Error(String(error.value?.message || error.message || "Failed to load shipping rates"));
       }

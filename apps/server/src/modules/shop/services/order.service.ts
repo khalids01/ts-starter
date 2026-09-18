@@ -202,9 +202,9 @@ async function checkoutLinesFromInput(items: CheckoutInput["items"]) {
 }
 
 export const orderService = {
-  async listShippingRates() {
+  async listShippingRates(currency = "BDT") {
     const rates = await prisma.shippingRate.findMany({
-      where: { isActive: true },
+      where: { isActive: true, currency: currency.trim().toUpperCase() },
       orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
     });
     return rates.map(mapShippingRate);
@@ -234,12 +234,13 @@ export const orderService = {
     }
 
     const subtotal = lines.reduce((sum, line) => sum + line.total, 0);
+    const orderCurrency = lines[0]?.currency ?? "BDT";
     const shippingRate = await prisma.shippingRate.findFirst({
       where: input.shippingRateId
-        ? { id: input.shippingRateId, isActive: true }
+        ? { id: input.shippingRateId, isActive: true, currency: orderCurrency }
         : input.shippingRateCode
-          ? { code: input.shippingRateCode, isActive: true }
-          : { isDefault: true, isActive: true },
+          ? { code: input.shippingRateCode, isActive: true, currency: orderCurrency }
+          : { isDefault: true, isActive: true, currency: orderCurrency },
       orderBy: [{ sortOrder: "asc" }],
     });
     if (!shippingRate) {
@@ -277,7 +278,7 @@ export const orderService = {
           taxAmount: "0.00",
           shippingAmount: money(shippingAmount),
           totalAmount: total.toFixed(2),
-          currency: lines[0]?.currency ?? "BDT",
+          currency: orderCurrency,
           paymentMethod: input.paymentMethod ?? "cash_on_delivery",
           orderStatus: "pending",
           paymentStatus: "unpaid",
@@ -341,7 +342,7 @@ export const orderService = {
       orderId: order.id,
       orderNumber: order.orderNumber,
       totalAmount: total.toFixed(2),
-      currency: lines[0]?.currency ?? "BDT",
+      currency: orderCurrency,
       userId,
     };
   },

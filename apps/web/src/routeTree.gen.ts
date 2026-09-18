@@ -23,6 +23,7 @@ import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AdminWebhooksRouteImport } from './routes/admin/webhooks'
 import { Route as AdminVisitorsRouteImport } from './routes/admin/visitors'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminShippingRouteImport } from './routes/admin/shipping'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminRateLimitsRouteImport } from './routes/admin/rate-limits'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -120,6 +121,11 @@ const AdminVisitorsRoute = AdminVisitorsRouteImport.update({
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminShippingRoute = AdminShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminRolesRoute = AdminRolesRouteImport.update({
@@ -305,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
+  '/admin/shipping': typeof AdminShippingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/visitors': typeof AdminVisitorsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -347,6 +354,7 @@ export interface FileRoutesByTo {
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
+  '/admin/shipping': typeof AdminShippingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/visitors': typeof AdminVisitorsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -393,6 +401,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/rate-limits': typeof AdminRateLimitsRoute
   '/admin/roles': typeof AdminRolesRouteWithChildren
+  '/admin/shipping': typeof AdminShippingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/visitors': typeof AdminVisitorsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -440,6 +449,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/rate-limits'
     | '/admin/roles'
+    | '/admin/shipping'
     | '/admin/users'
     | '/admin/visitors'
     | '/admin/webhooks'
@@ -482,6 +492,7 @@ export interface FileRouteTypes {
     | '/admin/overview'
     | '/admin/rate-limits'
     | '/admin/roles'
+    | '/admin/shipping'
     | '/admin/users'
     | '/admin/visitors'
     | '/admin/webhooks'
@@ -527,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/rate-limits'
     | '/admin/roles'
+    | '/admin/shipping'
     | '/admin/users'
     | '/admin/visitors'
     | '/admin/webhooks'
@@ -658,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/shipping': {
+      id: '/admin/shipping'
+      path: '/shipping'
+      fullPath: '/admin/shipping'
+      preLoaderRoute: typeof AdminShippingRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/roles': {
@@ -983,6 +1002,7 @@ interface AdminRouteChildren {
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminRateLimitsRoute: typeof AdminRateLimitsRoute
   AdminRolesRoute: typeof AdminRolesRouteWithChildren
+  AdminShippingRoute: typeof AdminShippingRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVisitorsRoute: typeof AdminVisitorsRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
@@ -1000,6 +1020,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminRateLimitsRoute: AdminRateLimitsRoute,
   AdminRolesRoute: AdminRolesRouteWithChildren,
+  AdminShippingRoute: AdminShippingRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVisitorsRoute: AdminVisitorsRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,

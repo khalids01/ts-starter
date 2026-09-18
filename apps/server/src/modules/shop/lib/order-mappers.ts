@@ -6,6 +6,7 @@ export function mapShippingRate(row: any) {
     code: row.code,
     label: row.label,
     amount: decimalToString(row.amount),
+    currency: row.currency,
     freeOverAmount: decimalToString(row.freeOverAmount),
     isDefault: row.isDefault,
     isActive: row.isActive,

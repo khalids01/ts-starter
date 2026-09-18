@@ -334,3 +334,17 @@ export type Order = {
   lineItems?: OrderLineItem[];
   statusEvents?: OrderStatusEvent[];
 };
+
+export type ShippingRate = {
+  id: string;
+  code: string;
+  label: string;
+  amount: string;
+  currency: string;
+  freeOverAmount?: string | null;
+  isDefault: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
