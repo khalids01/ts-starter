@@ -25,7 +25,6 @@ export type AttributeDraft = {
   slug: string;
   type: "text" | "number" | "boolean" | "color";
   filterable: boolean;
-  variantDefining: boolean;
   sortOrder: string;
   categoryIds: string[];
 };
@@ -64,7 +63,6 @@ export function attributeDraft(attribute?: ProductAttribute): AttributeDraft {
     slug: attribute?.slug ?? "",
     type: attribute?.type ?? "text",
     filterable: attribute?.filterable ?? false,
-    variantDefining: attribute?.variantDefining ?? false,
     sortOrder: String(attribute?.sortOrder ?? 0),
     categoryIds: attribute?.categoryIds ?? [],
   };

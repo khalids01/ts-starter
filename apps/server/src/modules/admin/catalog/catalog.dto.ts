@@ -63,7 +63,6 @@ export const CreateAttributeDto = t.Object({
   slug: t.Optional(t.String()),
   type: t.Optional(ProductAttributeTypeDto),
   filterable: t.Optional(t.Boolean()),
-  variantDefining: t.Optional(t.Boolean()),
   sortOrder: t.Optional(t.Number()),
   categoryIds: t.Optional(t.Array(t.String({ minLength: 1 }))),
 });

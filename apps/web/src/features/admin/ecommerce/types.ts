@@ -46,7 +46,6 @@ export type ProductAttribute = {
   slug: string;
   type: "text" | "number" | "boolean" | "color";
   filterable: boolean;
-  variantDefining: boolean;
   sortOrder: number;
   categoryIds?: string[];
   values?: ProductAttributeValue[];

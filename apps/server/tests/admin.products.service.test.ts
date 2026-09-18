@@ -491,6 +491,39 @@ describe("AdminProductsService", () => {
     );
   });
 
+  it("rejects duplicate active variant-defining combinations", async () => {
+    productFindUniqueMock.mockResolvedValueOnce({
+      id: "product-1",
+      name: "iPhone 15",
+      slug: "iphone-15",
+      categoryId: "cat-phones",
+      category: { attributes: [categoryRow().attributes[1]] },
+      variants: [],
+    });
+    productAttributeValueFindManyMock.mockResolvedValueOnce([
+      {
+        id: "value-black",
+        value: "black",
+        label: "Black",
+        attributeId: "attr-color",
+        attribute: { id: "attr-color", name: "Color", slug: "color", type: "color" },
+      },
+    ]);
+
+    const { adminProductsService } = await import(
+      "../src/modules/admin/products/products.service"
+    );
+
+    await expect(
+      adminProductsService.replaceProductVariants("product-1", {
+        variants: [
+          { sku: "BLACK-1", price: "999", attributeValueIds: ["value-black"] },
+          { sku: "BLACK-2", price: "999", attributeValueIds: ["value-black"] },
+        ],
+      }),
+    ).rejects.toThrow("unique variant-defining value combinations");
+  });
+
   it("soft archives product on delete", async () => {
     productFindUniqueMock.mockResolvedValueOnce({ id: "product-1" });
     const { adminProductsService } = await import(

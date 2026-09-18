@@ -862,6 +862,11 @@ export class AdminProductsService {
         .filter((field: any) => field.variantDefining || field.required)
         .map((field: any) => field.attributeId),
     );
+    const variantDefiningAttributeIds = new Set(
+      variantFields
+        .filter((field: any) => field.variantDefining)
+        .map((field: any) => field.attributeId),
+    );
     const allValueIds = [
       ...new Set(
         input.variants.flatMap((variant) => variant.attributeValueIds ?? []),
@@ -927,6 +932,22 @@ export class AdminProductsService {
         attributesSnapshot: buildVariantSnapshot(values),
       };
     });
+
+    const variantCombinationKeys = new Set<string>();
+    for (const variant of normalizedVariants) {
+      if (!variant.isActive || variantDefiningAttributeIds.size === 0) continue;
+      const key = variant.values
+        .filter((value) => variantDefiningAttributeIds.has(value.attributeId))
+        .sort((left, right) => left.attributeId.localeCompare(right.attributeId))
+        .map((value) => `${value.attributeId}:${value.id}`)
+        .join("|");
+      if (variantCombinationKeys.has(key)) {
+        throw new AdminProductServiceError(
+          "Active variants must have unique variant-defining value combinations",
+        );
+      }
+      variantCombinationKeys.add(key);
+    }
 
     validateSkuList(normalizedVariants);
     await this.assertSkusAvailable(
@@ -1261,6 +1282,10 @@ export class AdminProductsService {
     const requiredVariantAttributeIds = variantFields
       .filter((field) => field.variantDefining || field.required)
       .map((field) => field.attributeId);
+    const variantDefiningAttributeIds = variantFields
+      .filter((field) => field.variantDefining)
+      .map((field) => field.attributeId);
+    const variantCombinationKeys = new Set<string>();
 
     for (const variant of activeVariants) {
       const price = decimalToNumber(variant.price);
@@ -1296,6 +1321,27 @@ export class AdminProductsService {
             message: "Active variant is missing required variant attributes",
             path: `variants.${variant.id}.attributes`,
           });
+        }
+      }
+
+      if (variantDefiningAttributeIds.length > 0) {
+        const valueIdsByAttribute = new Map(
+          (variant.attributeValues ?? []).map((entry: any) => [
+            entry.attributeValue.attributeId,
+            entry.attributeValue.id,
+          ]),
+        );
+        const key = variantDefiningAttributeIds
+          .map((attributeId) => `${attributeId}:${valueIdsByAttribute.get(attributeId) ?? ""}`)
+          .join("|");
+        if (variantCombinationKeys.has(key)) {
+          issues.push({
+            code: "variant_combination_duplicate",
+            message: "Active variants must have unique variant-defining value combinations",
+            path: `variants.${variant.id}.attributes`,
+          });
+        } else {
+          variantCombinationKeys.add(key);
         }
       }
     }

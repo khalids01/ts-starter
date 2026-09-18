@@ -5,12 +5,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { SaveButton, SelectField, TextField } from "../ui";
 import type { AttributeDraft } from "./drafts";
 import { attributeTypeOptions } from "./options";
 import type { Category } from "../types";
+import { Switch } from "@/components/ui/switch";
 
 export function AttributeDialog(props: {
   draft: AttributeDraft | null;
@@ -43,7 +43,7 @@ export function AttributeDialog(props: {
               value={draft.sortOrder}
               onChange={(sortOrder) => props.onChange({ ...draft, sortOrder })}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3">
               <label className="flex items-center gap-2 text-sm">
                 <Switch
                   checked={draft.filterable}
@@ -51,27 +51,17 @@ export function AttributeDialog(props: {
                 />
                 Filterable
               </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Switch
-                  checked={draft.variantDefining}
-                  onCheckedChange={(variantDefining) => props.onChange({ ...draft, variantDefining })}
-                />
-                Variant defining
-              </label>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium">Direct categories</p>
-              <p className="text-xs text-muted-foreground">Selected categories get a product field by default. Configure details in the category template.</p>
-              <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border p-3">
-                {props.categories.map((category) => {
-                  const checked = draft.categoryIds.includes(category.id);
-                  return <label key={category.id} className="flex items-center gap-2 text-sm">
-                    <Checkbox checked={checked} onCheckedChange={(value) => props.onChange({ ...draft, categoryIds: value ? [...draft.categoryIds, category.id] : draft.categoryIds.filter((id) => id !== category.id) })} />
-                    {category.name}
-                  </label>;
-                })}
-                {props.categories.length === 0 ? <p className="text-sm text-muted-foreground">No categories available.</p> : null}
-              </div>
+              <p className="text-sm font-medium">Product categories</p>
+              <p className="text-xs text-muted-foreground">Selected categories receive this attribute as a product field by default. Configure variant or batch usage in the category template.</p>
+              <MultiSelect
+                placeholder="Select categories"
+                emptyLabel="No product categories"
+                options={props.categories.map((category) => ({ id: category.id, label: category.name }))}
+                value={draft.categoryIds}
+                onChange={(categoryIds) => props.onChange({ ...draft, categoryIds })}
+              />
             </div>
           </div>
         ) : null}

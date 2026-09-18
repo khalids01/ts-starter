@@ -136,7 +136,11 @@ export function TemplateSheet(props: {
                   <SelectField
                     label="Scope"
                     value={draft.scope}
-                    onChange={(scope) => setDraft((current) => ({ ...current, scope: scope as AttributeScope }))}
+                    onChange={(scope) => setDraft((current) => ({
+                      ...current,
+                      scope: scope as AttributeScope,
+                      variantDefining: scope === "variant" ? current.variantDefining : false,
+                    }))}
                     options={scopeOptions}
                   />
                   <SelectField
@@ -172,15 +176,20 @@ export function TemplateSheet(props: {
                       />
                       Filter
                     </label>
-                    <label className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={draft.variantDefining}
-                        onCheckedChange={(value) =>
-                          setDraft((current) => ({ ...current, variantDefining: Boolean(value) }))
-                        }
-                      />
-                      Variant
-                    </label>
+                    {draft.scope === "variant" ? (
+                      <label className="flex items-start gap-2 text-sm">
+                        <Checkbox
+                          checked={draft.variantDefining}
+                          onCheckedChange={(value) =>
+                            setDraft((current) => ({ ...current, variantDefining: Boolean(value) }))
+                          }
+                        />
+                        <span>
+                          Variant defining
+                          <span className="mt-1 block text-xs font-normal text-muted-foreground">Requires every active variant to select a value and makes this attribute part of the variant combination.</span>
+                        </span>
+                      </label>
+                    ) : null}
                   </div>
                   <div className="md:col-span-2">
                     <SaveButton
@@ -239,14 +248,17 @@ export function TemplateSheet(props: {
                             />
                           </TableCell>
                           <TableCell>
-                            <Switch
-                              size="sm"
-                              checked={field.variantDefining}
-                              disabled={!props.canManage}
-                              onCheckedChange={(variantDefining) =>
-                                update.mutate({ id: field.id, body: { variantDefining } })
-                              }
-                            />
+                            {field.scope === "variant" ? (
+                              <Switch
+                                size="sm"
+                                checked={field.variantDefining}
+                                disabled={!props.canManage}
+                                aria-label={`Toggle ${field.attribute.name} as variant defining`}
+                                onCheckedChange={(variantDefining) =>
+                                  update.mutate({ id: field.id, body: { variantDefining } })
+                                }
+                              />
+                            ) : <span className="text-muted-foreground">—</span>}
                           </TableCell>
                           <TableCell className="text-right">
                             {props.canManage ? (

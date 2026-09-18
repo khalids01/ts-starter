@@ -46,7 +46,6 @@ export function AdminCatalogPage() {
         slug: draft.slug || undefined,
         type: draft.type,
         filterable: draft.filterable,
-        variantDefining: draft.variantDefining,
         sortOrder: Number(draft.sortOrder || 0),
         categoryIds: draft.categoryIds,
       };

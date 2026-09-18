@@ -114,6 +114,7 @@ mock.module("@db/server", () => ({
       update: productAttributeValueUpdateMock,
     },
     categoryAttribute: {
+      findUnique: mock(async () => ({ scope: "variant" })),
       upsert: categoryAttributeUpsertMock,
       update: categoryAttributeUpdateMock,
       delete: categoryAttributeDeleteMock,
@@ -390,5 +391,19 @@ describe("AdminCatalogService", () => {
         },
       }),
     );
+  });
+
+  it("rejects variant-defining product and batch fields", async () => {
+    const { adminCatalogService, CatalogServiceError } = await import(
+      "../src/modules/admin/catalog/catalog.service"
+    );
+
+    await expect(
+      adminCatalogService.assignCategoryAttribute("cat-1", {
+        attributeId: "attr-1",
+        scope: "product",
+        variantDefining: true,
+      }),
+    ).rejects.toBeInstanceOf(CatalogServiceError);
   });
 });

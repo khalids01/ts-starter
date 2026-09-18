@@ -96,7 +96,6 @@ function mapAttribute(row: any) {
     slug: row.slug,
     type: row.type,
     filterable: row.filterable,
-    variantDefining: row.variantDefining,
     sortOrder: row.sortOrder,
     categoryIds: (row.categoryAttributes ?? [])
       .filter((entry: any) => entry.scope === "product")
@@ -494,7 +493,6 @@ export class AdminCatalogService {
         slug: normalizeSlug({ slug: input.slug, name: input.name }),
         type: input.type ?? "text",
         filterable: input.filterable ?? false,
-        variantDefining: input.variantDefining ?? false,
         sortOrder: input.sortOrder ?? 0,
       } });
       await this.syncAttributeCategories(tx, created.id, input.categoryIds, {
@@ -533,7 +531,6 @@ export class AdminCatalogService {
             : undefined,
         type: input.type,
         filterable: input.filterable,
-        variantDefining: input.variantDefining,
         sortOrder: input.sortOrder,
       } });
       if (input.categoryIds !== undefined) {
@@ -642,6 +639,9 @@ export class AdminCatalogService {
     categoryId: string,
     input: AssignCategoryAttributeInput,
   ) {
+    if (input.variantDefining && input.scope !== "variant") {
+      throw new CatalogServiceError("Only variant-scope fields can be variant defining");
+    }
     await Promise.all([
       assertCategoryExists(categoryId),
       assertAttributeExists(input.attributeId),
@@ -661,7 +661,7 @@ export class AdminCatalogService {
         scope: input.scope,
         required: input.required ?? false,
         filterable: input.filterable ?? false,
-        variantDefining: input.variantDefining ?? false,
+        variantDefining: input.scope === "variant" ? (input.variantDefining ?? false) : false,
         comparable: input.comparable ?? false,
         inputType: input.inputType ?? "text",
         unit: input.unit ?? null,
@@ -673,7 +673,7 @@ export class AdminCatalogService {
       update: {
         required: input.required ?? false,
         filterable: input.filterable ?? false,
-        variantDefining: input.variantDefining ?? false,
+        variantDefining: input.scope === "variant" ? (input.variantDefining ?? false) : false,
         comparable: input.comparable ?? false,
         inputType: input.inputType ?? "text",
         unit: input.unit ?? null,
@@ -696,12 +696,23 @@ export class AdminCatalogService {
     id: string,
     input: UpdateCategoryAttributeInput,
   ) {
+    const existing = await prisma.categoryAttribute.findUnique({
+      where: { id },
+      select: { scope: true },
+    });
+    if (!existing) {
+      throw new CatalogServiceError("Category template field not found", 404);
+    }
+    if (input.variantDefining && existing.scope !== "variant") {
+      throw new CatalogServiceError("Only variant-scope fields can be variant defining");
+    }
     const row = await prisma.categoryAttribute.update({
       where: { id },
       data: {
         required: input.required,
         filterable: input.filterable,
-        variantDefining: input.variantDefining,
+        variantDefining:
+          existing.scope === "variant" ? input.variantDefining : false,
         comparable: input.comparable,
         inputType: input.inputType,
         unit: input.unit,

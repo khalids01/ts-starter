@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -29,7 +28,8 @@ export function AttributesTable(props: {
   onEdit: (attribute: ProductAttribute) => void;
   onSaved: () => void;
 }) {
-  const [valueDraft, setValueDraft] = useState<Record<string, { value: string; label: string }>>({});
+  const [addingValueFor, setAddingValueFor] = useState<ProductAttribute | null>(null);
+  const [newValue, setNewValue] = useState({ value: "", label: "" });
   const [editingValue, setEditingValue] = useState<{ attributeId: string; value: ProductAttributeValue; valueText: string; labelText: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ kind: "attribute"; attribute: ProductAttribute } | { kind: "value"; value: ProductAttributeValue } | null>(null);
   const addValue = useMutation({
@@ -73,8 +73,6 @@ export function AttributesTable(props: {
             <EmptyTableRow colSpan={5}>No attributes found.</EmptyTableRow>
           ) : (
             props.attributes.map((attribute) => {
-              const draft = valueDraft[attribute.id] ?? { value: "", label: "" };
-
               return (
                 <TableRow key={attribute.id}>
                   <TableCell>
@@ -85,11 +83,11 @@ export function AttributesTable(props: {
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {attribute.filterable ? <Badge variant="secondary">Filter</Badge> : null}
-                      {attribute.variantDefining ? <Badge variant="secondary">Variant</Badge> : null}
                     </div>
                   </TableCell>
                   <TableCell className="min-w-[260px]">
                     <div className="mb-2 flex flex-wrap gap-1">
+                      {props.canManage ? <Button variant="outline" size="sm" className="h-6 rounded-full px-2 text-xs" onClick={() => { setAddingValueFor(attribute); setNewValue({ value: "", label: "" }); }}><Plus className="mr-1 h-3 w-3" />Add value</Button> : null}
                       {(attribute.values ?? []).map((value) => (
                         <Badge key={value.id} variant="outline" className="gap-1 pr-1">
                           {value.label}
@@ -100,49 +98,10 @@ export function AttributesTable(props: {
                         </Badge>
                       ))}
                     </div>
-                    {props.canManage ? (
-                      <div className="flex gap-2">
-                        <Input
-                          className="h-8"
-                          placeholder="value"
-                          value={draft.value}
-                          onChange={(event) =>
-                            setValueDraft((current) => ({
-                              ...current,
-                              [attribute.id]: { ...draft, value: event.target.value },
-                            }))
-                          }
-                        />
-                        <Input
-                          className="h-8"
-                          placeholder="label"
-                          value={draft.label}
-                          onChange={(event) =>
-                            setValueDraft((current) => ({
-                              ...current,
-                              [attribute.id]: { ...draft, label: event.target.value },
-                            }))
-                          }
-                        />
-                        <Button
-                          size="sm"
-                          disabled={!draft.value || !draft.label || addValue.isPending}
-                          onClick={() =>
-                            addValue.mutate({
-                              attributeId: attribute.id,
-                              value: draft.value,
-                              label: draft.label,
-                            })
-                          }
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    ) : null}
                   </TableCell>
                   <TableCell className="text-right">
                     {props.canManage ? <div className="flex justify-end gap-1">
-                      <Button variant="outline" size="sm" onClick={() => props.onEdit(attribute)}>Edit</Button>
+                      <Button variant="ghost" size="icon-sm" aria-label={`Edit ${attribute.name}`} onClick={() => props.onEdit(attribute)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label={`Delete ${attribute.name}`} onClick={() => setDeleteTarget({ kind: "attribute", attribute })}><Trash2 className="h-4 w-4" /></Button>
                     </div> : null}
                   </TableCell>
@@ -152,6 +111,16 @@ export function AttributesTable(props: {
           )}
         </TableBody>
       </Table>
+      <Dialog open={Boolean(addingValueFor)} onOpenChange={(open) => !open && setAddingValueFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Add attribute value{addingValueFor ? ` to ${addingValueFor.name}` : ""}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <TextField label="Value" placeholder="e.g. red" value={newValue.value} onChange={(value) => setNewValue((current) => ({ ...current, value }))} />
+            <TextField label="Label" placeholder="e.g. Red" value={newValue.label} onChange={(label) => setNewValue((current) => ({ ...current, label }))} />
+          </div>
+          <DialogFooter><SaveButton loading={addValue.isPending} disabled={!newValue.value || !newValue.label} onClick={() => addingValueFor && addValue.mutate({ attributeId: addingValueFor.id, ...newValue }, { onSuccess: () => setAddingValueFor(null) })}>Add value</SaveButton></DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={Boolean(editingValue)} onOpenChange={(open) => !open && setEditingValue(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Edit attribute value</DialogTitle></DialogHeader>
