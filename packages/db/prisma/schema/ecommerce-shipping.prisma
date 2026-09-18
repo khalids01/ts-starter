@@ -1,0 +1,19 @@
+model ShippingRate {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  label          String
+  amount         Decimal  @db.Decimal(12, 2)
+  freeOverAmount Decimal? @db.Decimal(12, 2)
+  isDefault      Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([isActive])
+  @@index([isDefault])
+  @@index([sortOrder])
+  @@map("shipping_rate")
+}
