@@ -78,6 +78,11 @@ model Order {
   shippingRate        ShippingRate?        @relation(fields: [shippingRateId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   shippingMethodCode  String?
   shippingMethodLabel String?
+  carrier             String?
+  trackingNumber      String?
+  fulfillmentNote     String?              @db.Text
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
   customerNotes       String?              @db.Text
   adminNotes          String?              @db.Text
   placedAt            DateTime             @default(now())

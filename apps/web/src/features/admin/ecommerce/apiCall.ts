@@ -118,6 +118,12 @@ export const ecommerceApi = {
       unwrap(api.admin.orders({ id }).patch(body), "Failed to update order"),
     updateStatuses: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.orders({ id }).status.patch(body), "Failed to update order statuses"),
+    markShipped: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.orders({ id }).ship.post(body), "Failed to mark order shipped"),
+    updateTracking: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.orders({ id }).tracking.patch(body), "Failed to update tracking"),
+    markDelivered: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.orders({ id }).delivered.post(body), "Failed to mark order delivered"),
     releaseExpiredReservations: () =>
       unwrap(api.admin.orders["release-expired-reservations"].post(), "Failed to release expired reservations"),
   },

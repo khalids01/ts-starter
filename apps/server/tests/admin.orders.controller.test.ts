@@ -71,4 +71,42 @@ describe("admin orders controller RBAC", () => {
 
     expect(response.status).toBe(403);
   });
+
+  it("requires order fulfill permission for fulfillment routes", async () => {
+    const routes = [
+      { path: "ship", method: "POST", body: { carrier: "Pathao", trackingNumber: "P-123" } },
+      { path: "tracking", method: "PATCH", body: { trackingNumber: "P-123" } },
+      { path: "delivered", method: "POST", body: {} },
+    ];
+
+    for (const route of routes) {
+      getAuthSessionMock.mockResolvedValueOnce({
+        user: {
+          id: "admin-1",
+          role: "ADMIN",
+          banned: false,
+          archived: false,
+        },
+        permissions: [
+          Permissions.AdminAccess,
+          Permissions.AdminOrdersRead,
+        ],
+      });
+
+      const { adminOrdersController } = await import(
+        "../src/modules/admin/orders/orders.controller"
+      );
+      const app = new Elysia().use(adminOrdersController);
+
+      const response = await app.handle(
+        new Request(`http://localhost/admin/orders/order-1/${route.path}`, {
+          method: route.method,
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(route.body),
+        }),
+      );
+
+      expect(response.status).toBe(403);
+    }
+  });
 });

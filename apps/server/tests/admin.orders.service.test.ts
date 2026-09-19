@@ -259,6 +259,24 @@ describe("admin orders service", () => {
     ).rejects.toThrow("At least one status is required");
   });
 
+  it("requires fulfillment actions for shipped and delivered transitions", async () => {
+    const { adminOrdersService } = await import(
+      "../src/modules/admin/orders/orders.service"
+    );
+
+    for (const deliveryStatus of ["shipped", "delivered"] as const) {
+      await expect(
+        adminOrdersService.updateOrderStatuses(
+          "order-1",
+          { deliveryStatus },
+          { userId: "admin-1" },
+        ),
+      ).rejects.toThrow(
+        "Use the fulfillment actions to mark an order shipped or delivered",
+      );
+    }
+  });
+
   it("creates timeline events for changed statuses", async () => {
     const { adminOrdersService } = await import(
       "../src/modules/admin/orders/orders.service"

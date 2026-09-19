@@ -5,13 +5,17 @@ import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   IdParamDto,
   ListOrdersQueryDto,
+  MarkOrderDeliveredDto,
+  MarkOrderShippedDto,
   UpdateOrderDto,
   UpdateOrderStatusesDto,
+  UpdateOrderTrackingDto,
 } from "./orders.dto";
 import {
   adminOrdersService,
   AdminOrdersServiceError,
 } from "./orders.service";
+import { orderFulfillmentService } from "./fulfillment.service";
 
 function handleOrderError(error: unknown, set: { status?: number | string }) {
   if (error instanceof AdminOrdersServiceError) {
@@ -32,6 +36,10 @@ const readOrders = requireAllPermissions([
 const manageOrders = requireAllPermissions([
   Permissions.AdminAccess,
   Permissions.AdminOrdersManage,
+]);
+const fulfillOrders = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminOrdersFulfill,
 ]);
 
 export const adminOrdersController = new Elysia({
@@ -118,6 +126,60 @@ export const adminOrdersController = new Elysia({
       body: UpdateOrderStatusesDto,
       detail: {
         summary: "Update order statuses",
+      },
+    },
+  )
+  .post(
+    "/:id/ship",
+    async ({ params: { id }, body, set, userId }) => {
+      try {
+        return await orderFulfillmentService.markShipped(id, body, { userId });
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: fulfillOrders,
+      params: IdParamDto,
+      body: MarkOrderShippedDto,
+      detail: {
+        summary: "Mark order shipped with carrier and tracking number",
+      },
+    },
+  )
+  .patch(
+    "/:id/tracking",
+    async ({ params: { id }, body, set, userId }) => {
+      try {
+        return await orderFulfillmentService.updateTracking(id, body, { userId });
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: fulfillOrders,
+      params: IdParamDto,
+      body: UpdateOrderTrackingDto,
+      detail: {
+        summary: "Correct carrier, tracking number, or fulfillment note",
+      },
+    },
+  )
+  .post(
+    "/:id/delivered",
+    async ({ params: { id }, body, set, userId }) => {
+      try {
+        return await orderFulfillmentService.markDelivered(id, body, { userId });
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: fulfillOrders,
+      params: IdParamDto,
+      body: MarkOrderDeliveredDto,
+      detail: {
+        summary: "Mark order delivered",
       },
     },
   );

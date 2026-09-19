@@ -23,6 +23,7 @@ import { ecommerceApi } from "../apiCall";
 import type { DeliveryStatus, Order, OrderAddress, OrderLineItem, OrderStatus, PaymentStatus } from "../types";
 import { EcommerceHeader, Field, SelectField, ecommercePermissions, formatDate, readError } from "../ui";
 import { formatMoney } from "./orders-table";
+import { FulfillmentCard } from "./fulfillment";
 import {
   DeliveryStatusBadge,
   InventoryStatusBadge,
@@ -65,7 +66,7 @@ type OrderEditForm = {
 
 export function AdminOrderDetailPage(props: { orderId: string }) {
   const { session } = useSession();
-  const { canManageOrders } = ecommercePermissions(session);
+  const { canManageOrders, canFulfillOrders } = ecommercePermissions(session);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.admin.ecommerce.orders.detail(props.orderId),
@@ -209,6 +210,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
             />
           ) : null}
           <OperationalCard order={order} />
+          <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
           <CustomerCard order={order} />
           <AddressCard title="Shipping address" value={order.shippingAddress} />
           <AddressCard title="Billing address" value={order.billingAddress} />
@@ -227,6 +229,12 @@ function StatusControls(props: {
   onChange: (form: StatusForm) => void;
   onSubmit: () => void;
 }) {
+  const generalDeliveryOptions = deliveryStatusOptions.filter(
+    (option) =>
+      !["shipped", "delivered"].includes(option.value) ||
+      option.value === props.order.deliveryStatus,
+  );
+
   return (
     <section className="space-y-4 rounded-md border p-4">
       <h2 className="font-medium">Update statuses</h2>
@@ -256,7 +264,7 @@ function StatusControls(props: {
           onChange={(deliveryStatus) =>
             props.onChange({ ...props.form, deliveryStatus: deliveryStatus as DeliveryStatus })
           }
-          options={deliveryStatusOptions}
+          options={generalDeliveryOptions}
         />
         <Field label="Note">
           <Textarea

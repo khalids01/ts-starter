@@ -11,6 +11,7 @@ describe("ecommerce permissions", () => {
     expect(AllPermissions).toContain(Permissions.AdminInventoryManage);
     expect(AllPermissions).toContain(Permissions.AdminOrdersRead);
     expect(AllPermissions).toContain(Permissions.AdminOrdersManage);
+    expect(AllPermissions).toContain(Permissions.AdminOrdersFulfill);
     expect(AllPermissions).toContain(Permissions.AdminImagesRead);
     expect(AllPermissions).toContain(Permissions.AdminImagesManage);
     expect(AllPermissions).toContain(Permissions.AdminShippingRead);
@@ -31,6 +32,9 @@ describe("ecommerce permissions", () => {
       Permissions.AdminOrdersManage,
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
+      Permissions.AdminOrdersFulfill,
+    );
+    expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
       Permissions.AdminImagesManage,
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminShippingManage);
@@ -47,6 +51,9 @@ describe("ecommerce permissions", () => {
       Permissions.AdminOrdersManage,
     );
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
+      Permissions.AdminOrdersFulfill,
+    );
+    expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
       Permissions.AdminImagesManage,
     );
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminShippingManage);
@@ -61,6 +68,9 @@ describe("ecommerce permissions", () => {
     );
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
       Permissions.AdminOrdersRead,
+    );
+    expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
+      Permissions.AdminOrdersFulfill,
     );
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
       Permissions.AdminImagesRead,

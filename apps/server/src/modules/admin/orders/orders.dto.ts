@@ -97,6 +97,25 @@ export const UpdateOrderDto = t.Object({
   addresses: t.Optional(t.Array(OrderAddressInputDto)),
 });
 
+export const MarkOrderShippedDto = t.Object({
+  carrier: t.String({ minLength: 1 }),
+  trackingNumber: t.String({ minLength: 1 }),
+  note: t.Optional(t.Union([t.String(), t.Null()])),
+});
+
+export const UpdateOrderTrackingDto = t.Object({
+  carrier: t.Optional(t.String({ minLength: 1 })),
+  trackingNumber: t.Optional(t.String({ minLength: 1 })),
+  note: t.Optional(t.Union([t.String(), t.Null()])),
+});
+
+export const MarkOrderDeliveredDto = t.Object({
+  note: t.Optional(t.Union([t.String(), t.Null()])),
+});
+
 export type ListOrdersQuery = typeof ListOrdersQueryDto.static;
 export type UpdateOrderStatusesInput = typeof UpdateOrderStatusesDto.static;
 export type UpdateOrderInput = typeof UpdateOrderDto.static;
+export type MarkOrderShippedInput = typeof MarkOrderShippedDto.static;
+export type UpdateOrderTrackingInput = typeof UpdateOrderTrackingDto.static;
+export type MarkOrderDeliveredInput = typeof MarkOrderDeliveredDto.static;

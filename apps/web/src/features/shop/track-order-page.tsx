@@ -137,6 +137,16 @@ function OrderDetails(props: { order: ShopOrder }) {
         </div>
       </div>
 
+      {props.order.carrier || props.order.trackingNumber ? (
+        <div className="grid gap-2 rounded-md border bg-background p-4 text-sm">
+          <p className="font-medium">Delivery tracking</p>
+          <TrackingRow label="Carrier" value={props.order.carrier ?? "—"} />
+          <TrackingRow label="Tracking number" value={props.order.trackingNumber ?? "—"} />
+          <TrackingRow label="Shipped" value={formatDate(props.order.shippedAt)} />
+          <TrackingRow label="Delivered" value={formatDate(props.order.deliveredAt)} />
+        </div>
+      ) : null}
+
       <Separator />
 
       <div className="grid gap-3">
@@ -171,6 +181,22 @@ function OrderDetails(props: { order: ShopOrder }) {
       </div>
     </div>
   );
+}
+
+function TrackingRow(props: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-muted-foreground">{props.label}</span>
+      <span className="break-words text-right font-medium">{props.value}</span>
+    </div>
+  );
+}
+
+function formatDate(value?: string | null) {
+  if (!value) {
+    return "—";
+  }
+  return new Date(value).toLocaleDateString();
 }
 
 function SummaryRow(props: {

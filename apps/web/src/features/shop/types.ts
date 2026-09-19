@@ -173,6 +173,10 @@ export type ShopOrder = {
   deliveryStatus: string;
   inventoryStatus: string;
   shippingMethodLabel?: string | null;
+  carrier?: string | null;
+  trackingNumber?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
   placedAt?: string | null;
   createdAt: string;
   lineItems: Array<{

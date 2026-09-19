@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-19
 
-Status: Step 2 implemented and verified; awaiting user migration, RBAC seed, and review.
+Status: Steps 0-2 committed. Step 3 implemented; awaiting user migration, RBAC seed, and review.
 
 ## Goal
 
@@ -107,7 +107,7 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 | 0 | Split ecommerce Prisma schema by domain | Completed | Organizational only | No |
 | 1 | Final catalog attribute schema cleanup | Completed | Yes | No |
 | 2 | Shipping-rate management | Implemented; migration, permission seed, and review required | Adds shipping-rate currency | Yes |
-| 3 | Order fulfillment and tracking | Not started | Yes | Yes |
+| 3 | Order fulfillment and tracking | Implemented; migration, permission seed, and review required | Yes | Yes |
 | 4 | Cancellation and refund workflow | Not started | Yes | Yes |
 | 5 | Basic discount codes | Not started | Yes | Yes |
 | 6 | Store settings | Not started | Yes | Yes |
@@ -423,4 +423,4 @@ Completion means all V2 acceptance criteria pass and remaining deferred features
 
 ## Current next action
 
-Review and commit Step 0. Begin Step 1 only after explicit user approval.
+User: create/apply the fulfillment-fields migration, run the RBAC seed, then review and commit Step 3. Begin Step 4 only after explicit user approval.

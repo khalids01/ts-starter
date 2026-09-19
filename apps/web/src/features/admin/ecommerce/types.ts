@@ -325,6 +325,11 @@ export type Order = {
   shippingRateId?: string | null;
   shippingMethodCode?: string | null;
   shippingMethodLabel?: string | null;
+  carrier?: string | null;
+  trackingNumber?: string | null;
+  fulfillmentNote?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
   customerNotes?: string | null;
   adminNotes?: string | null;
   placedAt: string;

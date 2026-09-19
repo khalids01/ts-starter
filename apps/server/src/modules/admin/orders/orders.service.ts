@@ -241,6 +241,11 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
     shippingRateId: row.shippingRateId,
     shippingMethodCode: row.shippingMethodCode,
     shippingMethodLabel: row.shippingMethodLabel,
+    carrier: row.carrier,
+    trackingNumber: row.trackingNumber,
+    fulfillmentNote: row.fulfillmentNote,
+    shippedAt: toIso(row.shippedAt),
+    deliveredAt: toIso(row.deliveredAt),
     customerNotes: row.customerNotes,
     adminNotes: row.adminNotes,
     placedAt: toIso(row.placedAt),
@@ -618,6 +623,17 @@ export const adminOrdersService = {
       const current = await tx.order.findUnique({ where: { id } });
       if (!current) {
         throw new AdminOrdersServiceError("Order not found", 404);
+      }
+
+      if (
+        input.deliveryStatus !== undefined &&
+        input.deliveryStatus !== current.deliveryStatus &&
+        ["shipped", "delivered"].includes(input.deliveryStatus)
+      ) {
+        throw new AdminOrdersServiceError(
+          "Use the fulfillment actions to mark an order shipped or delivered",
+          403,
+        );
       }
 
       const events: Prisma.OrderStatusEventCreateManyInput[] = [];
