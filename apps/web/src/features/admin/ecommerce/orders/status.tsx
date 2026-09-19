@@ -1,4 +1,11 @@
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type {
   DeliveryStatus,
@@ -198,5 +205,96 @@ export function InventoryStatusBadge(props: { status: OrderInventoryStatus }) {
     >
       {meta.label}
     </Badge>
+  );
+}
+
+function StatusSelect(props: {
+  value: string;
+  label: string;
+  className: string;
+  options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Select
+      value={props.value}
+      disabled={props.disabled}
+      onValueChange={(value) => value && props.onChange(value)}
+    >
+      <SelectTrigger
+        size="sm"
+        className={cn(
+          "h-6 w-auto min-w-0 rounded-md border-transparent px-2 py-0.5 text-xs font-medium shadow-none focus-visible:ring-1",
+          props.className,
+        )}
+      >
+        <SelectValue>{props.label}</SelectValue>
+      </SelectTrigger>
+      <SelectContent align="start">
+        {props.options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+export function OrderStatusSelect(props: {
+  value: OrderStatus;
+  disabled?: boolean;
+  onChange: (value: OrderStatus) => void;
+}) {
+  const meta = orderStatusMeta[props.value];
+  return (
+    <StatusSelect
+      {...props}
+      label={meta.label}
+      className={meta.className}
+      options={orderStatusOptions}
+      onChange={(value) => props.onChange(value as OrderStatus)}
+    />
+  );
+}
+
+export function PaymentStatusSelect(props: {
+  value: PaymentStatus;
+  disabled?: boolean;
+  onChange: (value: PaymentStatus) => void;
+}) {
+  const meta = paymentStatusMeta[props.value];
+  return (
+    <StatusSelect
+      {...props}
+      label={meta.label}
+      className={meta.className}
+      options={paymentStatusOptions}
+      onChange={(value) => props.onChange(value as PaymentStatus)}
+    />
+  );
+}
+
+export function DeliveryStatusSelect(props: {
+  value: DeliveryStatus;
+  currentValue?: DeliveryStatus;
+  disabled?: boolean;
+  onChange: (value: DeliveryStatus) => void;
+}) {
+  const meta = deliveryStatusMeta[props.value];
+  const options = deliveryStatusOptions.filter(
+    (option) =>
+      !["shipped", "delivered"].includes(option.value) ||
+      option.value === props.currentValue,
+  );
+  return (
+    <StatusSelect
+      {...props}
+      label={meta.label}
+      className={meta.className}
+      options={options}
+      onChange={(value) => props.onChange(value as DeliveryStatus)}
+    />
   );
 }

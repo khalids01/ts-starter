@@ -25,11 +25,26 @@ import {
   InventoryStatusBadge,
   OrderStatusBadge,
   PaymentStatusBadge,
+  DeliveryStatusSelect,
+  OrderStatusSelect,
+  PaymentStatusSelect,
 } from "./status";
+import type {
+  EditableOrderStatus,
+  EditableStatusValue,
+  OrderStatusDraft,
+} from "./status-drafts";
 
 type OrdersTableProps = {
   orders: Order[];
   loading: boolean;
+  canManage: boolean;
+  drafts: OrderStatusDraft[];
+  onStatusChange: (
+    order: Order,
+    field: EditableOrderStatus,
+    value: EditableStatusValue,
+  ) => void;
 };
 
 export function OrdersTable(props: OrdersTableProps) {
@@ -57,34 +72,69 @@ export function OrdersTable(props: OrdersTableProps) {
             ) : props.orders.length === 0 ? (
               <EmptyTableRow colSpan={10}>No orders found.</EmptyTableRow>
             ) : (
-              props.orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <OrderTitle order={order} />
-                  </TableCell>
-                  <TableCell>
-                    <CustomerSummary order={order} />
-                  </TableCell>
-                  <TableCell>
-                    <OrderStatusBadge status={order.orderStatus} />
-                  </TableCell>
-                  <TableCell>
-                    <PaymentStatusBadge status={order.paymentStatus} />
-                  </TableCell>
-                  <TableCell>
-                    <DeliveryStatusBadge status={order.deliveryStatus} />
-                  </TableCell>
-                  <TableCell>
-                    <InventoryStatusBadge status={order.inventoryStatus} />
-                  </TableCell>
-                  <TableCell>{order.lineItemCount ?? 0}</TableCell>
-                  <TableCell>{formatMoney(order.totalAmount, order.currency)}</TableCell>
-                  <TableCell>{formatDate(order.placedAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <OrderActions order={order} />
-                  </TableCell>
-                </TableRow>
-              ))
+              props.orders.map((order) => {
+                const draft = props.drafts.find(
+                  (item) => item.orderId === order.id,
+                );
+                return (
+                  <TableRow
+                    key={order.id}
+                    className={
+                      draft ? "bg-primary/5 hover:bg-primary/10" : undefined
+                    }
+                  >
+                    <TableCell>
+                      <OrderTitle order={order} />
+                    </TableCell>
+                    <TableCell>
+                      <CustomerSummary order={order} />
+                    </TableCell>
+                    <TableCell>
+                      <OrderStatusSelect
+                        value={draft?.changes.orderStatus ?? order.orderStatus}
+                        disabled={!props.canManage}
+                        onChange={(value) =>
+                          props.onStatusChange(order, "orderStatus", value)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <PaymentStatusSelect
+                        value={
+                          draft?.changes.paymentStatus ?? order.paymentStatus
+                        }
+                        disabled={!props.canManage}
+                        onChange={(value) =>
+                          props.onStatusChange(order, "paymentStatus", value)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <DeliveryStatusSelect
+                        value={
+                          draft?.changes.deliveryStatus ?? order.deliveryStatus
+                        }
+                        currentValue={order.deliveryStatus}
+                        disabled={!props.canManage}
+                        onChange={(value) =>
+                          props.onStatusChange(order, "deliveryStatus", value)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <InventoryStatusBadge status={order.inventoryStatus} />
+                    </TableCell>
+                    <TableCell>{order.lineItemCount ?? 0}</TableCell>
+                    <TableCell>
+                      {formatMoney(order.totalAmount, order.currency)}
+                    </TableCell>
+                    <TableCell>{formatDate(order.placedAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <OrderActions order={order} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -97,7 +147,13 @@ export function OrdersTable(props: OrdersTableProps) {
           <OrdersStateCard>No orders found.</OrdersStateCard>
         ) : (
           props.orders.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderCard
+              key={order.id}
+              order={order}
+              canManage={props.canManage}
+              draft={props.drafts.find((item) => item.orderId === order.id)}
+              onStatusChange={props.onStatusChange}
+            />
           ))
         )}
       </div>
@@ -105,9 +161,20 @@ export function OrdersTable(props: OrdersTableProps) {
   );
 }
 
-function OrderCard(props: { order: Order }) {
+function OrderCard(props: {
+  order: Order;
+  canManage: boolean;
+  draft?: OrderStatusDraft;
+  onStatusChange: OrdersTableProps["onStatusChange"];
+}) {
   return (
-    <article className="rounded-md border bg-card p-4">
+    <article
+      className={
+        props.draft
+          ? "rounded-md border border-primary/30 bg-primary/5 p-4"
+          : "rounded-md border bg-card p-4"
+      }
+    >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <OrderTitle order={props.order} />
         <OrderActions order={props.order} />
@@ -116,15 +183,44 @@ function OrderCard(props: { order: Order }) {
         <CustomerSummary order={props.order} />
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        <OrderStatusBadge status={props.order.orderStatus} />
-        <PaymentStatusBadge status={props.order.paymentStatus} />
-        <DeliveryStatusBadge status={props.order.deliveryStatus} />
+        <OrderStatusSelect
+          value={props.draft?.changes.orderStatus ?? props.order.orderStatus}
+          disabled={!props.canManage}
+          onChange={(value) =>
+            props.onStatusChange(props.order, "orderStatus", value)
+          }
+        />
+        <PaymentStatusSelect
+          value={
+            props.draft?.changes.paymentStatus ?? props.order.paymentStatus
+          }
+          disabled={!props.canManage}
+          onChange={(value) =>
+            props.onStatusChange(props.order, "paymentStatus", value)
+          }
+        />
+        <DeliveryStatusSelect
+          value={
+            props.draft?.changes.deliveryStatus ?? props.order.deliveryStatus
+          }
+          currentValue={props.order.deliveryStatus}
+          disabled={!props.canManage}
+          onChange={(value) =>
+            props.onStatusChange(props.order, "deliveryStatus", value)
+          }
+        />
         <InventoryStatusBadge status={props.order.inventoryStatus} />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <InfoBlock label="Items" value={props.order.lineItemCount ?? 0} />
-        <InfoBlock label="Payment" value={formatPaymentMethod(props.order.paymentMethod)} />
-        <InfoBlock label="Total" value={formatMoney(props.order.totalAmount, props.order.currency)} />
+        <InfoBlock
+          label="Payment"
+          value={formatPaymentMethod(props.order.paymentMethod)}
+        />
+        <InfoBlock
+          label="Total"
+          value={formatMoney(props.order.totalAmount, props.order.currency)}
+        />
         <InfoBlock label="Placed" value={formatDate(props.order.placedAt)} />
         <InfoBlock label="Updated" value={formatDate(props.order.updatedAt)} />
       </div>
@@ -148,7 +244,11 @@ function OrderActions(props: { order: Order }) {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
             render={(itemProps) => (
-              <Link to="/admin/orders/$orderId" params={{ orderId: props.order.id }} {...itemProps}>
+              <Link
+                to="/admin/orders/$orderId"
+                params={{ orderId: props.order.id }}
+                {...itemProps}
+              >
                 <Eye className="h-4 w-4" />
                 View details
               </Link>
@@ -179,7 +279,9 @@ function CustomerSummary(props: { order: Order }) {
   return (
     <div className="min-w-0">
       <p className="truncate font-medium">{props.order.customerName}</p>
-      <p className="truncate text-xs text-muted-foreground">{props.order.customerEmail}</p>
+      <p className="truncate text-xs text-muted-foreground">
+        {props.order.customerEmail}
+      </p>
     </div>
   );
 }
