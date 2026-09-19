@@ -214,6 +214,7 @@ export function ecommercePermissions(
       session,
       Permissions.AdminStoreSettingsManage,
     ),
+    canManageCustomers: hasAdminPermission(session, Permissions.AdminCustomersManage),
     canManageImages: hasAdminPermission(session, Permissions.AdminImagesManage),
   };
 }

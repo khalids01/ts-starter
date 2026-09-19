@@ -24,6 +24,7 @@ import { adminImagesController } from "./admin/images/images.controller";
 import { adminShippingController } from "./admin/shipping/shipping.controller";
 import { adminDiscountsController } from "./admin/discounts/discounts.controller";
 import { adminStoreSettingsController } from "./admin/store-settings/store-settings.controller";
+import { adminCustomersController } from "./admin/customers/customers.controller";
 import { authSettingsController } from "./admin/auth-settings/auth-settings.controller";
 
 export const app = new Elysia()
@@ -48,6 +49,7 @@ export const app = new Elysia()
   .use(adminShippingController)
   .use(adminDiscountsController)
   .use(adminStoreSettingsController)
+  .use(adminCustomersController)
   .use(shopController)
   .use(notificationsController)
   .use(feedbackController)

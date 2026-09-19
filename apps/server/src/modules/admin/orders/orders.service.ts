@@ -246,6 +246,7 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
     orderNumber: row.orderNumber,
     userId: row.userId,
     user: mapUser(row.user),
+    ecommerceCustomerId: row.ecommerceCustomerId,
     customerName: row.customerName,
     customerEmail: row.customerEmail,
     customerPhone: row.customerPhone,

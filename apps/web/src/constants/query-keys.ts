@@ -112,6 +112,11 @@ export const queryKeys = {
       storeSettings: {
         all: () => ["admin-ecommerce-store-settings"] as const,
       },
+      customers: {
+        all: () => ["admin-ecommerce-customers"] as const,
+        list: (params?: unknown) => [...queryKeys.admin.ecommerce.customers.all(), "list", params] as const,
+        detail: (id: string) => [...queryKeys.admin.ecommerce.customers.all(), "detail", id] as const,
+      },
       orders: {
         all: () => ["admin-ecommerce-orders"] as const,
         list: (params?: unknown) =>

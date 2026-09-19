@@ -124,6 +124,14 @@ export const ecommerceApi = {
     update: (body: Record<string, unknown>) =>
       unwrap(api.admin["store-settings"].put(body), "Failed to update store settings"),
   },
+  customers: {
+    list: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.customers.get({ query }), "Failed to load customers"),
+    detail: (id: string) =>
+      unwrap(api.admin.customers({ id }).get(), "Failed to load customer"),
+    update: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.customers({ id }).patch(body), "Failed to update customer"),
+  },
   orders: {
     list: (query?: Record<string, unknown>) =>
       unwrap(api.admin.orders.get({ query }), "Failed to load orders"),

@@ -23,6 +23,7 @@ model User {
   targetedActivityEvents  ActivityEvent[]              @relation("ActivityEventTarget")
   inventoryMovements      InventoryMovement[]          @relation("InventoryMovementActor")
   orders                  Order[]                      @relation("UserOrders")
+  ecommerceCustomer       EcommerceCustomer?           @relation("UserEcommerceCustomer")
   orderStatusEvents       OrderStatusEvent[]           @relation("OrderStatusEventActor")
   orderRefunds            OrderRefund[]                @relation("OrderRefundActor")
   rbacRoles               RbacUserRole[]

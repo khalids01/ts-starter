@@ -1,0 +1,18 @@
+model EcommerceCustomer {
+  id              String   @id @default(cuid())
+  normalizedEmail String   @unique
+  email           String
+  name            String
+  phone           String?
+  adminNote       String?  @db.Text
+  userId          String?  @unique
+  user            User?    @relation("UserEcommerceCustomer", fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([name])
+  @@index([phone])
+  @@map("ecommerce_customer")
+}

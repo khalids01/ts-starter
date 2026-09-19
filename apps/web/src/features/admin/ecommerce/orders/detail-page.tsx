@@ -446,6 +446,11 @@ function CustomerDetailsCard(props: EditableDetailsProps & { order: Order }) {
     <section className="space-y-4 rounded-lg border p-4 sm:p-5">
       <h2 className="font-medium">Customer</h2>
       <div className="grid gap-3">
+        {props.order.ecommerceCustomerId ? (
+          <Link to="/admin/customers/$customerId" params={{ customerId: props.order.ecommerceCustomerId }} className={buttonVariants({ variant: "outline", size: "sm" })}>
+            View customer profile
+          </Link>
+        ) : null}
         <InlineEditableField field="customerName" label="Name" {...props} />
         <InlineEditableField
           field="customerEmail"

@@ -22,6 +22,8 @@ describe("ecommerce permissions", () => {
     expect(AllPermissions).toContain(Permissions.AdminDiscountsManage);
     expect(AllPermissions).toContain(Permissions.AdminStoreSettingsRead);
     expect(AllPermissions).toContain(Permissions.AdminStoreSettingsManage);
+    expect(AllPermissions).toContain(Permissions.AdminCustomersRead);
+    expect(AllPermissions).toContain(Permissions.AdminCustomersManage);
   });
 
   it("grants ecommerce permissions to owner and admin, not platform user", () => {
@@ -52,6 +54,7 @@ describe("ecommerce permissions", () => {
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminShippingManage);
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminDiscountsManage);
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminStoreSettingsManage);
+    expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminCustomersManage);
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
       Permissions.AdminCatalogManage,
     );
@@ -79,6 +82,7 @@ describe("ecommerce permissions", () => {
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminShippingManage);
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminDiscountsManage);
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminStoreSettingsManage);
+    expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminCustomersManage);
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
       Permissions.AdminCatalogRead,
     );
@@ -106,5 +110,6 @@ describe("ecommerce permissions", () => {
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminShippingRead);
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminDiscountsRead);
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminStoreSettingsRead);
+    expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminCustomersRead);
   });
 });

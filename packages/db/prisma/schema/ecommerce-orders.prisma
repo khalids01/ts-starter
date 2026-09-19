@@ -60,6 +60,8 @@ model Order {
   customerName                String
   customerEmail               String
   customerPhone               String?
+  ecommerceCustomerId         String?
+  ecommerceCustomer           EcommerceCustomer?   @relation(fields: [ecommerceCustomerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   subtotalAmount              Decimal              @default(0) @db.Decimal(12, 2)
   discountAmount              Decimal              @default(0) @db.Decimal(12, 2)
   discountCodeId              String?
@@ -103,6 +105,7 @@ model Order {
 
   @@index([userId])
   @@index([customerEmail])
+  @@index([ecommerceCustomerId])
   @@index([orderStatus])
   @@index([paymentStatus])
   @@index([deliveryStatus])

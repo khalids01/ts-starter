@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-20
 
-Status: Steps 0-4 completed through the required migration/RBAC gates. Steps 5-6 implemented; required migration/RBAC gates and review are tracked before continuing.
+Status: Steps 0-6 completed through the required migration/RBAC gates. Step 7 implemented; migration, RBAC seed, optional historical-order backfill, and review required.
 
 ## Goal
 
@@ -109,9 +109,9 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 | 2 | Shipping-rate management | Implemented; migration, permission seed, and review required | Adds shipping-rate currency | Yes |
 | 3 | Order fulfillment and tracking | Completed through migration/RBAC gates | Yes | Yes |
 | 4 | Cancellation and refund workflow | Completed through migration/RBAC gates | Yes | Yes |
-| 5 | Basic discount codes | Implemented; migration, permission seed, and review required | Yes | Yes |
-| 6 | Store settings | Implemented; migration, permission seed, and review required | Yes | Yes |
-| 7 | Customer view | Not started | Yes | Yes |
+| 5 | Basic discount codes | Completed through migration/RBAC gates | Yes | Yes |
+| 6 | Store settings | Completed through migration/RBAC gates | Yes | Yes |
+| 7 | Customer view | Implemented; migration, permission seed, and review required | Yes | Yes |
 | 8 | Final admin completion verification | Not started | No | No |
 
 ## Step 0 — Split the ecommerce Prisma schema

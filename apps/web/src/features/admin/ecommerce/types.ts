@@ -315,6 +315,7 @@ export type Order = {
   orderNumber: string;
   userId?: string | null;
   user?: { id: string; name: string; email: string; image?: string | null } | null;
+  ecommerceCustomerId?: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;
@@ -400,4 +401,21 @@ export type StoreSettings = {
   reservationDurationMinutes: number;
   checkoutEnabled: boolean;
   checkoutNotice?: string | null;
+};
+
+export type EcommerceCustomer = {
+  id: string;
+  userId?: string | null;
+  name: string;
+  email: string;
+  phone?: string | null;
+  adminNote?: string | null;
+  orderCount: number;
+  totalCompletedSpend: string;
+  completedSpendCurrency: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: { id: string; name: string; email: string; image?: string | null } | null;
+  latestAddresses?: OrderAddress[];
+  orders?: Array<Pick<Order, "id" | "orderNumber" | "totalAmount" | "currency" | "orderStatus" | "paymentStatus" | "deliveryStatus" | "placedAt">>;
 };

@@ -18,6 +18,7 @@ import {
   DiscountServiceError,
 } from "@/modules/ecommerce/discounts/discounts.service";
 import { storeSettingsService } from "@/modules/ecommerce/store-settings/store-settings.service";
+import { upsertCheckoutCustomer } from "@/modules/ecommerce/customers/customer-identity.service";
 
 function normalizedEmail(value: string | null | undefined) {
   return nullableTrimmed(value)?.toLowerCase() ?? null;
@@ -243,6 +244,9 @@ export const orderService = {
 
     const subtotal = lines.reduce((sum, line) => sum + line.total, 0);
     const orderCurrency = lines[0]?.currency ?? settings.defaultCurrency;
+    if (orderCurrency !== settings.defaultCurrency) {
+      throw new ShopServiceError(`Checkout currently accepts ${settings.defaultCurrency} orders only`, 409);
+    }
     const shippingRate = await prisma.shippingRate.findFirst({
       where: input.shippingRateId
         ? { id: input.shippingRateId, isActive: true, currency: orderCurrency }
@@ -272,6 +276,12 @@ export const orderService = {
     );
 
     const checkoutResult = await prisma.$transaction(async (tx) => {
+      const customer = await upsertCheckoutCustomer(tx, {
+        userId,
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
+      });
       let discountResult: Awaited<ReturnType<typeof evaluateDiscount>> | null = null;
       if (nullableTrimmed(input.discountCode)) {
         try {
@@ -298,6 +308,7 @@ export const orderService = {
           customerName,
           customerEmail,
           customerPhone,
+          ecommerceCustomerId: customer.id,
           subtotalAmount: subtotal.toFixed(2),
           discountAmount: discountAmount.toFixed(2),
           discountCodeId: discountResult?.discount.id ?? null,
