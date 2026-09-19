@@ -105,7 +105,7 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
   const canEditTracking = props.canFulfill && Boolean(order.shippedAt);
 
   return (
-    <section className="space-y-3 rounded-md border p-4">
+    <section className="space-y-3 rounded-lg border p-4 sm:p-5">
       <h2 className="font-medium">Fulfillment</h2>
       <div className="flex flex-wrap items-center gap-2">
         <DeliveryStatusBadge status={order.deliveryStatus} />

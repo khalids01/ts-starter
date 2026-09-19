@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ImageIcon, Pencil, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  ImageIcon,
+  Pencil,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
@@ -20,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession } from "@/providers/session-provider";
 import { ecommerceApi } from "../apiCall";
 import type {
@@ -31,8 +39,6 @@ import type {
 } from "../types";
 import {
   EcommerceHeader,
-  Field,
-  SelectField,
   ecommercePermissions,
   formatDate,
   readError,
@@ -41,22 +47,29 @@ import { formatMoney } from "./orders-table";
 import { FulfillmentCard } from "./fulfillment";
 import {
   DeliveryStatusBadge,
+  DeliveryStatusSelect,
   InventoryStatusBadge,
   OrderStatusBadge,
+  OrderStatusSelect,
   PaymentStatusBadge,
+  PaymentStatusSelect,
   deliveryStatusMeta,
-  deliveryStatusOptions,
   orderStatusMeta,
-  orderStatusOptions,
   paymentStatusMeta,
-  paymentStatusOptions,
 } from "./status";
 
 type StatusForm = {
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
   deliveryStatus: DeliveryStatus;
-  note: string;
+};
+
+type EditableStatusField = keyof StatusForm;
+
+const statusFieldLabels: Record<EditableStatusField, string> = {
+  orderStatus: "Order status",
+  paymentStatus: "Payment status",
+  deliveryStatus: "Delivery status",
 };
 
 type OrderEditForm = {
@@ -122,63 +135,66 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
       orderStatus: order.orderStatus,
       paymentStatus: order.paymentStatus,
       deliveryStatus: order.deliveryStatus,
-      note: "",
     });
     setEditForm(orderEditForm(order));
   }, [order]);
 
-  const updateStatuses = useMutation({
-    mutationFn: (value: StatusForm) =>
-      ecommerceApi.orders.updateStatuses(props.orderId, {
-        orderStatus: value.orderStatus,
-        paymentStatus: value.paymentStatus,
-        deliveryStatus: value.deliveryStatus,
-        note: value.note || null,
-      }),
-    onSuccess: () => {
-      toast.success("Order statuses updated");
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.admin.ecommerce.orders.all(),
-      });
-    },
-    onError: (error) =>
-      toast.error(readError(error, "Failed to update order statuses")),
-  });
   const updateOrder = useMutation({
-    mutationFn: (value: OrderEditForm) =>
-      ecommerceApi.orders.update(props.orderId, {
-        customerName: value.customerName,
-        customerEmail: value.customerEmail,
-        customerPhone: value.customerPhone || null,
-        customerNotes: value.customerNotes || null,
-        adminNotes: value.adminNotes || null,
-        addresses: [
-          {
-            type: "shipping",
-            fullName: value.customerName,
-            email: value.customerEmail,
-            phone: value.customerPhone || null,
-            line1: value.shippingLine1,
-            line2: value.shippingLine2 || null,
-            city: value.shippingCity || null,
-            state: value.shippingState || null,
-            postalCode: value.shippingPostalCode || null,
-            country: value.shippingCountry || null,
-          },
-          {
-            type: "billing",
-            fullName: value.customerName,
-            email: value.customerEmail,
-            phone: value.customerPhone || null,
-            line1: value.billingLine1 || value.shippingLine1,
-            line2: value.billingLine2 || null,
-            city: value.billingCity || null,
-            state: value.billingState || null,
-            postalCode: value.billingPostalCode || null,
-            country: value.billingCountry || null,
-          },
-        ],
-      }),
+    mutationFn: async (input: {
+      details: OrderEditForm;
+      updateDetails: boolean;
+      statuses: StatusForm;
+      updateStatuses: boolean;
+    }) => {
+      const updates: Promise<unknown>[] = [];
+      if (input.updateDetails) {
+        updates.push(
+          ecommerceApi.orders.update(props.orderId, {
+            customerName: input.details.customerName,
+            customerEmail: input.details.customerEmail,
+            customerPhone: input.details.customerPhone || null,
+            customerNotes: input.details.customerNotes || null,
+            adminNotes: input.details.adminNotes || null,
+            addresses: [
+              {
+                type: "shipping",
+                fullName: input.details.customerName,
+                email: input.details.customerEmail,
+                phone: input.details.customerPhone || null,
+                line1: input.details.shippingLine1,
+                line2: input.details.shippingLine2 || null,
+                city: input.details.shippingCity || null,
+                state: input.details.shippingState || null,
+                postalCode: input.details.shippingPostalCode || null,
+                country: input.details.shippingCountry || null,
+              },
+              {
+                type: "billing",
+                fullName: input.details.customerName,
+                email: input.details.customerEmail,
+                phone: input.details.customerPhone || null,
+                line1:
+                  input.details.billingLine1 || input.details.shippingLine1,
+                line2: input.details.billingLine2 || null,
+                city: input.details.billingCity || null,
+                state: input.details.billingState || null,
+                postalCode: input.details.billingPostalCode || null,
+                country: input.details.billingCountry || null,
+              },
+            ],
+          }),
+        );
+      }
+      if (input.updateStatuses) {
+        updates.push(
+          ecommerceApi.orders.updateStatuses(props.orderId, {
+            ...input.statuses,
+            note: "Updated from the admin order details page.",
+          }),
+        );
+      }
+      return Promise.all(updates);
+    },
     onSuccess: () => {
       toast.success("Order updated");
       setEditingField(null);
@@ -206,16 +222,40 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
   }
 
   const originalEditForm = orderEditForm(order);
+  const originalStatuses: StatusForm = {
+    orderStatus: order.orderStatus,
+    paymentStatus: order.paymentStatus,
+    deliveryStatus: order.deliveryStatus,
+  };
   const changedFields = editForm
     ? (Object.keys(editForm) as Array<keyof OrderEditForm>).filter(
         (field) => editForm[field] !== originalEditForm[field],
       )
     : [];
-  const reviewItems: ReviewBarItem[] = changedFields.map((field) => ({
+  const changedStatuses = form
+    ? (Object.keys(originalStatuses) as EditableStatusField[]).filter(
+        (field) => form[field] !== originalStatuses[field],
+      )
+    : [];
+  const detailReviewItems: ReviewBarItem[] = changedFields.map((field) => ({
     id: field,
     title: `${orderFieldLabels[field]} changed`,
     description: `${displayDraftValue(originalEditForm[field])} → ${displayDraftValue(editForm?.[field] ?? "")}`,
   }));
+  const statusReviewItems: ReviewBarItem[] = changedStatuses.map((field) => {
+    const meta =
+      field === "orderStatus"
+        ? orderStatusMeta
+        : field === "paymentStatus"
+          ? paymentStatusMeta
+          : deliveryStatusMeta;
+    return {
+      id: `status:${field}`,
+      title: `${statusFieldLabels[field]} changed`,
+      description: `${meta[originalStatuses[field] as keyof typeof meta]?.label ?? originalStatuses[field]} → ${meta[form?.[field] as keyof typeof meta]?.label ?? form?.[field]}`,
+    };
+  });
+  const reviewItems = [...statusReviewItems, ...detailReviewItems];
 
   return (
     <div className="space-y-6">
@@ -233,31 +273,59 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         }
       />
 
-      <section className="grid gap-3 md:grid-cols-4">
-        <SummaryCard
-          label="Order status"
-          explanation="The order's overall workflow state. Change it from the Update statuses card below."
-        >
-          <OrderStatusBadge status={order.orderStatus} />
-        </SummaryCard>
-        <SummaryCard
-          label="Payment"
-          explanation="Whether payment is due, authorized, paid, failed, or refunded. Change it from the Update statuses card."
-        >
-          <PaymentStatusBadge status={order.paymentStatus} />
-        </SummaryCard>
-        <SummaryCard
-          label="Delivery"
-          explanation="The fulfillment progress. General transitions use Update statuses; shipped and delivered are changed through Fulfillment."
-        >
-          <DeliveryStatusBadge status={order.deliveryStatus} />
-        </SummaryCard>
-        <SummaryCard
-          label="Inventory"
-          explanation="This is managed automatically when stock is reserved, committed, released, or restocked by order actions."
-        >
-          <InventoryStatusBadge status={order.inventoryStatus} />
-        </SummaryCard>
+      <section className="rounded-lg border bg-card p-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatusSummary
+            label="Order status"
+            explanation="The order's overall workflow state."
+          >
+            {canManageOrders && form ? (
+              <OrderStatusSelect
+                value={form.orderStatus}
+                onChange={(orderStatus) => setForm({ ...form, orderStatus })}
+              />
+            ) : (
+              <OrderStatusBadge status={order.orderStatus} />
+            )}
+          </StatusSummary>
+          <StatusSummary
+            label="Payment"
+            explanation="Whether payment is due, authorized, paid, failed, or refunded."
+          >
+            {canManageOrders && form ? (
+              <PaymentStatusSelect
+                value={form.paymentStatus}
+                onChange={(paymentStatus) =>
+                  setForm({ ...form, paymentStatus })
+                }
+              />
+            ) : (
+              <PaymentStatusBadge status={order.paymentStatus} />
+            )}
+          </StatusSummary>
+          <StatusSummary
+            label="Delivery"
+            explanation="General progress is editable here. Shipped and delivered use the guarded fulfillment actions below."
+          >
+            {canManageOrders && form ? (
+              <DeliveryStatusSelect
+                value={form.deliveryStatus}
+                currentValue={order.deliveryStatus}
+                onChange={(deliveryStatus) =>
+                  setForm({ ...form, deliveryStatus })
+                }
+              />
+            ) : (
+              <DeliveryStatusBadge status={order.deliveryStatus} />
+            )}
+          </StatusSummary>
+          <StatusSummary
+            label="Inventory"
+            explanation="Managed automatically when stock is reserved, committed, released, or restocked."
+          >
+            <InventoryStatusBadge status={order.inventoryStatus} />
+          </StatusSummary>
+        </div>
       </section>
 
       <section className="space-y-4">
@@ -265,69 +333,49 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         <Timeline order={order} />
       </section>
 
-      <section className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {canManageOrders && form ? (
-          <StatusControls
-            order={order}
-            form={form}
-            loading={updateStatuses.isPending}
-            onChange={setForm}
-            onSubmit={() => updateStatuses.mutate(form)}
-          />
-        ) : null}
-        {editForm ? (
-          <CustomerDetailsCard
-            order={order}
-            form={editForm}
-            editable={canManageOrders}
-            editingField={editingField}
-            onEdit={setEditingField}
-            onChange={(field, value) =>
-              setEditForm({ ...editForm, [field]: value })
-            }
-          />
-        ) : null}
-        {editForm ? (
-          <AddressDetailsCard
-            title="Shipping address"
-            prefix="shipping"
-            form={editForm}
-            editable={canManageOrders}
-            editingField={editingField}
-            onEdit={setEditingField}
-            onChange={(field, value) =>
-              setEditForm({ ...editForm, [field]: value })
-            }
-          />
-        ) : null}
-        {editForm ? (
-          <AddressDetailsCard
-            title="Billing address"
-            prefix="billing"
-            form={editForm}
-            editable={canManageOrders}
-            editingField={editingField}
-            onEdit={setEditingField}
-            onChange={(field, value) =>
-              setEditForm({ ...editForm, [field]: value })
-            }
-          />
-        ) : null}
-        <OperationalCard order={order} />
-        <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
-        <TotalsCard order={order} />
-        {editForm ? (
-          <NotesDetailsCard
-            order={order}
-            form={editForm}
-            editable={canManageOrders}
-            editingField={editingField}
-            onEdit={setEditingField}
-            onChange={(field, value) =>
-              setEditForm({ ...editForm, [field]: value })
-            }
-          />
-        ) : null}
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]">
+        <div className="grid gap-4">
+          {editForm ? (
+            <CustomerDetailsCard
+              order={order}
+              form={editForm}
+              editable={canManageOrders}
+              editingField={editingField}
+              onEdit={setEditingField}
+              onChange={(field, value) =>
+                setEditForm({ ...editForm, [field]: value })
+              }
+            />
+          ) : null}
+          {editForm ? (
+            <AddressesCard
+              form={editForm}
+              editable={canManageOrders}
+              editingField={editingField}
+              onEdit={setEditingField}
+              onChange={(field, value) =>
+                setEditForm({ ...editForm, [field]: value })
+              }
+            />
+          ) : null}
+          {editForm ? (
+            <NotesDetailsCard
+              order={order}
+              form={editForm}
+              editable={canManageOrders}
+              editingField={editingField}
+              onEdit={setEditingField}
+              onChange={(field, value) =>
+                setEditForm({ ...editForm, [field]: value })
+              }
+            />
+          ) : null}
+        </div>
+        <div className="grid gap-4">
+          <TotalsCard order={order} />
+          <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
+          <OperationalCard order={order} />
+        </div>
       </section>
 
       <ReviewBar
@@ -335,6 +383,15 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         updating={updateOrder.isPending}
         updateLabel="Update order"
         onRemove={(id) => {
+          if (id.startsWith("status:")) {
+            const field = id.slice(7) as EditableStatusField;
+            setForm((current) =>
+              current
+                ? { ...current, [field]: originalStatuses[field] }
+                : current,
+            );
+            return;
+          }
           const field = id as keyof OrderEditForm;
           setEditForm((current) =>
             current
@@ -345,82 +402,21 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         }}
         onCancel={() => {
           setEditForm(originalEditForm);
+          setForm(originalStatuses);
           setEditingField(null);
         }}
-        onUpdate={() => editForm && updateOrder.mutate(editForm)}
+        onUpdate={() =>
+          editForm &&
+          form &&
+          updateOrder.mutate({
+            details: editForm,
+            updateDetails: changedFields.length > 0,
+            statuses: form,
+            updateStatuses: changedStatuses.length > 0,
+          })
+        }
       />
     </div>
-  );
-}
-
-function StatusControls(props: {
-  order: Order;
-  form: StatusForm;
-  loading: boolean;
-  onChange: (form: StatusForm) => void;
-  onSubmit: () => void;
-}) {
-  const generalDeliveryOptions = deliveryStatusOptions.filter(
-    (option) =>
-      !["shipped", "delivered"].includes(option.value) ||
-      option.value === props.order.deliveryStatus,
-  );
-
-  return (
-    <section className="space-y-4 rounded-md border p-4">
-      <h2 className="font-medium">Update statuses</h2>
-      <p className="text-xs text-muted-foreground">
-        Confirming a reserved order commits stock. Cancelling a reserved order
-        releases stock. Returning or cancelling a committed order restocks once.
-      </p>
-      <div className="grid gap-3">
-        <SelectField
-          label="Order"
-          value={props.form.orderStatus}
-          onChange={(orderStatus) =>
-            props.onChange({
-              ...props.form,
-              orderStatus: orderStatus as OrderStatus,
-            })
-          }
-          options={orderStatusOptions}
-        />
-        <SelectField
-          label="Payment"
-          value={props.form.paymentStatus}
-          onChange={(paymentStatus) =>
-            props.onChange({
-              ...props.form,
-              paymentStatus: paymentStatus as PaymentStatus,
-            })
-          }
-          options={paymentStatusOptions}
-        />
-        <SelectField
-          label="Delivery"
-          value={props.form.deliveryStatus}
-          onChange={(deliveryStatus) =>
-            props.onChange({
-              ...props.form,
-              deliveryStatus: deliveryStatus as DeliveryStatus,
-            })
-          }
-          options={generalDeliveryOptions}
-        />
-        <Field label="Note">
-          <Textarea
-            value={props.form.note}
-            placeholder="Optional status note"
-            onChange={(event) =>
-              props.onChange({ ...props.form, note: event.target.value })
-            }
-          />
-        </Field>
-      </div>
-      <Button disabled={props.loading} onClick={props.onSubmit}>
-        {props.loading ? "Updating..." : "Update statuses"}
-      </Button>
-    </section>
   );
 }
 
@@ -434,7 +430,7 @@ type EditableDetailsProps = {
 
 function CustomerDetailsCard(props: EditableDetailsProps & { order: Order }) {
   return (
-    <section className="space-y-4 rounded-md border p-4">
+    <section className="space-y-4 rounded-lg border p-4 sm:p-5">
       <h2 className="font-medium">Customer</h2>
       <div className="grid gap-3">
         <InlineEditableField field="customerName" label="Name" {...props} />
@@ -455,11 +451,53 @@ function CustomerDetailsCard(props: EditableDetailsProps & { order: Order }) {
   );
 }
 
-function AddressDetailsCard(
-  props: EditableDetailsProps & {
-    title: string;
-    prefix: "shipping" | "billing";
-  },
+function AddressesCard(props: EditableDetailsProps) {
+  const billingMatchesShipping = [
+    "Line1",
+    "Line2",
+    "City",
+    "State",
+    "PostalCode",
+    "Country",
+  ].every(
+    (suffix) =>
+      props.form[`billing${suffix}` as keyof OrderEditForm] ===
+      props.form[`shipping${suffix}` as keyof OrderEditForm],
+  );
+  return (
+    <section className="space-y-4 rounded-lg border p-4 sm:p-5">
+      <div>
+        <h2 className="font-medium">Addresses</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Shipping is used for delivery. Billing is retained with the order
+          record.
+        </p>
+      </div>
+      <Tabs defaultValue="shipping">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="shipping">Shipping</TabsTrigger>
+          <TabsTrigger value="billing">
+            Billing{billingMatchesShipping ? " · Same" : ""}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="shipping" className="pt-2">
+          <AddressFields prefix="shipping" {...props} />
+        </TabsContent>
+        <TabsContent value="billing" className="pt-2">
+          {billingMatchesShipping ? (
+            <p className="mb-3 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+              Billing currently matches the shipping address.
+            </p>
+          ) : null}
+          <AddressFields prefix="billing" {...props} />
+        </TabsContent>
+      </Tabs>
+    </section>
+  );
+}
+
+function AddressFields(
+  props: EditableDetailsProps & { prefix: "shipping" | "billing" },
 ) {
   const fields = [
     ["Line1", "Address line 1"],
@@ -470,25 +508,22 @@ function AddressDetailsCard(
     ["Country", "Country"],
   ] as const;
   return (
-    <section className="space-y-4 rounded-md border p-4">
-      <h2 className="font-medium">{props.title}</h2>
-      <div className="grid gap-3">
-        {fields.map(([suffix, label]) => (
-          <InlineEditableField
-            key={suffix}
-            field={`${props.prefix}${suffix}` as keyof OrderEditForm}
-            label={label}
-            {...props}
-          />
-        ))}
-      </div>
-    </section>
+    <div className="grid gap-4 sm:grid-cols-2">
+      {fields.map(([suffix, label]) => (
+        <InlineEditableField
+          key={suffix}
+          field={`${props.prefix}${suffix}` as keyof OrderEditForm}
+          label={label}
+          {...props}
+        />
+      ))}
+    </div>
   );
 }
 
 function NotesDetailsCard(props: EditableDetailsProps & { order: Order }) {
   return (
-    <section className="space-y-4 rounded-md border p-4">
+    <section className="space-y-4 rounded-lg border p-4 sm:p-5">
       <h2 className="font-medium">Notes</h2>
       <div className="grid gap-3">
         <InlineEditableField
@@ -593,7 +628,7 @@ function InlineEditableField(
 function LineItems(props: { order: Order }) {
   const items = props.order.lineItems ?? [];
   return (
-    <section className="space-y-3 rounded-md border p-4">
+    <section className="space-y-3 rounded-lg border p-4 sm:p-5">
       <CardHeading explanation="These are purchase-time product snapshots. Product catalog edits do not rewrite an existing order.">
         Line items
       </CardHeading>
@@ -688,7 +723,7 @@ function LineItemTitle(props: { item: OrderLineItem }) {
 
 function OperationalCard(props: { order: Order }) {
   return (
-    <section className="space-y-3 rounded-md border p-4">
+    <section className="space-y-3 rounded-lg border p-4 sm:p-5">
       <CardHeading explanation="Operational values are captured at checkout or changed automatically by inventory actions.">
         Operations
       </CardHeading>
@@ -727,7 +762,7 @@ function OperationalCard(props: { order: Order }) {
 
 function TotalsCard(props: { order: Order }) {
   return (
-    <section className="space-y-2 rounded-md border p-4 text-sm">
+    <section className="space-y-2 rounded-lg border p-4 text-sm sm:p-5">
       <CardHeading explanation="These amounts are checkout snapshots calculated from line items, discounts, tax, and shipping.">
         Totals
       </CardHeading>
@@ -780,18 +815,35 @@ function TotalRow(props: {
 }
 
 function Timeline(props: { order: Order }) {
-  const events = props.order.statusEvents ?? [];
+  const [expanded, setExpanded] = useState(false);
+  const events = [...(props.order.statusEvents ?? [])].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  const visibleEvents = expanded ? events : events.slice(0, 3);
   return (
-    <section className="space-y-3 rounded-md border p-4">
-      <CardHeading explanation="A read-only audit history created by order, payment, delivery, tracking, and fulfillment actions.">
-        Timeline
-      </CardHeading>
+    <section className="space-y-4 rounded-lg border p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <CardHeading explanation="A read-only audit history created by order, payment, delivery, tracking, and fulfillment actions.">
+          Timeline
+        </CardHeading>
+        <span className="text-xs text-muted-foreground">
+          {events.length} {events.length === 1 ? "event" : "events"}
+        </span>
+      </div>
       {events.length === 0 ? (
         <p className="text-sm text-muted-foreground">No status events yet.</p>
       ) : (
-        <div className="grid gap-3">
-          {events.map((event) => (
-            <article key={event.id} className="rounded-md border p-3 text-sm">
+        <div className="relative ml-2 border-l pl-5">
+          {visibleEvents.map((event, index) => (
+            <article
+              key={event.id}
+              className={
+                index === visibleEvents.length - 1
+                  ? "relative pb-0 text-sm"
+                  : "relative pb-5 text-sm"
+              }
+            >
+              <span className="absolute -left-[1.55rem] top-1 size-2 rounded-full bg-primary ring-4 ring-background" />
               <div className="flex flex-wrap items-center gap-2">
                 <StatusEventBadge type={event.type} value={event.newValue} />
                 <span className="text-muted-foreground">
@@ -821,6 +873,16 @@ function Timeline(props: { order: Order }) {
           ))}
         </div>
       )}
+      {events.length > 3 ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? <ChevronUp /> : <ChevronDown />}
+          {expanded ? "Show less" : `Show all ${events.length} events`}
+        </Button>
+      ) : null}
     </section>
   );
 }
@@ -838,13 +900,13 @@ function StatusEventBadge(props: { type: string; value: string }) {
   return null;
 }
 
-function SummaryCard(props: {
+function StatusSummary(props: {
   label: string;
   explanation?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-md border p-4">
+    <div className="min-w-0 xl:not-last:border-r xl:not-last:pr-4">
       <div className="mb-2 flex items-center gap-1">
         <p className="text-xs text-muted-foreground">{props.label}</p>
         {props.explanation ? (
@@ -852,7 +914,7 @@ function SummaryCard(props: {
         ) : null}
       </div>
       {props.children}
-    </section>
+    </div>
   );
 }
 
