@@ -11,10 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { sessionHasPermission } from "@/features/user/lib/session-permissions";
 import type { ClientSession } from "@auth/client";
 
@@ -28,10 +25,14 @@ export function EcommerceHeader(props: {
       <div className="min-w-0">
         <h1 className="text-2xl font-semibold tracking-tight">{props.title}</h1>
         {props.description ? (
-          <p className="mt-1 text-sm text-muted-foreground">{props.description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {props.description}
+          </p>
         ) : null}
       </div>
-      {props.action ? <div className="flex shrink-0 gap-2">{props.action}</div> : null}
+      {props.action ? (
+        <div className="flex shrink-0 gap-2">{props.action}</div>
+      ) : null}
     </div>
   );
 }
@@ -39,7 +40,10 @@ export function EcommerceHeader(props: {
 export function EmptyTableRow(props: { colSpan: number; children: ReactNode }) {
   return (
     <TableRow>
-      <TableCell colSpan={props.colSpan} className="h-24 text-center text-muted-foreground">
+      <TableCell
+        colSpan={props.colSpan}
+        className="h-24 text-center text-muted-foreground"
+      >
         {props.children}
       </TableCell>
     </TableRow>
@@ -74,7 +78,9 @@ export function Field(props: {
     <div className="min-w-0 space-y-1.5">
       <Label htmlFor={props.htmlFor}>{props.label}</Label>
       {props.children}
-      {props.hint ? <p className="text-xs text-muted-foreground">{props.hint}</p> : null}
+      {props.hint ? (
+        <p className="text-xs text-muted-foreground">{props.hint}</p>
+      ) : null}
     </div>
   );
 }
@@ -108,7 +114,9 @@ export function SelectField(props: {
   placeholder?: string;
   disabled?: boolean;
 }) {
-  const selectedLabel = props.options.find((option) => option.value === props.value)?.label;
+  const selectedLabel = props.options.find(
+    (option) => option.value === props.value,
+  )?.label;
 
   return (
     <Field label={props.label}>
@@ -165,14 +173,31 @@ export function hasAdminPermission(
   );
 }
 
-export function ecommercePermissions(session: ClientSession | null | undefined) {
+export function ecommercePermissions(
+  session: ClientSession | null | undefined,
+) {
   return {
-    canManageCatalog: hasAdminPermission(session, Permissions.AdminCatalogManage),
-    canManageProducts: hasAdminPermission(session, Permissions.AdminProductsManage),
-    canManageInventory: hasAdminPermission(session, Permissions.AdminInventoryManage),
+    canManageCatalog: hasAdminPermission(
+      session,
+      Permissions.AdminCatalogManage,
+    ),
+    canManageProducts: hasAdminPermission(
+      session,
+      Permissions.AdminProductsManage,
+    ),
+    canManageInventory: hasAdminPermission(
+      session,
+      Permissions.AdminInventoryManage,
+    ),
     canManageOrders: hasAdminPermission(session, Permissions.AdminOrdersManage),
-    canFulfillOrders: hasAdminPermission(session, Permissions.AdminOrdersFulfill),
-    canManageShipping: hasAdminPermission(session, Permissions.AdminShippingManage),
+    canFulfillOrders: hasAdminPermission(
+      session,
+      Permissions.AdminOrdersFulfill,
+    ),
+    canManageShipping: hasAdminPermission(
+      session,
+      Permissions.AdminShippingManage,
+    ),
     canManageImages: hasAdminPermission(session, Permissions.AdminImagesManage),
   };
 }
@@ -181,7 +206,13 @@ export function formatDate(value?: string | null) {
   if (!value) {
     return "—";
   }
-  return new Date(value).toLocaleDateString();
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
 export function readError(error: unknown, fallback: string) {

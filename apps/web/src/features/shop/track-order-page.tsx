@@ -12,7 +12,7 @@ import { Img } from "@/components/core/img";
 import { client } from "@/lib/client";
 import type { ShopOrder } from "./types";
 import { formatMoney } from "./utils";
-import {  PublicShopShell } from "./public-shop-shell";
+import { PublicShopShell } from "./public-shop-shell";
 
 import { PublicShopFooter } from "@/components/public-footer";
 
@@ -23,9 +23,15 @@ export function TrackOrderPage() {
     mutationFn: async () => {
       const value = contact.trim();
       const query = value.includes("@") ? { email: value } : { phone: value };
-      const { data, error } = await client.shop.orders({ orderNumber: orderNumber.trim() }).get({ query });
+      const { data, error } = await client.shop
+        .orders({ orderNumber: orderNumber.trim() })
+        .get({ query });
       if (error) {
-        throw new Error(String(error.value?.message || error.message || "Failed to load order"));
+        throw new Error(
+          String(
+            error.value?.message || error.message || "Failed to load order",
+          ),
+        );
       }
       return data as ShopOrder;
     },
@@ -54,7 +60,10 @@ export function TrackOrderPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <form onSubmit={submit} className="h-fit space-y-4 rounded-md border bg-card p-4">
+          <form
+            onSubmit={submit}
+            className="h-fit space-y-4 rounded-md border bg-card p-4"
+          >
             <div className="space-y-1.5">
               <Label htmlFor="order-number">Order number</Label>
               <Input
@@ -76,7 +85,9 @@ export function TrackOrderPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={!orderNumber.trim() || !contact.trim() || lookup.isPending}
+              disabled={
+                !orderNumber.trim() || !contact.trim() || lookup.isPending
+              }
             >
               <Search className="size-4" />
               {lookup.isPending ? "Searching..." : "Find order"}
@@ -88,7 +99,8 @@ export function TrackOrderPage() {
               <EmptyTrackState />
             ) : lookup.isError ? (
               <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-                Order not found. Check the order number and customer email or phone.
+                Order not found. Check the order number and customer email or
+                phone.
               </div>
             ) : lookup.data ? (
               <OrderDetails order={lookup.data} />
@@ -110,9 +122,13 @@ function EmptyTrackState() {
       <PackageSearch className="mx-auto size-10 text-muted-foreground" />
       <h2 className="mt-4 font-medium">Find an order</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Guest orders can be opened with the order number and matching email or phone.
+        Guest orders can be opened with the order number and matching email or
+        phone.
       </p>
-      <Link to="/shop" className={buttonVariants({ variant: "outline", className: "mt-5" })}>
+      <Link
+        to="/shop"
+        className={buttonVariants({ variant: "outline", className: "mt-5" })}
+      >
         Continue shopping
       </Link>
     </div>
@@ -141,9 +157,18 @@ function OrderDetails(props: { order: ShopOrder }) {
         <div className="grid gap-2 rounded-md border bg-background p-4 text-sm">
           <p className="font-medium">Delivery tracking</p>
           <TrackingRow label="Carrier" value={props.order.carrier ?? "—"} />
-          <TrackingRow label="Tracking number" value={props.order.trackingNumber ?? "—"} />
-          <TrackingRow label="Shipped" value={formatDate(props.order.shippedAt)} />
-          <TrackingRow label="Delivered" value={formatDate(props.order.deliveredAt)} />
+          <TrackingRow
+            label="Tracking number"
+            value={props.order.trackingNumber ?? "—"}
+          />
+          <TrackingRow
+            label="Shipped"
+            value={formatDate(props.order.shippedAt)}
+          />
+          <TrackingRow
+            label="Delivered"
+            value={formatDate(props.order.deliveredAt)}
+          />
         </div>
       ) : null}
 
@@ -151,12 +176,21 @@ function OrderDetails(props: { order: ShopOrder }) {
 
       <div className="grid gap-3">
         {props.order.lineItems.map((item) => (
-          <article key={item.id} className="grid grid-cols-[64px_1fr_auto] gap-3 rounded-md border p-3">
+          <article
+            key={item.id}
+            className="grid grid-cols-[64px_1fr_auto] gap-3 rounded-md border p-3"
+          >
             <div className="aspect-square overflow-hidden rounded-md bg-muted">
               {item.imageUrl ? (
-                <Img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                <Img
+                  src={item.imageUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                <div className="grid h-full place-items-center text-xs text-muted-foreground">No image</div>
+                <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                  No image
+                </div>
               )}
             </div>
             <div className="min-w-0">
@@ -173,11 +207,28 @@ function OrderDetails(props: { order: ShopOrder }) {
       </div>
 
       <div className="ml-auto grid w-full gap-2 rounded-md border bg-background p-4 text-sm sm:max-w-sm">
-        <SummaryRow label="Subtotal" value={props.order.subtotalAmount} currency={props.order.currency} />
-        <SummaryRow label="Shipping" value={props.order.shippingAmount} currency={props.order.currency} />
-        <SummaryRow label="Tax" value={props.order.taxAmount} currency={props.order.currency} />
+        <SummaryRow
+          label="Subtotal"
+          value={props.order.subtotalAmount}
+          currency={props.order.currency}
+        />
+        <SummaryRow
+          label="Shipping"
+          value={props.order.shippingAmount}
+          currency={props.order.currency}
+        />
+        <SummaryRow
+          label="Tax"
+          value={props.order.taxAmount}
+          currency={props.order.currency}
+        />
         <Separator />
-        <SummaryRow label="Total" value={props.order.totalAmount} currency={props.order.currency} strong />
+        <SummaryRow
+          label="Total"
+          value={props.order.totalAmount}
+          currency={props.order.currency}
+          strong
+        />
       </div>
     </div>
   );
@@ -196,7 +247,13 @@ function formatDate(value?: string | null) {
   if (!value) {
     return "—";
   }
-  return new Date(value).toLocaleDateString();
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
 function SummaryRow(props: {
@@ -208,7 +265,9 @@ function SummaryRow(props: {
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="text-muted-foreground">{props.label}</span>
-      <span className={props.strong ? "text-base font-semibold" : "font-medium"}>
+      <span
+        className={props.strong ? "text-base font-semibold" : "font-medium"}
+      >
         {formatMoney(props.value, props.currency)}
       </span>
     </div>

@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ImageIcon, Pencil } from "lucide-react";
+import { ArrowLeft, ImageIcon, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
 import { Img } from "@/components/core/img";
+import { InfoTooltip } from "@/components/core/info-tooltip";
 import { ReviewBar, type ReviewBarItem } from "@/components/core/review-bar";
 import { UserAvatar } from "@/components/core/user-avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -233,16 +234,28 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
       />
 
       <section className="grid gap-3 md:grid-cols-4">
-        <SummaryCard label="Order status">
+        <SummaryCard
+          label="Order status"
+          explanation="The order's overall workflow state. Change it from the Update statuses card below."
+        >
           <OrderStatusBadge status={order.orderStatus} />
         </SummaryCard>
-        <SummaryCard label="Payment">
+        <SummaryCard
+          label="Payment"
+          explanation="Whether payment is due, authorized, paid, failed, or refunded. Change it from the Update statuses card."
+        >
           <PaymentStatusBadge status={order.paymentStatus} />
         </SummaryCard>
-        <SummaryCard label="Delivery">
+        <SummaryCard
+          label="Delivery"
+          explanation="The fulfillment progress. General transitions use Update statuses; shipped and delivered are changed through Fulfillment."
+        >
           <DeliveryStatusBadge status={order.deliveryStatus} />
         </SummaryCard>
-        <SummaryCard label="Inventory">
+        <SummaryCard
+          label="Inventory"
+          explanation="This is managed automatically when stock is reserved, committed, released, or restocked by order actions."
+        >
           <InventoryStatusBadge status={order.inventoryStatus} />
         </SummaryCard>
       </section>
@@ -435,6 +448,7 @@ function CustomerDetailsCard(props: EditableDetailsProps & { order: Order }) {
         <InfoBlock
           label="Linked user"
           value={props.order.user?.email ?? "Guest / snapshot only"}
+          explanation="This is linked automatically when checkout uses a signed-in account. Guest orders keep only the customer snapshot."
         />
       </div>
     </section>
@@ -489,8 +503,16 @@ function NotesDetailsCard(props: EditableDetailsProps & { order: Order }) {
           multiline
           {...props}
         />
-        <InfoBlock label="Placed" value={formatDate(props.order.placedAt)} />
-        <InfoBlock label="Updated" value={formatDate(props.order.updatedAt)} />
+        <InfoBlock
+          label="Placed"
+          value={formatDate(props.order.placedAt)}
+          explanation="Set automatically when the order is placed and cannot be edited."
+        />
+        <InfoBlock
+          label="Updated"
+          value={formatDate(props.order.updatedAt)}
+          explanation="Updated automatically whenever the order record changes."
+        />
       </div>
     </section>
   );
@@ -523,24 +545,37 @@ function InlineEditableField(
         ) : null}
       </div>
       {editing ? (
-        props.multiline ? (
-          <Textarea
-            autoFocus
-            value={value}
-            onChange={(event) =>
-              props.onChange(props.field, event.target.value)
-            }
-          />
-        ) : (
-          <Input
-            autoFocus
-            type={props.type}
-            value={value}
-            onChange={(event) =>
-              props.onChange(props.field, event.target.value)
-            }
-          />
-        )
+        <div className="relative">
+          {props.multiline ? (
+            <Textarea
+              autoFocus
+              className="pr-9"
+              value={value}
+              onChange={(event) =>
+                props.onChange(props.field, event.target.value)
+              }
+            />
+          ) : (
+            <Input
+              autoFocus
+              className="pr-9"
+              type={props.type}
+              value={value}
+              onChange={(event) =>
+                props.onChange(props.field, event.target.value)
+              }
+            />
+          )}
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="absolute right-1.5 top-1.5"
+            onClick={() => props.onEdit(null)}
+          >
+            <X />
+            <span className="sr-only">Close {props.label} editor</span>
+          </Button>
+        </div>
       ) : (
         <button
           type="button"
@@ -559,7 +594,9 @@ function LineItems(props: { order: Order }) {
   const items = props.order.lineItems ?? [];
   return (
     <section className="space-y-3 rounded-md border p-4">
-      <h2 className="font-medium">Line items</h2>
+      <CardHeading explanation="These are purchase-time product snapshots. Product catalog edits do not rewrite an existing order.">
+        Line items
+      </CardHeading>
       <div className="hidden overflow-hidden rounded-md border md:block">
         <Table>
           <TableHeader>
@@ -652,10 +689,13 @@ function LineItemTitle(props: { item: OrderLineItem }) {
 function OperationalCard(props: { order: Order }) {
   return (
     <section className="space-y-3 rounded-md border p-4">
-      <h2 className="font-medium">Operations</h2>
+      <CardHeading explanation="Operational values are captured at checkout or changed automatically by inventory actions.">
+        Operations
+      </CardHeading>
       <InfoBlock
         label="Payment method"
         value={formatPaymentMethod(props.order.paymentMethod)}
+        explanation="Chosen during checkout. This is the payment channel, not the payment status."
       />
       <InfoBlock
         label="Shipping method"
@@ -664,18 +704,22 @@ function OperationalCard(props: { order: Order }) {
           props.order.shippingMethodCode ||
           "—"
         }
+        explanation="The shipping rate selected during checkout. Manage available methods from Admin Shipping."
       />
       <InfoBlock
         label="Reserved until"
         value={formatDate(props.order.stockReservedUntil)}
+        explanation="The reservation expiry is set automatically when checkout temporarily holds stock. Release expired stock from the order list."
       />
       <InfoBlock
         label="Committed at"
         value={formatDate(props.order.stockCommittedAt)}
+        explanation="Set automatically when a reserved order is confirmed and its inventory becomes committed."
       />
       <InfoBlock
         label="Released/restocked at"
         value={formatDate(props.order.stockReleasedAt)}
+        explanation="Set automatically when reserved stock is released or committed stock is returned to inventory."
       />
     </section>
   );
@@ -684,7 +728,9 @@ function OperationalCard(props: { order: Order }) {
 function TotalsCard(props: { order: Order }) {
   return (
     <section className="space-y-2 rounded-md border p-4 text-sm">
-      <h2 className="mb-3 font-medium">Totals</h2>
+      <CardHeading explanation="These amounts are checkout snapshots calculated from line items, discounts, tax, and shipping.">
+        Totals
+      </CardHeading>
       <TotalRow
         label="Subtotal"
         value={props.order.subtotalAmount}
@@ -737,7 +783,9 @@ function Timeline(props: { order: Order }) {
   const events = props.order.statusEvents ?? [];
   return (
     <section className="space-y-3 rounded-md border p-4">
-      <h2 className="font-medium">Timeline</h2>
+      <CardHeading explanation="A read-only audit history created by order, payment, delivery, tracking, and fulfillment actions.">
+        Timeline
+      </CardHeading>
       {events.length === 0 ? (
         <p className="text-sm text-muted-foreground">No status events yet.</p>
       ) : (
@@ -790,20 +838,47 @@ function StatusEventBadge(props: { type: string; value: string }) {
   return null;
 }
 
-function SummaryCard(props: { label: string; children: ReactNode }) {
+function SummaryCard(props: {
+  label: string;
+  explanation?: string;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-md border p-4">
-      <p className="mb-2 text-xs text-muted-foreground">{props.label}</p>
+      <div className="mb-2 flex items-center gap-1">
+        <p className="text-xs text-muted-foreground">{props.label}</p>
+        {props.explanation ? (
+          <InfoTooltip>{props.explanation}</InfoTooltip>
+        ) : null}
+      </div>
       {props.children}
     </section>
   );
 }
 
-function InfoBlock(props: { label: string; value: ReactNode }) {
+function InfoBlock(props: {
+  label: string;
+  value: ReactNode;
+  explanation?: string;
+}) {
   return (
     <div className="min-w-0">
-      <p className="text-xs text-muted-foreground">{props.label}</p>
+      <div className="flex items-center gap-1">
+        <p className="text-xs text-muted-foreground">{props.label}</p>
+        {props.explanation ? (
+          <InfoTooltip>{props.explanation}</InfoTooltip>
+        ) : null}
+      </div>
       <div className="break-words font-medium">{props.value}</div>
+    </div>
+  );
+}
+
+function CardHeading(props: { children: ReactNode; explanation: string }) {
+  return (
+    <div className="flex items-center gap-1">
+      <h2 className="font-medium">{props.children}</h2>
+      <InfoTooltip>{props.explanation}</InfoTooltip>
     </div>
   );
 }

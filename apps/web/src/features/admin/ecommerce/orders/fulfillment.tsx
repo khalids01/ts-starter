@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PackageCheck, PencilLine, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@/constants/query-keys";
+import { InfoTooltip } from "@/components/core/info-tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,7 +31,9 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
   const { order } = props;
   const queryClient = useQueryClient();
   const [shipDraft, setShipDraft] = useState<TrackingDraft | null>(null);
-  const [trackingDraft, setTrackingDraft] = useState<TrackingDraft | null>(null);
+  const [trackingDraft, setTrackingDraft] = useState<TrackingDraft | null>(
+    null,
+  );
   const [deliverOpen, setDeliverOpen] = useState(false);
   const [deliverNote, setDeliverNote] = useState("");
 
@@ -51,7 +54,8 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
       setShipDraft(null);
       void invalidateOrders();
     },
-    onError: (error) => toast.error(readError(error, "Failed to mark order shipped")),
+    onError: (error) =>
+      toast.error(readError(error, "Failed to mark order shipped")),
   });
   const updateTracking = useMutation({
     mutationFn: (draft: TrackingDraft) => {
@@ -72,7 +76,8 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
       setTrackingDraft(null);
       void invalidateOrders();
     },
-    onError: (error) => toast.error(readError(error, "Failed to update tracking")),
+    onError: (error) =>
+      toast.error(readError(error, "Failed to update tracking")),
   });
   const markDelivered = useMutation({
     mutationFn: () =>
@@ -85,7 +90,8 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
       setDeliverNote("");
       void invalidateOrders();
     },
-    onError: (error) => toast.error(readError(error, "Failed to mark order delivered")),
+    onError: (error) =>
+      toast.error(readError(error, "Failed to mark order delivered")),
   });
 
   const canShip =
@@ -94,7 +100,8 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
     order.inventoryStatus === "committed" &&
     PRE_SHIP_STATUSES.includes(order.deliveryStatus);
   const canMarkDelivered =
-    props.canFulfill && ["shipped", "out_for_delivery"].includes(order.deliveryStatus);
+    props.canFulfill &&
+    ["shipped", "out_for_delivery"].includes(order.deliveryStatus);
   const canEditTracking = props.canFulfill && Boolean(order.shippedAt);
 
   return (
@@ -103,7 +110,12 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
       <div className="flex flex-wrap items-center gap-2">
         <DeliveryStatusBadge status={order.deliveryStatus} />
         {canShip ? (
-          <Button size="sm" onClick={() => setShipDraft({ carrier: "", trackingNumber: "", note: "" })}>
+          <Button
+            size="sm"
+            onClick={() =>
+              setShipDraft({ carrier: "", trackingNumber: "", note: "" })
+            }
+          >
             <Truck className="h-4 w-4" />
             Mark shipped
           </Button>
@@ -131,7 +143,10 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
           </Button>
         ) : null}
       </div>
-      {props.canFulfill && !canShip && !order.shippedAt && order.deliveryStatus !== "delivered" ? (
+      {props.canFulfill &&
+      !canShip &&
+      !order.shippedAt &&
+      order.deliveryStatus !== "delivered" ? (
         <p className="text-xs text-muted-foreground">
           {order.orderStatus === "cancelled"
             ? "Cancelled orders cannot be shipped."
@@ -140,18 +155,42 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
               : "This order is not eligible to be shipped."}
         </p>
       ) : null}
-      <InfoRow label="Carrier" value={order.carrier || "—"} />
-      <InfoRow label="Tracking number" value={order.trackingNumber || "—"} />
-      <InfoRow label="Shipped" value={formatDate(order.shippedAt)} />
-      <InfoRow label="Delivered" value={formatDate(order.deliveredAt)} />
-      <InfoRow label="Fulfillment note" value={order.fulfillmentNote || "—"} />
+      <InfoRow
+        label="Carrier"
+        value={order.carrier || "—"}
+        explanation="Added when the order is marked shipped, and changed through Edit tracking."
+      />
+      <InfoRow
+        label="Tracking number"
+        value={order.trackingNumber || "—"}
+        explanation="Added when the order is marked shipped, and changed through Edit tracking."
+      />
+      <InfoRow
+        label="Shipped"
+        value={formatDate(order.shippedAt)}
+        explanation="Set automatically by the Mark shipped action."
+      />
+      <InfoRow
+        label="Delivered"
+        value={formatDate(order.deliveredAt)}
+        explanation="Set automatically by the Mark delivered action."
+      />
+      <InfoRow
+        label="Fulfillment note"
+        value={order.fulfillmentNote || "—"}
+        explanation="Added or changed through the shipment and tracking actions above."
+      />
 
-      <Dialog open={Boolean(shipDraft)} onOpenChange={(open) => !open && setShipDraft(null)}>
+      <Dialog
+        open={Boolean(shipDraft)}
+        onOpenChange={(open) => !open && setShipDraft(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Mark order shipped</DialogTitle>
             <DialogDescription>
-              Recording a shipment sets delivery status to shipped and adds a timeline event.
+              Recording a shipment sets delivery status to shipped and adds a
+              timeline event.
             </DialogDescription>
           </DialogHeader>
           {shipDraft ? (
@@ -165,20 +204,28 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
               <TextField
                 label="Tracking number"
                 value={shipDraft.trackingNumber}
-                onChange={(trackingNumber) => setShipDraft({ ...shipDraft, trackingNumber })}
+                onChange={(trackingNumber) =>
+                  setShipDraft({ ...shipDraft, trackingNumber })
+                }
               />
               <Field label="Note">
                 <Textarea
                   value={shipDraft.note}
                   placeholder="Optional note stored on the timeline event"
-                  onChange={(event) => setShipDraft({ ...shipDraft, note: event.target.value })}
+                  onChange={(event) =>
+                    setShipDraft({ ...shipDraft, note: event.target.value })
+                  }
                 />
               </Field>
             </div>
           ) : null}
           <DialogFooter>
             <Button
-              disabled={markShipped.isPending || !shipDraft?.carrier.trim() || !shipDraft?.trackingNumber.trim()}
+              disabled={
+                markShipped.isPending ||
+                !shipDraft?.carrier.trim() ||
+                !shipDraft?.trackingNumber.trim()
+              }
               onClick={() => shipDraft && markShipped.mutate(shipDraft)}
             >
               {markShipped.isPending ? "Saving..." : "Mark shipped"}
@@ -187,12 +234,16 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={Boolean(trackingDraft)} onOpenChange={(open) => !open && setTrackingDraft(null)}>
+      <Dialog
+        open={Boolean(trackingDraft)}
+        onOpenChange={(open) => !open && setTrackingDraft(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit tracking</DialogTitle>
             <DialogDescription>
-              Corrections are audited on the order timeline with the previous values.
+              Corrections are audited on the order timeline with the previous
+              values.
             </DialogDescription>
           </DialogHeader>
           {trackingDraft ? (
@@ -200,18 +251,27 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
               <TextField
                 label="Carrier"
                 value={trackingDraft.carrier}
-                onChange={(carrier) => setTrackingDraft({ ...trackingDraft, carrier })}
+                onChange={(carrier) =>
+                  setTrackingDraft({ ...trackingDraft, carrier })
+                }
               />
               <TextField
                 label="Tracking number"
                 value={trackingDraft.trackingNumber}
-                onChange={(trackingNumber) => setTrackingDraft({ ...trackingDraft, trackingNumber })}
+                onChange={(trackingNumber) =>
+                  setTrackingDraft({ ...trackingDraft, trackingNumber })
+                }
               />
               <Field label="Note">
                 <Textarea
                   value={trackingDraft.note}
                   placeholder="Optional note stored on the timeline event"
-                  onChange={(event) => setTrackingDraft({ ...trackingDraft, note: event.target.value })}
+                  onChange={(event) =>
+                    setTrackingDraft({
+                      ...trackingDraft,
+                      note: event.target.value,
+                    })
+                  }
                 />
               </Field>
             </div>
@@ -221,10 +281,13 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
               disabled={
                 updateTracking.isPending ||
                 (trackingDraft?.carrier.trim() === (order.carrier ?? "") &&
-                  trackingDraft?.trackingNumber.trim() === (order.trackingNumber ?? "") &&
+                  trackingDraft?.trackingNumber.trim() ===
+                    (order.trackingNumber ?? "") &&
                   trackingDraft?.note.trim() === (order.fulfillmentNote ?? ""))
               }
-              onClick={() => trackingDraft && updateTracking.mutate(trackingDraft)}
+              onClick={() =>
+                trackingDraft && updateTracking.mutate(trackingDraft)
+              }
             >
               {updateTracking.isPending ? "Saving..." : "Save tracking"}
             </Button>
@@ -237,7 +300,8 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
           <DialogHeader>
             <DialogTitle>Mark order delivered</DialogTitle>
             <DialogDescription>
-              This sets delivery status to delivered and records the timestamp on the timeline.
+              This sets delivery status to delivered and records the timestamp
+              on the timeline.
             </DialogDescription>
           </DialogHeader>
           <Field label="Note">
@@ -248,7 +312,10 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
             />
           </Field>
           <DialogFooter>
-            <Button disabled={markDelivered.isPending} onClick={() => markDelivered.mutate()}>
+            <Button
+              disabled={markDelivered.isPending}
+              onClick={() => markDelivered.mutate()}
+            >
               {markDelivered.isPending ? "Saving..." : "Mark delivered"}
             </Button>
           </DialogFooter>
@@ -258,10 +325,19 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
   );
 }
 
-function InfoRow(props: { label: string; value: string }) {
+function InfoRow(props: {
+  label: string;
+  value: string;
+  explanation?: string;
+}) {
   return (
     <div className="min-w-0">
-      <p className="text-xs text-muted-foreground">{props.label}</p>
+      <div className="flex items-center gap-1">
+        <p className="text-xs text-muted-foreground">{props.label}</p>
+        {props.explanation ? (
+          <InfoTooltip>{props.explanation}</InfoTooltip>
+        ) : null}
+      </div>
       <div className="break-words font-medium">{props.value}</div>
     </div>
   );
