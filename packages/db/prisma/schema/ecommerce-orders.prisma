@@ -92,6 +92,7 @@ model Order {
   addresses    OrderAddress[]
   lineItems    OrderLineItem[]
   statusEvents OrderStatusEvent[]
+  refunds      OrderRefund[]
 
   @@index([userId])
   @@index([customerEmail])
@@ -103,6 +104,24 @@ model Order {
   @@index([shippingRateId])
   @@index([placedAt])
   @@map("order")
+}
+
+model OrderRefund {
+  id               String   @id @default(cuid())
+  orderId          String
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  amount           Decimal  @db.Decimal(12, 2)
+  currency         String
+  reason           String
+  note             String?  @db.Text
+  restockInventory Boolean  @default(false)
+  actorUserId      String?
+  actorUser        User?    @relation("OrderRefundActor", fields: [actorUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([actorUserId])
+  @@map("order_refund")
 }
 
 model OrderAddress {

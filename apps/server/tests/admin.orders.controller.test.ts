@@ -109,4 +109,49 @@ describe("admin orders controller RBAC", () => {
       expect(response.status).toBe(403);
     }
   });
+
+  it("requires dedicated permissions for cancellation and refunds", async () => {
+    const routes = [
+      {
+        path: "cancel",
+        otherPermission: Permissions.AdminOrdersRefund,
+        body: { reason: "Customer request" },
+      },
+      {
+        path: "refunds",
+        otherPermission: Permissions.AdminOrdersCancel,
+        body: { amount: "10.00", reason: "Price adjustment" },
+      },
+    ];
+
+    for (const route of routes) {
+      getAuthSessionMock.mockResolvedValueOnce({
+        user: {
+          id: "admin-1",
+          role: "ADMIN",
+          banned: false,
+          archived: false,
+        },
+        permissions: [
+          Permissions.AdminAccess,
+          Permissions.AdminOrdersManage,
+          route.otherPermission,
+        ],
+      });
+
+      const { adminOrdersController } = await import(
+        "../src/modules/admin/orders/orders.controller"
+      );
+      const app = new Elysia().use(adminOrdersController);
+      const response = await app.handle(
+        new Request(`http://localhost/admin/orders/order-1/${route.path}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(route.body),
+        }),
+      );
+
+      expect(response.status).toBe(403);
+    }
+  });
 });

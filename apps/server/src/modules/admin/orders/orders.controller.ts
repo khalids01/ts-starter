@@ -4,9 +4,11 @@ import { authGuard } from "@/guards/auth.guard";
 import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   IdParamDto,
+  CancelOrderDto,
   ListOrdersQueryDto,
   MarkOrderDeliveredDto,
   MarkOrderShippedDto,
+  RecordOrderRefundDto,
   UpdateOrderDto,
   UpdateOrderStatusesDto,
   UpdateOrderTrackingDto,
@@ -16,6 +18,7 @@ import {
   AdminOrdersServiceError,
 } from "./orders.service";
 import { orderFulfillmentService } from "./fulfillment.service";
+import { orderOperationsService } from "./order-operations.service";
 
 function handleOrderError(error: unknown, set: { status?: number | string }) {
   if (error instanceof AdminOrdersServiceError) {
@@ -40,6 +43,14 @@ const manageOrders = requireAllPermissions([
 const fulfillOrders = requireAllPermissions([
   Permissions.AdminAccess,
   Permissions.AdminOrdersFulfill,
+]);
+const cancelOrders = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminOrdersCancel,
+]);
+const refundOrders = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminOrdersRefund,
 ]);
 
 export const adminOrdersController = new Elysia({
@@ -126,6 +137,42 @@ export const adminOrdersController = new Elysia({
       body: UpdateOrderStatusesDto,
       detail: {
         summary: "Update order statuses",
+      },
+    },
+  )
+  .post(
+    "/:id/cancel",
+    async ({ params: { id }, body, set, userId }) => {
+      try {
+        return await orderOperationsService.cancelOrder(id, body, { userId });
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: cancelOrders,
+      params: IdParamDto,
+      body: CancelOrderDto,
+      detail: {
+        summary: "Cancel an order and reverse its inventory once",
+      },
+    },
+  )
+  .post(
+    "/:id/refunds",
+    async ({ params: { id }, body, set, userId }) => {
+      try {
+        return await orderOperationsService.recordRefund(id, body, { userId });
+      } catch (error) {
+        return handleOrderError(error, set);
+      }
+    },
+    {
+      beforeHandle: refundOrders,
+      params: IdParamDto,
+      body: RecordOrderRefundDto,
+      detail: {
+        summary: "Record a manual full or partial refund",
       },
     },
   )

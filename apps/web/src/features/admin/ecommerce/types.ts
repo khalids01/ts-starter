@@ -297,6 +297,19 @@ export type OrderStatusEvent = {
   createdAt: string;
 };
 
+export type OrderRefund = {
+  id: string;
+  orderId: string;
+  amount: string;
+  currency: string;
+  reason: string;
+  note?: string | null;
+  restockInventory: boolean;
+  actorUserId?: string | null;
+  actorUser?: { id: string; name: string; email: string; image?: string | null } | null;
+  createdAt: string;
+};
+
 export type Order = {
   id: string;
   orderNumber: string;
@@ -338,6 +351,7 @@ export type Order = {
   lineItemCount?: number;
   lineItems?: OrderLineItem[];
   statusEvents?: OrderStatusEvent[];
+  refunds?: OrderRefund[];
 };
 
 export type ShippingRate = {

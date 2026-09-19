@@ -244,16 +244,23 @@ function StatusSelect(props: {
 
 export function OrderStatusSelect(props: {
   value: OrderStatus;
+  currentValue?: OrderStatus;
   disabled?: boolean;
   onChange: (value: OrderStatus) => void;
 }) {
   const meta = orderStatusMeta[props.value];
+  const options = orderStatusOptions.filter(
+    (option) =>
+      props.currentValue === "cancelled"
+        ? option.value === "cancelled"
+        : option.value !== "cancelled",
+  );
   return (
     <StatusSelect
       {...props}
       label={meta.label}
       className={meta.className}
-      options={orderStatusOptions}
+      options={options}
       onChange={(value) => props.onChange(value as OrderStatus)}
     />
   );
@@ -261,16 +268,23 @@ export function OrderStatusSelect(props: {
 
 export function PaymentStatusSelect(props: {
   value: PaymentStatus;
+  currentValue?: PaymentStatus;
   disabled?: boolean;
   onChange: (value: PaymentStatus) => void;
 }) {
   const meta = paymentStatusMeta[props.value];
+  const options = paymentStatusOptions.filter(
+    (option) =>
+      ["partially_refunded", "refunded"].includes(props.currentValue ?? "")
+        ? option.value === props.currentValue
+        : !["partially_refunded", "refunded"].includes(option.value),
+  );
   return (
     <StatusSelect
       {...props}
       label={meta.label}
       className={meta.className}
-      options={paymentStatusOptions}
+      options={options}
       onChange={(value) => props.onChange(value as PaymentStatus)}
     />
   );

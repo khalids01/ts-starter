@@ -1,8 +1,8 @@
 # Ecommerce admin todo and progress V2
 
-Last reviewed: 2026-09-19
+Last reviewed: 2026-09-20
 
-Status: Steps 0-2 committed. Step 3 implemented; awaiting user migration, RBAC seed, and review.
+Status: Steps 0-2 committed. Steps 3-4 implemented; awaiting user migrations, RBAC seed, and review.
 
 ## Goal
 
@@ -108,7 +108,7 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 | 1 | Final catalog attribute schema cleanup | Completed | Yes | No |
 | 2 | Shipping-rate management | Implemented; migration, permission seed, and review required | Adds shipping-rate currency | Yes |
 | 3 | Order fulfillment and tracking | Implemented; migration, permission seed, and review required | Yes | Yes |
-| 4 | Cancellation and refund workflow | Not started | Yes | Yes |
+| 4 | Cancellation and refund workflow | Implemented; migration, permission seed, and review required | Yes | Yes |
 | 5 | Basic discount codes | Not started | Yes | Yes |
 | 6 | Store settings | Not started | Yes | Yes |
 | 7 | Customer view | Not started | Yes | Yes |
@@ -423,4 +423,4 @@ Completion means all V2 acceptance criteria pass and remaining deferred features
 
 ## Current next action
 
-User: create/apply the fulfillment-fields migration, run the RBAC seed, then review and commit Step 3. Begin Step 4 only after explicit user approval.
+User: create/apply the pending fulfillment/refund migrations and run the RBAC seed, then review and commit Steps 3-4 as appropriate. Begin Step 5 only after explicit user approval.

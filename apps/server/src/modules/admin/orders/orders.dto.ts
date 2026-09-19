@@ -113,9 +113,23 @@ export const MarkOrderDeliveredDto = t.Object({
   note: t.Optional(t.Union([t.String(), t.Null()])),
 });
 
+export const CancelOrderDto = t.Object({
+  reason: t.String({ minLength: 1, maxLength: 200 }),
+  note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+});
+
+export const RecordOrderRefundDto = t.Object({
+  amount: t.String({ minLength: 1 }),
+  reason: t.String({ minLength: 1, maxLength: 200 }),
+  note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  restockInventory: t.Optional(t.Boolean({ default: false })),
+});
+
 export type ListOrdersQuery = typeof ListOrdersQueryDto.static;
 export type UpdateOrderStatusesInput = typeof UpdateOrderStatusesDto.static;
 export type UpdateOrderInput = typeof UpdateOrderDto.static;
 export type MarkOrderShippedInput = typeof MarkOrderShippedDto.static;
 export type UpdateOrderTrackingInput = typeof UpdateOrderTrackingDto.static;
 export type MarkOrderDeliveredInput = typeof MarkOrderDeliveredDto.static;
+export type CancelOrderInput = typeof CancelOrderDto.static;
+export type RecordOrderRefundInput = typeof RecordOrderRefundDto.static;

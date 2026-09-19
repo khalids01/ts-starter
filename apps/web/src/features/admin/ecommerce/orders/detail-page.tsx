@@ -45,6 +45,7 @@ import {
 } from "../ui";
 import { formatMoney } from "./orders-table";
 import { FulfillmentCard } from "./fulfillment";
+import { OrderOperationsCard } from "./order-operations";
 import {
   DeliveryStatusBadge,
   DeliveryStatusSelect,
@@ -114,7 +115,12 @@ const orderFieldLabels: Record<keyof OrderEditForm, string> = {
 
 export function AdminOrderDetailPage(props: { orderId: string }) {
   const { session } = useSession();
-  const { canManageOrders, canFulfillOrders } = ecommercePermissions(session);
+  const {
+    canManageOrders,
+    canFulfillOrders,
+    canCancelOrders,
+    canRefundOrders,
+  } = ecommercePermissions(session);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.admin.ecommerce.orders.detail(props.orderId),
@@ -282,6 +288,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
             {canManageOrders && form ? (
               <OrderStatusSelect
                 value={form.orderStatus}
+                currentValue={order.orderStatus}
                 onChange={(orderStatus) => setForm({ ...form, orderStatus })}
               />
             ) : (
@@ -295,6 +302,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
             {canManageOrders && form ? (
               <PaymentStatusSelect
                 value={form.paymentStatus}
+                currentValue={order.paymentStatus}
                 onChange={(paymentStatus) =>
                   setForm({ ...form, paymentStatus })
                 }
@@ -373,6 +381,11 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
         </div>
         <div className="grid gap-4">
           <TotalsCard order={order} />
+          <OrderOperationsCard
+            order={order}
+            canCancel={canCancelOrders}
+            canRefund={canRefundOrders}
+          />
           <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
           <OperationalCard order={order} />
         </div>

@@ -92,6 +92,7 @@ export function OrdersTable(props: OrdersTableProps) {
                     <TableCell>
                       <OrderStatusSelect
                         value={draft?.changes.orderStatus ?? order.orderStatus}
+                        currentValue={order.orderStatus}
                         disabled={!props.canManage}
                         onChange={(value) =>
                           props.onStatusChange(order, "orderStatus", value)
@@ -103,6 +104,7 @@ export function OrdersTable(props: OrdersTableProps) {
                         value={
                           draft?.changes.paymentStatus ?? order.paymentStatus
                         }
+                        currentValue={order.paymentStatus}
                         disabled={!props.canManage}
                         onChange={(value) =>
                           props.onStatusChange(order, "paymentStatus", value)
@@ -185,6 +187,7 @@ function OrderCard(props: {
       <div className="mt-4 flex flex-wrap gap-2">
         <OrderStatusSelect
           value={props.draft?.changes.orderStatus ?? props.order.orderStatus}
+          currentValue={props.order.orderStatus}
           disabled={!props.canManage}
           onChange={(value) =>
             props.onStatusChange(props.order, "orderStatus", value)
@@ -194,6 +197,7 @@ function OrderCard(props: {
           value={
             props.draft?.changes.paymentStatus ?? props.order.paymentStatus
           }
+          currentValue={props.order.paymentStatus}
           disabled={!props.canManage}
           onChange={(value) =>
             props.onStatusChange(props.order, "paymentStatus", value)

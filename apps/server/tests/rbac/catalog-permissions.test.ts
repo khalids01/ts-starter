@@ -12,6 +12,8 @@ describe("ecommerce permissions", () => {
     expect(AllPermissions).toContain(Permissions.AdminOrdersRead);
     expect(AllPermissions).toContain(Permissions.AdminOrdersManage);
     expect(AllPermissions).toContain(Permissions.AdminOrdersFulfill);
+    expect(AllPermissions).toContain(Permissions.AdminOrdersCancel);
+    expect(AllPermissions).toContain(Permissions.AdminOrdersRefund);
     expect(AllPermissions).toContain(Permissions.AdminImagesRead);
     expect(AllPermissions).toContain(Permissions.AdminImagesManage);
     expect(AllPermissions).toContain(Permissions.AdminShippingRead);
@@ -35,6 +37,12 @@ describe("ecommerce permissions", () => {
       Permissions.AdminOrdersFulfill,
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
+      Permissions.AdminOrdersCancel,
+    );
+    expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
+      Permissions.AdminOrdersRefund,
+    );
+    expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
       Permissions.AdminImagesManage,
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminShippingManage);
@@ -54,6 +62,12 @@ describe("ecommerce permissions", () => {
       Permissions.AdminOrdersFulfill,
     );
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
+      Permissions.AdminOrdersCancel,
+    );
+    expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
+      Permissions.AdminOrdersRefund,
+    );
+    expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
       Permissions.AdminImagesManage,
     );
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminShippingManage);
@@ -71,6 +85,12 @@ describe("ecommerce permissions", () => {
     );
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
       Permissions.AdminOrdersFulfill,
+    );
+    expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
+      Permissions.AdminOrdersCancel,
+    );
+    expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
+      Permissions.AdminOrdersRefund,
     );
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
       Permissions.AdminImagesRead,

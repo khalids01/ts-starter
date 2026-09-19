@@ -194,6 +194,14 @@ export function ecommercePermissions(
       session,
       Permissions.AdminOrdersFulfill,
     ),
+    canCancelOrders: hasAdminPermission(
+      session,
+      Permissions.AdminOrdersCancel,
+    ),
+    canRefundOrders: hasAdminPermission(
+      session,
+      Permissions.AdminOrdersRefund,
+    ),
     canManageShipping: hasAdminPermission(
       session,
       Permissions.AdminShippingManage,

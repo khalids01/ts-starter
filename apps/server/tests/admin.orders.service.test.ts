@@ -338,32 +338,33 @@ describe("admin orders service", () => {
     });
   });
 
-  it("releases reserved stock when a pending order is cancelled", async () => {
-    stockReservationFindManyMock.mockResolvedValueOnce([reservationRow()]);
+  it("requires the dedicated cancellation action", async () => {
     const { adminOrdersService } = await import(
       "../src/modules/admin/orders/orders.service"
     );
 
-    await adminOrdersService.updateOrderStatuses(
-      "order-1",
-      { orderStatus: "cancelled" },
-      { userId: "admin-1" },
+    await expect(
+      adminOrdersService.updateOrderStatuses(
+        "order-1",
+        { orderStatus: "cancelled" },
+        { userId: "admin-1" },
+      ),
+    ).rejects.toThrow("Use the cancellation action to cancel an order");
+    expect(inventoryStockUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("requires the dedicated refund action for refund payment states", async () => {
+    const { adminOrdersService } = await import(
+      "../src/modules/admin/orders/orders.service"
     );
 
-    expect(inventoryStockUpdateMock).toHaveBeenCalledWith({
-      where: { stockKey: "variant-1:loc-main:no_batch" },
-      data: { quantityReserved: { decrement: 2 } },
-    });
-    expect(stockReservationUpdateMock).toHaveBeenCalledWith({
-      where: { id: "reservation-1" },
-      data: { status: "released" },
-    });
-    expect(inventoryMovementCreateMock).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        type: "reservation_release",
-        delta: 0,
-      }),
-    });
+    await expect(
+      adminOrdersService.updateOrderStatuses(
+        "order-1",
+        { paymentStatus: "refunded" },
+        { userId: "admin-1" },
+      ),
+    ).rejects.toThrow("Use the refund action to record refunded payments");
   });
 
   it("restocks committed stock once when delivery is returned", async () => {

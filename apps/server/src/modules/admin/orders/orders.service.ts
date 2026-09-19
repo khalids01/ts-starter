@@ -133,6 +133,19 @@ function orderInclude() {
       },
       orderBy: { createdAt: "desc" },
     },
+    refunds: {
+      include: {
+        actorUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    },
   } satisfies Prisma.OrderInclude;
 }
 
@@ -211,6 +224,21 @@ function mapStatusEvent(row: any) {
   };
 }
 
+function mapRefund(row: any) {
+  return {
+    id: row.id,
+    orderId: row.orderId,
+    amount: decimalToString(row.amount),
+    currency: row.currency,
+    reason: row.reason,
+    note: row.note,
+    restockInventory: row.restockInventory,
+    actorUserId: row.actorUserId,
+    actorUser: mapUser(row.actorUser),
+    createdAt: toIso(row.createdAt),
+  };
+}
+
 function mapOrder(row: any, options: { detail?: boolean } = {}) {
   const addresses = (row.addresses ?? []).map(mapAddress);
   return {
@@ -256,6 +284,7 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
     statusEvents: options.detail
       ? (row.statusEvents ?? []).map(mapStatusEvent)
       : undefined,
+    refunds: options.detail ? (row.refunds ?? []).map(mapRefund) : undefined,
   };
 }
 
@@ -347,7 +376,7 @@ async function getOrderReservations(
   });
 }
 
-async function releaseReservations(
+export async function releaseReservations(
   tx: Prisma.TransactionClient,
   input: {
     orderId: string;
@@ -455,7 +484,7 @@ async function commitReservations(
   return reservations.length;
 }
 
-async function restockCommittedReservations(
+export async function restockCommittedReservations(
   tx: Prisma.TransactionClient,
   input: { orderId: string; actorUserId?: string; reason: string },
 ) {
@@ -521,28 +550,13 @@ async function applyInventorySideEffects(
   }
 
   if (
-    input.nextOrderStatus === "cancelled" &&
-    input.order.inventoryStatus === "reserved"
-  ) {
-    return releaseReservations(tx, {
-      orderId: input.order.id,
-      actorUserId: input.actorUserId,
-      reason: "Order cancelled before stock commit",
-    });
-  }
-
-  if (
-    (input.nextOrderStatus === "cancelled" ||
-      input.nextDeliveryStatus === "returned") &&
+    input.nextDeliveryStatus === "returned" &&
     input.order.inventoryStatus === "committed"
   ) {
     return restockCommittedReservations(tx, {
       orderId: input.order.id,
       actorUserId: input.actorUserId,
-      reason:
-        input.nextDeliveryStatus === "returned"
-          ? "Order returned"
-          : "Committed order cancelled",
+      reason: "Order returned",
     });
   }
 
@@ -623,6 +637,49 @@ export const adminOrdersService = {
       const current = await tx.order.findUnique({ where: { id } });
       if (!current) {
         throw new AdminOrdersServiceError("Order not found", 404);
+      }
+
+      if (
+        input.orderStatus === "cancelled" &&
+        input.orderStatus !== current.orderStatus
+      ) {
+        throw new AdminOrdersServiceError(
+          "Use the cancellation action to cancel an order",
+          403,
+        );
+      }
+
+      if (
+        current.orderStatus === "cancelled" &&
+        input.orderStatus !== undefined &&
+        input.orderStatus !== current.orderStatus
+      ) {
+        throw new AdminOrdersServiceError(
+          "A cancelled order status cannot be changed",
+          409,
+        );
+      }
+
+      if (
+        input.paymentStatus !== current.paymentStatus &&
+        input.paymentStatus !== undefined &&
+        ["partially_refunded", "refunded"].includes(input.paymentStatus)
+      ) {
+        throw new AdminOrdersServiceError(
+          "Use the refund action to record refunded payments",
+          403,
+        );
+      }
+
+      if (
+        ["partially_refunded", "refunded"].includes(current.paymentStatus) &&
+        input.paymentStatus !== undefined &&
+        input.paymentStatus !== current.paymentStatus
+      ) {
+        throw new AdminOrdersServiceError(
+          "Refunded payment status is controlled by refund records",
+          409,
+        );
       }
 
       if (
