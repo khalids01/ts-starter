@@ -28,6 +28,7 @@ type CheckoutForm = {
   country: string;
   shippingRateId: string;
   customerNotes: string;
+  discountCode: string;
 };
 
 const initialForm: CheckoutForm = {
@@ -42,11 +43,20 @@ const initialForm: CheckoutForm = {
   country: "Bangladesh",
   shippingRateId: "",
   customerNotes: "",
+  discountCode: "",
+};
+
+type AppliedDiscount = {
+  code: string;
+  description?: string | null;
+  amount: string;
+  sourceSubtotal: string;
 };
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const cart = useCart();
   const clearCart = useCartStore((state) => state.clearCart);
@@ -67,6 +77,27 @@ export function CheckoutPage() {
     shippingRates.find((rate) => rate.id === form.shippingRateId) ??
     shippingRates.find((rate) => rate.isDefault) ??
     shippingRates[0];
+  const activeDiscount = appliedDiscount?.sourceSubtotal === cart.subtotalAmount
+    ? appliedDiscount
+    : null;
+
+  const validateDiscount = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await client.shop.discounts.validate.post({
+        code: form.discountCode,
+        subtotalAmount: cart.subtotalAmount,
+        currency: cart.currency,
+      });
+      if (error) throw new Error(String(error.value?.message || error.message || "Discount code is invalid"));
+      return data as Omit<AppliedDiscount, "sourceSubtotal">;
+    },
+    onSuccess: (result) => {
+      setAppliedDiscount({ ...result, sourceSubtotal: cart.subtotalAmount });
+      setForm((current) => ({ ...current, discountCode: result.code }));
+      toast.success("Discount applied");
+    },
+    onError: (error) => { setAppliedDiscount(null); toast.error(error instanceof Error ? error.message : "Discount code is invalid"); },
+  });
 
   const checkout = useMutation({
     mutationFn: async () => {
@@ -91,6 +122,7 @@ export function CheckoutPage() {
         paymentMethod: "cash_on_delivery",
         idempotencyKey,
         customerNotes: form.customerNotes || null,
+        discountCode: activeDiscount?.code ?? null,
       });
       if (error) {
         throw new Error(String(error.value?.message || error.message || "Failed to place order"));
@@ -184,6 +216,23 @@ export function CheckoutPage() {
                 </RadioGroup>
               </div>
               <div className="space-y-1.5">
+                <Label>Discount code</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={form.discountCode}
+                    onChange={(event) => {
+                      setForm({ ...form, discountCode: event.target.value.toUpperCase() });
+                      setAppliedDiscount(null);
+                    }}
+                    placeholder="WELCOME10"
+                  />
+                  <Button type="button" variant="outline" disabled={!form.discountCode.trim() || validateDiscount.isPending} onClick={() => validateDiscount.mutate()}>
+                    {validateDiscount.isPending ? "Checking..." : "Apply"}
+                  </Button>
+                </div>
+                {activeDiscount ? <p className="text-xs text-emerald-700 dark:text-emerald-300">{activeDiscount.code} applied{activeDiscount.description ? ` · ${activeDiscount.description}` : ""}</p> : null}
+              </div>
+              <div className="space-y-1.5">
                 <Label>Notes</Label>
                 <Textarea
                   value={form.customerNotes}
@@ -195,7 +244,7 @@ export function CheckoutPage() {
                 {checkout.isPending ? "Placing order..." : "Place order"}
               </Button>
             </form>
-            <CheckoutSummary cart={cart} shippingRate={selectedShippingRate} />
+            <CheckoutSummary cart={cart} shippingRate={selectedShippingRate} discount={activeDiscount} />
           </section>
         )}
       </main>
@@ -233,9 +282,10 @@ function shippingAmountForRate(rate: ShopShippingRate | undefined, subtotal: str
   return Number(rate.amount);
 }
 
-function CheckoutSummary(props: { cart: ShopCart; shippingRate?: ShopShippingRate }) {
+function CheckoutSummary(props: { cart: ShopCart; shippingRate?: ShopShippingRate; discount?: AppliedDiscount | null }) {
   const shippingAmount = shippingAmountForRate(props.shippingRate, props.cart.subtotalAmount);
-  const total = Number(props.cart.subtotalAmount) + shippingAmount;
+  const discountAmount = Number(props.discount?.amount ?? 0);
+  const total = Number(props.cart.subtotalAmount) - discountAmount + shippingAmount;
   return (
     <aside className="h-fit space-y-4 rounded-md border p-4">
       <h2 className="font-medium">Order summary</h2>
@@ -251,6 +301,10 @@ function CheckoutSummary(props: { cart: ShopCart; shippingRate?: ShopShippingRat
         ))}
       </div>
       <div className="border-t pt-3">
+        <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+          <span className="text-muted-foreground">Discount{props.discount ? ` (${props.discount.code})` : ""}</span>
+          <span className="font-medium">-{formatMoney(discountAmount.toFixed(2), props.cart.currency)}</span>
+        </div>
         <div className="mb-2 flex items-center justify-between gap-3 text-sm">
           <span className="text-muted-foreground">Subtotal</span>
           <span className="font-medium">{formatMoney(props.cart.subtotalAmount, props.cart.currency)}</span>

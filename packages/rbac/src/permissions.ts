@@ -29,6 +29,8 @@ export const Permissions = {
   AdminOrdersRefund: "admin.orders.refund",
   AdminShippingRead: "admin.shipping.read",
   AdminShippingManage: "admin.shipping.manage",
+  AdminDiscountsRead: "admin.discounts.read",
+  AdminDiscountsManage: "admin.discounts.manage",
   AdminImagesRead: "admin.images.read",
   AdminImagesManage: "admin.images.manage",
 

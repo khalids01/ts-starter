@@ -14,6 +14,11 @@ import { ShopServiceError } from "./lib/errors";
 import { categoryService } from "./services/category.service";
 import { productService } from "./services/product.service";
 import { orderService } from "./services/order.service";
+import { ValidateDiscountDto } from "@/modules/ecommerce/discounts/discounts.dto";
+import {
+  discountService,
+  DiscountServiceError,
+} from "@/modules/ecommerce/discounts/discounts.service";
 
 function handleShopError(error: unknown, set: { status?: number | string }) {
   if (error instanceof ShopServiceError) {
@@ -116,6 +121,27 @@ export const shopController = new Elysia({
       params: OrderNumberParamDto,
       query: OrderLookupQueryDto,
       detail: { summary: "Get customer order by number" },
+    },
+  )
+  .post(
+    "/discounts/validate",
+    async ({ userId, body, set }) => {
+      try {
+        return await discountService.validate({
+          ...body,
+          customerKey: `user:${requireUserId(userId)}`,
+        });
+      } catch (error) {
+        if (error instanceof DiscountServiceError) {
+          set.status = error.status;
+          return { message: error.message, status: error.status };
+        }
+        return handleShopError(error, set);
+      }
+    },
+    {
+      body: ValidateDiscountDto,
+      detail: { summary: "Validate and preview a discount code" },
     },
   )
   .post(

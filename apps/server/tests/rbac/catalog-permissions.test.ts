@@ -18,6 +18,8 @@ describe("ecommerce permissions", () => {
     expect(AllPermissions).toContain(Permissions.AdminImagesManage);
     expect(AllPermissions).toContain(Permissions.AdminShippingRead);
     expect(AllPermissions).toContain(Permissions.AdminShippingManage);
+    expect(AllPermissions).toContain(Permissions.AdminDiscountsRead);
+    expect(AllPermissions).toContain(Permissions.AdminDiscountsManage);
   });
 
   it("grants ecommerce permissions to owner and admin, not platform user", () => {
@@ -46,6 +48,7 @@ describe("ecommerce permissions", () => {
       Permissions.AdminImagesManage,
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminShippingManage);
+    expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminDiscountsManage);
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(
       Permissions.AdminCatalogManage,
     );
@@ -71,6 +74,7 @@ describe("ecommerce permissions", () => {
       Permissions.AdminImagesManage,
     );
     expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminShippingManage);
+    expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminDiscountsManage);
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(
       Permissions.AdminCatalogRead,
     );
@@ -96,5 +100,6 @@ describe("ecommerce permissions", () => {
       Permissions.AdminImagesRead,
     );
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminShippingRead);
+    expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminDiscountsRead);
   });
 });

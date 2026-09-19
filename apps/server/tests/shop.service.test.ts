@@ -37,6 +37,10 @@ const inventoryStockFindManyMock = mock(async () => [stockRow()]);
 const inventoryStockUpdateMock = mock(async () => stockRow({ quantityReserved: 2 }));
 const stockReservationCreateMock = mock(async (args: any) => ({ id: "reservation-1", ...args.data }));
 const inventoryMovementCreateMock = mock(async (args: any) => ({ id: "movement-1", ...args.data }));
+const discountCodeFindUniqueMock = mock(async () => null as any);
+const discountCodeUpdateManyMock = mock(async () => ({ count: 1 }));
+const discountRedemptionCountMock = mock(async () => 0);
+const discountRedemptionCreateMock = mock(async (args: any) => ({ id: "redemption-1", ...args.data }));
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
 const prismaMock = {
@@ -74,6 +78,14 @@ const prismaMock = {
   },
   inventoryMovement: {
     create: inventoryMovementCreateMock,
+  },
+  discountCode: {
+    findUnique: discountCodeFindUniqueMock,
+    updateMany: discountCodeUpdateManyMock,
+  },
+  discountRedemption: {
+    count: discountRedemptionCountMock,
+    create: discountRedemptionCreateMock,
   },
 };
 
@@ -227,6 +239,25 @@ function shippingRateRow(overrides: Record<string, any> = {}) {
   };
 }
 
+function discountRow(overrides: Record<string, any> = {}) {
+  return {
+    id: "discount-1",
+    code: "SAVE10",
+    description: "Save ten percent",
+    type: "percentage",
+    value: "10.00",
+    currency: null,
+    isActive: true,
+    startsAt: null,
+    endsAt: null,
+    minimumOrderAmount: null,
+    totalUsageLimit: 10,
+    perCustomerUsageLimit: 1,
+    usageCount: 0,
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   categoryFindManyMock.mockResolvedValue([
     categoryRow({
@@ -254,6 +285,9 @@ beforeEach(() => {
   shippingRateFindFirstMock.mockResolvedValue(shippingRateRow());
   shippingRateFindManyMock.mockResolvedValue([shippingRateRow()]);
   inventoryStockFindManyMock.mockResolvedValue([stockRow()]);
+  discountCodeFindUniqueMock.mockResolvedValue(null);
+  discountCodeUpdateManyMock.mockResolvedValue({ count: 1 });
+  discountRedemptionCountMock.mockResolvedValue(0);
   transactionMock.mockImplementation(async (callback: any) => callback(prismaMock));
 });
 
@@ -275,6 +309,10 @@ afterEach(() => {
     inventoryStockUpdateMock,
     stockReservationCreateMock,
     inventoryMovementCreateMock,
+    discountCodeFindUniqueMock,
+    discountCodeUpdateManyMock,
+    discountRedemptionCountMock,
+    discountRedemptionCreateMock,
     transactionMock,
   ]) {
     fn.mockClear();
@@ -579,6 +617,63 @@ describe("shop service", () => {
     expect(result.orderId).toBe("order-existing");
     expect(orderCreateMock).not.toHaveBeenCalled();
     expect(inventoryStockUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("applies a discount and creates its redemption in the checkout transaction", async () => {
+    discountCodeFindUniqueMock.mockResolvedValueOnce(discountRow());
+    const { orderService } = await import("../src/modules/shop/services/order.service.ts");
+
+    const result = await orderService.checkout("user-1", {
+      items: [{ variantId: "variant-1", quantity: 2 }],
+      customerName: "Customer",
+      customerEmail: "customer@example.com",
+      shippingAddress: { line1: "House 1", city: "Dhaka" },
+      shippingRateCode: "inside_city",
+      discountCode: " save10 ",
+    });
+
+    expect(orderCreateMock.mock.calls.at(-1)?.[0].data).toEqual(
+      expect.objectContaining({
+        subtotalAmount: "240.00",
+        discountAmount: "24.00",
+        totalAmount: "276.00",
+        discountCodeId: "discount-1",
+        discountCodeSnapshot: "SAVE10",
+        discountTypeSnapshot: "percentage",
+        discountValueSnapshot: "10.00",
+      }),
+    );
+    expect(discountCodeUpdateManyMock).toHaveBeenCalledWith({
+      where: {
+        id: "discount-1",
+        isActive: true,
+        usageCount: { lt: 10 },
+      },
+      data: { usageCount: { increment: 1 } },
+    });
+    expect(discountRedemptionCreateMock).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        orderId: "order-1",
+        customerKey: "user:user-1",
+        amount: "24.00",
+      }),
+    });
+    expect(result.totalAmount).toBe("276.00");
+  });
+
+  it("rejects checkout when the discount usage limit is consumed concurrently", async () => {
+    discountCodeFindUniqueMock.mockResolvedValueOnce(discountRow());
+    discountCodeUpdateManyMock.mockResolvedValueOnce({ count: 0 });
+    const { orderService } = await import("../src/modules/shop/services/order.service.ts");
+
+    await expect(orderService.checkout("user-1", {
+      items: [{ variantId: "variant-1", quantity: 1 }],
+      customerName: "Customer",
+      customerEmail: "customer@example.com",
+      shippingAddress: { line1: "House 1", city: "Dhaka" },
+      discountCode: "SAVE10",
+    })).rejects.toThrow("Discount code usage limit has been reached");
+    expect(discountRedemptionCreateMock).not.toHaveBeenCalled();
   });
 
   it("fails checkout when stock cannot be reserved", async () => {

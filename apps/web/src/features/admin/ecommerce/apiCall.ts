@@ -109,6 +109,16 @@ export const ecommerceApi = {
     disableRate: (id: string) =>
       unwrap(api.admin.shipping.rates({ id }).delete(), "Failed to disable shipping rate"),
   },
+  discounts: {
+    list: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.discounts.get({ query }), "Failed to load discounts"),
+    create: (body: Record<string, unknown>) =>
+      unwrap(api.admin.discounts.post(body), "Failed to create discount"),
+    update: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.discounts({ id }).patch(body), "Failed to update discount"),
+    disable: (id: string) =>
+      unwrap(api.admin.discounts({ id }).delete(), "Failed to disable discount"),
+  },
   orders: {
     list: (query?: Record<string, unknown>) =>
       unwrap(api.admin.orders.get({ query }), "Failed to load orders"),

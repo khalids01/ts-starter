@@ -163,6 +163,8 @@ export type ShopOrder = {
   customerPhone?: string | null;
   subtotalAmount: string;
   discountAmount: string;
+  discountCodeSnapshot?: string | null;
+  discountDescriptionSnapshot?: string | null;
   taxAmount: string;
   shippingAmount: string;
   totalAmount: string;

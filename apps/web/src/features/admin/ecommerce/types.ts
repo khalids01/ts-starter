@@ -323,6 +323,10 @@ export type Order = {
   shippingAddress?: OrderAddress;
   subtotalAmount: string;
   discountAmount: string;
+  discountCodeSnapshot?: string | null;
+  discountDescriptionSnapshot?: string | null;
+  discountTypeSnapshot?: "percentage" | "fixed_amount" | null;
+  discountValueSnapshot?: string | null;
   taxAmount: string;
   shippingAmount: string;
   totalAmount: string;
@@ -364,6 +368,24 @@ export type ShippingRate = {
   isDefault: boolean;
   isActive: boolean;
   sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DiscountCode = {
+  id: string;
+  code: string;
+  description?: string | null;
+  type: "percentage" | "fixed_amount";
+  value: string;
+  currency?: string | null;
+  isActive: boolean;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  minimumOrderAmount?: string | null;
+  totalUsageLimit?: number | null;
+  perCustomerUsageLimit?: number | null;
+  usageCount: number;
   createdAt: string;
   updatedAt: string;
 };

@@ -206,6 +206,10 @@ export function ecommercePermissions(
       session,
       Permissions.AdminShippingManage,
     ),
+    canManageDiscounts: hasAdminPermission(
+      session,
+      Permissions.AdminDiscountsManage,
+    ),
     canManageImages: hasAdminPermission(session, Permissions.AdminImagesManage),
   };
 }

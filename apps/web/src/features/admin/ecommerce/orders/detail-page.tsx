@@ -785,7 +785,7 @@ function TotalsCard(props: { order: Order }) {
         currency={props.order.currency}
       />
       <TotalRow
-        label="Discount"
+        label={props.order.discountCodeSnapshot ? `Discount (${props.order.discountCodeSnapshot})` : "Discount"}
         value={props.order.discountAmount}
         currency={props.order.currency}
       />

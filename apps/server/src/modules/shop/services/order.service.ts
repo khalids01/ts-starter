@@ -13,6 +13,10 @@ import {
   isVariantSellable,
 } from "../lib/product-mappers";
 import { mapOrder, mapShippingRate } from "../lib/order-mappers";
+import {
+  evaluateDiscount,
+  DiscountServiceError,
+} from "@/modules/ecommerce/discounts/discounts.service";
 
 const RESERVATION_TTL_MINUTES = 30;
 
@@ -247,7 +251,6 @@ export const orderService = {
       throw new ShopServiceError("Shipping method is not available", 409);
     }
     const shippingAmount = shippingAmountForRate(shippingRate, subtotal);
-    const total = subtotal + shippingAmount;
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
     const expiresAt = reservationExpiresAt();
     const customerName = input.customerName.trim();
@@ -264,7 +267,25 @@ export const orderService = {
       addressFallback,
     );
 
-    const order = await prisma.$transaction(async (tx) => {
+    const checkoutResult = await prisma.$transaction(async (tx) => {
+      let discountResult: Awaited<ReturnType<typeof evaluateDiscount>> | null = null;
+      if (nullableTrimmed(input.discountCode)) {
+        try {
+          discountResult = await evaluateDiscount(tx, {
+            code: input.discountCode!,
+            subtotalAmount: subtotal.toFixed(2),
+            currency: orderCurrency,
+            customerKey: `user:${userId}`,
+          });
+        } catch (error) {
+          if (error instanceof DiscountServiceError) {
+            throw new ShopServiceError(error.message, error.status);
+          }
+          throw error;
+        }
+      }
+      const discountAmount = Number(discountResult?.amount ?? 0);
+      const total = subtotal - discountAmount + shippingAmount;
       const created = await tx.order.create({
         data: {
           orderNumber,
@@ -274,7 +295,15 @@ export const orderService = {
           customerEmail,
           customerPhone,
           subtotalAmount: subtotal.toFixed(2),
-          discountAmount: "0.00",
+          discountAmount: discountAmount.toFixed(2),
+          discountCodeId: discountResult?.discount.id ?? null,
+          discountCodeSnapshot: discountResult?.discount.code ?? null,
+          discountDescriptionSnapshot:
+            discountResult?.discount.description ?? null,
+          discountTypeSnapshot: discountResult?.discount.type ?? null,
+          discountValueSnapshot: discountResult
+            ? String(discountResult.discount.value)
+            : null,
           taxAmount: "0.00",
           shippingAmount: money(shippingAmount),
           totalAmount: total.toFixed(2),
@@ -335,13 +364,45 @@ export const orderService = {
         });
       }
 
-      return created;
-    });
+      if (discountResult) {
+        const usageUpdate = await tx.discountCode.updateMany({
+          where: {
+            id: discountResult.discount.id,
+            isActive: true,
+            ...(discountResult.discount.totalUsageLimit === null
+              ? {}
+              : {
+                  usageCount: {
+                    lt: discountResult.discount.totalUsageLimit,
+                  },
+                }),
+          },
+          data: { usageCount: { increment: 1 } },
+        });
+        if (usageUpdate.count !== 1) {
+          throw new ShopServiceError(
+            "Discount code usage limit has been reached",
+            409,
+          );
+        }
+        await tx.discountRedemption.create({
+          data: {
+            discountCodeId: discountResult.discount.id,
+            orderId: created.id,
+            customerKey: `user:${userId}`,
+            amount: discountResult.amount,
+            currency: orderCurrency,
+          },
+        });
+      }
+
+      return { order: created, totalAmount: total.toFixed(2) };
+    }, { isolationLevel: "Serializable" });
 
     return {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      totalAmount: total.toFixed(2),
+      orderId: checkoutResult.order.id,
+      orderNumber: checkoutResult.order.orderNumber,
+      totalAmount: checkoutResult.totalAmount,
       currency: orderCurrency,
       userId,
     };

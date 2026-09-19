@@ -46,6 +46,7 @@ export const CheckoutDto = t.Object({
   paymentMethod: t.Optional(PaymentMethodDto),
   idempotencyKey: t.Optional(t.String()),
   customerNotes: t.Optional(t.Union([t.String(), t.Null()])),
+  discountCode: t.Optional(t.Union([t.String(), t.Null()])),
 });
 
 export type CheckoutInput = typeof CheckoutDto.static;
