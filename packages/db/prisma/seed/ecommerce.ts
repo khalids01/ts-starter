@@ -63,7 +63,10 @@ type ProductSeed = {
   isFeatured?: boolean;
   isTrending?: boolean;
   searchKeywords: string[];
-  attributes: Record<string, { value?: string; text?: string; number?: string }>;
+  attributes: Record<
+    string,
+    { value?: string; text?: string; number?: string }
+  >;
   highlights: Array<{ title: string; description: string }>;
   variants: Array<{
     sku: string;
@@ -76,6 +79,48 @@ type ProductSeed = {
     attributes: Record<string, string>;
     quantity: number;
   }>;
+};
+
+type SeededVariant = {
+  id: string;
+  productId: string;
+  productName: string;
+  variantName: string;
+  sku: string;
+  imageUrl: string;
+  price: string;
+  attributesSnapshot: Record<string, string>;
+};
+
+type OrderSeed = {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  city: string;
+  shippingRateCode: "inside_city" | "outside_city";
+  paymentMethod: "cash_on_delivery" | "manual_bank" | "manual_mobile";
+  orderStatus:
+    "pending" | "confirmed" | "processing" | "completed" | "cancelled";
+  paymentStatus: "unpaid" | "authorized" | "paid" | "refunded";
+  deliveryStatus:
+    | "unfulfilled"
+    | "preparing"
+    | "ready_to_ship"
+    | "shipped"
+    | "out_for_delivery"
+    | "delivered"
+    | "returned";
+  inventoryStatus: "reserved" | "committed" | "released" | "restocked";
+  placedDaysAgo: number;
+  carrier?: string;
+  trackingNumber?: string;
+  fulfillmentNote?: string;
+  shippedDaysAgo?: number;
+  deliveredDaysAgo?: number;
+  customerNotes?: string;
+  adminNotes?: string;
+  items: Array<{ sku: string; quantity: number }>;
 };
 
 const attributes: AttributeSeed[] = [
@@ -290,11 +335,160 @@ const shippingRates: ShippingRateSeed[] = [
   },
 ];
 
+const orders: OrderSeed[] = [
+  {
+    orderNumber: "DEMO-1001",
+    customerName: "Ayesha Rahman",
+    customerEmail: "ayesha.rahman@example.com",
+    customerPhone: "+8801711001001",
+    city: "Dhaka",
+    shippingRateCode: "inside_city",
+    paymentMethod: "cash_on_delivery",
+    orderStatus: "pending",
+    paymentStatus: "unpaid",
+    deliveryStatus: "unfulfilled",
+    inventoryStatus: "reserved",
+    placedDaysAgo: 0,
+    customerNotes: "Please call before delivery.",
+    items: [{ sku: "XIAOMI-EARBUDS-BLK", quantity: 1 }],
+  },
+  {
+    orderNumber: "DEMO-1002",
+    customerName: "Nafis Ahmed",
+    customerEmail: "nafis.ahmed@example.com",
+    customerPhone: "+8801711001002",
+    city: "Dhaka",
+    shippingRateCode: "inside_city",
+    paymentMethod: "manual_mobile",
+    orderStatus: "confirmed",
+    paymentStatus: "paid",
+    deliveryStatus: "preparing",
+    inventoryStatus: "committed",
+    placedDaysAgo: 1,
+    items: [
+      { sku: "HONEY-SUN-500G", quantity: 2 },
+      { sku: "RICE-AROMATIC-5KG", quantity: 1 },
+    ],
+  },
+  {
+    orderNumber: "DEMO-1003",
+    customerName: "Mehedi Hasan",
+    customerEmail: "mehedi.hasan@example.com",
+    customerPhone: "+8801711001003",
+    city: "Gazipur",
+    shippingRateCode: "outside_city",
+    paymentMethod: "manual_bank",
+    orderStatus: "processing",
+    paymentStatus: "authorized",
+    deliveryStatus: "ready_to_ship",
+    inventoryStatus: "committed",
+    placedDaysAgo: 2,
+    adminNotes: "Payment reference verified; ready for courier pickup.",
+    items: [{ sku: "SAMSUNG-A55-8-128-BLK", quantity: 1 }],
+  },
+  {
+    orderNumber: "DEMO-1004",
+    customerName: "Farzana Islam",
+    customerEmail: "farzana.islam@example.com",
+    customerPhone: "+8801711001004",
+    city: "Dhaka",
+    shippingRateCode: "inside_city",
+    paymentMethod: "cash_on_delivery",
+    orderStatus: "processing",
+    paymentStatus: "unpaid",
+    deliveryStatus: "shipped",
+    inventoryStatus: "committed",
+    placedDaysAgo: 3,
+    shippedDaysAgo: 1,
+    carrier: "Pathao Courier",
+    trackingNumber: "PTH-DEMO-1004",
+    fulfillmentNote: "Fragile package. Keep upright.",
+    items: [{ sku: "MANGO-RAJ-PREM-5KG", quantity: 1 }],
+  },
+  {
+    orderNumber: "DEMO-1005",
+    customerName: "Tanvir Hossain",
+    customerEmail: "tanvir.hossain@example.com",
+    customerPhone: "+8801711001005",
+    city: "Chattogram",
+    shippingRateCode: "outside_city",
+    paymentMethod: "manual_mobile",
+    orderStatus: "processing",
+    paymentStatus: "paid",
+    deliveryStatus: "out_for_delivery",
+    inventoryStatus: "committed",
+    placedDaysAgo: 4,
+    shippedDaysAgo: 2,
+    carrier: "RedX",
+    trackingNumber: "RDX-DEMO-1005",
+    items: [{ sku: "DELL-INS15-16-512-BLK", quantity: 1 }],
+  },
+  {
+    orderNumber: "DEMO-1006",
+    customerName: "Nusrat Jahan",
+    customerEmail: "nusrat.jahan@example.com",
+    customerPhone: "+8801711001006",
+    city: "Dhaka",
+    shippingRateCode: "inside_city",
+    paymentMethod: "manual_bank",
+    orderStatus: "completed",
+    paymentStatus: "paid",
+    deliveryStatus: "delivered",
+    inventoryStatus: "committed",
+    placedDaysAgo: 7,
+    shippedDaysAgo: 5,
+    deliveredDaysAgo: 3,
+    carrier: "Paperfly",
+    trackingNumber: "PFL-DEMO-1006",
+    items: [
+      { sku: "HONEY-SUN-1KG", quantity: 1 },
+      { sku: "MANGO-RAJ-PREM-1KG", quantity: 2 },
+    ],
+  },
+  {
+    orderNumber: "DEMO-1007",
+    customerName: "Rafiul Karim",
+    customerEmail: "rafiul.karim@example.com",
+    customerPhone: "+8801711001007",
+    city: "Sylhet",
+    shippingRateCode: "outside_city",
+    paymentMethod: "cash_on_delivery",
+    orderStatus: "cancelled",
+    paymentStatus: "unpaid",
+    deliveryStatus: "unfulfilled",
+    inventoryStatus: "released",
+    placedDaysAgo: 9,
+    adminNotes: "Cancelled at the customer's request before fulfillment.",
+    items: [{ sku: "SAMSUNG-A55-8-256-BLU", quantity: 1 }],
+  },
+  {
+    orderNumber: "DEMO-1008",
+    customerName: "Sadia Chowdhury",
+    customerEmail: "sadia.chowdhury@example.com",
+    customerPhone: "+8801711001008",
+    city: "Narayanganj",
+    shippingRateCode: "outside_city",
+    paymentMethod: "manual_mobile",
+    orderStatus: "completed",
+    paymentStatus: "refunded",
+    deliveryStatus: "returned",
+    inventoryStatus: "restocked",
+    placedDaysAgo: 14,
+    shippedDaysAgo: 12,
+    deliveredDaysAgo: 10,
+    carrier: "Steadfast",
+    trackingNumber: "SFC-DEMO-1008",
+    adminNotes: "Returned unopened and restocked; payment refunded.",
+    items: [{ sku: "XIAOMI-EARBUDS-WHT", quantity: 1 }],
+  },
+];
+
 const products: ProductSeed[] = [
   {
     slug: "samsung-galaxy-a55-5g",
     name: "Samsung Galaxy A55 5G",
-    description: "A balanced 5G smartphone with a vivid display, capable camera, and practical storage options.",
+    description:
+      "A balanced 5G smartphone with a vivid display, capable camera, and practical storage options.",
     categorySlug: "phones",
     brandSlug: "samsung",
     coverImageUrl: "/ecommerce/images/slider2.jpg",
@@ -309,8 +503,15 @@ const products: ProductSeed[] = [
       warranty: { number: "12" },
     },
     highlights: [
-      { title: "Everyday performance", description: "Responsive performance for work, entertainment, and daily apps." },
-      { title: "Flexible storage", description: "Choose the storage option that suits your needs." },
+      {
+        title: "Everyday performance",
+        description:
+          "Responsive performance for work, entertainment, and daily apps.",
+      },
+      {
+        title: "Flexible storage",
+        description: "Choose the storage option that suits your needs.",
+      },
     ],
     variants: [
       {
@@ -335,7 +536,8 @@ const products: ProductSeed[] = [
   {
     slug: "dell-inspiron-15",
     name: "Dell Inspiron 15",
-    description: "A dependable laptop configuration for study, office work, and everyday productivity.",
+    description:
+      "A dependable laptop configuration for study, office work, and everyday productivity.",
     categorySlug: "laptops",
     brandSlug: "dell",
     coverImageUrl: "/ecommerce/images/slider1.jpg",
@@ -348,8 +550,15 @@ const products: ProductSeed[] = [
       warranty: { number: "12" },
     },
     highlights: [
-      { title: "Productivity focused", description: "A practical configuration for documents, browsing, and meetings." },
-      { title: "Room to grow", description: "Generous memory and storage for everyday workloads." },
+      {
+        title: "Productivity focused",
+        description:
+          "A practical configuration for documents, browsing, and meetings.",
+      },
+      {
+        title: "Room to grow",
+        description: "Generous memory and storage for everyday workloads.",
+      },
     ],
     variants: [
       {
@@ -366,7 +575,8 @@ const products: ProductSeed[] = [
   {
     slug: "rajshahi-premium-mango",
     name: "Rajshahi Premium Mango",
-    description: "Fresh seasonal mangoes presented in convenient family-size packs.",
+    description:
+      "Fresh seasonal mangoes presented in convenient family-size packs.",
     categorySlug: "mango",
     coverImageUrl: "/ecommerce/icons/mango.png",
     badgeLabel: "Seasonal",
@@ -378,8 +588,15 @@ const products: ProductSeed[] = [
       grade: { value: "premium" },
     },
     highlights: [
-      { title: "Selected quality", description: "Premium-grade fruit selected for a consistently enjoyable pack." },
-      { title: "Fresh packs", description: "Stocked in practical pack sizes for home and gifting." },
+      {
+        title: "Selected quality",
+        description:
+          "Premium-grade fruit selected for a consistently enjoyable pack.",
+      },
+      {
+        title: "Fresh packs",
+        description: "Stocked in practical pack sizes for home and gifting.",
+      },
     ],
     variants: [
       {
@@ -408,7 +625,8 @@ const products: ProductSeed[] = [
   {
     slug: "sundarbans-natural-honey",
     name: "Sundarbans Natural Honey",
-    description: "A pantry-ready honey product offered in two useful pack sizes.",
+    description:
+      "A pantry-ready honey product offered in two useful pack sizes.",
     categorySlug: "honey",
     coverImageUrl: "/ecommerce/icons/groceries.png",
     badgeLabel: "Store pick",
@@ -416,8 +634,14 @@ const products: ProductSeed[] = [
     searchKeywords: ["honey", "sundarbans", "food", "natural", "pantry"],
     attributes: { origin: { value: "sundarbans" } },
     highlights: [
-      { title: "Convenient sizes", description: "Choose a smaller jar or a family-size pack." },
-      { title: "Simple pantry staple", description: "Suitable for drinks, breakfast, and everyday recipes." },
+      {
+        title: "Convenient sizes",
+        description: "Choose a smaller jar or a family-size pack.",
+      },
+      {
+        title: "Simple pantry staple",
+        description: "Suitable for drinks, breakfast, and everyday recipes.",
+      },
     ],
     variants: [
       {
@@ -446,7 +670,8 @@ const products: ProductSeed[] = [
   {
     slug: "xiaomi-wireless-earbuds",
     name: "Xiaomi Wireless Earbuds",
-    description: "Compact wireless earbuds for calls, music, and everyday listening.",
+    description:
+      "Compact wireless earbuds for calls, music, and everyday listening.",
     categorySlug: "generic-gadget",
     brandSlug: "xiaomi",
     coverImageUrl: "/ecommerce/images/slider2.jpg",
@@ -454,7 +679,10 @@ const products: ProductSeed[] = [
     searchKeywords: ["earbuds", "wireless", "audio", "xiaomi", "gadget"],
     attributes: { warranty: { number: "6" } },
     highlights: [
-      { title: "Wireless listening", description: "A compact everyday audio option for music and calls." },
+      {
+        title: "Wireless listening",
+        description: "A compact everyday audio option for music and calls.",
+      },
     ],
     variants: [
       {
@@ -485,7 +713,10 @@ const products: ProductSeed[] = [
     searchKeywords: ["rice", "food", "pantry", "aromatic", "grocery"],
     attributes: {},
     highlights: [
-      { title: "Convenient pack", description: "A practical family-size pack for regular meals." },
+      {
+        title: "Convenient pack",
+        description: "A practical family-size pack for regular meals.",
+      },
     ],
     variants: [
       {
@@ -503,13 +734,17 @@ const products: ProductSeed[] = [
   {
     slug: "everyday-value-pack",
     name: "Everyday Value Pack",
-    description: "A simple example product demonstrating the reusable generic catalog template.",
+    description:
+      "A simple example product demonstrating the reusable generic catalog template.",
     categorySlug: "generic-product",
     coverImageUrl: "/ecommerce/images/slider1.jpg",
     searchKeywords: ["generic", "value", "example", "product"],
     attributes: {},
     highlights: [
-      { title: "Reusable template", description: "A ready-to-edit example for a simple product catalog." },
+      {
+        title: "Reusable template",
+        description: "A ready-to-edit example for a simple product catalog.",
+      },
     ],
     variants: [
       {
@@ -551,7 +786,10 @@ function categoryIsWithin(categorySlug: string, rootSlug: string) {
 
 function ecommerceSeedSelection(requestedCatalog?: string) {
   const catalog = (requestedCatalog ?? "all").trim().toLowerCase();
-  const validCatalogs = new Set(["all", ...categories.map((category) => category.slug)]);
+  const validCatalogs = new Set([
+    "all",
+    ...categories.map((category) => category.slug),
+  ]);
   if (!validCatalogs.has(catalog)) {
     throw new Error(
       `Unknown ecommerce catalog "${catalog}". Choose one of: ${[...validCatalogs].join(", ")}`,
@@ -561,13 +799,19 @@ function ecommerceSeedSelection(requestedCatalog?: string) {
   const selectedCategories =
     catalog === "all"
       ? [...categories]
-      : categories.filter((category) => categoryIsWithin(category.slug, catalog));
-  const categorySlugs = new Set(selectedCategories.map((category) => category.slug));
+      : categories.filter((category) =>
+          categoryIsWithin(category.slug, catalog),
+        );
+  const categorySlugs = new Set(
+    selectedCategories.map((category) => category.slug),
+  );
 
   if (catalog !== "all") {
     let current = categories.find((category) => category.slug === catalog);
     while (current?.parentSlug) {
-      const parent = categories.find((category) => category.slug === current?.parentSlug);
+      const parent = categories.find(
+        (category) => category.slug === current?.parentSlug,
+      );
       if (!parent) break;
       categorySlugs.add(parent.slug);
       current = parent;
@@ -575,7 +819,8 @@ function ecommerceSeedSelection(requestedCatalog?: string) {
   }
 
   const selectedProducts = products.filter(
-    (product) => catalog === "all" || categoryIsWithin(product.categorySlug, catalog),
+    (product) =>
+      catalog === "all" || categoryIsWithin(product.categorySlug, catalog),
   );
   const attributeSlugs = new Set<string>();
   for (const categorySlug of categorySlugs) {
@@ -586,16 +831,24 @@ function ecommerceSeedSelection(requestedCatalog?: string) {
   for (const product of selectedProducts) {
     Object.keys(product.attributes).forEach((slug) => attributeSlugs.add(slug));
     product.variants.forEach((variant) =>
-      Object.keys(variant.attributes).forEach((slug) => attributeSlugs.add(slug)),
+      Object.keys(variant.attributes).forEach((slug) =>
+        attributeSlugs.add(slug),
+      ),
     );
   }
 
   return {
     catalog,
-    categories: categories.filter((category) => categorySlugs.has(category.slug)),
-    attributes: attributes.filter((attribute) => attributeSlugs.has(attribute.slug)),
+    categories: categories.filter((category) =>
+      categorySlugs.has(category.slug),
+    ),
+    attributes: attributes.filter((attribute) =>
+      attributeSlugs.has(attribute.slug),
+    ),
     products: selectedProducts,
-    brandSlugs: new Set(selectedProducts.flatMap((product) => product.brandSlug ?? [])),
+    brandSlugs: new Set(
+      selectedProducts.flatMap((product) => product.brandSlug ?? []),
+    ),
   };
 }
 
@@ -892,7 +1145,8 @@ const categoryTemplates: Record<string, TemplateAttributeSeed[]> = {
       filterable: true,
       inputType: "text",
       groupName: "Batch details",
-      helpText: "Storage guidance such as room temperature, chilled, or frozen.",
+      helpText:
+        "Storage guidance such as room temperature, chilled, or frozen.",
       sortOrder: 20,
     },
     {
@@ -984,7 +1238,9 @@ async function seedCategories(selectedCategories: CategorySeed[]) {
   const saved = new Map<string, { id: string }>();
 
   for (const category of selectedCategories) {
-    const parent = category.parentSlug ? saved.get(category.parentSlug) : undefined;
+    const parent = category.parentSlug
+      ? saved.get(category.parentSlug)
+      : undefined;
 
     const row = await prisma.category.upsert({
       where: { slug: category.slug },
@@ -1074,7 +1330,9 @@ async function seedCategoryTemplates(
 
 async function seedBrands(selectedBrandSlugs: Set<string>) {
   const saved = new Map<string, { id: string }>();
-  for (const brand of brands.filter((item) => selectedBrandSlugs.has(item.slug))) {
+  for (const brand of brands.filter((item) =>
+    selectedBrandSlugs.has(item.slug),
+  )) {
     const row = await prisma.productBrand.upsert({
       where: { slug: brand.slug },
       create: {
@@ -1148,6 +1406,8 @@ async function seedProducts(
   brandBySlug: Map<string, { id: string }>,
   location: { id: string },
 ) {
+  const seededVariants = new Map<string, SeededVariant>();
+
   for (const item of selectedProducts) {
     const category = requiredSeedEntry(
       categoryBySlug.get(item.categorySlug),
@@ -1232,7 +1492,9 @@ async function seedProducts(
       });
     }
 
-    await prisma.productHighlight.deleteMany({ where: { productId: product.id } });
+    await prisma.productHighlight.deleteMany({
+      where: { productId: product.id },
+    });
     await prisma.productHighlight.createMany({
       data: item.highlights.map((highlight, index) => ({
         productId: product.id,
@@ -1245,7 +1507,9 @@ async function seedProducts(
     for (const [index, variantInput] of item.variants.entries()) {
       const snapshot: Record<string, string> = {};
       const valueIds: string[] = [];
-      for (const [attributeSlug, value] of Object.entries(variantInput.attributes)) {
+      for (const [attributeSlug, value] of Object.entries(
+        variantInput.attributes,
+      )) {
         const attribute = requiredSeedEntry(
           attributeBySlug.get(attributeSlug),
           `Missing seeded attribute: ${attributeSlug}`,
@@ -1316,13 +1580,235 @@ async function seedProducts(
           reorderLevel: 5,
         },
       });
+
+      seededVariants.set(variantInput.sku, {
+        id: variant.id,
+        productId: product.id,
+        productName: item.name,
+        variantName: variantInput.name,
+        sku: variantInput.sku,
+        imageUrl: item.coverImageUrl,
+        price: variantInput.price,
+        attributesSnapshot: snapshot,
+      });
     }
+  }
+
+  return seededVariants;
+}
+
+function daysAgo(days: number) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
+async function seedOrders(variantBySku: Map<string, SeededVariant>) {
+  const rates = await prisma.shippingRate.findMany({
+    where: { code: { in: shippingRates.map((rate) => rate.code) } },
+    select: {
+      id: true,
+      code: true,
+      label: true,
+      amount: true,
+      freeOverAmount: true,
+    },
+  });
+  const rateByCode = new Map(rates.map((rate) => [rate.code, rate]));
+
+  for (const input of orders) {
+    const rate = requiredSeedEntry(
+      rateByCode.get(input.shippingRateCode),
+      `Missing seeded shipping rate: ${input.shippingRateCode}`,
+    );
+    const lineItems = input.items.map((item) => {
+      const variant = requiredSeedEntry(
+        variantBySku.get(item.sku),
+        `Missing seeded product variant: ${item.sku}`,
+      );
+      const subtotal = Number(variant.price) * item.quantity;
+      return { variant, quantity: item.quantity, subtotal };
+    });
+    const subtotalAmount = lineItems.reduce(
+      (total, item) => total + item.subtotal,
+      0,
+    );
+    const freeOverAmount = rate.freeOverAmount
+      ? Number(rate.freeOverAmount)
+      : null;
+    const shippingAmount =
+      freeOverAmount !== null && subtotalAmount >= freeOverAmount
+        ? 0
+        : Number(rate.amount);
+    const placedAt = daysAgo(input.placedDaysAgo);
+    const shippedAt =
+      input.shippedDaysAgo === undefined ? null : daysAgo(input.shippedDaysAgo);
+    const deliveredAt =
+      input.deliveredDaysAgo === undefined
+        ? null
+        : daysAgo(input.deliveredDaysAgo);
+
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.upsert({
+        where: { orderNumber: input.orderNumber },
+        create: {
+          orderNumber: input.orderNumber,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          subtotalAmount,
+          shippingAmount,
+          totalAmount: subtotalAmount + shippingAmount,
+          currency: "BDT",
+          paymentMethod: input.paymentMethod,
+          orderStatus: input.orderStatus,
+          paymentStatus: input.paymentStatus,
+          deliveryStatus: input.deliveryStatus,
+          inventoryStatus: input.inventoryStatus,
+          stockReservedUntil:
+            input.inventoryStatus === "reserved"
+              ? new Date(Date.now() + 30 * 60 * 1000)
+              : null,
+          stockCommittedAt:
+            input.inventoryStatus === "committed" ||
+            input.inventoryStatus === "restocked"
+              ? placedAt
+              : null,
+          stockReleasedAt:
+            input.inventoryStatus === "released" ||
+            input.inventoryStatus === "restocked"
+              ? (deliveredAt ?? placedAt)
+              : null,
+          shippingRateId: rate.id,
+          shippingMethodCode: rate.code,
+          shippingMethodLabel: rate.label,
+          carrier: input.carrier,
+          trackingNumber: input.trackingNumber,
+          fulfillmentNote: input.fulfillmentNote,
+          shippedAt,
+          deliveredAt,
+          customerNotes: input.customerNotes,
+          adminNotes: input.adminNotes,
+          placedAt,
+        },
+        update: {
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          subtotalAmount,
+          discountAmount: 0,
+          taxAmount: 0,
+          shippingAmount,
+          totalAmount: subtotalAmount + shippingAmount,
+          currency: "BDT",
+          paymentMethod: input.paymentMethod,
+          orderStatus: input.orderStatus,
+          paymentStatus: input.paymentStatus,
+          deliveryStatus: input.deliveryStatus,
+          inventoryStatus: input.inventoryStatus,
+          stockReservedUntil:
+            input.inventoryStatus === "reserved"
+              ? new Date(Date.now() + 30 * 60 * 1000)
+              : null,
+          stockCommittedAt:
+            input.inventoryStatus === "committed" ||
+            input.inventoryStatus === "restocked"
+              ? placedAt
+              : null,
+          stockReleasedAt:
+            input.inventoryStatus === "released" ||
+            input.inventoryStatus === "restocked"
+              ? (deliveredAt ?? placedAt)
+              : null,
+          shippingRateId: rate.id,
+          shippingMethodCode: rate.code,
+          shippingMethodLabel: rate.label,
+          carrier: input.carrier ?? null,
+          trackingNumber: input.trackingNumber ?? null,
+          fulfillmentNote: input.fulfillmentNote ?? null,
+          shippedAt,
+          deliveredAt,
+          customerNotes: input.customerNotes ?? null,
+          adminNotes: input.adminNotes ?? null,
+          placedAt,
+        },
+        select: { id: true },
+      });
+
+      await tx.orderAddress.deleteMany({ where: { orderId: order.id } });
+      await tx.orderLineItem.deleteMany({ where: { orderId: order.id } });
+      await tx.orderStatusEvent.deleteMany({ where: { orderId: order.id } });
+
+      await tx.orderAddress.create({
+        data: {
+          orderId: order.id,
+          type: "shipping",
+          fullName: input.customerName,
+          email: input.customerEmail,
+          phone: input.customerPhone,
+          line1: `${100 + input.placedDaysAgo} Demo Road`,
+          city: input.city,
+          country: "Bangladesh",
+        },
+      });
+      await tx.orderLineItem.createMany({
+        data: lineItems.map(({ variant, quantity, subtotal }) => ({
+          orderId: order.id,
+          productId: variant.productId,
+          variantId: variant.id,
+          productName: variant.productName,
+          variantName: variant.variantName,
+          sku: variant.sku,
+          imageUrl: variant.imageUrl,
+          attributesSnapshot: variant.attributesSnapshot,
+          quantity,
+          unitPrice: variant.price,
+          subtotalAmount: subtotal,
+          totalAmount: subtotal,
+        })),
+      });
+
+      await tx.orderStatusEvent.create({
+        data: {
+          orderId: order.id,
+          type: "order",
+          newValue: input.orderStatus,
+          note: "Demo order seeded for admin testing.",
+          metadata: { seeded: true },
+          createdAt: placedAt,
+        },
+      });
+      if (input.paymentStatus !== "unpaid") {
+        await tx.orderStatusEvent.create({
+          data: {
+            orderId: order.id,
+            type: "payment",
+            newValue: input.paymentStatus,
+            note: "Demo payment state.",
+            metadata: { seeded: true },
+            createdAt: placedAt,
+          },
+        });
+      }
+      if (input.deliveryStatus !== "unfulfilled") {
+        await tx.orderStatusEvent.create({
+          data: {
+            orderId: order.id,
+            type: "delivery",
+            newValue: input.deliveryStatus,
+            note: "Demo fulfillment state.",
+            metadata: { seeded: true },
+            createdAt: deliveredAt ?? shippedAt ?? placedAt,
+          },
+        });
+      }
+    });
   }
 }
 
 export async function seedEcommerce(requestedCatalog?: string) {
   const selection = ecommerceSeedSelection(
-    requestedCatalog ?? readOption("catalog") ?? process.env.ECOMMERCE_SEED_CATALOG,
+    requestedCatalog ??
+      readOption("catalog") ??
+      process.env.ECOMMERCE_SEED_CATALOG,
   );
   const attributeBySlug = await seedAttributes(selection.attributes);
   const categoryBySlug = await seedCategories(selection.categories);
@@ -1330,21 +1816,26 @@ export async function seedEcommerce(requestedCatalog?: string) {
   const brandBySlug = await seedBrands(selection.brandSlugs);
   const location = await seedInventoryLocations();
   await seedShippingRates();
-  await seedProducts(
+  const variantBySku = await seedProducts(
     selection.products,
     categoryBySlug,
     attributeBySlug,
     brandBySlug,
     location,
   );
+  if (selection.catalog === "all") {
+    await seedOrders(variantBySku);
+  }
   console.log(
-    `Seeded ecommerce catalog "${selection.catalog}": ${selection.categories.length} categories, ${selection.products.length} products.`,
+    `Seeded ecommerce catalog "${selection.catalog}": ${selection.categories.length} categories, ${selection.products.length} products, ${selection.catalog === "all" ? orders.length : 0} orders.`,
   );
 }
 
 if (import.meta.main) {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
-    console.log("Usage: bun db:seed:ecommerce [--catalog all|gadgets|phones|laptops|food|fresh-fruit|mango|honey|packaged-food|generic-gadget|generic-product]");
+    console.log(
+      "Usage: bun db:seed:ecommerce [--catalog all|gadgets|phones|laptops|food|fresh-fruit|mango|honey|packaged-food|generic-gadget|generic-product]",
+    );
   } else {
     try {
       await seedEcommerce();

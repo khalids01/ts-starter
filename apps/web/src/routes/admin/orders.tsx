@@ -1,6 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { canAccessAdminOrdersRead } from "@/features/admin/lib/admin-access";
-import { AdminOrdersPage } from "@/features/admin/ecommerce/orders";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 import { adminMiddleware } from "@/middleware/admin";
 
@@ -15,5 +14,5 @@ export const Route = createFileRoute("/admin/orders")({
       throw redirect({ to: "/admin/overview" });
     }
   },
-  component: AdminOrdersPage,
+  component: Outlet,
 });
