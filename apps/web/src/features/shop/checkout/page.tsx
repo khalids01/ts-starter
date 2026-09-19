@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { client } from "@/lib/client";
 import { cn } from "@/lib/utils";
-import type { CheckoutResult, ShopCart, ShopShippingRate } from "../types";
+import type { CheckoutResult, PublicStoreSettings, ShopCart, ShopShippingRate } from "../types";
 import { formatMoney } from "../utils";
 import { PublicShopShell } from "../public-shop-shell";
 
@@ -60,6 +60,14 @@ export function CheckoutPage() {
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const cart = useCart();
   const clearCart = useCartStore((state) => state.clearCart);
+  const settingsQuery = useQuery({
+    queryKey: ["shop", "settings"],
+    queryFn: async () => {
+      const { data, error } = await client.shop.settings.get();
+      if (error) throw new Error(String(error.value?.message || error.message || "Failed to load store settings"));
+      return data as PublicStoreSettings;
+    },
+  });
   const shippingRatesQuery = useQuery({
     queryKey: ["shop", "shipping-rates", cart.currency],
     queryFn: async () => {
@@ -144,7 +152,8 @@ export function CheckoutPage() {
     Boolean(form.city.trim()) &&
     Boolean(form.country.trim()) &&
     Boolean(selectedShippingRate) &&
-    Boolean(cart.items.length);
+    Boolean(cart.items.length) &&
+    settingsQuery.data?.checkoutEnabled !== false;
 
   return (
     <PublicShopShell footer={<PublicShopFooter />}>
@@ -153,6 +162,15 @@ export function CheckoutPage() {
           <h1 className="text-3xl font-semibold tracking-normal">Checkout</h1>
           <p className="text-sm text-muted-foreground">Cash on delivery / manual payment for this version.</p>
         </div>
+
+        {settingsQuery.data?.checkoutNotice ? (
+          <div className={cn("rounded-md border p-4 text-sm", settingsQuery.data.checkoutEnabled ? "bg-muted/40" : "border-amber-500/50 bg-amber-50 text-amber-950 dark:bg-amber-950/20 dark:text-amber-100")}>
+            {settingsQuery.data.checkoutNotice}
+          </div>
+        ) : null}
+        {settingsQuery.data?.checkoutEnabled === false && !settingsQuery.data.checkoutNotice ? (
+          <div className="rounded-md border border-amber-500/50 bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950/20 dark:text-amber-100">Checkout is temporarily unavailable.</div>
+        ) : null}
 
         {cart.items.length === 0 ? (
           <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">

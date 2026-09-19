@@ -34,6 +34,7 @@ import {
   Images,
   Truck,
   BadgePercent,
+  Store,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
@@ -55,6 +56,7 @@ import {
   canShowImagesNav,
   canShowShippingNav,
   canShowDiscountsNav,
+  canShowStoreSettingsNav,
 } from "@/features/admin/lib/admin-access";
 import { adminMiddleware } from "@/middleware/admin";
 import { useSession } from "@/providers/session-provider";
@@ -138,6 +140,12 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       icon: BadgePercent,
       url: "/admin/discounts",
       show: canShowDiscountsNav(session),
+    },
+    {
+      title: "Store settings",
+      icon: Store,
+      url: "/admin/store-settings",
+      show: canShowStoreSettingsNav(session),
     },
     {
       title: "Images",

@@ -148,6 +148,15 @@ export type ShopShippingRate = {
   sortOrder: number;
 };
 
+export type PublicStoreSettings = {
+  storeName: string;
+  supportEmail?: string | null;
+  supportPhone?: string | null;
+  defaultCurrency: string;
+  checkoutEnabled: boolean;
+  checkoutNotice?: string | null;
+};
+
 export type CheckoutResult = {
   orderId: string;
   orderNumber: string;

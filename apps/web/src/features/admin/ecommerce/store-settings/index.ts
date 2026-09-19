@@ -1,0 +1,1 @@
+export { AdminStoreSettingsPage } from "./page";

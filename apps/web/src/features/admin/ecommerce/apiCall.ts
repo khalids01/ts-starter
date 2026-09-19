@@ -119,6 +119,11 @@ export const ecommerceApi = {
     disable: (id: string) =>
       unwrap(api.admin.discounts({ id }).delete(), "Failed to disable discount"),
   },
+  storeSettings: {
+    get: () => unwrap(api.admin["store-settings"].get(), "Failed to load store settings"),
+    update: (body: Record<string, unknown>) =>
+      unwrap(api.admin["store-settings"].put(body), "Failed to update store settings"),
+  },
   orders: {
     list: (query?: Record<string, unknown>) =>
       unwrap(api.admin.orders.get({ query }), "Failed to load orders"),

@@ -117,6 +117,15 @@ export function canAccessAdminDiscountsRead(session: ClientSession | null | unde
   );
 }
 
+export function canAccessAdminStoreSettingsRead(session: ClientSession | null | undefined) {
+  if (isPlatformOwner(session)) return true;
+  const permissions = session?.permissions ?? [];
+  return (
+    sessionHasPermission(permissions, Permissions.AdminStoreSettingsRead) ||
+    sessionHasPermission(permissions, Permissions.AdminStoreSettingsManage)
+  );
+}
+
 export function canShowUsersNav(session: ClientSession | null | undefined) {
   return canShowAdminNavItem(session, { permissionPrefix: "admin.users." });
 }
@@ -190,4 +199,8 @@ export function canShowShippingNav(session: ClientSession | null | undefined) {
 
 export function canShowDiscountsNav(session: ClientSession | null | undefined) {
   return canShowAdminNavItem(session, { permissionPrefix: "admin.discounts." });
+}
+
+export function canShowStoreSettingsNav(session: ClientSession | null | undefined) {
+  return canShowAdminNavItem(session, { permissionPrefix: "admin.store_settings." });
 }

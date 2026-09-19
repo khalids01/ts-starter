@@ -17,8 +17,7 @@ import {
   evaluateDiscount,
   DiscountServiceError,
 } from "@/modules/ecommerce/discounts/discounts.service";
-
-const RESERVATION_TTL_MINUTES = 30;
+import { storeSettingsService } from "@/modules/ecommerce/store-settings/store-settings.service";
 
 function normalizedEmail(value: string | null | undefined) {
   return nullableTrimmed(value)?.toLowerCase() ?? null;
@@ -30,8 +29,8 @@ function normalizedCheckoutKey(userId: string | null | undefined, idempotencyKey
   return normalizedUserId && normalizedKey ? `${normalizedUserId}:${normalizedKey}` : null;
 }
 
-function reservationExpiresAt() {
-  return new Date(Date.now() + RESERVATION_TTL_MINUTES * 60 * 1000);
+function reservationExpiresAt(minutes: number) {
+  return new Date(Date.now() + minutes * 60 * 1000);
 }
 
 function checkoutLineFromItem(item: any) {
@@ -206,15 +205,20 @@ async function checkoutLinesFromInput(items: CheckoutInput["items"]) {
 }
 
 export const orderService = {
-  async listShippingRates(currency = "BDT") {
+  async listShippingRates(currency?: string) {
+    const settings = await storeSettingsService.get();
     const rates = await prisma.shippingRate.findMany({
-      where: { isActive: true, currency: currency.trim().toUpperCase() },
+      where: { isActive: true, currency: (currency ?? settings.defaultCurrency).trim().toUpperCase() },
       orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
     });
     return rates.map(mapShippingRate);
   },
 
   async checkout(userId: string, input: CheckoutInput) {
+    const settings = await storeSettingsService.get();
+    if (!settings.checkoutEnabled) {
+      throw new ShopServiceError(settings.checkoutNotice ?? "Checkout is temporarily unavailable", 409);
+    }
     const checkoutKey = normalizedCheckoutKey(userId, input.idempotencyKey);
     if (checkoutKey) {
       const existingOrder = await prisma.order.findUnique({
@@ -238,7 +242,7 @@ export const orderService = {
     }
 
     const subtotal = lines.reduce((sum, line) => sum + line.total, 0);
-    const orderCurrency = lines[0]?.currency ?? "BDT";
+    const orderCurrency = lines[0]?.currency ?? settings.defaultCurrency;
     const shippingRate = await prisma.shippingRate.findFirst({
       where: input.shippingRateId
         ? { id: input.shippingRateId, isActive: true, currency: orderCurrency }
@@ -251,8 +255,8 @@ export const orderService = {
       throw new ShopServiceError("Shipping method is not available", 409);
     }
     const shippingAmount = shippingAmountForRate(shippingRate, subtotal);
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-    const expiresAt = reservationExpiresAt();
+    const orderNumber = `${settings.orderNumberPrefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    const expiresAt = reservationExpiresAt(settings.reservationDurationMinutes);
     const customerName = input.customerName.trim();
     const customerEmail = input.customerEmail.trim().toLowerCase();
     const customerPhone = nullableTrimmed(input.customerPhone);

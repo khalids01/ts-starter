@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-20
 
-Status: Steps 0-4 completed through the required migration/RBAC gates. Step 5 implemented; awaiting user migration, RBAC seed, and review.
+Status: Steps 0-4 completed through the required migration/RBAC gates. Steps 5-6 implemented; required migration/RBAC gates and review are tracked before continuing.
 
 ## Goal
 
@@ -110,7 +110,7 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 | 3 | Order fulfillment and tracking | Completed through migration/RBAC gates | Yes | Yes |
 | 4 | Cancellation and refund workflow | Completed through migration/RBAC gates | Yes | Yes |
 | 5 | Basic discount codes | Implemented; migration, permission seed, and review required | Yes | Yes |
-| 6 | Store settings | Not started | Yes | Yes |
+| 6 | Store settings | Implemented; migration, permission seed, and review required | Yes | Yes |
 | 7 | Customer view | Not started | Yes | Yes |
 | 8 | Final admin completion verification | Not started | No | No |
 

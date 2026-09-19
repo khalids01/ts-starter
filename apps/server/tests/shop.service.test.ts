@@ -41,6 +41,7 @@ const discountCodeFindUniqueMock = mock(async () => null as any);
 const discountCodeUpdateManyMock = mock(async () => ({ count: 1 }));
 const discountRedemptionCountMock = mock(async () => 0);
 const discountRedemptionCreateMock = mock(async (args: any) => ({ id: "redemption-1", ...args.data }));
+const storeSettingsFindUniqueMock = mock(async () => null as any);
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
 const prismaMock = {
@@ -86,6 +87,9 @@ const prismaMock = {
   discountRedemption: {
     count: discountRedemptionCountMock,
     create: discountRedemptionCreateMock,
+  },
+  storeSettings: {
+    findUnique: storeSettingsFindUniqueMock,
   },
 };
 

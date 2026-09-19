@@ -389,3 +389,15 @@ export type DiscountCode = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type StoreSettings = {
+  id: string;
+  storeName: string;
+  supportEmail?: string | null;
+  supportPhone?: string | null;
+  defaultCurrency: string;
+  orderNumberPrefix: string;
+  reservationDurationMinutes: number;
+  checkoutEnabled: boolean;
+  checkoutNotice?: string | null;
+};

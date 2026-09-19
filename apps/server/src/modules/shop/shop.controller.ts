@@ -19,6 +19,7 @@ import {
   discountService,
   DiscountServiceError,
 } from "@/modules/ecommerce/discounts/discounts.service";
+import { storeSettingsService } from "@/modules/ecommerce/store-settings/store-settings.service";
 
 function handleShopError(error: unknown, set: { status?: number | string }) {
   if (error instanceof ShopServiceError) {
@@ -45,6 +46,12 @@ export const shopController = new Elysia({
   },
 })
   .use(authGuard)
+  .get("/settings", async () => {
+    const settings = await storeSettingsService.get();
+    return storeSettingsService.publicSettings(settings);
+  }, {
+    detail: { summary: "Get public store settings" },
+  })
   .get(
     "/categories",
     () => categoryService.listCategories(),

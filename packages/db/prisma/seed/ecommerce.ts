@@ -1392,6 +1392,21 @@ async function seedShippingRates() {
   }
 }
 
+async function seedStoreSettings() {
+  await prisma.storeSettings.upsert({
+    where: { id: "default" },
+    create: {
+      id: "default",
+      storeName: "Starter Store",
+      defaultCurrency: "BDT",
+      orderNumberPrefix: "ORD",
+      reservationDurationMinutes: 30,
+      checkoutEnabled: true,
+    },
+    update: {},
+  });
+}
+
 function requiredSeedEntry<T>(value: T | undefined, message: string): T {
   if (!value) {
     throw new Error(message);
@@ -1815,6 +1830,7 @@ export async function seedEcommerce(requestedCatalog?: string) {
   await seedCategoryTemplates(categoryBySlug, attributeBySlug);
   const brandBySlug = await seedBrands(selection.brandSlugs);
   const location = await seedInventoryLocations();
+  await seedStoreSettings();
   await seedShippingRates();
   const variantBySku = await seedProducts(
     selection.products,
