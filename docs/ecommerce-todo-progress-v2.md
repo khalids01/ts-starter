@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-20
 
-Status: Steps 0-6 completed through the required migration/RBAC gates. Step 7 implemented; migration, RBAC seed, optional historical-order backfill, and review required.
+Status: Steps 0-6 completed through the required migration/RBAC gates. Step 7 implementation, migration, and RBAC seed are complete; historical-order backfill is deferred and final review remains. Step 8.0 documentation reconciliation is complete and awaiting review.
 
 ## Goal
 
@@ -106,13 +106,13 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 | --- | --- | --- | --- | --- |
 | 0 | Split ecommerce Prisma schema by domain | Completed | Organizational only | No |
 | 1 | Final catalog attribute schema cleanup | Completed | Yes | No |
-| 2 | Shipping-rate management | Implemented; migration, permission seed, and review required | Adds shipping-rate currency | Yes |
+| 2 | Shipping-rate management | Completed through migration/RBAC gates | Adds shipping-rate currency | Yes |
 | 3 | Order fulfillment and tracking | Completed through migration/RBAC gates | Yes | Yes |
 | 4 | Cancellation and refund workflow | Completed through migration/RBAC gates | Yes | Yes |
 | 5 | Basic discount codes | Completed through migration/RBAC gates | Yes | Yes |
 | 6 | Store settings | Completed through migration/RBAC gates | Yes | Yes |
-| 7 | Customer view | Implemented; migration, permission seed, and review required | Yes | Yes |
-| 8 | Final admin completion verification | Not started | No | No |
+| 7 | Customer view | Implementation, migration, and permission seed complete; backfill deferred; final review required | Yes | Yes |
+| 8 | Final admin completion verification | Step 8.0 documentation complete; awaiting review before Step 8.1 | No confirmed schema change | No confirmed new seed |
 
 ## Step 0 — Split the ecommerce Prisma schema
 
@@ -407,6 +407,15 @@ Acceptance:
 
 Purpose: prove the scoped V2 admin is complete without claiming unsupported capabilities.
 
+The authoritative, approval-gated execution guide is [`docs/ecommerce-step-8-plan.md`](./ecommerce-step-8-plan.md). It expands Step 8 into isolated test infrastructure, unit/integration coverage, Playwright E2E, security hardening, performance/capacity verification, admin tutorials, and the final release audit.
+
+Confirmed Step 8 assumptions:
+
+- capacity means 10,000 distinct customers per month, not concurrent users;
+- the Step 7 customer migration and RBAC seed have been run by the user;
+- historical-order customer backfill is deferred unless separately approved;
+- every Step 8 substep requires user review and explicit approval before the next begins.
+
 Verification checklist:
 
 - Run Prisma validate/generate.
@@ -423,4 +432,4 @@ Completion means all V2 acceptance criteria pass and remaining deferred features
 
 ## Current next action
 
-User: create/apply the discount-code migration, run the RBAC seed, then review and commit Step 5. Begin Step 6 only after explicit user approval.
+User: review Step 8.0 in [`docs/ecommerce-step-8-plan.md`](./ecommerce-step-8-plan.md). Begin Step 8.1 test infrastructure and shared personas only after explicit approval.
