@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { validateTestEnvironment } from "./assert-test-environment";
+import { assertTestEnvironment, validateTestEnvironment } from "./assert-test-environment";
 
 const safeEnvironment = {
   NODE_ENV: "test",
@@ -17,6 +17,17 @@ describe("validateTestEnvironment", () => {
       redisKeyPrefix: "ts-starter:e2e:",
       isRemote: false,
     });
+  });
+
+  test("uses config-owned E2E defaults when E2E_MODE is enabled", () => {
+    expect(
+      assertTestEnvironment({
+        E2E_MODE: "true",
+        NODE_ENV: "test",
+        DATABASE_URL: safeEnvironment.DATABASE_URL,
+        REDIS_URL: safeEnvironment.REDIS_URL,
+      }),
+    ).toMatchObject({ redisKeyPrefix: "ts-starter:e2e:" });
   });
 
   test("rejects a development-shaped database name", () => {

@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
+import { getE2eServerEnvDefaults } from "@config";
 import { z } from "zod";
+
+const e2eDefaults =
+  process.env.E2E_MODE === "true" ? getE2eServerEnvDefaults() : {};
 
 export const env = createEnv({
   server: {
@@ -45,6 +49,7 @@ export const env = createEnv({
     FILE_SERVER_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
+    ...e2eDefaults,
     ...process.env,
   },
   emptyStringAsUndefined: true,

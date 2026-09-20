@@ -8,13 +8,13 @@
     "./server": "./src/env.server.ts"
   },
   "dependencies": {
+    "@config": "workspace:*",
     "zod": "catalog:",
     "@t3-oss/env-core": "^0.13.10",
     "dotenv": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "@types/bun": "catalog:",
-    "@config": "workspace:*"
+    "@types/bun": "catalog:"
   }
 }

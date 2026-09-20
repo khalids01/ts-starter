@@ -1,6 +1,8 @@
 import { TEST_USERS, assertTestUsersAreSafe } from "../users-config";
+import { getE2eServerEnvDefaults } from "../../packages/config/src/e2e.config";
 
 export type TestEnvironmentInput = {
+  E2E_MODE?: string;
   NODE_ENV?: string;
   DATABASE_URL?: string;
   REDIS_URL?: string;
@@ -122,7 +124,8 @@ export function validateTestEnvironment(
 export function assertTestEnvironment(
   input: TestEnvironmentInput = process.env,
 ): ValidatedTestEnvironment {
-  return validateTestEnvironment(input);
+  const defaults = input.E2E_MODE === "true" ? getE2eServerEnvDefaults() : {};
+  return validateTestEnvironment({ ...defaults, ...input });
 }
 
 export function printValidatedTestEnvironment(

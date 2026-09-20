@@ -7,7 +7,7 @@
     "check-types": "tsc --noEmit",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "NODE_ENV=development bun run --hot src/index.ts",
-    "start": "NODE_ENV=production bun run dist/index.mjs",
+    "start": "NODE_ENV=${NODE_ENV:-production} bun run dist/index.mjs",
     "test": "bun test ./tests"
   },
   "dependencies": {

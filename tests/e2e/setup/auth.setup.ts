@@ -2,8 +2,9 @@ import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { provisionE2eUsers } from "../../setup/provision-users";
 import { TEST_USERS, type TestUser } from "../../users-config";
+import { e2eRuntimeConfig } from "../../../packages/config/src/e2e.config";
 
-const mailpitUrl = process.env.E2E_MAILPIT_URL ?? "http://127.0.0.1:8025";
+const mailpitUrl = e2eRuntimeConfig.mailpit.webUrl;
 const managerPermissions = [
   "admin.access", "admin.catalog.read", "admin.catalog.manage", "admin.products.read",
   "admin.products.manage", "admin.inventory.read", "admin.inventory.manage", "admin.orders.read",

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import { TEST_USERS } from "./tests/users-config";
 
-const baseURL = process.env.E2E_WEB_URL ?? "http://localhost:3101";
+const baseURL = process.env.E2E_WEB_URL ?? "http://localhost:3001";
 const authState = (key: keyof typeof TEST_USERS) => TEST_USERS[key].storageStatePath;
 
 export default defineConfig({

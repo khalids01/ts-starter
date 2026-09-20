@@ -169,12 +169,12 @@
       "name": "@env",
       "version": "0.0.0",
       "dependencies": {
+        "@config": "workspace:*",
         "@t3-oss/env-core": "^0.13.10",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@config": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
       },

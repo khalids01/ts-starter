@@ -55,7 +55,7 @@ Update this table at the end of every approved substep. A substep is not complet
 | Substep | Status | Implementation evidence | Verification evidence | Findings/fixes | Limitations or next gate |
 | --- | --- | --- | --- | --- | --- |
 | 8.0 Documentation reconciliation | Completed; awaiting user review | This plan created; V2 progress status reconciled | Documentation inspected for matching status and links | Step 2 and Step 7 status corrected; stale Step 5 next action removed | No runtime, test, security, performance, or browser claims made |
-| 8.1 Test infrastructure and personas | Implemented; awaiting user-controlled runtime gates and review | `docker-compose.e2e.yml`, guarded setup scripts, public fictional personas, Playwright setup/config, ignored artifacts | 8 focused Bun tests, Playwright discovery, Compose validation, web boundary check, and production build passed | Server/web ports can use `PORT=3100` and `VITE_PORT=3101`; reset intentionally refuses destructive mutation pending an approved exact workflow | Requires isolated services, disposable-database migrations/RBAC seed, real signup/provision/login session run, then user review |
+| 8.1 Test infrastructure and personas | Implemented; awaiting user-controlled runtime gates and review | `docker-compose.e2e.yml`, guarded setup scripts, public fictional personas, Playwright setup/config, ignored artifacts | 9 focused Bun tests, Playwright discovery, Compose validation, web boundary check, typechecks, and production build passed | Server/web use the standard local ports `3000`/`3001`; reset intentionally refuses destructive mutation pending an approved exact workflow | Requires isolated services, disposable-database migrations/RBAC seed, real signup/provision/login session run, then user review |
 | 8.2 Unit and integration coverage | Not started | — | — | — | Requires 8.1 completion and approval |
 | 8.3 Playwright E2E | Not started | — | — | — | Requires 8.2 completion and permission to start isolated services |
 | 8.4 Security hardening | Not started | — | — | — | Active scans require explicit target approval |
@@ -117,7 +117,7 @@ Create the following root structure:
 tests/
   users-config.ts
   env/
-    e2e.env.example
+    .env (ignored; copied from e2e.env.example)
   setup/
     assert-test-environment.ts
     provision-users.ts
@@ -157,7 +157,7 @@ Required defaults:
 - Redis 7 on host port `6380`.
 - Redis prefix `ts-starter:e2e:`.
 - Mailpit SMTP on host port `1025` and web UI on `8025`.
-- Server on `3100` and web on `3101` when the user authorizes startup.
+- Server on `3000` and web on `3001` when the user authorizes startup.
 - `NODE_ENV=test`.
 - `ENABLE_POLAR=false`.
 - `OWNER_SETUP_CHECK=false` after the test provisioner owns owner creation.

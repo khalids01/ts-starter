@@ -8,9 +8,16 @@ import { openapi } from "@elysiajs/openapi";
 import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
 import { securityHeadersPlugin } from "./plugins/security-headers";
+import { e2eRuntimeConfig } from "@config";
 
 const shouldLogRequests = env.NODE_ENV === "development";
-const port = Number.parseInt(process.env.PORT ?? "3000", 10);
+const port = Number.parseInt(
+  process.env.PORT ??
+    (process.env.E2E_MODE === "true"
+      ? String(e2eRuntimeConfig.serverPort)
+      : "3000"),
+  10,
+);
 
 if (!Number.isInteger(port) || port < 1 || port > 65_535) {
   throw new Error("PORT must be a valid TCP port number");
