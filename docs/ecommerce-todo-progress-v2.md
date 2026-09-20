@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-20
 
-Status: Steps 0-6 completed through the required migration/RBAC gates. Step 7 implementation, migration, and RBAC seed are complete; historical-order backfill is deferred and final review remains. Step 8.0 documentation reconciliation is complete and awaiting review.
+Status: Steps 0-6 completed through the required migration/RBAC gates. Step 7 implementation, migration, and RBAC seed are complete; historical-order backfill is deferred and final review remains. Step 8.1 test-infrastructure code is implemented and statically/unit verified; runtime and review gates remain.
 
 ## Goal
 
@@ -112,7 +112,7 @@ After every step that introduces permissions, the user runs the RBAC seed. Codex
 | 5 | Basic discount codes | Completed through migration/RBAC gates | Yes | Yes |
 | 6 | Store settings | Completed through migration/RBAC gates | Yes | Yes |
 | 7 | Customer view | Implementation, migration, and permission seed complete; backfill deferred; final review required | Yes | Yes |
-| 8 | Final admin completion verification | Step 8.0 documentation complete; awaiting review before Step 8.1 | No confirmed schema change | No confirmed new seed |
+| 8 | Final admin completion verification | Step 8.1 infrastructure/personas implemented; awaiting isolated runtime gates and review before Step 8.2 | No confirmed schema change | No confirmed new seed |
 
 ## Step 0 — Split the ecommerce Prisma schema
 
@@ -432,4 +432,4 @@ Completion means all V2 acceptance criteria pass and remaining deferred features
 
 ## Current next action
 
-User: review Step 8.0 in [`docs/ecommerce-step-8-plan.md`](./ecommerce-step-8-plan.md). Begin Step 8.1 test infrastructure and shared personas only after explicit approval.
+User: review the Step 8.1 implementation in [`docs/ecommerce-step-8-plan.md`](./ecommerce-step-8-plan.md). Before Step 8.2, authorize the isolated E2E service/database workflow and review the resulting browser/RBAC evidence; do not begin Step 8.2 without explicit approval.

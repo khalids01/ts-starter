@@ -15,6 +15,6 @@ export default defineConfig({
     noExternal: ["@tanstack/history", "@tanstack/router-core"],
   },
   server: {
-    port: 3001,
+    port: Number.parseInt(process.env.VITE_PORT ?? "3001", 10),
   },
 });

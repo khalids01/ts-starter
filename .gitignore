@@ -42,6 +42,12 @@ lerna-debug.log*
 # Testing
 coverage
 .nyc_output
+tests/artifacts/
+tests/e2e/.auth/
+tests/performance/reports/
+tests/security/reports/
+playwright-report/
+test-results/
 
 # Misc
 *.tgz

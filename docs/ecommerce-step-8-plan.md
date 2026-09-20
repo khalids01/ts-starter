@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-20
 
-Status: Step 8.0 documentation reconciliation completed. Step 8.1 is not started and requires explicit user approval.
+Status: Step 8.1 test-infrastructure code is implemented and statically/unit verified. Runtime, browser, database, and user-review gates remain.
 
 ## Purpose
 
@@ -55,7 +55,7 @@ Update this table at the end of every approved substep. A substep is not complet
 | Substep | Status | Implementation evidence | Verification evidence | Findings/fixes | Limitations or next gate |
 | --- | --- | --- | --- | --- | --- |
 | 8.0 Documentation reconciliation | Completed; awaiting user review | This plan created; V2 progress status reconciled | Documentation inspected for matching status and links | Step 2 and Step 7 status corrected; stale Step 5 next action removed | No runtime, test, security, performance, or browser claims made |
-| 8.1 Test infrastructure and personas | Not started | — | — | — | Requires explicit approval |
+| 8.1 Test infrastructure and personas | Implemented; awaiting user-controlled runtime gates and review | `docker-compose.e2e.yml`, guarded setup scripts, public fictional personas, Playwright setup/config, ignored artifacts | 8 focused Bun tests, Playwright discovery, Compose validation, web boundary check, and production build passed | Server/web ports can use `PORT=3100` and `VITE_PORT=3101`; reset intentionally refuses destructive mutation pending an approved exact workflow | Requires isolated services, disposable-database migrations/RBAC seed, real signup/provision/login session run, then user review |
 | 8.2 Unit and integration coverage | Not started | — | — | — | Requires 8.1 completion and approval |
 | 8.3 Playwright E2E | Not started | — | — | — | Requires 8.2 completion and permission to start isolated services |
 | 8.4 Security hardening | Not started | — | — | — | Active scans require explicit target approval |
@@ -99,9 +99,7 @@ Never use one category as proof of another. For example, a successful build is n
 
 - [x] The two Step 8 documents agree about current status.
 - [x] No browser, runtime, security, performance, or release result is claimed.
-- [ ] User reviews Step 8.0 and explicitly approves Step 8.1.
-
-Stop here until Step 8.1 is explicitly approved.
+- [x] User reviewed Step 8.0 and explicitly approved Step 8.1.
 
 ---
 
@@ -280,16 +278,16 @@ Do not make `test:e2e` silently reset a database. Reset remains a distinct, cons
 
 ### Verification and acceptance
 
-- [ ] Test Compose services are isolated from development services.
-- [ ] Guard passes for the E2E environment and fails for a development-shaped URL/prefix.
+- [x] Test Compose configuration is isolated from development services (static Compose validation only; services not started).
+- [x] Guard unit tests pass for the E2E environment and fail for development/production-shaped targets.
 - [ ] All five users sign up through the actual UI.
 - [ ] Mail is captured locally.
 - [ ] All five users log in through the actual UI after provisioning.
 - [ ] Each session has the exact intended role and permissions.
 - [ ] Viewer and ordinary user cannot gain mutation permissions.
-- [ ] No production application file imports test credentials.
-- [ ] Generated auth states and reports are ignored and contain no unredacted secrets.
-- [ ] Focused typechecks and setup tests pass.
+- [x] Source boundary test confirms application packages do not import test credentials/setup modules.
+- [x] Generated auth states, traces, videos, screenshots, and reports are ignored; runtime artifact redaction remains to be verified.
+- [x] Focused setup tests, Playwright discovery, affected workspace typechecks, web boundary check, Compose validation, and production build pass.
 - [ ] User reviews and approves Step 8.1 before Step 8.2.
 
 ---

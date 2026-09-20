@@ -38,6 +38,12 @@
     "db:seed:rbac": "turbo -F @db db:seed:rbac",
     "db:seed:ecommerce": "bun run --cwd packages/db db:seed:ecommerce",
     "make-owner": "bun run --cwd packages/db db:make-owner",
+    "test:e2e:guard": "bun --env-file=tests/env/e2e.env tests/setup/assert-test-environment.ts",
+    "test:e2e:provision": "bun --env-file=tests/env/e2e.env tests/setup/provision-users.ts",
+    "test:e2e:reset": "bun --env-file=tests/env/e2e.env tests/setup/reset-test-state.ts",
+    "test:e2e:setup": "playwright test --project=setup",
+    "test:e2e": "playwright test",
+    "test:e2e:auth": "playwright test --project=chromium --grep @auth",
     "view-archi": "bun scripts/serve-architecture.ts"
   },
   "dependencies": {
@@ -49,6 +55,7 @@
   },
   "devDependencies": {
     "@config": "workspace:*",
+    "@playwright/test": "^1.58.2",
     "@types/bun": "^1.3.9",
     "turbo": "^2.9.7",
     "typescript": "^7.0.2"
