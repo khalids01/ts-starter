@@ -19,7 +19,7 @@ describe("security headers", () => {
       "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
     );
     expect(response.headers.get("content-security-policy")).toBe(
-      "frame-ancestors 'none'",
+      "default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
     );
     expect(response.headers.get("strict-transport-security")).toBeNull();
   });
@@ -36,4 +36,3 @@ describe("security headers", () => {
     );
   });
 });
-

@@ -13,14 +13,14 @@ export const SortOrderDto = t.Union([t.Literal("asc"), t.Literal("desc")]);
 export const ListImagesQueryDto = t.Object({
   page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20 })),
-  search: t.Optional(t.String()),
-  contentType: t.Optional(t.String()),
+  search: t.Optional(t.String({ maxLength: 200 })),
+  contentType: t.Optional(t.String({ maxLength: 120 })),
   sortBy: t.Optional(ImageSortByDto),
   sortOrder: t.Optional(SortOrderDto),
 });
 
 export const IdParamDto = t.Object({
-  id: t.String({ minLength: 1 }),
+  id: t.String({ minLength: 1, maxLength: 128 }),
 });
 
 export type ListImagesQuery = typeof ListImagesQueryDto.static;

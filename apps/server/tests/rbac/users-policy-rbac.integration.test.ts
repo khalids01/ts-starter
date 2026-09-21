@@ -34,6 +34,8 @@ const updateMock = mock(async () => ({
   onboardingComplete: true,
   plan: "free",
   subscriptionStatus: null,
+  accounts: [{ providerId: "credential" }],
+  authMethods: [{ method: "password" }],
 }));
 
 mock.module("@db/server", () => ({

@@ -1,6 +1,5 @@
 import { t } from "elysia";
 
 export const InvitationParamsDto = t.Object({
-  id: t.String({ minLength: 1 }),
+  id: t.String({ minLength: 1, maxLength: 128 }),
 });
-

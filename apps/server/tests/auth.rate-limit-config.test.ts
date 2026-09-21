@@ -21,7 +21,7 @@ describe("auth rate-limit config", () => {
     const source = await Bun.file(authConfigPath).text();
 
     expect(source).toMatch(
-      /rateLimit:\s*\{\s*enabled:\s*true,\s*window:\s*10,\s*max:\s*100,\s*\}/s,
+      /rateLimit:\s*\{\s*enabled:\s*!env\.E2E_MODE,\s*window:\s*10,\s*max:\s*100,\s*\}/s,
     );
     expect(source).toMatch(
       /magicLink\(\{\s*rateLimit:\s*\{\s*window:\s*60,\s*max:\s*5,\s*\}/s,

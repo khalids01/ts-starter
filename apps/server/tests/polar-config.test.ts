@@ -14,6 +14,7 @@ const baseEnv = {
   DISCORD_CLIENT_SECRET: "test-discord-client-secret",
   CORS_ORIGIN: "http://localhost:3000",
   NODE_ENV: "test",
+  E2E_MODE: "false",
   POLAR_ACCESS_TOKEN: "",
   POLAR_WEBHOOK_SECRET: "",
   POLAR_SUCCESS_URL: "",

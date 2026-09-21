@@ -1,7 +1,7 @@
 import { t } from "elysia";
 
 export const ShippingRateIdParamDto = t.Object({
-  id: t.String({ minLength: 1 }),
+  id: t.String({ minLength: 1, maxLength: 128 }),
 });
 
 export const ListShippingRatesQueryDto = t.Object({
@@ -10,11 +10,11 @@ export const ListShippingRatesQueryDto = t.Object({
 });
 
 export const CreateShippingRateDto = t.Object({
-  code: t.String({ minLength: 1 }),
-  label: t.String({ minLength: 1 }),
-  amount: t.Union([t.String(), t.Number()]),
+  code: t.String({ minLength: 1, maxLength: 80 }),
+  label: t.String({ minLength: 1, maxLength: 120 }),
+  amount: t.Union([t.String({ maxLength: 32 }), t.Number()]),
   currency: t.String({ minLength: 3, maxLength: 3 }),
-  freeOverAmount: t.Optional(t.Union([t.String(), t.Number(), t.Null()])),
+  freeOverAmount: t.Optional(t.Union([t.String({ maxLength: 32 }), t.Number(), t.Null()])),
   isDefault: t.Optional(t.Boolean()),
   isActive: t.Optional(t.Boolean()),
   sortOrder: t.Optional(t.Integer()),

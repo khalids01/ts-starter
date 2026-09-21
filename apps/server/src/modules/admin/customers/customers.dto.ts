@@ -1,11 +1,11 @@
 import { t } from "elysia";
 
-export const CustomerIdParamDto = t.Object({ id: t.String({ minLength: 1 }) });
+export const CustomerIdParamDto = t.Object({ id: t.String({ minLength: 1, maxLength: 128 }) });
 
 export const ListCustomersQueryDto = t.Object({
   page: t.Optional(t.Integer({ minimum: 1 })),
   limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-  search: t.Optional(t.String()),
+  search: t.Optional(t.String({ maxLength: 200 })),
 });
 
 export const UpdateCustomerDto = t.Partial(t.Object({

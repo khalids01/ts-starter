@@ -1,20 +1,20 @@
 import { t } from "elysia";
 
 export const OrderNumberParamDto = t.Object({
-  orderNumber: t.String({ minLength: 1 }),
+  orderNumber: t.String({ minLength: 1, maxLength: 64 }),
 });
 
 export const CheckoutAddressDto = t.Object({
-  fullName: t.Optional(t.String()),
-  email: t.Optional(t.Union([t.String(), t.Null()])),
-  phone: t.Optional(t.Union([t.String(), t.Null()])),
-  line1: t.String({ minLength: 1 }),
-  line2: t.Optional(t.Union([t.String(), t.Null()])),
-  city: t.Optional(t.Union([t.String(), t.Null()])),
-  state: t.Optional(t.Union([t.String(), t.Null()])),
-  postalCode: t.Optional(t.Union([t.String(), t.Null()])),
-  country: t.Optional(t.Union([t.String(), t.Null()])),
-  notes: t.Optional(t.Union([t.String(), t.Null()])),
+  fullName: t.Optional(t.String({ maxLength: 120 })),
+  email: t.Optional(t.Union([t.String({ format: "email", maxLength: 254 }), t.Null()])),
+  phone: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
+  line1: t.String({ minLength: 1, maxLength: 200 }),
+  line2: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
+  city: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
+  state: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
+  postalCode: t.Optional(t.Union([t.String({ maxLength: 32 }), t.Null()])),
+  country: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
+  notes: t.Optional(t.Union([t.String({ maxLength: 1000 }), t.Null()])),
 });
 
 export const PaymentMethodDto = t.Union([
@@ -25,28 +25,28 @@ export const PaymentMethodDto = t.Union([
 ]);
 
 export const OrderLookupQueryDto = t.Object({
-  email: t.Optional(t.String()),
-  phone: t.Optional(t.String()),
+  email: t.Optional(t.String({ format: "email", maxLength: 254 })),
+  phone: t.Optional(t.String({ maxLength: 40 })),
 });
 
 export const CheckoutItemDto = t.Object({
-  variantId: t.String({ minLength: 1 }),
-  quantity: t.Integer({ minimum: 1 }),
+  variantId: t.String({ minLength: 1, maxLength: 128 }),
+  quantity: t.Integer({ minimum: 1, maximum: 10_000 }),
 });
 
 export const CheckoutDto = t.Object({
-  items: t.Array(CheckoutItemDto, { minItems: 1 }),
-  customerName: t.String({ minLength: 1 }),
-  customerEmail: t.String({ minLength: 1 }),
-  customerPhone: t.Optional(t.Union([t.String(), t.Null()])),
+  items: t.Array(CheckoutItemDto, { minItems: 1, maxItems: 100 }),
+  customerName: t.String({ minLength: 1, maxLength: 120 }),
+  customerEmail: t.String({ format: "email", maxLength: 254 }),
+  customerPhone: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
   shippingAddress: CheckoutAddressDto,
   billingAddress: t.Optional(t.Union([CheckoutAddressDto, t.Null()])),
-  shippingRateId: t.Optional(t.String()),
-  shippingRateCode: t.Optional(t.String()),
+  shippingRateId: t.Optional(t.String({ maxLength: 128 })),
+  shippingRateCode: t.Optional(t.String({ maxLength: 80 })),
   paymentMethod: t.Optional(PaymentMethodDto),
-  idempotencyKey: t.Optional(t.String()),
-  customerNotes: t.Optional(t.Union([t.String(), t.Null()])),
-  discountCode: t.Optional(t.Union([t.String(), t.Null()])),
+  idempotencyKey: t.Optional(t.String({ minLength: 8, maxLength: 128 })),
+  customerNotes: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  discountCode: t.Optional(t.Union([t.String({ maxLength: 80 }), t.Null()])),
 });
 
 export type CheckoutInput = typeof CheckoutDto.static;

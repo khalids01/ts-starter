@@ -8,8 +8,8 @@ export const ActivitySeverityDto = t.Union([
 
 export const ActivityQueryDto = t.Object({
   page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
-  limit: t.Optional(t.Numeric({ minimum: 1, default: 20 })),
-  type: t.Optional(t.String({ minLength: 1 })),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20 })),
+  type: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   severity: t.Optional(ActivitySeverityDto),
 });
 

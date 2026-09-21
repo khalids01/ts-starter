@@ -32,23 +32,23 @@ export const AttributeInputTypeDto = t.Union([
 ]);
 
 export const IdParamDto = t.Object({
-  id: t.String({ minLength: 1 }),
+  id: t.String({ minLength: 1, maxLength: 128 }),
 });
 
 export const ListCatalogQueryDto = t.Object({
   page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20 })),
-  search: t.Optional(t.String()),
+  search: t.Optional(t.String({ maxLength: 200 })),
   active: t.Optional(t.Boolean()),
 });
 
 export const CreateCategoryDto = t.Object({
-  name: t.String({ minLength: 1 }),
-  slug: t.Optional(t.String()),
-  description: t.Optional(t.Union([t.String(), t.Null()])),
-  parentId: t.Optional(t.Union([t.String(), t.Null()])),
-  imageUrl: t.Optional(t.Union([t.String(), t.Null()])),
-  iconUrl: t.Optional(t.Union([t.String(), t.Null()])),
+  name: t.String({ minLength: 1, maxLength: 120 }),
+  slug: t.Optional(t.String({ maxLength: 160 })),
+  description: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  parentId: t.Optional(t.Union([t.String({ maxLength: 128 }), t.Null()])),
+  imageUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
+  iconUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
   brandPolicy: t.Optional(CategoryBrandPolicyDto),
   showStoreBrand: t.Optional(t.Boolean()),
   isActive: t.Optional(t.Boolean()),
@@ -59,42 +59,42 @@ export const CreateCategoryDto = t.Object({
 export const UpdateCategoryDto = t.Partial(CreateCategoryDto);
 
 export const CreateAttributeDto = t.Object({
-  name: t.String({ minLength: 1 }),
-  slug: t.Optional(t.String()),
+  name: t.String({ minLength: 1, maxLength: 120 }),
+  slug: t.Optional(t.String({ maxLength: 160 })),
   type: t.Optional(ProductAttributeTypeDto),
   filterable: t.Optional(t.Boolean()),
   sortOrder: t.Optional(t.Number()),
-  categoryIds: t.Optional(t.Array(t.String({ minLength: 1 }))),
+  categoryIds: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 128 }), { maxItems: 100 })),
 });
 
 export const UpdateAttributeDto = t.Partial(CreateAttributeDto);
 
 export const CreateAttributeValueDto = t.Object({
-  value: t.String({ minLength: 1 }),
-  label: t.String({ minLength: 1 }),
+  value: t.String({ minLength: 1, maxLength: 200 }),
+  label: t.String({ minLength: 1, maxLength: 200 }),
   sortOrder: t.Optional(t.Number()),
 });
 
 export const UpdateAttributeValueDto = t.Partial(
   t.Object({
-    value: t.String({ minLength: 1 }),
-    label: t.String({ minLength: 1 }),
+    value: t.String({ minLength: 1, maxLength: 200 }),
+    label: t.String({ minLength: 1, maxLength: 200 }),
     sortOrder: t.Number(),
   }),
 );
 
 export const AssignCategoryAttributeDto = t.Object({
-  attributeId: t.String({ minLength: 1 }),
+  attributeId: t.String({ minLength: 1, maxLength: 128 }),
   scope: CategoryAttributeScopeDto,
   required: t.Optional(t.Boolean()),
   filterable: t.Optional(t.Boolean()),
   variantDefining: t.Optional(t.Boolean()),
   comparable: t.Optional(t.Boolean()),
   inputType: t.Optional(AttributeInputTypeDto),
-  unit: t.Optional(t.Union([t.String(), t.Null()])),
-  groupName: t.Optional(t.Union([t.String(), t.Null()])),
-  helpText: t.Optional(t.Union([t.String(), t.Null()])),
-  placeholder: t.Optional(t.Union([t.String(), t.Null()])),
+  unit: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
+  groupName: t.Optional(t.Union([t.String({ maxLength: 120 }), t.Null()])),
+  helpText: t.Optional(t.Union([t.String({ maxLength: 500 }), t.Null()])),
+  placeholder: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
   sortOrder: t.Optional(t.Number()),
 });
 
@@ -103,11 +103,11 @@ export const UpdateCategoryAttributeDto = t.Partial(
 );
 
 export const CreateBrandDto = t.Object({
-  name: t.String({ minLength: 1 }),
-  slug: t.Optional(t.String()),
-  description: t.Optional(t.Union([t.String(), t.Null()])),
-  logoUrl: t.Optional(t.Union([t.String(), t.Null()])),
-  websiteUrl: t.Optional(t.Union([t.String(), t.Null()])),
+  name: t.String({ minLength: 1, maxLength: 120 }),
+  slug: t.Optional(t.String({ maxLength: 160 })),
+  description: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  logoUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
+  websiteUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
   isActive: t.Optional(t.Boolean()),
   isFeatured: t.Optional(t.Boolean()),
 });

@@ -65,8 +65,8 @@ function mapAdminUser<
   const { rbacRoles, accounts, authMethods, ...rest } = user;
   const authenticationMethods = Array.from(
     new Set([
-      ...accounts.map((account) => account.providerId),
-      ...authMethods.map((authMethod) => authMethod.method),
+      ...(accounts ?? []).map((account) => account.providerId),
+      ...(authMethods ?? []).map((authMethod) => authMethod.method),
     ]),
   );
   const assignment = rbacRoles[0]?.role;

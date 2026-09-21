@@ -8,7 +8,7 @@ const PermissionNameSchema = t.Union(
 export const CreateRoleDto = t.Object({
   slug: t.String({ minLength: 3, maxLength: 64 }),
   name: t.String({ minLength: 1, maxLength: 100 }),
-  permissions: t.Optional(t.Array(PermissionNameSchema)),
+  permissions: t.Optional(t.Array(PermissionNameSchema, { maxItems: AllPermissions.length })),
 });
 
 export const UpdateRoleDto = t.Object({
@@ -16,11 +16,11 @@ export const UpdateRoleDto = t.Object({
 });
 
 export const UpdateRolePermissionsDto = t.Object({
-  permissions: t.Array(PermissionNameSchema),
+  permissions: t.Array(PermissionNameSchema, { maxItems: AllPermissions.length }),
 });
 
 export const DeleteRoleDto = t.Object({
-  reassignToRoleId: t.Optional(t.String({ minLength: 1 })),
+  reassignToRoleId: t.Optional(t.String({ minLength: 1, maxLength: 128 })),
 });
 
 export type CreateRoleInput = typeof CreateRoleDto.static;

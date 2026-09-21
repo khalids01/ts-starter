@@ -14,23 +14,23 @@ export const UserRoleFilterSchema = t.Union([
 ]);
 
 export const UpdateUserDto = t.Object({
-    name: t.Optional(t.String()),
+    name: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
     roleSlug: t.Optional(AssignableUserRoleSchema),
 });
 
 export const BanUserDto = t.Object({
-    reason: t.Optional(t.String()),
+    reason: t.Optional(t.String({ maxLength: 500 })),
 });
 
 export const InviteUserDto = t.Object({
-    email: t.String({ format: "email" }),
+    email: t.String({ format: "email", maxLength: 254 }),
     roleSlug: t.Optional(InviteableUserRoleSchema),
 });
 
 export const UserQueryDto = t.Object({
     page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
     limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 10 })),
-    search: t.Optional(t.String()),
+    search: t.Optional(t.String({ maxLength: 200 })),
     roleSlug: t.Optional(UserRoleFilterSchema),
     banned: t.Optional(t.Boolean()),
     archived: t.Optional(t.Boolean()),

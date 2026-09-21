@@ -69,7 +69,7 @@ const server = new Elysia()
   })
   .use(app)
   .get("/", () => "OK")
-  .listen(port, () => {
+  .listen({ port, maxRequestBodySize: 1_048_576 }, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
 

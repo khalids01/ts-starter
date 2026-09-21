@@ -6,7 +6,8 @@ const SECURITY_HEADERS = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy":
     "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
-  "Content-Security-Policy": "frame-ancestors 'none'",
+  "Content-Security-Policy":
+    "default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 } as const;
 
 const PRODUCTION_SECURITY_HEADERS = {
@@ -26,4 +27,3 @@ export function securityHeadersPlugin(options: SecurityHeadersOptions = {}) {
     }
   });
 }
-

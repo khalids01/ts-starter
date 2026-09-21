@@ -6,13 +6,12 @@ export const InvitationStatusFilterDto = t.Union([
 ]);
 
 export const AdminInvitationQueryDto = t.Object({
-  page: t.Optional(t.Numeric({ default: 1 })),
-  limit: t.Optional(t.Numeric({ default: 10 })),
-  search: t.Optional(t.String()),
+  page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 10 })),
+  search: t.Optional(t.String({ maxLength: 200 })),
   status: t.Optional(InvitationStatusFilterDto),
   dateFrom: t.Optional(t.String({ format: "date" })),
   dateTo: t.Optional(t.String({ format: "date" })),
 });
 
 export type AdminInvitationQuery = typeof AdminInvitationQueryDto.static;
-

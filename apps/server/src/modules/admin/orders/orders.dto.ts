@@ -1,7 +1,7 @@
 import { t } from "elysia";
 
 export const IdParamDto = t.Object({
-  id: t.String({ minLength: 1 }),
+  id: t.String({ minLength: 1, maxLength: 128 }),
 });
 
 export const OrderStatusDto = t.Union([
@@ -53,64 +53,64 @@ export const OrderAddressTypeDto = t.Union([
 
 export const OrderAddressInputDto = t.Object({
   type: OrderAddressTypeDto,
-  fullName: t.String({ minLength: 1 }),
-  email: t.Optional(t.Union([t.String(), t.Null()])),
-  phone: t.Optional(t.Union([t.String(), t.Null()])),
-  line1: t.String({ minLength: 1 }),
-  line2: t.Optional(t.Union([t.String(), t.Null()])),
-  city: t.Optional(t.Union([t.String(), t.Null()])),
-  state: t.Optional(t.Union([t.String(), t.Null()])),
-  postalCode: t.Optional(t.Union([t.String(), t.Null()])),
-  country: t.Optional(t.Union([t.String(), t.Null()])),
-  notes: t.Optional(t.Union([t.String(), t.Null()])),
+  fullName: t.String({ minLength: 1, maxLength: 120 }),
+  email: t.Optional(t.Union([t.String({ format: "email", maxLength: 254 }), t.Null()])),
+  phone: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
+  line1: t.String({ minLength: 1, maxLength: 200 }),
+  line2: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
+  city: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
+  state: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
+  postalCode: t.Optional(t.Union([t.String({ maxLength: 32 }), t.Null()])),
+  country: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
+  notes: t.Optional(t.Union([t.String({ maxLength: 1000 }), t.Null()])),
 });
 
 export const ListOrdersQueryDto = t.Object({
   page: t.Optional(t.Numeric({ minimum: 1, default: 1 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20 })),
-  search: t.Optional(t.String()),
+  search: t.Optional(t.String({ maxLength: 200 })),
   orderStatus: t.Optional(OrderStatusDto),
   paymentStatus: t.Optional(PaymentStatusDto),
   deliveryStatus: t.Optional(DeliveryStatusDto),
   inventoryStatus: t.Optional(OrderInventoryStatusDto),
   paymentMethod: t.Optional(PaymentMethodDto),
-  shippingRateId: t.Optional(t.String()),
-  userId: t.Optional(t.String()),
-  customer: t.Optional(t.String()),
-  placedFrom: t.Optional(t.String()),
-  placedTo: t.Optional(t.String()),
+  shippingRateId: t.Optional(t.String({ maxLength: 128 })),
+  userId: t.Optional(t.String({ maxLength: 128 })),
+  customer: t.Optional(t.String({ maxLength: 254 })),
+  placedFrom: t.Optional(t.String({ maxLength: 64 })),
+  placedTo: t.Optional(t.String({ maxLength: 64 })),
 });
 
 export const UpdateOrderStatusesDto = t.Object({
   orderStatus: t.Optional(OrderStatusDto),
   paymentStatus: t.Optional(PaymentStatusDto),
   deliveryStatus: t.Optional(DeliveryStatusDto),
-  note: t.Optional(t.Union([t.String(), t.Null()])),
+  note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
 });
 
 export const UpdateOrderDto = t.Object({
-  customerName: t.Optional(t.String({ minLength: 1 })),
-  customerEmail: t.Optional(t.String()),
-  customerPhone: t.Optional(t.Union([t.String(), t.Null()])),
-  customerNotes: t.Optional(t.Union([t.String(), t.Null()])),
-  adminNotes: t.Optional(t.Union([t.String(), t.Null()])),
-  addresses: t.Optional(t.Array(OrderAddressInputDto)),
+  customerName: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
+  customerEmail: t.Optional(t.String({ format: "email", maxLength: 254 })),
+  customerPhone: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
+  customerNotes: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  adminNotes: t.Optional(t.Union([t.String({ maxLength: 5000 }), t.Null()])),
+  addresses: t.Optional(t.Array(OrderAddressInputDto, { maxItems: 10 })),
 });
 
 export const MarkOrderShippedDto = t.Object({
-  carrier: t.String({ minLength: 1 }),
-  trackingNumber: t.String({ minLength: 1 }),
-  note: t.Optional(t.Union([t.String(), t.Null()])),
+  carrier: t.String({ minLength: 1, maxLength: 120 }),
+  trackingNumber: t.String({ minLength: 1, maxLength: 200 }),
+  note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
 });
 
 export const UpdateOrderTrackingDto = t.Object({
-  carrier: t.Optional(t.String({ minLength: 1 })),
-  trackingNumber: t.Optional(t.String({ minLength: 1 })),
-  note: t.Optional(t.Union([t.String(), t.Null()])),
+  carrier: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
+  trackingNumber: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
 });
 
 export const MarkOrderDeliveredDto = t.Object({
-  note: t.Optional(t.Union([t.String(), t.Null()])),
+  note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
 });
 
 export const CancelOrderDto = t.Object({
@@ -119,7 +119,7 @@ export const CancelOrderDto = t.Object({
 });
 
 export const RecordOrderRefundDto = t.Object({
-  amount: t.String({ minLength: 1 }),
+  amount: t.String({ minLength: 1, maxLength: 32 }),
   reason: t.String({ minLength: 1, maxLength: 200 }),
   note: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
   restockInventory: t.Optional(t.Boolean({ default: false })),
