@@ -60,11 +60,9 @@ export function FeedbackButton() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+      <DialogTrigger render={<Button variant="ghost" size="icon" className="relative" />}>
           <MessageSquare className="h-5 w-5" />
           <span className="sr-only">Submit Feedback</span>
-        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

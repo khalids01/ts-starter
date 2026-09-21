@@ -250,7 +250,7 @@ function AdminLayout() {
           </SidebarContent>
         </Sidebar>
 
-        <SidebarInset className="flex flex-col">
+        <SidebarInset className="flex min-w-0 flex-col">
           <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-6">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
@@ -269,7 +269,7 @@ function AdminLayout() {
               <UserMenu />
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-y-auto">
+          <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-6">
             <Outlet />
           </main>
         </SidebarInset>

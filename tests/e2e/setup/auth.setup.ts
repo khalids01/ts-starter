@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { e2eRuntimeConfig } from "../../../packages/config/src/e2e.config";
-import { provisionE2eUsers, resetE2eUsers } from "../../setup/provision-users";
+import { provisionE2eUsers } from "../../setup/provision-users";
 import { TEST_USERS, type TestUser } from "../../users-config";
 const managerPermissions = [
   "admin.access", "admin.catalog.read", "admin.catalog.manage", "admin.products.read",
@@ -51,7 +51,6 @@ async function signup(page: import("@playwright/test").Page, user: TestUser) {
 test.describe.configure({ mode: "serial", timeout: 120_000 });
 
 test("@auth creates the public E2E identities through the real password signup UI", async ({ page }) => {
-  await resetE2eUsers();
   for (const user of Object.values(TEST_USERS)) {
     await signup(page, user);
   }

@@ -46,7 +46,8 @@ export default defineConfig({
     {
       name: "chromium",
       dependencies: ["setup"],
-      testMatch: /.*\.spec\.ts/,
+      testMatch: /__step_8_3__\/.*\.spec\.ts/,
+      testIgnore: [/\.critical\.spec\.ts/, /responsive\.spec\.ts/, /persona\.spec\.ts/],
       use: { ...devices["Desktop Chrome"], storageState: authState("owner") },
     },
     {
@@ -64,20 +65,20 @@ export default defineConfig({
     {
       name: "mobile",
       dependencies: ["setup"],
-      testMatch: /__step_8_3__/,
+      testMatch: /__step_8_3__\/responsive\.spec\.ts/,
       use: { ...devices["iPhone 13"], storageState: authState("owner") },
     },
     {
       name: "tablet",
       dependencies: ["setup"],
-      testMatch: /__step_8_3__/,
+      testMatch: /__step_8_3__\/responsive\.spec\.ts/,
       use: { ...devices["iPad (gen 7)"], storageState: authState("owner") },
     },
     ...(["owner", "admin", "commerceManager", "commerceViewer", "user"] as const).map(
       (key) => ({
         name: `persona-${key}`,
         dependencies: ["setup"],
-        testMatch: /__step_8_3__\//,
+        testMatch: /__step_8_3__\/persona\.spec\.ts/,
         use: { ...devices["Desktop Chrome"], storageState: authState(key) },
       }),
     ),

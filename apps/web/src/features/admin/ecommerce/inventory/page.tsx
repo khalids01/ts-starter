@@ -109,21 +109,23 @@ export function AdminInventoryPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-6 overflow-x-hidden">
       <EcommerceHeader
         title="Inventory"
         description="Receive stock, adjust quantities, and review stock movements."
       />
 
-      <Tabs defaultValue="stock" className="space-y-4">
-        <TabsList className="flex flex-wrap">
-          <TabsTrigger value="stock">Stock</TabsTrigger>
-          <TabsTrigger value="receive">Receive</TabsTrigger>
-          <TabsTrigger value="adjust">Adjustments</TabsTrigger>
-          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-          <TabsTrigger value="locations">Locations</TabsTrigger>
-          <TabsTrigger value="movements">Movements</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="stock" className="min-w-0 space-y-4">
+        <div className="max-w-full overflow-x-auto">
+          <TabsList className="min-w-max justify-start">
+            <TabsTrigger value="stock">Stock</TabsTrigger>
+            <TabsTrigger value="receive">Receive</TabsTrigger>
+            <TabsTrigger value="adjust">Adjustments</TabsTrigger>
+            <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+            <TabsTrigger value="locations">Locations</TabsTrigger>
+            <TabsTrigger value="movements">Movements</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="stock">
           <StockTable stocks={stocksQuery.data?.items ?? []} loading={stocksQuery.isLoading} />
