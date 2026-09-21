@@ -15,7 +15,7 @@ export function getSetCookieHeaders(headers: Headers): string[] {
   const nativeCookies = (headers as Headers & {
     getSetCookie?: () => string[];
   }).getSetCookie?.();
-  const cookies = nativeCookies ??
+  const cookies = nativeCookies?.length ? nativeCookies :
     (headers.get("set-cookie") ? [headers.get("set-cookie")!] : []);
 
   return cookies.flatMap(splitSetCookieHeader);

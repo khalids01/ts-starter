@@ -25,7 +25,7 @@ export function AdminCustomersPage() {
       {customers.map((customer) => <CustomerCard key={customer.id} customer={customer} />)}
     </div>
     <div className="hidden overflow-hidden rounded-lg border md:block"><Table><TableHeader><TableRow><TableHead>Customer</TableHead><TableHead>Phone</TableHead><TableHead>Orders</TableHead><TableHead>Completed spend</TableHead><TableHead>Updated</TableHead></TableRow></TableHeader><TableBody>
-      {customers.map((customer) => <TableRow key={customer.id}><TableCell><Link to="/admin/customers/$customerId" params={{ customerId: customer.id }} className="font-medium hover:underline">{customer.name}</Link><p className="text-xs text-muted-foreground">{customer.email}</p></TableCell><TableCell>{customer.phone || "—"}</TableCell><TableCell>{customer.orderCount}</TableCell><TableCell>{formatMoney(customer.totalCompletedSpend, customer.completedSpendCurrency)}</TableCell><TableCell>{formatDate(customer.updatedAt)}</TableCell></TableRow>)}
+      {customers.map((customer) => <TableRow key={customer.id}><TableCell><Link to="/admin/customers/$customerId" params={{ customerId: customer.id }} className="font-medium hover:underline">{customer.name}</Link><p className="text-xs text-muted-foreground">{customer.email}</p></TableCell><TableCell>{customer.phone || "—"}</TableCell><TableCell>{customer.orderCount}</TableCell><TableCell>{formatCompletedSpend(customer)}</TableCell><TableCell>{formatDate(customer.updatedAt)}</TableCell></TableRow>)}
       {!query.isLoading && customers.length === 0 ? <TableRow><TableCell colSpan={5} className="h-24 text-center text-muted-foreground">No customers found.</TableCell></TableRow> : null}
     </TableBody></Table></div>
     {query.isLoading ? <p className="text-sm text-muted-foreground">Loading customers...</p> : null}
@@ -33,5 +33,10 @@ export function AdminCustomersPage() {
 }
 
 function CustomerCard({ customer }: { customer: EcommerceCustomer }) {
-  return <Card><CardContent className="space-y-3 p-4"><div><Link to="/admin/customers/$customerId" params={{ customerId: customer.id }} className="font-medium hover:underline">{customer.name}</Link><p className="text-sm text-muted-foreground">{customer.email}</p><p className="text-sm text-muted-foreground">{customer.phone || "No phone"}</p></div><div className="flex justify-between text-sm"><span>{customer.orderCount} orders</span><span className="font-medium">{formatMoney(customer.totalCompletedSpend, customer.completedSpendCurrency)}</span></div></CardContent></Card>;
+  return <Card><CardContent className="space-y-3 p-4"><div><Link to="/admin/customers/$customerId" params={{ customerId: customer.id }} className="font-medium hover:underline">{customer.name}</Link><p className="text-sm text-muted-foreground">{customer.email}</p><p className="text-sm text-muted-foreground">{customer.phone || "No phone"}</p></div><div className="flex justify-between text-sm"><span>{customer.orderCount} orders</span><span className="font-medium">{formatCompletedSpend(customer)}</span></div></CardContent></Card>;
+}
+
+function formatCompletedSpend(customer: EcommerceCustomer) {
+  if (customer.completedSpend.length === 0) return formatMoney("0", "BDT");
+  return customer.completedSpend.map(({ amount, currency }) => formatMoney(amount, currency)).join(" + ");
 }

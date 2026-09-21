@@ -35,7 +35,7 @@ export function AdminCustomerDetailPage({ customerId }: { customerId: string }) 
   if (!query.data) return <p className="text-sm text-destructive">Customer not found.</p>;
   const customer = query.data;
   return <div className="space-y-6">
-    <div><Link to="/admin/customers" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mb-2 -ml-3")}><ArrowLeft className="size-4" />Customers</Link><h1 className="text-2xl font-semibold tracking-tight">{customer.name}</h1><p className="text-sm text-muted-foreground">{customer.orderCount} orders · {formatMoney(customer.totalCompletedSpend, customer.completedSpendCurrency)} completed spend</p></div>
+    <div><Link to="/admin/customers" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mb-2 -ml-3")}><ArrowLeft className="size-4" />Customers</Link><h1 className="text-2xl font-semibold tracking-tight">{customer.name}</h1><p className="text-sm text-muted-foreground">{customer.orderCount} orders · {formatCompletedSpend(customer)} completed spend</p></div>
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.7fr)]">
       <div className="space-y-6">
         <Card><CardHeader><CardTitle>Order history</CardTitle><CardDescription>Newest orders first.</CardDescription></CardHeader><CardContent className="space-y-3">{customer.orders?.map((order) => <Link key={order.id} to="/admin/orders/$orderId" params={{ orderId: order.id }} className="flex flex-col gap-2 rounded-md border p-3 hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium">{order.orderNumber}</p><p className="text-xs text-muted-foreground">{formatDate(order.placedAt)} · {order.orderStatus} · {order.paymentStatus}</p></div><p className="font-medium">{formatMoney(order.totalAmount, order.currency)}</p></Link>)}{!customer.orders?.length ? <p className="text-sm text-muted-foreground">No linked orders yet. Historical orders require the approved backfill.</p> : null}</CardContent></Card>
@@ -47,3 +47,8 @@ export function AdminCustomerDetailPage({ customerId }: { customerId: string }) 
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <div className="space-y-1.5"><Label>{label}</Label>{children}</div>; }
+
+function formatCompletedSpend(customer: EcommerceCustomer) {
+  if (customer.completedSpend.length === 0) return formatMoney("0", "BDT");
+  return customer.completedSpend.map(({ amount, currency }) => formatMoney(amount, currency)).join(" + ");
+}

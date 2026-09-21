@@ -39,7 +39,7 @@ function nullableText(value: string | null) {
   return normalized ? normalized : null;
 }
 
-function validated(input: UpdateStoreSettingsInput): StoreSettings {
+export function validateStoreSettings(input: UpdateStoreSettingsInput): StoreSettings {
   const storeName = input.storeName.trim();
   const defaultCurrency = input.defaultCurrency.trim().toUpperCase();
   const orderNumberPrefix = input.orderNumberPrefix.trim().toUpperCase();
@@ -89,7 +89,7 @@ export const storeSettingsService = {
   },
 
   async update(input: UpdateStoreSettingsInput) {
-    const settings = validated(input);
+    const settings = validateStoreSettings(input);
     const row = await prisma.storeSettings.upsert({
       where: { id: STORE_SETTINGS_ID },
       create: settings,

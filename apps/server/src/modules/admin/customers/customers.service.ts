@@ -12,13 +12,27 @@ function iso(value: Date | string) {
   return value instanceof Date ? value.toISOString() : value;
 }
 
-function orderSpend(order: any) {
+export function orderSpend(order: any) {
   if (order.orderStatus !== "completed" || !qualifyingPayments.includes(order.paymentStatus)) return 0;
   const refunded = (order.refunds ?? []).reduce((sum: number, refund: any) => sum + Number(refund.amount), 0);
   return Math.max(0, Number(order.totalAmount) - refunded);
 }
 
+export function completedSpendByCurrency(orders: any[]) {
+  const totals = new Map<string, number>();
+  for (const order of orders) {
+    const amount = orderSpend(order);
+    if (amount <= 0) continue;
+    totals.set(order.currency, (totals.get(order.currency) ?? 0) + amount);
+  }
+  return [...totals.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([currency, amount]) => ({ currency, amount: amount.toFixed(2) }));
+}
+
 function summary(customer: any) {
+  const completedSpend = completedSpendByCurrency(customer.orders ?? []);
+  const singleCurrencySpend = completedSpend.length === 1 ? completedSpend[0] : null;
   return {
     id: customer.id,
     userId: customer.userId,
@@ -27,8 +41,9 @@ function summary(customer: any) {
     phone: customer.phone,
     adminNote: customer.adminNote,
     orderCount: customer._count?.orders ?? customer.orders?.length ?? 0,
-    totalCompletedSpend: (customer.orders ?? []).reduce((sum: number, order: any) => sum + orderSpend(order), 0).toFixed(2),
-    completedSpendCurrency: customer.orders?.[0]?.currency ?? "BDT",
+    completedSpend,
+    totalCompletedSpend: singleCurrencySpend?.amount ?? null,
+    completedSpendCurrency: singleCurrencySpend?.currency ?? null,
     createdAt: iso(customer.createdAt),
     updatedAt: iso(customer.updatedAt),
   };

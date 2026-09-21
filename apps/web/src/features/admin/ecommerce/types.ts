@@ -411,8 +411,9 @@ export type EcommerceCustomer = {
   phone?: string | null;
   adminNote?: string | null;
   orderCount: number;
-  totalCompletedSpend: string;
-  completedSpendCurrency: string;
+  completedSpend: Array<{ currency: string; amount: string }>;
+  totalCompletedSpend: string | null;
+  completedSpendCurrency: string | null;
   createdAt: string;
   updatedAt: string;
   user?: { id: string; name: string; email: string; image?: string | null } | null;

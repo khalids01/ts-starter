@@ -44,6 +44,7 @@
     "test:e2e:provision": "bun --env-file=tests/env/.env tests/setup/provision-users.ts",
     "test:e2e:reset": "bun --env-file=tests/env/.env tests/setup/reset-test-state.ts",
     "test:e2e:setup": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test --project=setup",
+    "test:e2e:integration": "bun --env-file=tests/env/.env test tests/integration/ecommerce.real-db.test.ts",
     "test:e2e": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
     "test:e2e:auth": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test --project=chromium --grep @auth",
     "e2e": "DISPLAY=${DISPLAY:-:1} E2E_MANAGED_SERVER=true bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
