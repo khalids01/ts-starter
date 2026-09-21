@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-20
 
-Status: Step 8.1 test-infrastructure code is implemented and statically/unit verified. Runtime, browser, database, and user-review gates remain.
+Status: Step 8.1 is complete. Steps 8.2-8.4 are in progress with unit, guarded database, and browser verification passing; coverage and security acceptance gates remain.
 
 ## Purpose
 
@@ -55,10 +55,10 @@ Update this table at the end of every approved substep. A substep is not complet
 | Substep | Status | Implementation evidence | Verification evidence | Findings/fixes | Limitations or next gate |
 | --- | --- | --- | --- | --- | --- |
 | 8.0 Documentation reconciliation | Completed; awaiting user review | This plan created; V2 progress status reconciled | Documentation inspected for matching status and links | Step 2 and Step 7 status corrected; stale Step 5 next action removed | No runtime, test, security, performance, or browser claims made |
-| 8.1 Test infrastructure and personas | Implemented; awaiting user-controlled runtime gates and review | `docker-compose.e2e.yml`, guarded setup scripts, public fictional personas, Playwright setup/config, ignored artifacts | 9 focused Bun tests, Playwright discovery, Compose validation, web boundary check, typechecks, and production build passed | Server/web use the standard local ports `3000`/`3001`; reset intentionally refuses destructive mutation pending an approved exact workflow | Requires isolated services, disposable-database migrations/RBAC seed, real signup/provision/login session run, then user review |
-| 8.2 Unit and integration coverage | Not started | — | — | — | Requires 8.1 completion and approval |
-| 8.3 Playwright E2E | Not started | — | — | — | Requires 8.2 completion and permission to start isolated services |
-| 8.4 Security hardening | Not started | — | — | — | Active scans require explicit target approval |
+| 8.1 Test infrastructure and personas | Completed and user-approved | `docker-compose.e2e.yml`, guarded setup scripts, fictional personas, Playwright setup/config, ignored artifacts | Real signup, role provisioning, login, and saved persona sessions pass against guarded E2E-only PostgreSQL and Redis targets | Auth setup now tolerates existing isolated test identities without resetting unrelated data | Complete |
+| 8.2 Unit and integration coverage | In progress | Added bounded-input, customer accounting, store-settings, and guarded real-PostgreSQL invariant tests | 232 server tests pass; 2 real-PostgreSQL tests pass for concurrent normalized-email uniqueness and transaction rollback | Multi-currency customer spend is no longer combined into an invalid total; auth cookie regression covered | Coverage thresholds, remaining service invariants, and the required second clean run remain |
+| 8.3 Playwright E2E | In progress | Added admin route smoke, five persona authorization checks, critical Firefox/WebKit smoke, and mobile/tablet overflow checks | 20/20 Playwright tests pass after fixing the admin flex-shell and inventory tab overflow | Tablet inventory overflow and WebKit navigation race fixed | Full commerce lifecycle, accessibility, and visual-regression acceptance remain |
+| 8.4 Security hardening | In progress | Added request/body limits, stricter CSP, DTO collection/string caps, and dependency refresh | Security-header and input-limit tests pass; local secret-pattern scan found no tracked-source matches | Audit reduced but still reports 25 advisories: 2 critical and 23 high, mainly transitive | Resolve or explicitly accept remaining advisories; run approved active scan and record evidence |
 | 8.5 Performance and capacity | Not started | — | — | — | Remote load requires explicit staging approval |
 | 8.6 Admin tutorials | Not started | — | — | — | Reuses approved E2E fixtures and workflows |
 | 8.7 Final release audit | Not started | — | — | — | Requires every prior gate |
