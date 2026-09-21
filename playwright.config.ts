@@ -3,6 +3,20 @@ import { TEST_USERS } from "./tests/users-config";
 
 const baseURL = process.env.E2E_WEB_URL ?? "http://localhost:3001";
 const authState = (key: keyof typeof TEST_USERS) => TEST_USERS[key].storageStatePath;
+const managedWebServer = process.env.E2E_MANAGED_SERVER === "true"
+  ? {
+      command: "bun run build && bun start",
+      url: `${baseURL}/signup`,
+      reuseExistingServer: false,
+      timeout: 120_000,
+      stdout: "pipe" as const,
+      stderr: "pipe" as const,
+      gracefulShutdown: {
+        signal: "SIGTERM" as const,
+        timeout: 5_000,
+      },
+    }
+  : undefined;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -15,6 +29,7 @@ export default defineConfig({
     ["html", { outputFolder: "tests/artifacts/playwright-report", open: "never" }],
     ["json", { outputFile: "tests/artifacts/playwright-report/results.json" }],
   ],
+  webServer: managedWebServer,
   use: {
     baseURL,
     trace: "on-first-retry",

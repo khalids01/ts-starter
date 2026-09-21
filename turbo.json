@@ -19,7 +19,14 @@
     },
     "start": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "E2E_MODE",
+        "NODE_ENV",
+        "DATABASE_URL",
+        "REDIS_URL",
+        "BETTER_AUTH_SECRET"
+      ]
     },
     
     "db:reset": {

@@ -24,8 +24,10 @@
   "type": "module",
   "scripts": {
     "dev": "turbo dev",
-    "start": "turbo -F web -F server start",
-    "build": "turbo build",
+    "start": "bun --env-file=tests/env/.env ./node_modules/.bin/turbo --env-mode=loose -F web -F server start",
+    "start:production": "turbo -F web -F server start",
+    "build": "bun --env-file=tests/env/.env ./node_modules/.bin/turbo --env-mode=loose build",
+    "build:production": "turbo build",
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
@@ -44,6 +46,7 @@
     "test:e2e:setup": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test --project=setup",
     "test:e2e": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
     "test:e2e:auth": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test --project=chromium --grep @auth",
+    "e2e": "DISPLAY=${DISPLAY:-:1} E2E_MANAGED_SERVER=true bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
     "view-archi": "bun scripts/serve-architecture.ts"
   },
   "dependencies": {

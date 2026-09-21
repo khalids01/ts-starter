@@ -33,7 +33,14 @@ describe("validateTestEnvironment", () => {
   test("rejects a development-shaped database name", () => {
     expect(() =>
       validateTestEnvironment({ ...safeEnvironment, DATABASE_URL: "postgresql://e2e:secret@127.0.0.1:5433/saas" }),
-    ).toThrow("end with _e2e");
+    ).toThrow("start with e2e_ or end with _e2e");
+  });
+
+  test("accepts an E2E-prefixed database name", () => {
+    expect(validateTestEnvironment({
+      ...safeEnvironment,
+      DATABASE_URL: "postgresql://e2e:secret@127.0.0.1:5432/e2e_ecommerce",
+    }).databaseName).toBe("e2e_ecommerce");
   });
 
   test("rejects a production-shaped database host", () => {

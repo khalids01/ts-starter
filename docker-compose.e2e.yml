@@ -30,18 +30,6 @@ services:
       timeout: 5s
       retries: 5
 
-  mailpit-e2e:
-    image: axllent/mailpit:v1.28
-    container_name: ts-starter-e2e-mailpit
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8025/api/v1/messages"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   ts_starter_e2e_postgres_data:
   ts_starter_e2e_redis_data:

@@ -77,8 +77,8 @@ export function validateTestEnvironment(
   if (redisUrl.protocol !== "redis:" && redisUrl.protocol !== "rediss:") {
     throw new Error("REDIS_URL must use the Redis protocol");
   }
-  if (name !== "ts_starter_e2e" && !name.endsWith("_e2e")) {
-    throw new Error("E2E database name must be ts_starter_e2e or end with _e2e");
+  if (!name.startsWith("e2e_") && !name.endsWith("_e2e")) {
+    throw new Error("E2E database name must start with e2e_ or end with _e2e");
   }
   if (!redisKeyPrefix.startsWith("ts-starter:e2e:")) {
     throw new Error("REDIS_KEY_PREFIX must begin with ts-starter:e2e:");

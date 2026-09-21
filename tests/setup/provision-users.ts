@@ -49,6 +49,16 @@ async function loadRbacDependencies() {
   return { prisma: database.default, ...roles, ...assignments, ...cache };
 }
 
+export async function resetE2eUsers() {
+  printValidatedTestEnvironment(assertTestEnvironment());
+  const { prisma } = await loadRbacDependencies();
+  const expectedEmails = Object.values(TEST_USERS).map(({ email }) => email);
+  const result = await prisma.user.deleteMany({
+    where: { email: { in: expectedEmails } },
+  });
+  console.log(`Removed ${result.count} configured E2E users.`);
+}
+
 async function ensureCustomRole(
   dependencies: Awaited<ReturnType<typeof loadRbacDependencies>>,
   definition: CustomRoleDefinition,

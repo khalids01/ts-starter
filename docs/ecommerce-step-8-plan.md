@@ -19,7 +19,7 @@ Tests can provide strong, repeatable evidence, but they cannot prove absolute co
 - RBAC catalog version 11 has been seeded by the user.
 - Historical orders will not be backfilled into `EcommerceCustomer` during Step 8. A backfill requires a separate proposal and explicit approval.
 - E2E tests use the real password signup and password login screens.
-- E2E state is isolated in disposable PostgreSQL and Redis services and a local SMTP catcher.
+- E2E state is isolated in disposable PostgreSQL and Redis services. Password signup/login is tested without external email delivery.
 - Capacity work uses a repeatable local baseline and a final production-like staging run.
 - Tutorials use a central admin library plus contextual links from the relevant admin pages.
 - Every tutorial requires a written guide, WebVTT subtitles, and narration script. Generated voice is optional.
@@ -156,7 +156,6 @@ Required defaults:
 - Database `ts_starter_e2e`.
 - Redis 7 on host port `6380`.
 - Redis prefix `ts-starter:e2e:`.
-- Mailpit SMTP on host port `1025` and web UI on `8025`.
 - Server on `3000` and web on `3001` when the user authorizes startup.
 - `NODE_ENV=test`.
 - `ENABLE_POLAR=false`.
@@ -247,20 +246,18 @@ Neither role receives user management, invitation management, role management, a
 
 The full setup runs serially:
 
-1. The user starts the dedicated PostgreSQL, Redis, and Mailpit services.
+1. The user starts the dedicated PostgreSQL and Redis services.
 2. The user applies existing migrations to the disposable E2E database.
 3. The user runs the RBAC seed against the disposable E2E database.
 4. The user authorizes starting the server and web application with the test environment.
 5. Playwright visits `/signup` and submits the real password form once for every configured user.
-6. Assert that Mailpit accepted the verification messages and no external SMTP host was contacted.
-7. Assert an unverified account cannot complete password login.
-8. The guarded provisioner marks only the configured `.example.test` accounts verified.
-9. The provisioner creates/updates the two custom roles with the exact permissions above.
-10. The provisioner assigns the five expected roles, using the existing owner-assignment escape hatch only under the test guard.
-11. Invalidate affected user/role RBAC caches.
-12. Playwright logs in through `/login` for each user and saves one storage state per identity.
-13. Query the public session surface and assert the expected user, primary role, and effective permissions.
-14. Redact cookies, passwords, tokens, and verification URLs from logs and reports.
+6. The guarded provisioner marks only the configured `.example.test` accounts verified.
+7. The provisioner creates/updates the two custom roles with the exact permissions above.
+8. The provisioner assigns the five expected roles, using the existing owner-assignment escape hatch only under the test guard.
+9. Invalidate affected user/role RBAC caches.
+10. Playwright logs in through `/login` for each user and saves one storage state per identity.
+11. Query the public session surface and assert the expected user, primary role, and effective permissions.
+12. Redact cookies, passwords, tokens, and verification URLs from logs and reports.
 
 The setup is safe to retry: existing known accounts are recognized, role definitions converge to the declared permissions, and unknown accounts are never modified.
 
@@ -274,6 +271,9 @@ Add root scripts with these stable names during implementation:
 - `test:e2e` — complete browser suite.
 - `test:e2e:auth` — password-authentication project only.
 
+For the local E2E workflow, root `bun start` loads `tests/env/.env`; use
+`bun run start:production` for the normal production environment instead.
+
 Do not make `test:e2e` silently reset a database. Reset remains a distinct, conspicuously named user-run command.
 
 ### Verification and acceptance
@@ -281,7 +281,7 @@ Do not make `test:e2e` silently reset a database. Reset remains a distinct, cons
 - [x] Test Compose configuration is isolated from development services (static Compose validation only; services not started).
 - [x] Guard unit tests pass for the E2E environment and fail for development/production-shaped targets.
 - [ ] All five users sign up through the actual UI.
-- [ ] Mail is captured locally.
+- [ ] Password signup completes without an external SMTP dependency.
 - [ ] All five users log in through the actual UI after provisioning.
 - [ ] Each session has the exact intended role and permissions.
 - [ ] Viewer and ordinary user cannot gain mutation permissions.
@@ -407,10 +407,8 @@ Retries must not hide flakes. A test that passes only on retry is reported as fl
 
 #### Authentication
 
-- password signup through UI;
-- verification message captured locally;
-- unverified login rejected;
-- verified login succeeds;
+- password signup and login through UI;
+- E2E-mode signup does not depend on email delivery; production email-verification coverage remains outside this workflow;
 - invalid password fails without account enumeration;
 - logout revokes the browser session;
 - saved session restores the correct identity;

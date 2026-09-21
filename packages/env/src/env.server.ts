@@ -35,6 +35,10 @@ export const env = createEnv({
       .string()
       .default("false")
       .transform((val) => val === "true"),
+    E2E_MODE: z
+      .string()
+      .default("false")
+      .transform((val) => val === "true"),
     CORS_ORIGIN: z.url(),
     NODE_ENV: z
       .enum(["development", "production", "test"])
@@ -49,8 +53,8 @@ export const env = createEnv({
     FILE_SERVER_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
-    ...e2eDefaults,
     ...process.env,
+    ...e2eDefaults,
   },
   emptyStringAsUndefined: true,
 });

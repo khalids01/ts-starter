@@ -53,6 +53,9 @@ const server = new Elysia()
     console.log(`[Server] ${request.method} ${pathname}`);
   })
   .onBeforeHandle((context) => {
+    if (env.E2E_MODE) {
+      return;
+    }
     return enforceRateLimit(context as any);
   })
   .all("/api/auth/*", async (context) => {

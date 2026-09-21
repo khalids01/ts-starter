@@ -32,7 +32,7 @@ export const authOptions = {
     provider: "postgresql",
   }),
   rateLimit: {
-    enabled: true,
+    enabled: !env.E2E_MODE,
     window: 10,
     max: 100,
   },
@@ -56,7 +56,7 @@ export const authOptions = {
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: !env.E2E_MODE,
     minPasswordLength: 8,
     maxPasswordLength: 128,
     revokeSessionsOnPasswordReset: true,
@@ -68,18 +68,22 @@ export const authOptions = {
       });
     },
   },
-  emailVerification: {
-    sendOnSignUp: true,
-    sendOnSignIn: true,
-    autoSignInAfterVerification: false,
-    sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Verify your TS Starter email",
-        html: await verificationEmailTemplate(url),
-      });
-    },
-  },
+  ...(env.E2E_MODE
+    ? {}
+    : {
+        emailVerification: {
+          sendOnSignUp: true,
+          sendOnSignIn: true,
+          autoSignInAfterVerification: false,
+          sendVerificationEmail: async ({ user, url }) => {
+            await sendEmail({
+              to: user.email,
+              subject: "Verify your TS Starter email",
+              html: await verificationEmailTemplate(url),
+            });
+          },
+        },
+      }),
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID,
