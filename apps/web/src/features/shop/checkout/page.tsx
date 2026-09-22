@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -95,6 +95,7 @@ export function CheckoutPage() {
         code: form.discountCode,
         subtotalAmount: cart.subtotalAmount,
         currency: cart.currency,
+        customerEmail: form.customerEmail,
       });
       if (error) throw new Error(String(error.value?.message || error.message || "Discount code is invalid"));
       return data as Omit<AppliedDiscount, "sourceSubtotal">;
@@ -234,9 +235,10 @@ export function CheckoutPage() {
                 </RadioGroup>
               </div>
               <div className="space-y-1.5">
-                <Label>Discount code</Label>
+                <Label htmlFor="checkout-discount-code">Discount code</Label>
                 <div className="flex gap-2">
                   <Input
+                    id="checkout-discount-code"
                     value={form.discountCode}
                     onChange={(event) => {
                       setForm({ ...form, discountCode: event.target.value.toUpperCase() });
@@ -251,8 +253,9 @@ export function CheckoutPage() {
                 {activeDiscount ? <p className="text-xs text-emerald-700 dark:text-emerald-300">{activeDiscount.code} applied{activeDiscount.description ? ` · ${activeDiscount.description}` : ""}</p> : null}
               </div>
               <div className="space-y-1.5">
-                <Label>Notes</Label>
+                <Label htmlFor="checkout-notes">Notes</Label>
                 <Textarea
+                  id="checkout-notes"
                   value={form.customerNotes}
                   onChange={(event) => setForm({ ...form, customerNotes: event.target.value })}
                   placeholder="Delivery notes"
@@ -276,10 +279,12 @@ function TextField(props: {
   onChange: (value: string) => void;
   type?: string;
 }) {
+  const id = useId();
   return (
     <div className="space-y-1.5">
-      <Label>{props.label}</Label>
+      <Label htmlFor={id}>{props.label}</Label>
       <Input
+        id={id}
         type={props.type}
         value={props.value}
         onChange={(event) => props.onChange(event.target.value)}

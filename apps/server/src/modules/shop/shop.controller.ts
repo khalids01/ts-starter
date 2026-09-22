@@ -134,9 +134,13 @@ export const shopController = new Elysia({
     "/discounts/validate",
     async ({ userId, body, set }) => {
       try {
+        const guestEmail = body.customerEmail?.trim().toLowerCase();
+        if (!userId && !guestEmail) {
+          throw new ShopServiceError("Email is required to validate a discount", 400);
+        }
         return await discountService.validate({
           ...body,
-          customerKey: `user:${requireUserId(userId)}`,
+          customerKey: userId ? `user:${userId}` : `email:${guestEmail}`,
         });
       } catch (error) {
         if (error instanceof DiscountServiceError) {
@@ -155,7 +159,7 @@ export const shopController = new Elysia({
     "/checkout",
     async ({ userId, body, set }) => {
       try {
-        const result = await orderService.checkout(requireUserId(userId), body);
+        const result = await orderService.checkout(userId, body);
         return {
           orderId: result.orderId,
           orderNumber: result.orderNumber,

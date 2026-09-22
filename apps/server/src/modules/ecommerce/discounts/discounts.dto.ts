@@ -31,6 +31,7 @@ export const ValidateDiscountDto = t.Object({
   code: t.String({ minLength: 1, maxLength: 80 }),
   subtotalAmount: t.Union([t.String({ maxLength: 32 }), t.Number()]),
   currency: t.String({ minLength: 3, maxLength: 3 }),
+  customerEmail: t.Optional(t.String({ format: "email", maxLength: 254 })),
 });
 
 export type ListDiscountsQuery = typeof ListDiscountsQueryDto.static;

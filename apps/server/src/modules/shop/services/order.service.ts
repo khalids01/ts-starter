@@ -34,6 +34,38 @@ function reservationExpiresAt(minutes: number) {
   return new Date(Date.now() + minutes * 60 * 1000);
 }
 
+type CheckoutTransactionResult = {
+  order: { id: string; orderNumber: string };
+  totalAmount: string;
+};
+
+async function runSerializableCheckout(
+  checkoutKey: string | null,
+  operation: (tx: Prisma.TransactionClient) => Promise<CheckoutTransactionResult>,
+) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await prisma.$transaction(operation, { isolationLevel: "Serializable" });
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (checkoutKey && (code === "P2002" || code === "P2034")) {
+        const existingOrder = await prisma.order.findUnique({ where: { checkoutKey } });
+        if (existingOrder) {
+          return {
+            order: existingOrder,
+            totalAmount: decimalToString(existingOrder.totalAmount) ?? "0.00",
+          };
+        }
+      }
+      if (code !== "P2034" || attempt === maxAttempts) {
+        throw error;
+      }
+    }
+  }
+  throw new ShopServiceError("Checkout could not be completed", 409);
+}
+
 function checkoutLineFromItem(item: any) {
   if (!isVariantSellable(item.variant)) {
     throw new ShopServiceError(
@@ -215,12 +247,14 @@ export const orderService = {
     return rates.map(mapShippingRate);
   },
 
-  async checkout(userId: string, input: CheckoutInput) {
+  async checkout(userId: string | undefined, input: CheckoutInput) {
     const settings = await storeSettingsService.get();
     if (!settings.checkoutEnabled) {
       throw new ShopServiceError(settings.checkoutNotice ?? "Checkout is temporarily unavailable", 409);
     }
-    const checkoutKey = normalizedCheckoutKey(userId, input.idempotencyKey);
+    const customerEmail = input.customerEmail.trim().toLowerCase();
+    const customerKey = userId ? `user:${userId}` : `email:${customerEmail}`;
+    const checkoutKey = normalizedCheckoutKey(userId ?? customerEmail, input.idempotencyKey);
     if (checkoutKey) {
       const existingOrder = await prisma.order.findUnique({
         where: { checkoutKey },
@@ -262,7 +296,6 @@ export const orderService = {
     const orderNumber = `${settings.orderNumberPrefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
     const expiresAt = reservationExpiresAt(settings.reservationDurationMinutes);
     const customerName = input.customerName.trim();
-    const customerEmail = input.customerEmail.trim().toLowerCase();
     const customerPhone = nullableTrimmed(input.customerPhone);
     const addressFallback = {
       name: customerName,
@@ -275,7 +308,7 @@ export const orderService = {
       addressFallback,
     );
 
-    const checkoutResult = await prisma.$transaction(async (tx) => {
+    const checkoutResult = await runSerializableCheckout(checkoutKey, async (tx) => {
       const customer = await upsertCheckoutCustomer(tx, {
         userId,
         name: customerName,
@@ -289,7 +322,7 @@ export const orderService = {
             code: input.discountCode!,
             subtotalAmount: subtotal.toFixed(2),
             currency: orderCurrency,
-            customerKey: `user:${userId}`,
+            customerKey,
           });
         } catch (error) {
           if (error instanceof DiscountServiceError) {
@@ -404,7 +437,7 @@ export const orderService = {
           data: {
             discountCodeId: discountResult.discount.id,
             orderId: created.id,
-            customerKey: `user:${userId}`,
+            customerKey,
             amount: discountResult.amount,
             currency: orderCurrency,
           },
@@ -412,7 +445,7 @@ export const orderService = {
       }
 
       return { order: created, totalAmount: total.toFixed(2) };
-    }, { isolationLevel: "Serializable" });
+    });
 
     return {
       orderId: checkoutResult.order.id,
