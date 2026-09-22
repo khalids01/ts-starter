@@ -33,6 +33,29 @@ test("persona session and server-side mutation denial match its role", async ({ 
     expect([401, 403]).toContain(mutation.status());
   }
 
+  if (key === "commerceManager") {
+    await page.goto("/admin/products");
+    await expect(page).toHaveURL(/\/admin\/products$/);
+    await page.goto("/admin/roles");
+    await expect(page).not.toHaveURL(/\/admin\/roles$/);
+  }
+
+  if (key === "commerceViewer") {
+    await page.goto("/admin/products");
+    await expect(page).toHaveURL(/\/admin\/products$/);
+    await expect(page.getByRole("link", { name: /new product/i })).toHaveCount(0);
+  }
+
+  if (key === "admin") {
+    await page.goto("/admin/roles");
+    await expect(page).not.toHaveURL(/\/admin\/roles$/);
+  }
+
+  if (key === "owner") {
+    await page.goto("/admin/roles");
+    await expect(page).toHaveURL(/\/admin\/roles$/);
+  }
+
   if (key === "user") {
     await page.goto("/admin/products");
     await expect(page).not.toHaveURL(/\/admin\/products$/);

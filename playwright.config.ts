@@ -74,6 +74,16 @@ export default defineConfig({
       testMatch: /__step_8_3__\/responsive\.spec\.ts/,
       use: { ...devices["iPad (gen 7)"], storageState: authState("owner") },
     },
+    {
+      name: "desktop-responsive",
+      dependencies: ["setup"],
+      testMatch: /__step_8_3__\/responsive\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        storageState: authState("owner"),
+      },
+    },
     ...(["owner", "admin", "commerceManager", "commerceViewer", "user"] as const).map(
       (key) => ({
         name: `persona-${key}`,
