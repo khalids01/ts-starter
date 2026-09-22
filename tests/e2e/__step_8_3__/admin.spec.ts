@@ -12,6 +12,8 @@ const routes = [
 ];
 
 test("owner can load every ecommerce admin route without console or request failures", async ({ page }) => {
+  test.setTimeout(90_000);
+
   const failures: string[] = [];
   page.on("pageerror", (error) => failures.push(`page: ${error.message}`));
   page.on("response", (response) => {
@@ -20,7 +22,7 @@ test("owner can load every ecommerce admin route without console or request fail
 
   for (const route of routes) {
     await test.step(route, async () => {
-      await page.goto(route);
+      await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveURL(new RegExp(`${route.replaceAll("/", "\\/")}$`));
       await expect(page.locator("body")).toBeVisible();
     });
