@@ -1,5 +1,10 @@
 import { t } from "elysia";
 
+const HttpUrlDto = t.String({
+  maxLength: 2048,
+  pattern: "^https?://",
+});
+
 export const ProductStatusDto = t.Union([
   t.Literal("draft"),
   t.Literal("active"),
@@ -34,7 +39,7 @@ export const CreateProductDto = t.Object({
   description: t.Optional(t.Union([t.String({ maxLength: 10_000 }), t.Null()])),
   descriptionHtml: t.Optional(t.Union([t.String({ maxLength: 50_000 }), t.Null()])),
   brandId: t.Optional(t.Union([t.String({ maxLength: 128 }), t.Null()])),
-  coverImageUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
+  coverImageUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
   searchKeywords: t.Optional(t.Array(t.String({ maxLength: 100 }), { maxItems: 50 })),
   isTrending: t.Optional(t.Boolean()),
   badgeLabel: t.Optional(t.Union([t.String({ maxLength: 80 }), t.Null()])),
@@ -54,7 +59,7 @@ export const UpdateProductDto = t.Partial(
     status: ProductStatusDto,
     isActive: t.Boolean(),
     isFeatured: t.Boolean(),
-    coverImageUrl: t.Union([t.String({ maxLength: 2048 }), t.Null()]),
+    coverImageUrl: t.Union([HttpUrlDto, t.Null()]),
     searchKeywords: t.Array(t.String({ maxLength: 100 }), { maxItems: 50 }),
     isTrending: t.Boolean(),
     badgeLabel: t.Union([t.String({ maxLength: 80 }), t.Null()]),
@@ -89,7 +94,7 @@ export const ProductVariantInputDto = t.Object({
   currency: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
   isDefault: t.Optional(t.Boolean()),
   isActive: t.Optional(t.Boolean()),
-  imageUrls: t.Optional(t.Array(t.String({ maxLength: 2048 }), { maxItems: 20 })),
+  imageUrls: t.Optional(t.Array(HttpUrlDto, { maxItems: 20 })),
   weightValue: t.Optional(t.Union([t.String({ maxLength: 32 }), t.Number(), t.Null()])),
   weightUnit: t.Optional(t.Union([WeightUnitDto, t.Null()])),
   attributeValueIds: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 128 }), { maxItems: 100 })),
@@ -102,8 +107,8 @@ export const ReplaceProductVariantsDto = t.Object({
 export const ProductHighlightInputDto = t.Object({
   title: t.String({ minLength: 1, maxLength: 200 }),
   description: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-  iconUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
-  imageUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
+  iconUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
+  imageUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
   sortOrder: t.Optional(t.Number()),
 });
 

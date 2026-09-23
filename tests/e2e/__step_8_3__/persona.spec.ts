@@ -27,10 +27,26 @@ test("persona session and server-side mutation denial match its role", async ({ 
   }
 
   if (key === "commerceViewer" || key === "user") {
-    const mutation = await page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/products`, {
-      data: { categoryId: "forbidden", name: "Forbidden product" },
-    });
-    expect([401, 403]).toContain(mutation.status());
+    const deniedMutations = [
+      page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/products`, {
+        data: { categoryId: "forbidden", name: "Forbidden product" },
+      }),
+      page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/inventory/adjust`, {
+        data: { variantId: "forbidden", locationId: "forbidden", delta: 1, reason: "Forbidden" },
+      }),
+      page.request.patch(`${e2eRuntimeConfig.serverUrl}/admin/customers/forbidden`, {
+        data: { name: "Forbidden customer" },
+      }),
+      page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/orders/forbidden/cancel`, {
+        data: { reason: "Forbidden" },
+      }),
+      page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/roles`, {
+        data: { slug: "forbidden-role", name: "Forbidden role" },
+      }),
+    ];
+    for (const mutation of await Promise.all(deniedMutations)) {
+      expect([401, 403]).toContain(mutation.status());
+    }
   }
 
   if (key === "commerceManager") {
@@ -38,6 +54,10 @@ test("persona session and server-side mutation denial match its role", async ({ 
     await expect(page).toHaveURL(/\/admin\/products$/);
     await page.goto("/admin/roles");
     await expect(page).not.toHaveURL(/\/admin\/roles$/);
+    const roleMutation = await page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/roles`, {
+      data: { slug: "manager-escalation", name: "Manager escalation" },
+    });
+    expect(roleMutation.status()).toBe(403);
   }
 
   if (key === "commerceViewer") {
@@ -49,6 +69,10 @@ test("persona session and server-side mutation denial match its role", async ({ 
   if (key === "admin") {
     await page.goto("/admin/roles");
     await expect(page).not.toHaveURL(/\/admin\/roles$/);
+    const roleMutation = await page.request.post(`${e2eRuntimeConfig.serverUrl}/admin/roles`, {
+      data: { slug: "admin-escalation", name: "Admin escalation" },
+    });
+    expect(roleMutation.status()).toBe(403);
   }
 
   if (key === "owner") {

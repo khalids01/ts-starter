@@ -1,5 +1,10 @@
 import { t } from "elysia";
 
+const HttpUrlDto = t.String({
+  maxLength: 2048,
+  pattern: "^https?://",
+});
+
 export const CategoryBrandPolicyDto = t.Union([
   t.Literal("hidden"),
   t.Literal("optional"),
@@ -47,8 +52,8 @@ export const CreateCategoryDto = t.Object({
   slug: t.Optional(t.String({ maxLength: 160 })),
   description: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
   parentId: t.Optional(t.Union([t.String({ maxLength: 128 }), t.Null()])),
-  imageUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
-  iconUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
+  imageUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
+  iconUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
   brandPolicy: t.Optional(CategoryBrandPolicyDto),
   showStoreBrand: t.Optional(t.Boolean()),
   isActive: t.Optional(t.Boolean()),
@@ -106,8 +111,8 @@ export const CreateBrandDto = t.Object({
   name: t.String({ minLength: 1, maxLength: 120 }),
   slug: t.Optional(t.String({ maxLength: 160 })),
   description: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-  logoUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
-  websiteUrl: t.Optional(t.Union([t.String({ maxLength: 2048 }), t.Null()])),
+  logoUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
+  websiteUrl: t.Optional(t.Union([HttpUrlDto, t.Null()])),
   isActive: t.Optional(t.Boolean()),
   isFeatured: t.Optional(t.Boolean()),
 });

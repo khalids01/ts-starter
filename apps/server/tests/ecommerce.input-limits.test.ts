@@ -2,9 +2,11 @@ import { describe, expect, it } from "bun:test";
 import { Elysia } from "elysia";
 import { CheckoutDto } from "../src/modules/shop/dto/order.dto";
 import {
+  CreateProductDto,
   ReplaceProductHighlightsDto,
   ReplaceProductVariantsDto,
 } from "../src/modules/admin/products/products.dto";
+import { CreateCategoryDto } from "../src/modules/admin/catalog/catalog.dto";
 
 async function validate(schema: unknown, body: unknown) {
   const app = new Elysia().post("/", () => ({ ok: true }), { body: schema as never });
@@ -48,5 +50,22 @@ describe("ecommerce request limits", () => {
     expect((await validate(ReplaceProductVariantsDto, {
       variants: [{ price: "10.00", imageUrls: Array.from({ length: 21 }, () => "https://example.test/image.jpg") }],
     })).status).toBe(422);
+  });
+
+  it("rejects dangerous protocols in externally rendered URLs", async () => {
+    expect((await validate(CreateProductDto, {
+      categoryId: "category-1",
+      name: "Unsafe image",
+      coverImageUrl: "javascript:alert(1)",
+    })).status).toBe(422);
+    expect((await validate(CreateCategoryDto, {
+      name: "Unsafe category",
+      imageUrl: "data:text/html,<script>alert(1)</script>",
+    })).status).toBe(422);
+    expect((await validate(CreateProductDto, {
+      categoryId: "category-1",
+      name: "Safe image",
+      coverImageUrl: "https://cdn.example.test/image.webp",
+    })).status).toBe(200);
   });
 });

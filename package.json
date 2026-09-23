@@ -47,6 +47,8 @@
     "test:e2e:integration": "bun --env-file=tests/env/.env test tests/integration/ecommerce.real-db.test.ts",
     "test:e2e": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
     "test:e2e:auth": "bun --env-file=tests/env/.env ./node_modules/.bin/playwright test --project=chromium --grep @auth",
+    "test:ecommerce:coverage": "bun --cwd apps/server test --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=../../tests/artifacts/coverage ./tests",
+    "test:security:secrets": "bun tests/security/scan-secrets.ts",
     "e2e": "DISPLAY=${DISPLAY:-:1} E2E_MANAGED_SERVER=true bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
     "view-archi": "bun scripts/serve-architecture.ts"
   },
@@ -54,7 +56,7 @@
     "@env": "workspace:*",
     "@t3-oss/env-core": "^0.13.10",
     "dotenv": "^17.3.1",
-    "nodemailer": "^8.0.4",
+    "nodemailer": "^9.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

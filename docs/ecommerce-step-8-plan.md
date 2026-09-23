@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-22
 
-Status: Step 8.1 is complete. Steps 8.2-8.4 are in progress with unit, guarded database, and browser verification passing; coverage and security acceptance gates remain.
+Status: Step 8.1 is complete. Steps 8.2-8.4 are implemented through the current automated gates: unit, guarded database, 41-test browser, dependency, secret, and targeted security checks pass. Step 8.2 still lacks the planned branch metric, Step 8.3 awaits user review, and Step 8.4 still requires the approval-gated ZAP run and remaining abuse/IDOR coverage.
 
 ## Purpose
 
@@ -56,9 +56,9 @@ Update this table at the end of every approved substep. A substep is not complet
 | --- | --- | --- | --- | --- | --- |
 | 8.0 Documentation reconciliation | Completed; awaiting user review | This plan created; V2 progress status reconciled | Documentation inspected for matching status and links | Step 2 and Step 7 status corrected; stale Step 5 next action removed | No runtime, test, security, performance, or browser claims made |
 | 8.1 Test infrastructure and personas | Completed and user-approved | `docker-compose.e2e.yml`, guarded setup scripts, fictional personas, Playwright setup/config, ignored artifacts | Real signup, role provisioning, login, and saved persona sessions pass against guarded E2E-only PostgreSQL and Redis targets | Auth setup now tolerates existing isolated test identities without resetting unrelated data | Complete |
-| 8.2 Unit and integration coverage | In progress | Added bounded-input, customer accounting, store-settings, and guarded real-PostgreSQL constraint, rollback, checkout-race, idempotency, and discount-limit tests | 232 server tests pass; 6 real-PostgreSQL tests pass | Fixed concurrent idempotent checkout conflict handling; multi-currency customer spend remains separated; transaction rollback and last-item/discount races are proven | Coverage thresholds, remaining service invariants, and the required second clean run remain |
-| 8.3 Playwright E2E | In progress | Added a serial full-commerce lifecycle, authentication/session checks, admin smoke, five persona authorization checks, critical Firefox/WebKit smoke, and mobile/tablet/desktop overflow checks | 29/29 Playwright tests pass, including guest and authenticated checkout, fulfillment, cancellation, partial/full refunds, persisted inventory/discount/customer/timeline assertions, and cleanup | Enabled guest checkout with email-scoped discount/idempotency identity; fixed nested shop/checkout routes, checkout label accessibility, roles-list authorization, tablet overflow, and WebKit navigation | Complete every-route responsive/dialog/keyboard/state coverage, owner role/invitation UI workflows, disabled-password behavior, and visual regression |
-| 8.4 Security hardening | In progress | Added request/body limits, stricter CSP, DTO collection/string caps, and dependency refresh | Security-header and input-limit tests pass; local secret-pattern scan found no tracked-source matches | Audit reduced but still reports 25 advisories: 2 critical and 23 high, mainly transitive | Resolve or explicitly accept remaining advisories; run approved active scan and record evidence |
+| 8.2 Unit and integration coverage | In progress | Added bounded-input, customer accounting, customer identity, store-settings, discount, and guarded real-PostgreSQL constraint, rollback, checkout-race, idempotency, and discount-limit tests | Two clean server runs: 245/245 each; two guarded real-PostgreSQL runs: 6/6 each; coverage: 80.83% lines and 73.80% functions with retained LCOV | Fixed concurrent idempotent checkout conflict handling; multi-currency customer spend remains separated; transaction rollback and last-item/discount races are proven | Bun's current report does not expose branch coverage, so the planned 80%/90% branch gate is not yet evidenced |
+| 8.3 Playwright E2E | Implemented; awaiting user review | Added a serial full-commerce lifecycle, authentication/session and security checks, admin smoke, five persona authorization checks, critical Firefox/WebKit smoke, and all eight ecommerce admin routes at mobile/tablet/desktop | 41/41 Playwright tests pass, including guest/authenticated checkout, fulfillment, cancellation, partial/full refunds, persisted inventory/discount/customer/timeline assertions, RBAC denials, security headers, hostile input, and cleanup | Enabled guest checkout with email-scoped discount/idempotency identity; fixed nested shop/checkout routes, checkout accessibility, roles-list authorization, tablet overflow, WebKit navigation, and anonymous request isolation | Owner role/invitation UI workflows, disabled-password behavior, deeper dialog/keyboard/state coverage, and visual regression remain release-audit work |
+| 8.4 Security hardening | In progress | Added request/body limits, stricter CSP, URL protocol validation, DTO collection/string caps, dependency refresh, a high-confidence secret scanner, and dependency-risk record | Targeted header/CORS, anonymous denial, oversized-body, hostile-input, and URL tests pass; secret scan passes; 41-test browser suite passes | Removed shipped critical/high advisories for Next, h3, Nodemailer, PostCSS, and Sharp; remaining high advisories are documented transitive development-tool exposure | Complete remaining IDOR/auth abuse cases and run the approval-gated local ZAP plan before acceptance |
 | 8.5 Performance and capacity | Not started | — | — | — | Remote load requires explicit staging approval |
 | 8.6 Admin tutorials | Not started | — | — | — | Reuses approved E2E fixtures and workflows |
 | 8.7 Final release audit | Not started | — | — | — | Requires every prior gate |
@@ -375,12 +375,12 @@ Every ecommerce controller is checked as:
 
 ### Acceptance
 
-- [ ] Customer and settings gaps are covered.
-- [ ] Existing shipping/discount suites cover negative and concurrency cases.
-- [ ] Real PostgreSQL tests prove constraints, rollback, and races.
-- [ ] Role matrix is complete.
+- [x] Customer and settings gaps are covered.
+- [x] Existing shipping/discount suites cover negative and concurrency cases.
+- [x] Real PostgreSQL tests prove constraints, rollback, and races.
+- [x] Role matrix is complete across service/controller and browser/API tests.
 - [ ] Coverage thresholds pass and reports are retained as artifacts.
-- [ ] Two clean runs pass with exact counts recorded in the result ledger.
+- [x] Two clean runs pass with exact counts recorded in the result ledger.
 - [ ] User reviews and approves Step 8.2 before Step 8.3.
 
 ---
@@ -462,11 +462,11 @@ For every ecommerce admin route at mobile, tablet, and desktop:
 
 ### Acceptance
 
-- [ ] Chromium full suite passes.
-- [ ] Firefox/WebKit critical smoke passes.
-- [ ] Mobile/tablet/desktop matrix passes.
-- [ ] Role and direct-API denial matrix passes.
-- [ ] No unresolved flake, console error, hydration error, or failed request remains.
+- [x] Chromium full suite passes.
+- [x] Firefox/WebKit critical smoke passes.
+- [x] Mobile/tablet/desktop matrix passes.
+- [x] Role and direct-API denial matrix passes.
+- [x] No unresolved flake, console error, hydration error, or failed request remains.
 - [ ] User reviews and approves Step 8.3 before Step 8.4.
 
 ---
