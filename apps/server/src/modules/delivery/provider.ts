@@ -26,6 +26,7 @@ export type CourierCredentials = Readonly<{
 export type CourierCredentialSource = "server_environment" | "encrypted_database";
 
 export type CourierConnectionCredentialConfig = Readonly<{
+  credentialContext: string;
   providerCode: string;
   credentialSource: CourierCredentialSource;
   encryptedCredentials?: Readonly<{
