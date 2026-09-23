@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Permissions, type Permission } from "@rbac";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,9 +93,11 @@ export function TextField(props: {
   type?: string;
   disabled?: boolean;
 }) {
+  const id = useId();
   return (
-    <Field label={props.label}>
+    <Field label={props.label} htmlFor={id}>
       <Input
+        id={id}
         type={props.type}
         value={props.value}
         placeholder={props.placeholder}

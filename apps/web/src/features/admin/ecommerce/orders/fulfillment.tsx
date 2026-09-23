@@ -208,8 +208,9 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
                   setShipDraft({ ...shipDraft, trackingNumber })
                 }
               />
-              <Field label="Note">
+              <Field label="Note" htmlFor="ship-note">
                 <Textarea
+                  id="ship-note"
                   value={shipDraft.note}
                   placeholder="Optional note stored on the timeline event"
                   onChange={(event) =>
@@ -262,8 +263,9 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
                   setTrackingDraft({ ...trackingDraft, trackingNumber })
                 }
               />
-              <Field label="Note">
+              <Field label="Note" htmlFor="tracking-note">
                 <Textarea
+                  id="tracking-note"
                   value={trackingDraft.note}
                   placeholder="Optional note stored on the timeline event"
                   onChange={(event) =>
@@ -304,8 +306,9 @@ export function FulfillmentCard(props: { order: Order; canFulfill: boolean }) {
               on the timeline.
             </DialogDescription>
           </DialogHeader>
-          <Field label="Note">
+          <Field label="Note" htmlFor="delivery-note">
             <Textarea
+              id="delivery-note"
               value={deliverNote}
               placeholder="Optional note, e.g. received by customer"
               onChange={(event) => setDeliverNote(event.target.value)}

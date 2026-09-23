@@ -5,7 +5,7 @@ import { TEST_USERS } from "../../users-config";
 import { assertTestEnvironment } from "../../setup/assert-test-environment";
 
 test.describe.configure({ mode: "serial" });
-test.setTimeout(120_000);
+test.setTimeout(180_000);
 
 const marker = `e2e-flow-${Date.now()}`;
 const categorySlug = `${marker}-category`;
@@ -60,6 +60,23 @@ async function completeCheckout(page: Page, email: string, discount?: string) {
   const orderId = page.url().split("/").at(-1)!;
   createdOrderIds.push(orderId);
   return orderId;
+}
+
+async function selectStatus(page: Page, current: string, next: string) {
+  await page.getByRole("combobox").filter({ hasText: current }).click();
+  await page.getByRole("option", { name: next, exact: true }).click();
+}
+
+async function confirmAndPayOrder(page: Page, orderId: string) {
+  await page.goto(`/admin/orders/${orderId}`);
+  await expect(page.getByRole("heading", { name: /^E2E-/ })).toBeVisible();
+  await selectStatus(page, "Pending", "Confirmed");
+  await selectStatus(page, "Payment due", "Paid");
+  await page.getByRole("button", { name: "Update order" }).click();
+  await expect(page.getByText("Order updated", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("combobox").filter({ hasText: "Confirmed" })).toBeVisible();
+  await expect(page.getByRole("combobox").filter({ hasText: "Paid" })).toBeVisible();
 }
 
 test("full ecommerce lifecycle persists inventory, customer, discount, fulfillment, cancellation, and refunds", async ({ browser }) => {
@@ -152,6 +169,13 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
   });
   const shopperOrderId = await completeCheckout(await shopperContext.newPage(), TEST_USERS.user.email);
 
+  const managerBrowser = await browser.newContext({
+    baseURL: e2eRuntimeConfig.webUrl,
+    storageState: TEST_USERS.commerceManager.storageStatePath,
+  });
+  const orderPage = await managerBrowser.newPage();
+  orderPage.setDefaultTimeout(15_000);
+
   const customerList = await json<{ items: Array<{ id: string; email: string }> }>(await admin.get(`/admin/customers?search=${encodeURIComponent(guestEmail)}`));
   const guestCustomer = customerList.items.find((item) => item.email === guestEmail)!;
   expect(guestCustomer).toBeTruthy();
@@ -159,11 +183,35 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
     phone: "+8801800000000", adminNote: "Verified through Step 8 lifecycle",
   });
 
-  await patch(manager, `/admin/orders/${guestOrderId}/status`, { orderStatus: "confirmed", paymentStatus: "paid", note: "Lifecycle confirmation" });
-  await post(manager, `/admin/orders/${guestOrderId}/ship`, { carrier: "Step 8 Carrier", trackingNumber: `${marker}-TRACK-1`, note: "Shipped" });
-  await patch(manager, `/admin/orders/${guestOrderId}/tracking`, { trackingNumber: `${marker}-TRACK-2`, note: "Tracking correction" });
-  await post(manager, `/admin/orders/${guestOrderId}/delivered`, { note: "Delivered by lifecycle suite" });
-  await patch(manager, `/admin/orders/${guestOrderId}/status`, { orderStatus: "completed", note: "Lifecycle complete" });
+  await confirmAndPayOrder(orderPage, guestOrderId);
+  await orderPage.getByRole("button", { name: "Mark shipped" }).click();
+  let dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Carrier").fill("Step 8 Carrier");
+  await dialog.getByLabel("Tracking number").fill(`${marker}-TRACK-1`);
+  await dialog.getByLabel("Note").fill("Shipped through the admin UI");
+  await dialog.getByRole("button", { name: "Mark shipped" }).click();
+  await expect(orderPage.getByText("Order marked as shipped", { exact: true })).toBeVisible();
+  await orderPage.reload();
+  await expect(orderPage.getByText(`${marker}-TRACK-1`, { exact: true })).toBeVisible();
+
+  await orderPage.getByRole("button", { name: "Edit tracking" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Tracking number").fill(`${marker}-TRACK-2`);
+  await dialog.getByLabel("Note").fill("Tracking corrected through the admin UI");
+  await dialog.getByRole("button", { name: "Save tracking" }).click();
+  await expect(orderPage.getByText("Tracking updated", { exact: true })).toBeVisible();
+  await orderPage.reload();
+  await expect(orderPage.getByText(`${marker}-TRACK-2`, { exact: true })).toBeVisible();
+
+  await orderPage.getByRole("button", { name: "Mark delivered" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Note").fill("Delivered through the admin UI");
+  await dialog.getByRole("button", { name: "Mark delivered" }).click();
+  await expect(orderPage.getByText("Order marked as delivered", { exact: true })).toBeVisible();
+  await orderPage.reload();
+  await selectStatus(orderPage, "Confirmed", "Completed");
+  await orderPage.getByRole("button", { name: "Update order" }).click();
+  await expect(orderPage.getByText("Order updated", { exact: true })).toBeVisible();
 
   const cancelOrder = await post<{ orderId: string }>(anonymous, "/shop/checkout", {
     items: [{ variantId, quantity: 1 }], customerName: "Cancel Customer", customerEmail: `${marker}-cancel@northstar.example.test`,
@@ -171,20 +219,38 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
     paymentMethod: "cash_on_delivery", idempotencyKey: `${marker}-cancel-key`,
   });
   createdOrderIds.push(cancelOrder.orderId);
-  await post(manager, `/admin/orders/${cancelOrder.orderId}/cancel`, { reason: "Lifecycle cancellation" });
+  await orderPage.goto(`/admin/orders/${cancelOrder.orderId}`);
+  await orderPage.getByRole("button", { name: "Cancel order" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Reason").fill("Lifecycle cancellation through the admin UI");
+  await dialog.getByLabel("Internal note").fill("Cancellation UI verified");
+  await dialog.getByRole("button", { name: "Cancel order" }).click();
+  await expect(orderPage.getByText("Order cancelled", { exact: true })).toBeVisible();
+  await orderPage.reload();
+  await expect(orderPage.getByText("This order is already cancelled.")).toBeVisible();
   expect((await manager.post(`/admin/orders/${cancelOrder.orderId}/cancel`, { data: { reason: "Repeated cancellation" } })).status()).toBe(409);
 
-  await patch(manager, `/admin/orders/${shopperOrderId}/status`, { orderStatus: "confirmed", paymentStatus: "paid", note: "Prepare refund" });
-  const partial = await post<{ paymentStatus: string; totalRefunded: string }>(manager, `/admin/orders/${shopperOrderId}/refunds`, {
-    amount: "100.00", reason: "Lifecycle partial refund", restockInventory: false,
-  });
-  expect(partial.paymentStatus).toBe("partially_refunded");
+  await confirmAndPayOrder(orderPage, shopperOrderId);
+  await orderPage.getByRole("button", { name: "Record refund" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Amount (BDT)").fill("100.00");
+  await dialog.getByLabel("Reason").fill("Lifecycle partial refund through the admin UI");
+  await dialog.getByRole("button", { name: "Record refund" }).click();
+  await expect(orderPage.getByText("Manual refund recorded", { exact: true })).toBeVisible();
+  await orderPage.reload();
+  await expect(orderPage.getByRole("combobox").filter({ hasText: "Partially refunded" })).toBeVisible();
   const shopperDetail = await json<{ totalAmount: string }>(await manager.get(`/admin/orders/${shopperOrderId}`));
   const remainder = (Number(shopperDetail.totalAmount) - 100).toFixed(2);
-  const full = await post<{ paymentStatus: string }>(manager, `/admin/orders/${shopperOrderId}/refunds`, {
-    amount: remainder, reason: "Lifecycle full refund", restockInventory: true,
-  });
-  expect(full.paymentStatus).toBe("refunded");
+  await orderPage.getByRole("button", { name: "Record refund" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Amount (BDT)").fill(remainder);
+  await dialog.getByLabel("Reason").fill("Lifecycle full refund through the admin UI");
+  await dialog.getByRole("checkbox", { name: /Restock committed inventory/ }).check();
+  await dialog.getByRole("button", { name: "Record refund" }).click();
+  await expect(orderPage.getByText("Manual refund recorded", { exact: true })).toBeVisible();
+  await orderPage.reload();
+  await expect(orderPage.getByRole("combobox").filter({ hasText: "Refunded" })).toBeVisible();
+  await expect(orderPage.getByRole("button", { name: "Record refund" })).toBeDisabled();
   expect((await manager.post(`/admin/orders/${shopperOrderId}/refunds`, { data: { amount: "1.00", reason: "Repeated refund" } })).status()).toBe(409);
 
   const orderDetail = await json<{
@@ -205,6 +271,7 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
 
   await guestContext.close();
   await shopperContext.close();
+  await managerBrowser.close();
   await Promise.all([owner.dispose(), manager.dispose(), admin.dispose(), anonymous.dispose(), user.dispose()]);
 });
 

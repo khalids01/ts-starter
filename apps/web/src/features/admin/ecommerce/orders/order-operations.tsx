@@ -229,8 +229,9 @@ export function OrderOperationsCard(props: {
           </DialogHeader>
           {refundDraft ? (
             <div className="grid gap-3">
-              <Field label={`Amount (${order.currency})`}>
+              <Field label={`Amount (${order.currency})`} htmlFor="refund-amount">
                 <Input
+                  id="refund-amount"
                   type="number"
                   min="0.01"
                   step="0.01"
@@ -244,6 +245,7 @@ export function OrderOperationsCard(props: {
               <OperationFields draft={refundDraft} onChange={setRefundDraft} />
               <label className="flex items-start gap-3 rounded-md border p-3 text-sm">
                 <Checkbox
+                  aria-label="Restock committed inventory"
                   checked={refundDraft.restockInventory}
                   disabled={order.inventoryStatus !== "committed"}
                   onCheckedChange={(checked) =>
@@ -287,8 +289,9 @@ function OperationFields<T extends OperationDraft>(props: {
 }) {
   return (
     <div className="grid gap-3">
-      <Field label="Reason">
+      <Field label="Reason" htmlFor="order-operation-reason">
         <Input
+          id="order-operation-reason"
           value={props.draft.reason}
           placeholder="Required reason"
           onChange={(event) =>
@@ -296,8 +299,9 @@ function OperationFields<T extends OperationDraft>(props: {
           }
         />
       </Field>
-      <Field label="Internal note">
+      <Field label="Internal note" htmlFor="order-operation-note">
         <Textarea
+          id="order-operation-note"
           value={props.draft.note}
           placeholder="Optional additional context"
           onChange={(event) =>
