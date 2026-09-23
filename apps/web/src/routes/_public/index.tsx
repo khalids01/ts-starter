@@ -1,6 +1,6 @@
 import { Home } from "@/features/landing/home";
 import { brandConfig } from "@config/brand";
-import { env } from "@env/client";
+import { env } from "@env/public";
 import { createFileRoute } from "@tanstack/react-router";
 import { getOwnerSetupStatus } from "@/features/admin/owner/api";
 

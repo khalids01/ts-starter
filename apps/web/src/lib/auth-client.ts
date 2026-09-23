@@ -1,7 +1,7 @@
 import { polarClient } from "@polar-sh/better-auth/client";
 import { magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
 import type { AuthClientSession } from "@auth/client";
-import { env } from "@env/client";
+import { env } from "@env/public";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({

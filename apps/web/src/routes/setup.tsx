@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { OwnerSetup } from "@/features/admin/owner/owner-setup";
-import { env } from "@env/client";
+import { env } from "@env/public";
 import { getOwnerSetupStatus } from "@/features/admin/owner/api";
 
 export const Route = createFileRoute("/setup")({

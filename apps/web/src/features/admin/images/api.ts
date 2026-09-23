@@ -1,4 +1,4 @@
-import { env } from "@env/client";
+import { env } from "@env/public";
 import { client } from "@/lib/client";
 import type {
   AdminImage,

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./client": "./src/env.client.ts",
+    "./public": "./src/env.public.ts",
     "./server": "./src/env.server.ts"
   },
   "dependencies": {

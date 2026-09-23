@@ -27,6 +27,8 @@
       "@config": ["../../packages/config/src/config.ts"],
       "@config/brand": ["../../packages/config/src/brand.config.ts"],
       "@env/client": ["../../packages/env/src/env.client.ts"],
+      "@env/public": ["../../packages/env/src/env.public.ts"],
+      "@env/server": ["../../packages/env/src/env.server.ts"],
       "@rbac": ["../../packages/rbac/src"]
     }
   }
