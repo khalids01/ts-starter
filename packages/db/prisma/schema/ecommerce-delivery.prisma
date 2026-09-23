@@ -1,0 +1,239 @@
+// Provider codes and capability names are registered by server adapters. No secrets belong here.
+enum CourierCredentialSource {
+  server_environment
+  encrypted_database
+}
+
+model CourierProvider {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  displayName  String
+  capabilities Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  connections CourierConnection[]
+
+  @@map("courier_provider")
+}
+
+model CourierConnection {
+  id                  String   @id @default(cuid())
+  providerId          String
+  provider            CourierProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  publicId            String   @unique
+  displayName         String
+  enabled             Boolean  @default(false)
+  environment         String
+  priority            Int      @default(0)
+  credentialSource     CourierCredentialSource
+  credentialCiphertext Bytes?
+  credentialNonce      Bytes?
+  credentialAuthTag    Bytes?
+  credentialKeyVersion Int?
+  healthState         String   @default("unchecked")
+  webhookIdentifier   String?  @unique
+  settings            Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  services     CourierService[]
+  routingRules CourierRoutingRule[]
+  dispatches   CourierDispatch[]
+  consignments CourierConsignment[]
+
+  @@index([providerId, enabled, priority])
+  @@map("courier_connection")
+}
+
+model CourierService {
+  id          String   @id @default(cuid())
+  connectionId String
+  connection   CourierConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  code        String
+  displayName String
+  enabled     Boolean  @default(false)
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  methods      CourierServiceMethod[]
+  routingRules CourierRoutingRule[]
+  dispatches   CourierDispatch[]
+  consignments CourierConsignment[]
+
+  @@unique([connectionId, code])
+  @@map("courier_service")
+}
+
+model CourierServiceMethod {
+  serviceId      String
+  shippingRateId String
+  service        CourierService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  shippingRate   ShippingRate @relation(fields: [shippingRateId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, shippingRateId])
+  @@map("courier_service_method")
+}
+
+model CourierRoutingRule {
+  id              String   @id @default(cuid())
+  name            String
+  version         Int      @default(1)
+  priority        Int
+  enabled         Boolean  @default(false)
+  conditions      Json
+  connectionId    String
+  connection      CourierConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  serviceId       String
+  service         CourierService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([enabled, priority])
+  @@map("courier_routing_rule")
+}
+
+// Every confirmation creates a snapshot; the selected connection is frozen for this attempt.
+model CourierDispatch {
+  id                 String   @id @default(cuid())
+  orderId            String
+  order              Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  connectionId       String
+  connection         CourierConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  serviceId          String
+  service            CourierService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  routingSnapshot    Json
+  overrideReason     String? @db.Text
+  confirmedByUserId  String
+  status             String   @default("confirmed")
+  createdAt          DateTime @default(now())
+
+  consignment CourierConsignment?
+
+  @@index([orderId, createdAt])
+  @@map("courier_dispatch")
+}
+
+model CourierConsignment {
+  id                    String   @id @default(cuid())
+  orderId               String
+  order                 Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  dispatchId            String   @unique
+  dispatch              CourierDispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
+  connectionId          String
+  connection            CourierConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  serviceId             String
+  service               CourierService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  invoice               String
+  externalId            String?
+  trackingCode          String?
+  trackingUrl           String?
+  state                 String   @default("pending_submission")
+  providerState         String?
+  codAmount             Decimal  @db.Decimal(12, 2)
+  currency              String
+  requestSnapshot       Json
+  active                Boolean  @default(true)
+  submittedAt           DateTime?
+  deliveredAt           DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  operations  CourierOperation[]
+  events      CourierEvent[]
+  returns     CourierReturn[]
+  settlements CourierSettlement[]
+  exceptions  CourierException[]
+
+  @@unique([connectionId, invoice])
+  @@unique([connectionId, externalId])
+  @@index([orderId, active])
+  @@index([state, updatedAt])
+  @@map("courier_consignment")
+}
+
+model CourierOperation {
+  id            String   @id @default(cuid())
+  consignmentId String
+  consignment   CourierConsignment @relation(fields: [consignmentId], references: [id], onDelete: Restrict)
+  kind          String
+  identity      String   @unique
+  state         String   @default("pending")
+  attemptCount  Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  leaseUntil    DateTime?
+  lastErrorCode String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([state, nextAttemptAt])
+  @@map("courier_operation")
+}
+
+model CourierEvent {
+  id            String   @id @default(cuid())
+  consignmentId String
+  consignment   CourierConsignment @relation(fields: [consignmentId], references: [id], onDelete: Restrict)
+  source        String
+  eventKey      String
+  eventType     String
+  providerState String?
+  normalizedState String?
+  payload       Json
+  occurredAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([consignmentId, source, eventKey])
+  @@index([consignmentId, createdAt])
+  @@map("courier_event")
+}
+
+model CourierReturn {
+  id            String   @id @default(cuid())
+  consignmentId String
+  consignment   CourierConsignment @relation(fields: [consignmentId], references: [id], onDelete: Restrict)
+  externalId    String?
+  state         String   @default("requested")
+  providerState String?
+  reason        String?  @db.Text
+  requestedByUserId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([consignmentId, createdAt])
+  @@map("courier_return")
+}
+
+model CourierSettlement {
+  id            String   @id @default(cuid())
+  consignmentId String
+  consignment   CourierConsignment @relation(fields: [consignmentId], references: [id], onDelete: Restrict)
+  externalId    String
+  amount        Decimal  @db.Decimal(12, 2)
+  currency      String
+  state         String
+  evidence      Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([consignmentId, externalId])
+  @@map("courier_settlement")
+}
+
+model CourierException {
+  id            String   @id @default(cuid())
+  consignmentId String
+  consignment   CourierConsignment @relation(fields: [consignmentId], references: [id], onDelete: Restrict)
+  kind          String
+  state         String   @default("open")
+  details       Json?
+  resolvedByUserId String?
+  resolvedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([state, createdAt])
+  @@index([consignmentId, state])
+  @@map("courier_exception")
+}

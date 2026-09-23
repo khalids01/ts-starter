@@ -102,6 +102,8 @@ model Order {
   statusEvents       OrderStatusEvent[]
   refunds            OrderRefund[]
   discountRedemption DiscountRedemption?
+  courierConsignments CourierConsignment[]
+  courierDispatches   CourierDispatch[]
 
   @@index([userId])
   @@index([customerEmail])

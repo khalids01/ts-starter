@@ -8,10 +8,15 @@ model ShippingRate {
   isDefault      Boolean  @default(false)
   isActive       Boolean  @default(true)
   sortOrder      Int      @default(0)
+  tier           String   @default("standard")
+  destinationRules Json?
+  minimumOrderAmount Decimal? @db.Decimal(12, 2)
+  maximumOrderAmount Decimal? @db.Decimal(12, 2)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   orders Order[]
+  courierServices CourierServiceMethod[]
 
   @@index([isActive])
   @@index([isDefault])

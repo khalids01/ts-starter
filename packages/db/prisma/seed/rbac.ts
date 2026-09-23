@@ -15,7 +15,7 @@ import {
   rolePermissionsKey,
 } from "./lib/rbac-keys";
 
-const CATALOG_VERSION = 11;
+const CATALOG_VERSION = 12;
 
 const ecommerceAdminPermissions = [
   Permissions.AdminCatalogRead,
@@ -31,6 +31,11 @@ const ecommerceAdminPermissions = [
   Permissions.AdminOrdersRefund,
   Permissions.AdminShippingRead,
   Permissions.AdminShippingManage,
+  Permissions.AdminDeliveryRead,
+  Permissions.AdminDeliveryDispatch,
+  Permissions.AdminDeliveryReturns,
+  Permissions.AdminDeliveryReconcile,
+  Permissions.AdminDeliverySettings,
   Permissions.AdminDiscountsRead,
   Permissions.AdminDiscountsManage,
   Permissions.AdminStoreSettingsRead,
