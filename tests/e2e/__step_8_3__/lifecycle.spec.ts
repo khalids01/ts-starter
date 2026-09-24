@@ -20,6 +20,7 @@ const sku = `${marker}-sku`;
 const guestEmail = `${marker}-guest@northstar.example.test`;
 let originalSettings: Record<string, unknown>;
 let createdOrderIds: string[] = [];
+let courierConnectionId: string | undefined;
 
 async function json<T>(response: Awaited<ReturnType<APIRequestContext["get"]>>, expected = 200) {
   expect(response.status(), await response.text()).toBe(expected);
@@ -67,19 +68,80 @@ async function selectStatus(page: Page, current: string, next: string) {
   await page.getByRole("option", { name: next, exact: true }).click();
 }
 
-async function confirmAndPayOrder(page: Page, orderId: string) {
+async function confirmOrder(page: Page, orderId: string, markPaid = true) {
   await page.goto(`/admin/orders/${orderId}`);
   await expect(page.getByRole("heading", { name: /^E2E-/ })).toBeVisible();
   await selectStatus(page, "Pending", "Confirmed");
-  await selectStatus(page, "Payment due", "Paid");
+  if (markPaid) await selectStatus(page, "Payment due", "Paid");
   await page.getByRole("button", { name: "Update order" }).click();
   await expect(page.getByText("Order updated", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("combobox").filter({ hasText: "Confirmed" })).toBeVisible();
-  await expect(page.getByRole("combobox").filter({ hasText: "Paid" })).toBeVisible();
+  if (markPaid) await expect(page.getByRole("combobox").filter({ hasText: "Paid" })).toBeVisible();
 }
 
-test("full ecommerce lifecycle persists inventory, customer, discount, fulfillment, cancellation, and refunds", async ({ browser }) => {
+async function confirmAndQueueCourier(page: Page, orderId: string, orderNumber: string) {
+  await page.goto(`/admin/orders/${orderId}`);
+  const routing = page.locator('[data-slot="card"]').filter({ hasText: "Courier routing" });
+  await expect(routing.getByText(/Recommended/)).toBeVisible();
+  await routing.getByRole("button", { name: "Confirm route" }).click();
+  await expect(page.getByText("Courier route confirmed; dispatch remains manual", { exact: true })).toBeVisible();
+
+  await page.goto("/admin/couriers");
+  await page.getByRole("tab", { name: "Dispatches" }).click();
+  const dispatchCard = page.locator('[data-slot="card"]').filter({ hasText: orderNumber });
+  await expect(dispatchCard).toBeVisible();
+  await dispatchCard.getByRole("button", { name: "Queue dispatch" }).click();
+  await expect(page.getByText("Dispatch queued", { exact: true })).toBeVisible();
+
+  const consignment = await prisma.courierConsignment.findFirstOrThrow({ where: { orderId } });
+  // The provider boundary is deterministic in E2E: no real Steadfast parcel is created.
+  await prisma.$transaction([
+    prisma.courierConsignment.update({
+      where: { id: consignment.id },
+      data: {
+        externalId: `${marker}-${orderNumber}`,
+        trackingCode: `${marker}-COURIER`,
+        providerState: "pending",
+        state: "submitted",
+        submittedAt: new Date(),
+      },
+    }),
+    prisma.courierOperation.updateMany({ where: { consignmentId: consignment.id }, data: { state: "completed" } }),
+    prisma.courierDispatch.update({ where: { id: consignment.dispatchId }, data: { status: "submitted" } }),
+  ]);
+  await page.reload();
+  return { ...consignment, externalId: `${marker}-${orderNumber}` };
+}
+
+async function simulateCourierDelivery(consignmentId: string, orderId: string) {
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    await tx.courierEvent.create({
+      data: {
+        consignmentId,
+        source: "polling",
+        eventKey: `${marker}-delivered`,
+        eventType: "delivery_status",
+        providerState: "delivered",
+        normalizedState: "delivered",
+        payload: { status: "delivered", fixture: true },
+        occurredAt: now,
+      },
+    });
+    await tx.courierConsignment.update({
+      where: { id: consignmentId },
+      data: { providerState: "delivered", state: "delivered", deliveredAt: now, active: false },
+    });
+    await tx.courierSettlement.updateMany({
+      where: { consignmentId, state: "matched_pending_delivery" },
+      data: { state: "reconciled" },
+    });
+    await tx.order.update({ where: { id: orderId }, data: { paymentStatus: "paid" } });
+  });
+}
+
+test("full ecommerce and courier lifecycle persists dispatch, delivery, returns, settlements, refunds, and inventory", async ({ browser }) => {
   assertTestEnvironment();
   const owner = await request.newContext({
     baseURL: e2eRuntimeConfig.serverUrl,
@@ -108,6 +170,43 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
   const shipping = await post<{ id: string }>(manager, "/admin/shipping/rates", {
     code: shippingCode, label: "Step 8 Delivery", amount: "50.00", currency: "BDT",
     freeOverAmount: null, isDefault: true, isActive: true, sortOrder: 0,
+  });
+  const provider = await prisma.courierProvider.upsert({
+    where: { code: "steadfast" },
+    create: { code: "steadfast", displayName: "Steadfast Courier", capabilities: ["createConsignment", "getConsignmentStatus"] },
+    update: {},
+  });
+  const courierConnection = await prisma.courierConnection.create({
+    data: {
+      providerId: provider.id,
+      publicId: `${marker}-connection`,
+      displayName: "Step 9 Steadfast",
+      enabled: true,
+      environment: "sandbox",
+      priority: 1,
+      credentialSource: "server_environment",
+      healthState: "healthy",
+    },
+  });
+  courierConnectionId = courierConnection.id;
+  const courierService = await prisma.courierService.create({
+    data: {
+      connectionId: courierConnection.id,
+      code: `${marker}-home-delivery`,
+      displayName: "Step 9 Home Delivery",
+      enabled: true,
+      methods: { create: { shippingRateId: shipping.id } },
+    },
+  });
+  await prisma.courierRoutingRule.create({
+    data: {
+      name: "Step 9 deterministic route",
+      priority: 1,
+      enabled: true,
+      conditions: {},
+      connectionId: courierConnection.id,
+      serviceId: courierService.id,
+    },
   });
   const category = await post<{ id: string }>(manager, "/admin/catalog/categories", {
     name: `${marker} Category`, slug: categorySlug, brandPolicy: "optional", isActive: true,
@@ -175,6 +274,7 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
   });
   const orderPage = await managerBrowser.newPage();
   orderPage.setDefaultTimeout(15_000);
+  let dialog = orderPage.getByRole("dialog");
 
   const customerList = await json<{ items: Array<{ id: string; email: string }> }>(await admin.get(`/admin/customers?search=${encodeURIComponent(guestEmail)}`));
   const guestCustomer = customerList.items.find((item) => item.email === guestEmail)!;
@@ -183,9 +283,12 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
     phone: "+8801800000000", adminNote: "Verified through Step 8 lifecycle",
   });
 
-  await confirmAndPayOrder(orderPage, guestOrderId);
+  await confirmOrder(orderPage, guestOrderId, false);
+  const guestOrder = await json<{ orderNumber: string }>(await manager.get(`/admin/orders/${guestOrderId}`));
+  const guestConsignment = await confirmAndQueueCourier(orderPage, guestOrderId, guestOrder.orderNumber);
+  await orderPage.goto(`/admin/orders/${guestOrderId}`);
   await orderPage.getByRole("button", { name: "Mark shipped" }).click();
-  let dialog = orderPage.getByRole("dialog");
+  dialog = orderPage.getByRole("dialog");
   await dialog.getByLabel("Carrier").fill("Step 8 Carrier");
   await dialog.getByLabel("Tracking number").fill(`${marker}-TRACK-1`);
   await dialog.getByLabel("Note").fill("Shipped through the admin UI");
@@ -203,11 +306,31 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
   await orderPage.reload();
   await expect(orderPage.getByText(`${marker}-TRACK-2`, { exact: true })).toBeVisible();
 
+  await orderPage.goto("/admin/couriers");
+  await orderPage.getByRole("tab", { name: "Dispatches" }).click();
+  let courierCard = orderPage.locator('[data-slot="card"]').filter({ hasText: guestOrder.orderNumber });
+  await courierCard.getByRole("button", { name: "Mark handed over" }).click();
+  await expect(orderPage.getByText("Courier handoff updated", { exact: true })).toBeVisible();
+  await courierCard.getByRole("button", { name: "Mark in transit" }).click();
+  await expect(orderPage.getByText("Courier handoff updated", { exact: true })).toBeVisible();
+  await courierCard.getByRole("button", { name: "Record settlement" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Payout/reference ID").fill(`${marker}-payout`);
+  await dialog.getByLabel("Evidence note").fill("E2E courier settlement evidence");
+  await dialog.getByRole("button", { name: "Record settlement" }).click();
+  await expect(orderPage.getByText("Settlement evidence recorded", { exact: true })).toBeVisible();
+
+  await orderPage.goto(`/admin/orders/${guestOrderId}`);
   await orderPage.getByRole("button", { name: "Mark delivered" }).click();
   dialog = orderPage.getByRole("dialog");
   await dialog.getByLabel("Note").fill("Delivered through the admin UI");
   await dialog.getByRole("button", { name: "Mark delivered" }).click();
   await expect(orderPage.getByText("Order marked as delivered", { exact: true })).toBeVisible();
+  await simulateCourierDelivery(guestConsignment.id, guestOrderId);
+  await orderPage.goto("/admin/couriers");
+  await orderPage.getByRole("tab", { name: "Settlements" }).click();
+  await expect(orderPage.locator('[data-slot="card"]').filter({ hasText: guestOrder.orderNumber }).getByText("reconciled", { exact: true })).toBeVisible();
+  await orderPage.goto(`/admin/orders/${guestOrderId}`);
   await orderPage.reload();
   await selectStatus(orderPage, "Confirmed", "Completed");
   await orderPage.getByRole("button", { name: "Update order" }).click();
@@ -230,7 +353,25 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
   await expect(orderPage.getByText("This order is already cancelled.")).toBeVisible();
   expect((await manager.post(`/admin/orders/${cancelOrder.orderId}/cancel`, { data: { reason: "Repeated cancellation" } })).status()).toBe(409);
 
-  await confirmAndPayOrder(orderPage, shopperOrderId);
+  await confirmOrder(orderPage, shopperOrderId);
+  const shopperOrder = await json<{ orderNumber: string }>(await manager.get(`/admin/orders/${shopperOrderId}`));
+  await confirmAndQueueCourier(orderPage, shopperOrderId, shopperOrder.orderNumber);
+  courierCard = orderPage.locator('[data-slot="card"]').filter({ hasText: shopperOrder.orderNumber });
+  await courierCard.getByRole("button", { name: "Request return" }).click();
+  dialog = orderPage.getByRole("dialog");
+  await dialog.getByLabel("Reason").fill("E2E customer return");
+  await dialog.getByRole("button", { name: "Record return" }).click();
+  await expect(orderPage.getByText("Return request recorded", { exact: true })).toBeVisible();
+  await orderPage.getByRole("tab", { name: "Returns" }).click();
+  const returnCard = orderPage.locator('[data-slot="card"]').filter({ hasText: shopperOrder.orderNumber });
+  await returnCard.getByRole("button", { name: "Approve" }).click();
+  await expect(returnCard.getByRole("button", { name: "Mark processing" })).toBeVisible();
+  await returnCard.getByRole("button", { name: "Mark processing" }).click();
+  await expect(returnCard.getByRole("button", { name: "Mark completed" })).toBeVisible();
+  await returnCard.getByRole("button", { name: "Mark completed" }).click();
+  await expect(returnCard.getByText(/completed/)).toBeVisible();
+
+  await orderPage.goto(`/admin/orders/${shopperOrderId}`);
   await orderPage.getByRole("button", { name: "Record refund" }).click();
   dialog = orderPage.getByRole("dialog");
   await dialog.getByLabel("Amount (BDT)").fill("100.00");
@@ -268,6 +409,9 @@ test("full ecommerce lifecycle persists inventory, customer, discount, fulfillme
   expect(stock.items[0]!.quantityReserved).toBe(0);
   const discountDetail = await json<Array<{ id: string; usageCount: number }>>(await manager.get(`/admin/discounts?search=${discountCode}`));
   expect(discountDetail.find((item) => item.id === discount.id)?.usageCount).toBe(1);
+  expect(await prisma.courierException.count({
+    where: { consignment: { orderId: shopperOrderId }, kind: "return_reconciliation_required", state: "open" },
+  })).toBe(1);
 
   await guestContext.close();
   await shopperContext.close();
@@ -283,6 +427,15 @@ test.afterAll(async () => {
     await owner.dispose();
   }
   if (createdOrderIds.length) {
+    const consignments = await prisma.courierConsignment.findMany({ where: { orderId: { in: createdOrderIds } }, select: { id: true } });
+    const consignmentIds = consignments.map(({ id }) => id);
+    await prisma.courierException.deleteMany({ where: { consignmentId: { in: consignmentIds } } });
+    await prisma.courierSettlement.deleteMany({ where: { consignmentId: { in: consignmentIds } } });
+    await prisma.courierReturn.deleteMany({ where: { consignmentId: { in: consignmentIds } } });
+    await prisma.courierEvent.deleteMany({ where: { consignmentId: { in: consignmentIds } } });
+    await prisma.courierOperation.deleteMany({ where: { consignmentId: { in: consignmentIds } } });
+    await prisma.courierConsignment.deleteMany({ where: { id: { in: consignmentIds } } });
+    await prisma.courierDispatch.deleteMany({ where: { orderId: { in: createdOrderIds } } });
     await prisma.stockReservation.deleteMany({ where: { referenceType: "order", referenceId: { in: createdOrderIds } } });
     await prisma.inventoryMovement.deleteMany({ where: { referenceType: "order", referenceId: { in: createdOrderIds } } });
     await prisma.order.deleteMany({ where: { id: { in: createdOrderIds } } });
@@ -303,6 +456,12 @@ test.afterAll(async () => {
   await prisma.inventoryLocation.deleteMany({ where: { code: locationCode } });
   await prisma.supplier.deleteMany({ where: { name: supplierName } });
   await prisma.shippingRate.deleteMany({ where: { code: shippingCode } });
+  if (courierConnectionId) {
+    await prisma.courierRoutingRule.deleteMany({ where: { connectionId: courierConnectionId } });
+    await prisma.courierServiceMethod.deleteMany({ where: { service: { connectionId: courierConnectionId } } });
+    await prisma.courierService.deleteMany({ where: { connectionId: courierConnectionId } });
+    await prisma.courierConnection.deleteMany({ where: { id: courierConnectionId } });
+  }
   await prisma.ecommerceCustomer.deleteMany({ where: { normalizedEmail: { startsWith: marker } } });
   await prisma.$disconnect();
 });
