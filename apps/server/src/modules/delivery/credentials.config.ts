@@ -12,6 +12,7 @@ export function createConfiguredCourierCredentialResolver() {
       STEAD_FAST_API_KEY: env.STEAD_FAST_API_KEY,
       STEAD_FAST_SECRET_KEY: env.STEAD_FAST_SECRET_KEY,
       STEAD_FAST_BASE_URL: env.STEAD_FAST_BASE_URL,
+      STEAD_FAST_WEBHOOK_TOKEN: env.STEAD_FAST_WEBHOOK_TOKEN,
     },
     keyring,
   );

@@ -181,6 +181,9 @@ export function resolveSteadfastEnvironmentCredentials(
         environment.STEAD_FAST_SECRET_KEY,
         "STEAD_FAST_SECRET_KEY",
       ),
+      ...(environment.STEAD_FAST_WEBHOOK_TOKEN?.trim()
+        ? { webhookToken: environment.STEAD_FAST_WEBHOOK_TOKEN.trim() }
+        : {}),
     },
   });
 }

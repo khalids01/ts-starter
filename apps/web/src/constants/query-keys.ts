@@ -118,6 +118,8 @@ export const queryKeys = {
           [...queryKeys.admin.ecommerce.delivery.all(), "dispatches"] as const,
         recommendation: (orderId: string) =>
           [...queryKeys.admin.ecommerce.delivery.all(), "recommendation", orderId] as const,
+        tracking: (orderId: string) =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "tracking", orderId] as const,
       },
       discounts: {
         all: () => ["admin-ecommerce-discounts"] as const,

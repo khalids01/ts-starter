@@ -19,6 +19,7 @@ import {
   AdminDeliveryServiceError,
 } from "./delivery.service";
 import { courierRoutingDispatchService } from "./routing-dispatch.service";
+import { courierTrackingService } from "../../delivery/tracking.service";
 
 const readDelivery = requireAllPermissions([
   Permissions.AdminAccess,
@@ -134,6 +135,9 @@ export const adminDeliveryController = new Elysia({
     try { return await courierRoutingDispatchService.recommend(orderId); }
     catch (error) { return handleDeliveryError(error, set); }
   }, { beforeHandle: dispatchDelivery, params: CourierOrderIdDto })
+  .get("/orders/:orderId/tracking", ({ params: { orderId } }) =>
+    courierTrackingService.timelineForOrder(orderId),
+  { beforeHandle: readDelivery, params: CourierOrderIdDto })
   .post("/orders/:orderId/confirm", async ({ params: { orderId }, body, set, userId }) => {
     try { return await courierRoutingDispatchService.confirm(orderId, body, userId!); }
     catch (error) { return handleDeliveryError(error, set); }

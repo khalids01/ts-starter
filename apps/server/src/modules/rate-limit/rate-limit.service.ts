@@ -194,7 +194,7 @@ async function getSessionSummary(request: Request) {
 }
 
 function getGroup(pathname: string, userId: string | null): RateLimitGroup {
-  if (pathname === "/polar/webhooks" || pathname === "/notifications/ws") {
+  if (pathname === "/polar/webhooks" || pathname.startsWith("/courier/webhooks/") || pathname === "/notifications/ws") {
     return "special";
   }
 

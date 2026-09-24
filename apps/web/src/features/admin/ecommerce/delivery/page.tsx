@@ -58,6 +58,9 @@ export function AdminDeliveryPage() {
               apiKey: value.apiKey,
               secretKey: value.secretKey,
               baseUrl: value.baseUrl,
+              ...(value.webhookToken.trim()
+                ? { webhookToken: value.webhookToken }
+                : {}),
             }
           : undefined;
       if (value.id) {

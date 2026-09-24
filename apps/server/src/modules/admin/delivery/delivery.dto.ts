@@ -21,6 +21,7 @@ const CredentialsDto = t.Object({
   apiKey: t.String({ minLength: 1, maxLength: 500 }),
   secretKey: t.String({ minLength: 1, maxLength: 500 }),
   baseUrl: t.String({ minLength: 1, maxLength: 500 }),
+  webhookToken: t.Optional(t.String({ minLength: 1, maxLength: 500 })),
 });
 
 export const CreateCourierConnectionDto = t.Object({

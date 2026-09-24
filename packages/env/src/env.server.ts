@@ -54,6 +54,7 @@ export const env = createEnv({
     STEAD_FAST_API_KEY: z.string().optional(),
     STEAD_FAST_SECRET_KEY: z.string().optional(),
     STEAD_FAST_BASE_URL: z.string().url().optional(),
+    STEAD_FAST_WEBHOOK_TOKEN: z.string().optional(),
     COURIER_CREDENTIAL_ACTIVE_KEY_VERSION: z.coerce.number().int().positive().optional(),
     COURIER_CREDENTIAL_ENCRYPTION_KEYS: z.string().optional(),
   },

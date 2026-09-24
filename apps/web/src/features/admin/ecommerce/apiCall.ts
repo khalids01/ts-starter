@@ -140,6 +140,8 @@ export const ecommerceApi = {
       unwrap(api.admin.delivery.dispatches.get(), "Failed to load courier dispatches"),
     recommendation: (orderId: string) =>
       unwrap(api.admin.delivery.orders({ orderId }).recommendation.get(), "Failed to calculate courier recommendation"),
+    tracking: (orderId: string) =>
+      unwrap(api.admin.delivery.orders({ orderId }).tracking.get(), "Failed to load courier tracking"),
     confirmRoute: (orderId: string, body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.orders({ orderId }).confirm.post(body as any), "Failed to confirm courier route"),
     queueDispatch: (id: string) =>

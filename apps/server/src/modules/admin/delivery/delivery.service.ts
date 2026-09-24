@@ -165,6 +165,9 @@ export class AdminDeliveryService {
           values: {
             apiKey: input.credentials.apiKey,
             secretKey: input.credentials.secretKey,
+            ...(input.credentials.webhookToken
+              ? { webhookToken: input.credentials.webhookToken }
+              : {}),
           },
         },
         `${providerCode}:${publicId}`,
@@ -233,6 +236,9 @@ export class AdminDeliveryService {
           values: {
             apiKey: input.credentials.apiKey,
             secretKey: input.credentials.secretKey,
+            ...(input.credentials.webhookToken
+              ? { webhookToken: input.credentials.webhookToken }
+              : {}),
           },
         },
         `${existing.provider.code}:${existing.publicId}`,

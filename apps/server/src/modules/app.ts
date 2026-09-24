@@ -27,6 +27,7 @@ import { adminStoreSettingsController } from "./admin/store-settings/store-setti
 import { adminCustomersController } from "./admin/customers/customers.controller";
 import { authSettingsController } from "./admin/auth-settings/auth-settings.controller";
 import { adminDeliveryController } from "./admin/delivery/delivery.controller";
+import { courierWebhookController } from "./delivery/webhook.controller";
 
 export const app = new Elysia()
   .use(authController)
@@ -49,6 +50,7 @@ export const app = new Elysia()
   .use(adminImagesController)
   .use(adminShippingController)
   .use(adminDeliveryController)
+  .use(courierWebhookController)
   .use(adminDiscountsController)
   .use(adminStoreSettingsController)
   .use(adminCustomersController)

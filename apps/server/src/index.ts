@@ -10,6 +10,7 @@ import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
 import { securityHeadersPlugin } from "./plugins/security-headers";
 import { e2eRuntimeConfig } from "@config";
 import { startCourierDispatchWorker } from "./modules/delivery/dispatch-worker";
+import { startCourierTrackingWorker } from "./modules/delivery/tracking-worker";
 
 const shouldLogRequests = env.NODE_ENV === "development";
 const port = Number.parseInt(
@@ -34,6 +35,7 @@ await connectRedis();
 console.log("Redis is ready");
 startVisitorFlushWorker();
 startCourierDispatchWorker();
+startCourierTrackingWorker();
 
 const server = new Elysia()
   .use(securityHeadersPlugin({ production: env.NODE_ENV === "production" }))

@@ -431,6 +431,22 @@ export type CourierRouteRecommendation = {
   evaluatedRules: Array<{ id: string; version: number }>;
 };
 
+export type CourierTracking = {
+  id: string;
+  connectionName: string;
+  providerName: string;
+  serviceName: string;
+  invoice: string;
+  trackingCode?: string | null;
+  trackingUrl?: string | null;
+  state: string;
+  providerState?: string | null;
+  submittedAt?: string | null;
+  deliveredAt?: string | null;
+  events: Array<{ id: string; source: string; eventType: string; providerState?: string | null; normalizedState?: string | null; occurredAt?: string | null; createdAt: string }>;
+  exceptions: Array<{ id: string; kind: string; state: string; createdAt: string }>;
+};
+
 export type DiscountCode = {
   id: string;
   code: string;

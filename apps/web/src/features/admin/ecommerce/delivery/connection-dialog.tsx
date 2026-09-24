@@ -18,6 +18,7 @@ export type CourierConnectionDraft = {
   priority: string;
   apiKey: string;
   secretKey: string;
+  webhookToken: string;
   baseUrl: string;
 };
 
@@ -35,6 +36,7 @@ export function connectionDraft(
     priority: String(connection?.priority ?? 0),
     apiKey: "",
     secretKey: "",
+    webhookToken: "",
     baseUrl: "https://portal.packzy.com/api/v1",
   };
 }
@@ -51,7 +53,7 @@ export function CourierConnectionDialog(props: {
     ({ code }) => code === draft?.providerCode,
   );
   const replacingCredentials = Boolean(
-    draft?.apiKey || draft?.secretKey || draft?.baseUrl !== "https://portal.packzy.com/api/v1",
+    draft?.apiKey || draft?.secretKey || draft?.webhookToken || draft?.baseUrl !== "https://portal.packzy.com/api/v1",
   );
   const needsCredentials =
     draft?.credentialSource === "encrypted_database" &&
@@ -170,6 +172,15 @@ export function CourierConnectionDialog(props: {
                     label="Base URL"
                     value={draft.baseUrl}
                     onChange={(baseUrl) => props.onChange({ ...draft, baseUrl })}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <TextField
+                    label={draft.id ? "Replacement webhook token" : "Webhook token (optional until configured)"}
+                    type="password"
+                    value={draft.webhookToken}
+                    onChange={(webhookToken) => props.onChange({ ...draft, webhookToken })}
+                    placeholder={draft.id ? "Leave blank to keep the current token" : undefined}
                   />
                 </div>
               </>
