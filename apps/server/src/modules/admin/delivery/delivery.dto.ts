@@ -90,6 +90,39 @@ export const ConfirmCourierRouteDto = t.Object({
   overrideReason: t.Optional(t.String({ minLength: 5, maxLength: 500 })),
 });
 
+export const CreateCourierReturnDto = t.Object({
+  consignmentId: t.String({ minLength: 1, maxLength: 128 }),
+  reason: t.Optional(t.String({ minLength: 3, maxLength: 1_000 })),
+});
+
+export const UpdateCourierReturnDto = t.Object({
+  state: t.Union([
+    t.Literal("pending"),
+    t.Literal("approved"),
+    t.Literal("processing"),
+    t.Literal("completed"),
+    t.Literal("cancelled"),
+  ]),
+});
+
+export const RecordCourierSettlementDto = t.Object({
+  consignmentId: t.String({ minLength: 1, maxLength: 128 }),
+  externalId: t.String({ minLength: 1, maxLength: 128 }),
+  amount: t.String({ minLength: 1, maxLength: 40, pattern: "^\\d+(?:\\.\\d{1,2})?$" }),
+  currency: t.String({ minLength: 3, maxLength: 3 }),
+  note: t.Optional(t.String({ minLength: 1, maxLength: 500 })),
+});
+
+export const CourierHandoffDto = t.Object({
+  state: t.Union([
+    t.Literal("awaiting_pickup"),
+    t.Literal("pickup_requested_externally"),
+    t.Literal("handed_to_courier"),
+    t.Literal("in_transit"),
+  ]),
+  note: t.Optional(t.String({ minLength: 1, maxLength: 500 })),
+});
+
 export type CreateCourierConnectionInput =
   typeof CreateCourierConnectionDto.static;
 export type UpdateCourierConnectionInput =
@@ -99,3 +132,7 @@ export type UpdateCourierServiceInput = typeof UpdateCourierServiceDto.static;
 export type CreateCourierRoutingRuleInput = typeof CreateCourierRoutingRuleDto.static;
 export type UpdateCourierRoutingRuleInput = typeof UpdateCourierRoutingRuleDto.static;
 export type ConfirmCourierRouteInput = typeof ConfirmCourierRouteDto.static;
+export type CreateCourierReturnInput = typeof CreateCourierReturnDto.static;
+export type UpdateCourierReturnInput = typeof UpdateCourierReturnDto.static;
+export type RecordCourierSettlementInput = typeof RecordCourierSettlementDto.static;
+export type CourierHandoffInput = typeof CourierHandoffDto.static;

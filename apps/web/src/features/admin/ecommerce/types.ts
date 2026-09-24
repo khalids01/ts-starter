@@ -447,6 +447,26 @@ export type CourierTracking = {
   exceptions: Array<{ id: string; kind: string; state: string; createdAt: string }>;
 };
 
+export type CourierReturn = {
+  id: string;
+  consignmentId: string;
+  state: string;
+  reason?: string | null;
+  createdAt: string;
+  consignment: { order: { orderNumber: string }; connection: { displayName: string } };
+};
+
+export type CourierSettlement = {
+  id: string;
+  consignmentId: string;
+  externalId: string;
+  amount: string;
+  currency: string;
+  state: string;
+  createdAt: string;
+  consignment: { order: { orderNumber: string; paymentStatus: string }; connection: { displayName: string } };
+};
+
 export type DiscountCode = {
   id: string;
   code: string;

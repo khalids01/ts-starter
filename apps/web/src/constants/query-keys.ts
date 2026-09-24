@@ -116,6 +116,10 @@ export const queryKeys = {
           [...queryKeys.admin.ecommerce.delivery.all(), "routing-rules"] as const,
         dispatches: () =>
           [...queryKeys.admin.ecommerce.delivery.all(), "dispatches"] as const,
+        returns: () =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "returns"] as const,
+        settlements: () =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "settlements"] as const,
         recommendation: (orderId: string) =>
           [...queryKeys.admin.ecommerce.delivery.all(), "recommendation", orderId] as const,
         tracking: (orderId: string) =>

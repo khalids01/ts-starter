@@ -36,6 +36,8 @@ export function AdminDeliveryPage() {
   const { session } = useSession();
   const { canManageDelivery } = ecommercePermissions(session);
   const canDispatchDelivery = hasAdminPermission(session, Permissions.AdminDeliveryDispatch);
+  const canManageReturns = hasAdminPermission(session, Permissions.AdminDeliveryReturns);
+  const canReconcileDelivery = hasAdminPermission(session, Permissions.AdminDeliveryReconcile);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<CourierConnectionDraft | null>(null);
   const providersQuery = useQuery({
@@ -240,6 +242,8 @@ export function AdminDeliveryPage() {
         connections={connections}
         canManage={canManageDelivery}
         canDispatch={canDispatchDelivery}
+        canManageReturns={canManageReturns}
+        canReconcile={canReconcileDelivery}
       />
     </div>
   );

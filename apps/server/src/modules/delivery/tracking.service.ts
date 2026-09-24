@@ -83,6 +83,17 @@ export class CourierTrackingService {
               metadata: { consignmentId: consignment.id, eventKey: input.eventKey },
             },
           });
+          if (decision.orderDeliveryStatus === "delivered") {
+            const settlement = await tx.courierSettlement.findFirst({
+              where: { consignmentId: consignment.id, state: "matched_pending_delivery" },
+              orderBy: { createdAt: "desc" },
+            });
+            if (settlement) {
+              await tx.courierSettlement.update({ where: { id: settlement.id }, data: { state: "reconciled" } });
+              await tx.order.update({ where: { id: consignment.orderId }, data: { paymentStatus: "paid" } });
+              await tx.orderStatusEvent.create({ data: { orderId: consignment.orderId, type: "payment", previousValue: null, newValue: "paid", note: "Courier COD settlement reconciled after delivery", metadata: { settlementId: settlement.id, consignmentId: consignment.id } } });
+            }
+          }
         }
         if (decision.exceptionKind) {
           const existing = await tx.courierException.findFirst({ where: { consignmentId: consignment.id, kind: decision.exceptionKind, state: "open" } });

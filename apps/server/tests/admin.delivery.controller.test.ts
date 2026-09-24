@@ -62,4 +62,19 @@ describe("admin delivery controller RBAC", () => {
     );
     expect(response.status).toBe(403);
   });
+
+  it("requires dedicated permissions for returns and settlement reconciliation", async () => {
+    getAuthSessionMock.mockResolvedValue({
+      user: { id: "admin-1", role: "ADMIN", banned: false, archived: false },
+      permissions: [Permissions.AdminAccess, Permissions.AdminDeliveryRead],
+    });
+    const { adminDeliveryController } = await import(
+      "../src/modules/admin/delivery/delivery.controller"
+    );
+    const app = new Elysia().use(adminDeliveryController);
+    const returnResponse = await app.handle(new Request("http://localhost/admin/delivery/returns", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ consignmentId: "consignment-1" }) }));
+    const settlementResponse = await app.handle(new Request("http://localhost/admin/delivery/settlements", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ consignmentId: "consignment-1", externalId: "PAYOUT-1", amount: "100.00", currency: "BDT" }) }));
+    expect(returnResponse.status).toBe(403);
+    expect(settlementResponse.status).toBe(403);
+  });
 });

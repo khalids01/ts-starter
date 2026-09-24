@@ -4,13 +4,17 @@ import { authGuard } from "@/guards/auth.guard";
 import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   CourierConnectionIdDto,
+  CourierHandoffDto,
   CourierOrderIdDto,
   CourierResourceIdDto,
   ConfirmCourierRouteDto,
+  CreateCourierReturnDto,
   CreateCourierRoutingRuleDto,
   CreateCourierServiceDto,
+  RecordCourierSettlementDto,
   CreateCourierConnectionDto,
   UpdateCourierRoutingRuleDto,
+  UpdateCourierReturnDto,
   UpdateCourierServiceDto,
   UpdateCourierConnectionDto,
 } from "./delivery.dto";
@@ -20,6 +24,7 @@ import {
 } from "./delivery.service";
 import { courierRoutingDispatchService } from "./routing-dispatch.service";
 import { courierTrackingService } from "../../delivery/tracking.service";
+import { courierReturnsSettlementsService } from "./returns-settlements.service";
 
 const readDelivery = requireAllPermissions([
   Permissions.AdminAccess,
@@ -32,6 +37,14 @@ const manageDelivery = requireAllPermissions([
 const dispatchDelivery = requireAllPermissions([
   Permissions.AdminAccess,
   Permissions.AdminDeliveryDispatch,
+]);
+const manageReturns = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminDeliveryReturns,
+]);
+const reconcileDelivery = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminDeliveryReconcile,
 ]);
 
 function handleDeliveryError(error: unknown, set: { status?: number | string }) {
@@ -146,4 +159,22 @@ export const adminDeliveryController = new Elysia({
   .post("/dispatches/:id/queue", async ({ params: { id }, set, userId }) => {
     try { return await courierRoutingDispatchService.queue(id, userId!); }
     catch (error) { return handleDeliveryError(error, set); }
-  }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto });
+  }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto })
+  .post("/consignments/:id/handoff", async ({ params: { id }, body, set, userId }) => {
+    try { return await courierReturnsSettlementsService.markHandoff(id, body, userId!); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto, body: CourierHandoffDto })
+  .get("/returns", () => courierReturnsSettlementsService.listReturns(), { beforeHandle: readDelivery })
+  .post("/returns", async ({ body, set, userId }) => {
+    try { return await courierReturnsSettlementsService.createReturn(body, userId!); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageReturns, body: CreateCourierReturnDto })
+  .patch("/returns/:id", async ({ params: { id }, body, set, userId }) => {
+    try { return await courierReturnsSettlementsService.updateReturn(id, body, userId!); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageReturns, params: CourierResourceIdDto, body: UpdateCourierReturnDto })
+  .get("/settlements", () => courierReturnsSettlementsService.listSettlements(), { beforeHandle: readDelivery })
+  .post("/settlements", async ({ body, set, userId }) => {
+    try { return await courierReturnsSettlementsService.recordSettlement(body, userId!); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: reconcileDelivery, body: RecordCourierSettlementDto });
