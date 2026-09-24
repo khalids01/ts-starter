@@ -3,6 +3,7 @@ import {
   getRequestHeaders,
   setResponseHeader,
 } from "@tanstack/react-start/server";
+import { env } from "@env/public";
 
 import type { ClientSession, ClientSessionResult } from "@auth/client";
 
@@ -54,8 +55,7 @@ async function fetchRootSession(
   onSetCookie?: (cookies: string[]) => void,
 ): Promise<ClientSessionResult> {
   try {
-    const { env } = await import("@env/server");
-    const response = await fetch(`${env.BETTER_AUTH_URL}/session/context`, {
+    const response = await fetch(`${env.VITE_SERVER_URL}/session/context`, {
       headers: requestHeaders,
     });
 
