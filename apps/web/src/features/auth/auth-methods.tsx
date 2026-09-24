@@ -1,8 +1,17 @@
-import { useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
-import { client } from "@/lib/client";
-
-export type AuthMethod = "password" | "magic-link" | "github" | "google" | "discord";
+export type AuthMethod =
+  | "password"
+  | "magic-link"
+  | "github"
+  | "google"
+  | "discord";
 export type AuthMode = "sign-in" | "sign-up";
 
 export type PublicAuthSettings = {
@@ -19,6 +28,21 @@ export type PublicAuthSettings = {
 };
 
 const LAST_AUTH_METHOD_KEY = "ts-starter:last-auth-method";
+const AuthSettingsContext = createContext<PublicAuthSettings | null>(null);
+
+export function AuthSettingsProvider({
+  settings,
+  children,
+}: {
+  settings: PublicAuthSettings;
+  children: ReactNode;
+}) {
+  return (
+    <AuthSettingsContext.Provider value={settings}>
+      {children}
+    </AuthSettingsContext.Provider>
+  );
+}
 
 export function rememberAuthMethod(method: AuthMethod) {
   window.localStorage.setItem(LAST_AUTH_METHOD_KEY, method);
@@ -29,7 +53,11 @@ export function useLastAuthMethod() {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LAST_AUTH_METHOD_KEY);
-    if (["password", "magic-link", "github", "google", "discord"].includes(stored ?? "")) {
+    if (
+      ["password", "magic-link", "github", "google", "discord"].includes(
+        stored ?? ""
+      )
+    ) {
       setMethod(stored as AuthMethod);
     }
   }, []);
@@ -43,29 +71,21 @@ export function useLastAuthMethod() {
 }
 
 export function usePublicAuthSettings() {
-  const [settings, setSettings] = useState<PublicAuthSettings | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const settings = useContext(AuthSettingsContext);
 
-  useEffect(() => {
-    let active = true;
-    void client.auth.settings.get().then(({ data, error }) => {
-      if (!active) return;
-      if (error || !data) {
-        setError("Authentication methods could not be loaded. Please refresh and try again.");
-        return;
-      }
-      setSettings(data);
-    });
-    return () => { active = false; };
-  }, []);
+  if (!settings) {
+    throw new Error(
+      "usePublicAuthSettings must be used within an AuthSettingsProvider"
+    );
+  }
 
-  return { settings, error };
+  return settings;
 }
 
 export function isAuthMethodEnabled(
   settings: PublicAuthSettings,
   method: AuthMethod,
-  mode: AuthMode,
+  mode: AuthMode
 ) {
   const suffix = mode === "sign-in" ? "SignInEnabled" : "SignUpEnabled";
   const prefix = method === "magic-link" ? "magicLink" : method;

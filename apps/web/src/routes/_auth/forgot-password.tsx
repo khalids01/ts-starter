@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_auth/forgot-password")({
 });
 
 function ForgotPasswordPage() {
-  const { settings, error: settingsError } = usePublicAuthSettings();
+  const settings = usePublicAuthSettings();
   const [email, setEmail] = useState("");
   const resetPasswordMutation = useMutation({
     mutationFn: async (email: string) => {
@@ -41,12 +41,6 @@ function ForgotPasswordPage() {
     event.preventDefault();
     resetPasswordMutation.mutate(email.trim().toLowerCase());
   };
-  if (!settings)
-    return (
-      <div className="p-10 text-center text-sm text-muted-foreground">
-        {settingsError || "Loading authentication settings..."}
-      </div>
-    );
   if (!settings.passwordSignInEnabled)
     return (
       <div className="mx-auto mt-20 max-w-md p-6 text-center">

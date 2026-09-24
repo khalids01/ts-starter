@@ -49,21 +49,25 @@ export default function SignInForm({
   errorDescription,
   verified,
 }: SignInFormProps) {
-  const { settings, error: settingsError } = usePublicAuthSettings();
+  const settings = usePublicAuthSettings();
   const { lastAuthMethod, rememberAuthMethod } = useLastAuthMethod();
   const [passwordEmail, setPasswordEmail] = useState("");
   const [password, setPassword] = useState("");
   const [magicEmail, setMagicEmail] = useState("");
   const [isPasswordPending, setIsPasswordPending] = useState(false);
   const [isMagicPending, setIsMagicPending] = useState(false);
-  const [activeMethod, setActiveMethod] = useState<"password" | "magic-link">("password");
+  const [activeMethod, setActiveMethod] = useState<"password" | "magic-link">(
+    "password"
+  );
   const oauthErrorMessage = getOAuthErrorMessage(error, errorDescription);
 
   useEffect(() => {
-    if (!settings) return;
     if (lastAuthMethod === "magic-link" && settings.magicLinkSignInEnabled) {
       setActiveMethod("magic-link");
-    } else if (!settings.passwordSignInEnabled && settings.magicLinkSignInEnabled) {
+    } else if (
+      !settings.passwordSignInEnabled &&
+      settings.magicLinkSignInEnabled
+    ) {
       setActiveMethod("magic-link");
     }
   }, [lastAuthMethod, settings]);
@@ -71,7 +75,7 @@ export default function SignInForm({
   const handlePasswordSignIn = async (event: React.FormEvent) => {
     event.preventDefault();
     const parsedEmail = emailSchema.safeParse(
-      passwordEmail.trim().toLowerCase(),
+      passwordEmail.trim().toLowerCase()
     );
     if (!parsedEmail.success)
       return toast.error(parsedEmail.error.issues[0]?.message);
@@ -83,7 +87,7 @@ export default function SignInForm({
         email: parsedEmail.data,
         password,
         callbackURL: "/dashboard",
-    });
+      });
     if (!signInError) {
       rememberAuthMethod("password");
       if (
@@ -110,7 +114,9 @@ export default function SignInForm({
         .map((method) => methodLabels[method] ?? method)
         .join(", ");
       toast.error(
-        `This account uses ${labels || "OAuth or Magic Link"}. Sign in that way, then add a password from Account settings.`,
+        `This account uses ${
+          labels || "OAuth or Magic Link"
+        }. Sign in that way, then add a password from Account settings.`
       );
     } else {
       toast.error(signInError.message || "Could not sign in with password");
@@ -133,18 +139,10 @@ export default function SignInForm({
     if (magicError)
       return toast.error(
         (magicError.value as { message?: string })?.message ||
-          "Failed to send magic link",
+          "Failed to send magic link"
       );
     toast.success("Magic link sent. Check your email.");
   };
-
-  if (!settings) {
-    return (
-      <div className="mx-auto mt-10 w-full max-w-md p-6 text-center text-sm text-muted-foreground">
-        {settingsError || "Loading authentication methods..."}
-      </div>
-    );
-  }
 
   const hasSocialMethod =
     settings.githubSignInEnabled ||
@@ -173,14 +171,41 @@ export default function SignInForm({
 
       {settings.passwordSignInEnabled && settings.magicLinkSignInEnabled ? (
         <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted/70 p-1">
-          <button type="button" onClick={() => setActiveMethod("password")} className={`rounded-lg px-3 py-2.5 text-sm font-medium transition ${activeMethod === "password" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Password<LastUsedBadge visible={lastAuthMethod === "password"} /></button>
-          <button type="button" onClick={() => setActiveMethod("magic-link")} className={`rounded-lg px-3 py-2.5 text-sm font-medium transition ${activeMethod === "magic-link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Magic Link<LastUsedBadge visible={lastAuthMethod === "magic-link"} /></button>
+          <button
+            type="button"
+            onClick={() => setActiveMethod("password")}
+            className={`rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+              activeMethod === "password"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Password
+            <LastUsedBadge visible={lastAuthMethod === "password"} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveMethod("magic-link")}
+            className={`rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+              activeMethod === "magic-link"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Magic Link
+            <LastUsedBadge visible={lastAuthMethod === "magic-link"} />
+          </button>
         </div>
       ) : null}
 
       {settings.passwordSignInEnabled && activeMethod === "password" ? (
         <section className="space-y-5">
-          <div><h2 className="text-lg font-semibold">Sign in with password</h2><p className="text-sm text-muted-foreground">Use the password attached to your account.</p></div>
+          <div>
+            <h2 className="text-lg font-semibold">Sign in with password</h2>
+            <p className="text-sm text-muted-foreground">
+              Use the password attached to your account.
+            </p>
+          </div>
           <form onSubmit={handlePasswordSignIn} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password-email">Email</Label>
@@ -227,7 +252,12 @@ export default function SignInForm({
 
       {settings.magicLinkSignInEnabled && activeMethod === "magic-link" ? (
         <section className="space-y-5">
-          <div><h2 className="text-lg font-semibold">Sign in with Magic Link</h2><p className="text-sm text-muted-foreground">We will send a one-time sign-in link to your inbox.</p></div>
+          <div>
+            <h2 className="text-lg font-semibold">Sign in with Magic Link</h2>
+            <p className="text-sm text-muted-foreground">
+              We will send a one-time sign-in link to your inbox.
+            </p>
+          </div>
           <form onSubmit={handleMagicLink} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="magic-email">Email</Label>
@@ -253,7 +283,20 @@ export default function SignInForm({
         </section>
       ) : null}
 
-      {hasSocialMethod ? <><div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground"><div className="h-px flex-1 bg-border" /><span>Or continue with</span><div className="h-px flex-1 bg-border" /></div><SocialAuthButtons mode="sign-in" settings={settings} lastAuthMethod={lastAuthMethod} /></> : null}
+      {hasSocialMethod ? (
+        <>
+          <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
+            <div className="h-px flex-1 bg-border" />
+            <span>Or continue with</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <SocialAuthButtons
+            mode="sign-in"
+            settings={settings}
+            lastAuthMethod={lastAuthMethod}
+          />
+        </>
+      ) : null}
       {!settings.passwordSignInEnabled &&
       !settings.magicLinkSignInEnabled &&
       !hasSocialMethod ? (
