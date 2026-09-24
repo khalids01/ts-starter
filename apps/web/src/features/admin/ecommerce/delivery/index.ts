@@ -1,0 +1,1 @@
+export { AdminDeliveryPage } from "./page";

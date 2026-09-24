@@ -26,6 +26,7 @@ import { adminDiscountsController } from "./admin/discounts/discounts.controller
 import { adminStoreSettingsController } from "./admin/store-settings/store-settings.controller";
 import { adminCustomersController } from "./admin/customers/customers.controller";
 import { authSettingsController } from "./admin/auth-settings/auth-settings.controller";
+import { adminDeliveryController } from "./admin/delivery/delivery.controller";
 
 export const app = new Elysia()
   .use(authController)
@@ -47,6 +48,7 @@ export const app = new Elysia()
   .use(adminOrdersController)
   .use(adminImagesController)
   .use(adminShippingController)
+  .use(adminDeliveryController)
   .use(adminDiscountsController)
   .use(adminStoreSettingsController)
   .use(adminCustomersController)

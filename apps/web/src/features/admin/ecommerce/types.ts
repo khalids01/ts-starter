@@ -373,6 +373,28 @@ export type ShippingRate = {
   updatedAt: string;
 };
 
+export type CourierProvider = {
+  id: string;
+  code: string;
+  displayName: string;
+  capabilities: string[];
+  environmentConfigurationAvailable: boolean;
+};
+
+export type CourierConnection = {
+  id: string;
+  publicId: string;
+  displayName: string;
+  provider: CourierProvider;
+  enabled: boolean;
+  environment: "production" | "sandbox";
+  priority: number;
+  credentialSource: "server_environment" | "encrypted_database";
+  hasStoredCredentials: boolean;
+  healthState: "unchecked" | "healthy" | "degraded" | "auth_failed";
+  updatedAt: string;
+};
+
 export type DiscountCode = {
   id: string;
   code: string;

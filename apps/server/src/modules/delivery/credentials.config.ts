@@ -5,15 +5,7 @@ import {
 } from "./credentials";
 
 export function createConfiguredCourierCredentialResolver() {
-  const hasEncryptionConfiguration =
-    env.COURIER_CREDENTIAL_ACTIVE_KEY_VERSION !== undefined ||
-    env.COURIER_CREDENTIAL_ENCRYPTION_KEYS !== undefined;
-  const keyring = hasEncryptionConfiguration
-    ? parseCourierCredentialKeyring({
-        activeVersion: env.COURIER_CREDENTIAL_ACTIVE_KEY_VERSION,
-        serializedKeys: env.COURIER_CREDENTIAL_ENCRYPTION_KEYS,
-      })
-    : undefined;
+  const keyring = getConfiguredCourierCredentialKeyring();
 
   return new DefaultCourierCredentialResolver(
     {
@@ -23,4 +15,16 @@ export function createConfiguredCourierCredentialResolver() {
     },
     keyring,
   );
+}
+
+export function getConfiguredCourierCredentialKeyring() {
+  const hasEncryptionConfiguration =
+    env.COURIER_CREDENTIAL_ACTIVE_KEY_VERSION !== undefined ||
+    env.COURIER_CREDENTIAL_ENCRYPTION_KEYS !== undefined;
+  return hasEncryptionConfiguration
+    ? parseCourierCredentialKeyring({
+        activeVersion: env.COURIER_CREDENTIAL_ACTIVE_KEY_VERSION,
+        serializedKeys: env.COURIER_CREDENTIAL_ENCRYPTION_KEYS,
+      })
+    : undefined;
 }

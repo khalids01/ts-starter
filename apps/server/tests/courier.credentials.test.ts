@@ -93,6 +93,15 @@ describe("courier credential encryption", () => {
       }),
     ).toThrow("32 bytes");
   });
+
+  it("accepts a single active base64 key for initial setup", () => {
+    const keyring = parseCourierCredentialKeyring({
+      activeVersion: 3,
+      serializedKeys: serializedKey(3),
+    });
+    expect(keyring.activeVersion).toBe(3);
+    expect(keyring.keys.get(3)?.byteLength).toBe(32);
+  });
 });
 
 describe("courier credential resolution", () => {

@@ -78,9 +78,7 @@ export function parseCourierCredentialKeyring(input: {
   try {
     parsed = JSON.parse(input.serializedKeys);
   } catch {
-    throw new CourierCredentialConfigurationError(
-      "Courier credential encryption keys must be valid JSON",
-    );
+    parsed = { [input.activeVersion]: input.serializedKeys.trim() };
   }
   if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
     throw new CourierCredentialConfigurationError(

@@ -35,6 +35,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
+import { Route as AdminDeliveryRouteImport } from './routes/admin/delivery'
 import { Route as AdminDiscountsRouteImport } from './routes/admin/discounts'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
 import { Route as AdminImagesRouteImport } from './routes/admin/images'
@@ -189,6 +190,11 @@ const AdminCatalogRoute = AdminCatalogRouteImport.update({
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDeliveryRoute = AdminDeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDiscountsRoute = AdminDiscountsRouteImport.update({
@@ -353,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
+  '/admin/delivery': typeof AdminDeliveryRoute
   '/admin/discounts': typeof AdminDiscountsRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/images': typeof AdminImagesRoute
@@ -402,6 +409,7 @@ export interface FileRoutesByTo {
   '/cart': typeof PublicCartRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
+  '/admin/delivery': typeof AdminDeliveryRoute
   '/admin/discounts': typeof AdminDiscountsRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/images': typeof AdminImagesRoute
@@ -455,6 +463,7 @@ export interface FileRoutesById {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
+  '/admin/delivery': typeof AdminDeliveryRoute
   '/admin/discounts': typeof AdminDiscountsRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/images': typeof AdminImagesRoute
@@ -511,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/customers'
+    | '/admin/delivery'
     | '/admin/discounts'
     | '/admin/feedback'
     | '/admin/images'
@@ -560,6 +570,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/admin/activity'
     | '/admin/catalog'
+    | '/admin/delivery'
     | '/admin/discounts'
     | '/admin/feedback'
     | '/admin/images'
@@ -612,6 +623,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/customers'
+    | '/admin/delivery'
     | '/admin/discounts'
     | '/admin/feedback'
     | '/admin/images'
@@ -843,6 +855,13 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/admin/customers'
       preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/delivery': {
+      id: '/admin/delivery'
+      path: '/delivery'
+      fullPath: '/admin/delivery'
+      preLoaderRoute: typeof AdminDeliveryRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/discounts': {
@@ -1160,6 +1179,7 @@ interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
   AdminCatalogRoute: typeof AdminCatalogRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
+  AdminDeliveryRoute: typeof AdminDeliveryRoute
   AdminDiscountsRoute: typeof AdminDiscountsRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminImagesRoute: typeof AdminImagesRoute
@@ -1181,6 +1201,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
   AdminCatalogRoute: AdminCatalogRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
+  AdminDeliveryRoute: AdminDeliveryRoute,
   AdminDiscountsRoute: AdminDiscountsRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
   AdminImagesRoute: AdminImagesRoute,

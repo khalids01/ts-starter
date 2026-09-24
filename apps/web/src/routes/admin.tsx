@@ -58,6 +58,7 @@ import {
   canShowDiscountsNav,
   canShowStoreSettingsNav,
   canShowCustomersNav,
+  canShowDeliveryNav,
 } from "@/features/admin/lib/admin-access";
 import { adminMiddleware } from "@/middleware/admin";
 import { useSession } from "@/providers/session-provider";
@@ -141,6 +142,12 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       icon: Truck,
       url: "/admin/shipping",
       show: canShowShippingNav(session),
+    },
+    {
+      title: "Delivery",
+      icon: Truck,
+      url: "/admin/delivery",
+      show: canShowDeliveryNav(session),
     },
     {
       title: "Discounts",

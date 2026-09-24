@@ -109,6 +109,22 @@ export const ecommerceApi = {
     disableRate: (id: string) =>
       unwrap(api.admin.shipping.rates({ id }).delete(), "Failed to disable shipping rate"),
   },
+  delivery: {
+    providers: () =>
+      unwrap(api.admin.delivery.providers.get(), "Failed to load courier providers"),
+    connections: () =>
+      unwrap(api.admin.delivery.connections.get(), "Failed to load courier connections"),
+    createConnection: (body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.connections.post(body as any), "Failed to create courier connection"),
+    updateConnection: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.connections({ id }).patch(body as any), "Failed to update courier connection"),
+    testConnection: (id: string) =>
+      unwrap(api.admin.delivery.connections({ id }).test.post(), "Failed to test courier connection"),
+    enableConnection: (id: string) =>
+      unwrap(api.admin.delivery.connections({ id }).enable.post(), "Failed to enable courier connection"),
+    disableConnection: (id: string) =>
+      unwrap(api.admin.delivery.connections({ id }).disable.post(), "Failed to disable courier connection"),
+  },
   discounts: {
     list: (query?: Record<string, unknown>) =>
       unwrap(api.admin.discounts.get({ query }), "Failed to load discounts"),
