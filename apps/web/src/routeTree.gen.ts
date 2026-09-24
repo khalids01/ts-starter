@@ -35,8 +35,8 @@ import { Route as PublicShopRouteImport } from './routes/_public/shop'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
+import { Route as AdminCouriersRouteImport } from './routes/admin/couriers'
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
-import { Route as AdminDeliveryRouteImport } from './routes/admin/delivery'
 import { Route as AdminDiscountsRouteImport } from './routes/admin/discounts'
 import { Route as AdminFeedbackRouteImport } from './routes/admin/feedback'
 import { Route as AdminImagesRouteImport } from './routes/admin/images'
@@ -192,14 +192,14 @@ const AdminCatalogRoute = AdminCatalogRouteImport.update({
   path: '/catalog',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCouriersRoute = AdminCouriersRouteImport.update({
+  id: '/couriers',
+  path: '/couriers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminDeliveryRoute = AdminDeliveryRouteImport.update({
-  id: '/delivery',
-  path: '/delivery',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDiscountsRoute = AdminDiscountsRouteImport.update({
@@ -363,8 +363,8 @@ export interface FileRoutesByFullPath {
   '/shop': typeof PublicShopRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
+  '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
-  '/admin/delivery': typeof AdminDeliveryRoute
   '/admin/discounts': typeof AdminDiscountsRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/images': typeof AdminImagesRoute
@@ -414,7 +414,7 @@ export interface FileRoutesByTo {
   '/cart': typeof PublicCartRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
-  '/admin/delivery': typeof AdminDeliveryRoute
+  '/admin/couriers': typeof AdminCouriersRoute
   '/admin/discounts': typeof AdminDiscountsRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/images': typeof AdminImagesRoute
@@ -468,8 +468,8 @@ export interface FileRoutesById {
   '/_public/shop': typeof PublicShopRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
+  '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
-  '/admin/delivery': typeof AdminDeliveryRoute
   '/admin/discounts': typeof AdminDiscountsRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/images': typeof AdminImagesRoute
@@ -525,8 +525,8 @@ export interface FileRouteTypes {
     | '/shop'
     | '/admin/activity'
     | '/admin/catalog'
+    | '/admin/couriers'
     | '/admin/customers'
-    | '/admin/delivery'
     | '/admin/discounts'
     | '/admin/feedback'
     | '/admin/images'
@@ -576,7 +576,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/admin/activity'
     | '/admin/catalog'
-    | '/admin/delivery'
+    | '/admin/couriers'
     | '/admin/discounts'
     | '/admin/feedback'
     | '/admin/images'
@@ -629,8 +629,8 @@ export interface FileRouteTypes {
     | '/_public/shop'
     | '/admin/activity'
     | '/admin/catalog'
+    | '/admin/couriers'
     | '/admin/customers'
-    | '/admin/delivery'
     | '/admin/discounts'
     | '/admin/feedback'
     | '/admin/images'
@@ -859,18 +859,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCatalogRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/couriers': {
+      id: '/admin/couriers'
+      path: '/couriers'
+      fullPath: '/admin/couriers'
+      preLoaderRoute: typeof AdminCouriersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/customers': {
       id: '/admin/customers'
       path: '/customers'
       fullPath: '/admin/customers'
       preLoaderRoute: typeof AdminCustomersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/delivery': {
-      id: '/admin/delivery'
-      path: '/delivery'
-      fullPath: '/admin/delivery'
-      preLoaderRoute: typeof AdminDeliveryRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/discounts': {
@@ -1207,8 +1207,8 @@ const AdminRolesRouteWithChildren = AdminRolesRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
   AdminCatalogRoute: typeof AdminCatalogRoute
+  AdminCouriersRoute: typeof AdminCouriersRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
-  AdminDeliveryRoute: typeof AdminDeliveryRoute
   AdminDiscountsRoute: typeof AdminDiscountsRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminImagesRoute: typeof AdminImagesRoute
@@ -1229,8 +1229,8 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
   AdminCatalogRoute: AdminCatalogRoute,
+  AdminCouriersRoute: AdminCouriersRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
-  AdminDeliveryRoute: AdminDeliveryRoute,
   AdminDiscountsRoute: AdminDiscountsRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
   AdminImagesRoute: AdminImagesRoute,

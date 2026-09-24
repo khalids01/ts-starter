@@ -258,7 +258,7 @@ COD rules:
 
 ## Admin Experience and Permissions
 
-Add an `/admin/delivery` workspace with:
+Add an `/admin/couriers` workspace with:
 
 - Delivery Methods
 - Providers and Courier Connections

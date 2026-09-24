@@ -144,9 +144,9 @@ function getAdminNavItems(session: ClientSession | null | undefined): AdminNavIt
       show: canShowShippingNav(session),
     },
     {
-      title: "Delivery",
+      title: "Couriers",
       icon: Truck,
-      url: "/admin/delivery",
+      url: "/admin/couriers",
       show: canShowDeliveryNav(session),
     },
     {
@@ -204,6 +204,7 @@ function AdminLayout() {
   const location = useLocation();
   const { session } = useSession();
   const visibleNavItems = getAdminNavItems(session).filter((item) => item.show);
+  const currentNavItem = visibleNavItems.find((item) => item.url === location.pathname);
 
   return (
     <SidebarProvider>
@@ -266,7 +267,7 @@ function AdminLayout() {
                 <span className="text-muted-foreground">Admin</span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 <span className="capitalize">
-                  {location.pathname.split("/").pop()}
+                  {currentNavItem?.title ?? location.pathname.split("/").pop()}
                 </span>
               </nav>
             </div>

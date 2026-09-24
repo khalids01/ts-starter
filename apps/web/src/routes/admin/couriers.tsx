@@ -4,7 +4,7 @@ import { canAccessAdminDeliveryRead } from "@/features/admin/lib/admin-access";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 import { adminMiddleware } from "@/middleware/admin";
 
-export const Route = createFileRoute("/admin/delivery")({
+export const Route = createFileRoute("/admin/couriers")({
   server: { middleware: [adminMiddleware] },
   beforeLoad: async ({ context }) => {
     const session = context.session ?? (await getRootSession());

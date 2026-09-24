@@ -106,22 +106,53 @@ export function AdminDeliveryPage() {
 
   const providers = providersQuery.data ?? [];
   const connections = connectionsQuery.data ?? [];
+  const queriesFailed = providersQuery.isError || connectionsQuery.isError;
+  const addConnection = () => {
+    const provider = providers[0];
+    if (provider) setDraft(connectionDraft(provider));
+  };
   return (
     <div className="space-y-6">
       <EcommerceHeader
-        title="Delivery"
-        description="Manage courier connections. Connections remain disabled until their credentials pass a health check."
+        title="Couriers"
+        description="Manage courier service connections. Connections remain disabled until their credentials pass a health check."
         action={
-          canManageDelivery && providers.length ? (
-            <Button onClick={() => setDraft(connectionDraft(providers[0]))}>
+          canManageDelivery && providers.length > 0 ? (
+            <Button onClick={addConnection}>
               <Plus className="mr-2 size-4" /> Add connection
             </Button>
           ) : null
         }
       />
 
-      {connectionsQuery.isLoading ? (
+      {queriesFailed ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Could not load courier management</CardTitle>
+            <CardDescription>
+              {readError(
+                providersQuery.error ?? connectionsQuery.error,
+                "The courier providers or connections request failed.",
+              )}
+            </CardDescription>
+            <CardAction>
+              <Button variant="outline" onClick={refresh}>
+                <RefreshCw className="mr-2 size-4" /> Retry
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : providersQuery.isLoading || connectionsQuery.isLoading ? (
         <Card><CardContent>Loading courier connections…</CardContent></Card>
+      ) : providers.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>No courier providers configured</CardTitle>
+            <CardDescription>
+              Provider metadata is missing. Run the database courier-provider seed before creating a connection.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       ) : connections.length === 0 ? (
         <Card>
           <CardHeader>
@@ -129,7 +160,19 @@ export function AdminDeliveryPage() {
             <CardDescription>
               Server credentials do not create connections automatically. Add one explicitly when ready.
             </CardDescription>
+            {canManageDelivery ? (
+              <CardAction>
+                <Button onClick={addConnection}>
+                  <Plus className="mr-2 size-4" /> Add connection
+                </Button>
+              </CardAction>
+            ) : null}
           </CardHeader>
+          {!canManageDelivery ? (
+            <CardContent className="text-muted-foreground text-sm">
+              This account has read-only courier access. An owner must grant the Courier Settings permission before it can create or change connections.
+            </CardContent>
+          ) : null}
         </Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
