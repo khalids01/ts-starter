@@ -46,6 +46,9 @@ import {
 import { formatMoney } from "./orders-table";
 import { FulfillmentCard } from "./fulfillment";
 import { OrderOperationsCard } from "./order-operations";
+import { CourierRoutingCard } from "./courier-routing";
+import { hasAdminPermission } from "../ui";
+import { Permissions } from "@rbac";
 import {
   DeliveryStatusBadge,
   DeliveryStatusSelect,
@@ -121,6 +124,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
     canCancelOrders,
     canRefundOrders,
   } = ecommercePermissions(session);
+  const canDispatchCourier = hasAdminPermission(session, Permissions.AdminDeliveryDispatch);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.admin.ecommerce.orders.detail(props.orderId),
@@ -387,6 +391,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
             canRefund={canRefundOrders}
           />
           <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
+          <CourierRoutingCard orderId={order.id} canDispatch={canDispatchCourier} />
           <OperationalCard order={order} />
         </div>
       </section>

@@ -110,6 +110,14 @@ export const queryKeys = {
           [...queryKeys.admin.ecommerce.delivery.all(), "providers"] as const,
         connections: () =>
           [...queryKeys.admin.ecommerce.delivery.all(), "connections"] as const,
+        services: () =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "services"] as const,
+        rules: () =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "routing-rules"] as const,
+        dispatches: () =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "dispatches"] as const,
+        recommendation: (orderId: string) =>
+          [...queryKeys.admin.ecommerce.delivery.all(), "recommendation", orderId] as const,
       },
       discounts: {
         all: () => ["admin-ecommerce-discounts"] as const,

@@ -48,4 +48,18 @@ describe("admin delivery controller RBAC", () => {
     );
     expect(response.status).toBe(403);
   });
+
+  it("requires delivery dispatch permission for order recommendations", async () => {
+    getAuthSessionMock.mockResolvedValueOnce({
+      user: { id: "admin-1", role: "ADMIN", banned: false, archived: false },
+      permissions: [Permissions.AdminAccess, Permissions.AdminDeliveryRead],
+    });
+    const { adminDeliveryController } = await import(
+      "../src/modules/admin/delivery/delivery.controller"
+    );
+    const response = await new Elysia().use(adminDeliveryController).handle(
+      new Request("http://localhost/admin/delivery/orders/order-1/recommendation"),
+    );
+    expect(response.status).toBe(403);
+  });
 });

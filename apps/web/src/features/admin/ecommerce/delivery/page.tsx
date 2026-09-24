@@ -22,6 +22,9 @@ import {
   CourierConnectionDialog,
   type CourierConnectionDraft,
 } from "./connection-dialog";
+import { RoutingManagement } from "./routing-management";
+import { hasAdminPermission } from "../ui";
+import { Permissions } from "@rbac";
 
 function healthVariant(state: CourierConnection["healthState"]) {
   if (state === "healthy") return "default" as const;
@@ -32,6 +35,7 @@ function healthVariant(state: CourierConnection["healthState"]) {
 export function AdminDeliveryPage() {
   const { session } = useSession();
   const { canManageDelivery } = ecommercePermissions(session);
+  const canDispatchDelivery = hasAdminPermission(session, Permissions.AdminDeliveryDispatch);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<CourierConnectionDraft | null>(null);
   const providersQuery = useQuery({
@@ -228,6 +232,11 @@ export function AdminDeliveryPage() {
         loading={save.isPending}
         onChange={setDraft}
         onSubmit={(value) => save.mutate(value)}
+      />
+      <RoutingManagement
+        connections={connections}
+        canManage={canManageDelivery}
+        canDispatch={canDispatchDelivery}
       />
     </div>
   );

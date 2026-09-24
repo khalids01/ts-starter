@@ -395,6 +395,42 @@ export type CourierConnection = {
   updatedAt: string;
 };
 
+export type CourierService = {
+  id: string;
+  connectionId: string;
+  connectionName: string;
+  providerName: string;
+  code: string;
+  displayName: string;
+  enabled: boolean;
+  shippingMethods: Array<{ id: string; code: string; label: string }>;
+  updatedAt: string;
+};
+
+export type CourierRoutingRule = {
+  id: string;
+  name: string;
+  version: number;
+  priority: number;
+  enabled: boolean;
+  conditions: Record<string, unknown>;
+  connectionId: string;
+  connectionName: string;
+  serviceId: string;
+  serviceName: string;
+  updatedAt: string;
+};
+
+export type CourierRouteRecommendation = {
+  orderId: string;
+  orderNumber: string;
+  request: { shippingMethodId: string; paymentKind: "cod" | "prepaid"; outstandingCodAmount: number };
+  payloadPreview: { invoice: string; recipientName: string; recipientPhone?: string | null; recipientAddress?: string | null; codAmount: string; currency: string };
+  candidates: Array<{ connectionId: string; serviceId: string; ruleId: string; ruleVersion: number; reason: string }>;
+  warnings: string[];
+  evaluatedRules: Array<{ id: string; version: number }>;
+};
+
 export type DiscountCode = {
   id: string;
   code: string;

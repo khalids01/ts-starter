@@ -124,6 +124,26 @@ export const ecommerceApi = {
       unwrap(api.admin.delivery.connections({ id }).enable.post(), "Failed to enable courier connection"),
     disableConnection: (id: string) =>
       unwrap(api.admin.delivery.connections({ id }).disable.post(), "Failed to disable courier connection"),
+    services: () =>
+      unwrap(api.admin.delivery.services.get(), "Failed to load courier services"),
+    createService: (body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.services.post(body as any), "Failed to create courier service"),
+    updateService: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.services({ id }).patch(body as any), "Failed to update courier service"),
+    rules: () =>
+      unwrap(api.admin.delivery["routing-rules"].get(), "Failed to load courier routing rules"),
+    createRule: (body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery["routing-rules"].post(body as any), "Failed to create courier routing rule"),
+    updateRule: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery["routing-rules"]({ id }).patch(body as any), "Failed to update courier routing rule"),
+    dispatches: () =>
+      unwrap(api.admin.delivery.dispatches.get(), "Failed to load courier dispatches"),
+    recommendation: (orderId: string) =>
+      unwrap(api.admin.delivery.orders({ orderId }).recommendation.get(), "Failed to calculate courier recommendation"),
+    confirmRoute: (orderId: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.orders({ orderId }).confirm.post(body as any), "Failed to confirm courier route"),
+    queueDispatch: (id: string) =>
+      unwrap(api.admin.delivery.dispatches({ id }).queue.post(), "Failed to queue courier dispatch"),
   },
   discounts: {
     list: (query?: Record<string, unknown>) =>
