@@ -5,6 +5,9 @@
     "./client": {
       "default": "./src/index.client.ts"
     },
+    "./shared": {
+      "default": "./src/index.shared.ts"
+    },
     "./server": {
       "default": "./src/index.server.ts"
     }

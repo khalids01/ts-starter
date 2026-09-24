@@ -6,7 +6,7 @@ export {
   getSetCookieHeaders,
   handleAuthRequest,
 } from "./session.server";
-export { toClientSession } from "./session.client";
+export { toClientSession } from "./session";
 
 export type {
   AuthGetSessionResult,

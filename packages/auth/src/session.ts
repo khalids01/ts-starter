@@ -46,3 +46,33 @@ export type ClientSession = {
 };
 
 export type ClientSessionResult = ClientSession | null;
+
+/**
+ * Removes server-only session fields before exposing session data to the web app.
+ * This module is intentionally isomorphic: root-route SSR needs the same
+ * normalization as the browser session hook.
+ */
+export function toClientSession(
+  session: AuthClientSession | null | undefined,
+): ClientSessionResult {
+  if (!session?.user) {
+    return null;
+  }
+
+  return {
+    user: {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+      image: session.user.image ?? null,
+      onboardingComplete: session.user.onboardingComplete,
+      plan: session.user.plan ?? null,
+      subscriptionStatus: session.user.subscriptionStatus ?? null,
+      twoFactorEnabled: Boolean(session.user.twoFactorEnabled),
+    },
+    permissions: session.permissions,
+    roles: session.roles,
+    primaryRoleSlug: session.primaryRoleSlug,
+    primaryRoleId: session.primaryRoleId,
+  };
+}

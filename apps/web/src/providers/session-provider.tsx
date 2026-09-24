@@ -8,7 +8,7 @@ import {
   toClientSession,
   type AuthClientSession,
   type ClientSessionResult,
-} from "@auth/client";
+} from "@auth/shared";
 import { authClient } from "@/lib/auth-client";
 
 type SessionContextValue = {

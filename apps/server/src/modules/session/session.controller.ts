@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { toClientSession } from "@auth/client";
+import { toClientSession } from "@auth/shared";
 import { authGuard } from "@/guards/auth.guard";
 
 export const sessionController = new Elysia({
