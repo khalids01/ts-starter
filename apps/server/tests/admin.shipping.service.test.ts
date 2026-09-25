@@ -5,7 +5,10 @@ const findFirstMock = mock(async () => null as any);
 const findUniqueMock = mock(async () => null as any);
 const createMock = mock(async (args: any) => rateRow(args.data));
 const updateMock = mock(async (args: any) => rateRow({ id: args.where.id, ...args.data }));
+const deleteMock = mock(async () => ({}));
 const updateManyMock = mock(async () => ({ count: 1 }));
+const mappingCountMock = mock(async () => 0);
+const orderCountMock = mock(async () => 0);
 const prismaMock = {
   shippingRate: {
     findMany: findManyMock,
@@ -13,8 +16,12 @@ const prismaMock = {
     findUnique: findUniqueMock,
     create: createMock,
     update: updateMock,
+    delete: deleteMock,
     updateMany: updateManyMock,
   },
+  courierServiceMethod: { count: mappingCountMock },
+  order: { count: orderCountMock },
+  activityEvent: { create: mock(async ({ data }: any) => data) },
 };
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
@@ -33,6 +40,7 @@ function rateRow(overrides: Record<string, any> = {}) {
     sortOrder: overrides.sortOrder ?? 0,
     createdAt: new Date("2026-09-19T00:00:00.000Z"),
     updatedAt: new Date("2026-09-19T00:00:00.000Z"),
+    archivedAt: overrides.archivedAt ?? null,
   };
 }
 
@@ -40,7 +48,9 @@ beforeEach(() => {
   findManyMock.mockResolvedValue([]);
   findFirstMock.mockResolvedValue(null);
   findUniqueMock.mockResolvedValue(null);
-  for (const fn of [findManyMock, findFirstMock, findUniqueMock, createMock, updateMock, updateManyMock, transactionMock]) fn.mockClear();
+  mappingCountMock.mockResolvedValue(0);
+  orderCountMock.mockResolvedValue(0);
+  for (const fn of [findManyMock, findFirstMock, findUniqueMock, createMock, updateMock, deleteMock, updateManyMock, mappingCountMock, orderCountMock, transactionMock]) fn.mockClear();
 });
 
 describe("shippingService", () => {
@@ -58,9 +68,31 @@ describe("shippingService", () => {
     expect(updateManyMock).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ currency: "BDT", isDefault: true }) }));
   });
 
-  it("blocks disabling the current default", async () => {
+  it("blocks archiving the current default with structured dependency details", async () => {
     findUniqueMock.mockResolvedValue(rateRow({ isDefault: true }));
     const { shippingService, ShippingServiceError } = await import("../src/modules/ecommerce/shipping/shipping.service");
-    await expect(shippingService.disableRate("rate-1")).rejects.toBeInstanceOf(ShippingServiceError);
+    await expect(shippingService.archiveRate("rate-1")).rejects.toMatchObject({
+      status: 409,
+      code: "RESOURCE_IN_USE",
+      dependencies: [{ type: "default_shipping_method", count: 1 }],
+    });
+    expect(ShippingServiceError).toBeDefined();
+  });
+
+  it("archives and restores a non-default method as inactive", async () => {
+    findUniqueMock.mockResolvedValueOnce(rateRow()).mockResolvedValueOnce(rateRow({ archivedAt: new Date() }));
+    const { shippingService } = await import("../src/modules/ecommerce/shipping/shipping.service");
+    await shippingService.archiveRate("rate-1", "admin-1");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ isActive: false, archivedAt: expect.any(Date) }) }));
+    await shippingService.restoreRate("rate-1", "admin-1");
+    expect(updateMock).toHaveBeenLastCalledWith(expect.objectContaining({ data: { archivedAt: null, isActive: false, isDefault: false } }));
+  });
+
+  it("blocks permanent deletion when orders depend on the archived method", async () => {
+    findUniqueMock.mockResolvedValue(rateRow({ archivedAt: new Date() }));
+    orderCountMock.mockResolvedValue(2);
+    const { shippingService } = await import("../src/modules/ecommerce/shipping/shipping.service");
+    await expect(shippingService.deleteRate("rate-1", "admin-1")).rejects.toMatchObject({ code: "RESOURCE_IN_USE", dependencies: [expect.objectContaining({ type: "orders", count: 2 })] });
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 });

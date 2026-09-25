@@ -241,7 +241,7 @@ export const orderService = {
   async listShippingRates(currency?: string) {
     const settings = await storeSettingsService.get();
     const rates = await prisma.shippingRate.findMany({
-      where: { isActive: true, currency: (currency ?? settings.defaultCurrency).trim().toUpperCase() },
+      where: { isActive: true, archivedAt: null, currency: (currency ?? settings.defaultCurrency).trim().toUpperCase() },
       orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
     });
     return rates.map(mapShippingRate);
@@ -283,10 +283,10 @@ export const orderService = {
     }
     const shippingRate = await prisma.shippingRate.findFirst({
       where: input.shippingRateId
-        ? { id: input.shippingRateId, isActive: true, currency: orderCurrency }
+        ? { id: input.shippingRateId, isActive: true, archivedAt: null, currency: orderCurrency }
         : input.shippingRateCode
-          ? { code: input.shippingRateCode, isActive: true, currency: orderCurrency }
-          : { isDefault: true, isActive: true, currency: orderCurrency },
+          ? { code: input.shippingRateCode, isActive: true, archivedAt: null, currency: orderCurrency }
+          : { isDefault: true, isActive: true, archivedAt: null, currency: orderCurrency },
       orderBy: [{ sortOrder: "asc" }],
     });
     if (!shippingRate) {

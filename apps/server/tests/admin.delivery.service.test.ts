@@ -31,6 +31,11 @@ function createHarness(healthFails = false) {
     connection = { ...connection, ...data, provider, updatedAt: new Date() };
     return connection;
   });
+  const serviceCount = mock(async () => 0);
+  const ruleCount = mock(async () => 0);
+  const dispatchCount = mock(async () => 0);
+  const consignmentCount = mock(async () => 0);
+  const remove = mock(async () => connection);
   const db = {
     courierProvider: {
       findMany: mock(async () => [provider]),
@@ -41,7 +46,12 @@ function createHarness(healthFails = false) {
       findUnique: mock(async () => connection),
       create,
       update,
+      delete: remove,
     },
+    courierService: { count: serviceCount },
+    courierRoutingRule: { count: ruleCount },
+    courierDispatch: { count: dispatchCount },
+    courierConsignment: { count: consignmentCount },
   };
   const adapter: CourierProviderAdapter = {
     code: "steadfast",
@@ -86,7 +96,7 @@ function createHarness(healthFails = false) {
     registry: new CourierProviderRegistry().register(adapter),
     keyring,
   });
-  return { service, db, activities, resolver, getConnection: () => connection };
+  return { service, db, activities, resolver, serviceCount, ruleCount, dispatchCount, consignmentCount, remove, getConnection: () => connection };
 }
 
 describe("admin courier connection service", () => {
@@ -169,5 +179,33 @@ describe("admin courier connection service", () => {
       healthState: "degraded",
       errorCode: "unknown",
     });
+  });
+
+  it("blocks archive while current delivery options depend on the connection", async () => {
+    const { service, serviceCount } = createHarness();
+    await service.createConnection({ providerCode: "steadfast", displayName: "Primary", environment: "production", credentialSource: "encrypted_database", credentials: { apiKey: "api", secretKey: "secret", baseUrl: "https://example.com" } });
+    serviceCount.mockResolvedValue(2);
+    await expect(service.archiveConnection("connection-1", "admin-1")).rejects.toMatchObject({
+      code: "RESOURCE_IN_USE",
+      dependencies: [expect.objectContaining({ type: "delivery_options", count: 2 })],
+    });
+  });
+
+  it("archives and restores a connection without enabling it", async () => {
+    const { service } = createHarness();
+    await service.createConnection({ providerCode: "steadfast", displayName: "Primary", environment: "production", credentialSource: "encrypted_database", credentials: { apiKey: "api", secretKey: "secret", baseUrl: "https://example.com" } });
+    const archived = await service.archiveConnection("connection-1", "admin-1");
+    expect(archived.archivedAt).not.toBeNull();
+    const restored = await service.restoreConnection("connection-1", "admin-1");
+    expect(restored).toMatchObject({ archivedAt: null, enabled: false });
+  });
+
+  it("retains an archived connection referenced by historical shipments", async () => {
+    const { service, dispatchCount, remove } = createHarness();
+    await service.createConnection({ providerCode: "steadfast", displayName: "Primary", environment: "production", credentialSource: "encrypted_database", credentials: { apiKey: "api", secretKey: "secret", baseUrl: "https://example.com" } });
+    await service.archiveConnection("connection-1", "admin-1");
+    dispatchCount.mockResolvedValue(1);
+    await expect(service.deleteConnection("connection-1", "admin-1")).rejects.toMatchObject({ code: "RESOURCE_IN_USE" });
+    expect(remove).not.toHaveBeenCalled();
   });
 });

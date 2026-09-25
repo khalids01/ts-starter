@@ -38,7 +38,7 @@ function harness() {
     db,
     activity: { record: mock(async (entry: any) => { activities.push(entry); return entry; }) },
   });
-  return { service, dispatches, activities };
+  return { service, dispatches, activities, db };
 }
 
 describe("courier routing and dispatch review", () => {
@@ -49,16 +49,51 @@ describe("courier routing and dispatch review", () => {
   });
 
   it("returns a deterministic recommendation and freezes it on confirmation", async () => {
-    const { service, dispatches, activities } = harness();
+    const { service, dispatches, activities, db } = harness();
     const recommendation = await service.recommend(order.id);
     expect(recommendation.candidates[0]).toMatchObject({ ruleId: "rule-1", ruleVersion: 3, connectionId: "connection-1", serviceId: "service-1" });
     await service.confirm(order.id, { connectionId: "connection-1", serviceId: "service-1" }, "admin-1");
     expect(dispatches[0].routingSnapshot).toMatchObject({ schemaVersion: 1, evaluatedRules: [{ id: "rule-1", version: 3 }], confirmedByUserId: "admin-1" });
     expect(activities[0].type).toBe("courier.dispatch.route_confirmed");
+    expect(db.courierConnection.findMany).toHaveBeenCalledWith({ where: { archivedAt: null } });
+    expect(db.courierRoutingRule.findMany).toHaveBeenCalledWith({ where: { archivedAt: null } });
   });
 
   it("requires an eligible selection and a reason for overrides", async () => {
     const { service } = harness();
     await expect(service.confirm(order.id, { connectionId: "missing", serviceId: "missing" }, "admin-1")).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("guards delivery-option archive and restore dependencies", async () => {
+    let serviceRow: any = { id: "service-1", connectionId: "connection-1", code: "home", displayName: "Home", enabled: true, archivedAt: null };
+    const ruleCount = mock(async () => 1);
+    const db: any = {
+      courierService: {
+        findUnique: mock(async () => serviceRow),
+        update: mock(async ({ data }: any) => serviceRow = { ...serviceRow, ...data, connection: { displayName: "Primary", provider: { displayName: "Steadfast" } }, methods: [] }),
+      },
+      courierRoutingRule: { count: ruleCount },
+      courierConnection: { findFirst: mock(async () => ({ id: "connection-1", archivedAt: null })) },
+    };
+    const service = new CourierRoutingDispatchService({ db, activity: { record: mock(async () => ({})) } });
+    await expect(service.archiveService("service-1", "admin-1")).rejects.toMatchObject({ code: "RESOURCE_IN_USE" });
+    ruleCount.mockResolvedValue(0);
+    const archived = await service.archiveService("service-1", "admin-1");
+    expect(archived).toMatchObject({ archivedAt: expect.any(String), enabled: false });
+    const restored = await service.restoreService("service-1", "admin-1");
+    expect(restored).toMatchObject({ archivedAt: null, enabled: false });
+  });
+
+  it("allows permanent deletion of an archived assignment rule", async () => {
+    const remove = mock(async () => ({}));
+    const db: any = {
+      courierRoutingRule: {
+        findUnique: mock(async () => ({ id: "rule-1", name: "Rule", archivedAt: new Date() })),
+        delete: remove,
+      },
+    };
+    const service = new CourierRoutingDispatchService({ db, activity: { record: mock(async () => ({})) } });
+    await service.deleteRule("rule-1", "admin-1");
+    expect(remove).toHaveBeenCalledWith({ where: { id: "rule-1" } });
   });
 });

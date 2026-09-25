@@ -4,6 +4,10 @@ export const CourierConnectionIdDto = t.Object({
   id: t.String({ minLength: 1, maxLength: 128 }),
 });
 
+export const ListCourierResourcesQueryDto = t.Object({
+  archived: t.Optional(t.Boolean()),
+});
+
 export const CourierResourceIdDto = t.Object({
   id: t.String({ minLength: 1, maxLength: 128 }),
 });

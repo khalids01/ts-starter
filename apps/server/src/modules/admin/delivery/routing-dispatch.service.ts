@@ -34,6 +34,7 @@ function mapService(row: any) {
     code: row.code,
     displayName: row.displayName,
     enabled: row.enabled,
+    archivedAt: row.archivedAt ? iso(row.archivedAt) : null,
     shippingMethods: (row.methods ?? []).map((method: any) => ({
       id: method.shippingRate.id,
       code: method.shippingRate.code,
@@ -50,6 +51,7 @@ function mapRule(row: any) {
     version: row.version,
     priority: row.priority,
     enabled: row.enabled,
+    archivedAt: row.archivedAt ? iso(row.archivedAt) : null,
     conditions: row.conditions,
     connectionId: row.connectionId,
     connectionName: row.connection?.displayName,
@@ -88,8 +90,9 @@ function addressLine(address: any) {
 export class CourierRoutingDispatchService {
   constructor(private readonly dependencies: Dependencies) {}
 
-  async listServices() {
+  async listServices(archived = false) {
     const rows = await this.dependencies.db.courierService.findMany({
+      where: { archivedAt: archived ? { not: null } : null },
       include: {
         connection: { include: { provider: true } },
         methods: { include: { shippingRate: true } },
@@ -100,9 +103,9 @@ export class CourierRoutingDispatchService {
   }
 
   async createService(input: CreateCourierServiceInput, actorUserId?: string) {
-    const connection = await this.dependencies.db.courierConnection.findUnique({ where: { id: input.connectionId } });
-    if (!connection) throw new AdminDeliveryServiceError("Courier connection not found", 404);
-    const count = await this.dependencies.db.shippingRate.count({ where: { id: { in: [...new Set(input.shippingRateIds)] } } });
+    const connection = await this.dependencies.db.courierConnection.findFirst({ where: { id: input.connectionId, archivedAt: null } });
+    if (!connection) throw new AdminDeliveryServiceError("Current courier connection not found", 404);
+    const count = await this.dependencies.db.shippingRate.count({ where: { id: { in: [...new Set(input.shippingRateIds)] }, archivedAt: null } });
     if (count !== new Set(input.shippingRateIds).size) throw new AdminDeliveryServiceError("One or more delivery methods do not exist", 404);
     const row = await this.dependencies.db.courierService.create({
       data: {
@@ -121,9 +124,10 @@ export class CourierRoutingDispatchService {
   async updateService(id: string, input: UpdateCourierServiceInput, actorUserId?: string) {
     const existing = await this.dependencies.db.courierService.findUnique({ where: { id } });
     if (!existing) throw new AdminDeliveryServiceError("Courier service not found", 404);
+    if (existing.archivedAt) throw new AdminDeliveryServiceError("Archived delivery options cannot be edited", 409, "RESOURCE_ARCHIVED");
     const ids = input.shippingRateIds ? [...new Set(input.shippingRateIds)] : undefined;
     if (ids) {
-      const count = await this.dependencies.db.shippingRate.count({ where: { id: { in: ids } } });
+      const count = await this.dependencies.db.shippingRate.count({ where: { id: { in: ids }, archivedAt: null } });
       if (count !== ids.length) throw new AdminDeliveryServiceError("One or more delivery methods do not exist", 404);
     }
     const row = await this.dependencies.db.$transaction(async (tx: any) => {
@@ -144,8 +148,9 @@ export class CourierRoutingDispatchService {
     return mapService(row);
   }
 
-  async listRules() {
+  async listRules(archived = false) {
     const rows = await this.dependencies.db.courierRoutingRule.findMany({
+      where: { archivedAt: archived ? { not: null } : null },
       include: { connection: { include: { provider: true } }, service: true },
       orderBy: [{ priority: "asc" }, { name: "asc" }],
     });
@@ -165,6 +170,7 @@ export class CourierRoutingDispatchService {
   async updateRule(id: string, input: UpdateCourierRoutingRuleInput, actorUserId?: string) {
     const existing = await this.dependencies.db.courierRoutingRule.findUnique({ where: { id } });
     if (!existing) throw new AdminDeliveryServiceError("Courier routing rule not found", 404);
+    if (existing.archivedAt) throw new AdminDeliveryServiceError("Archived assignment rules cannot be edited", 409, "RESOURCE_ARCHIVED");
     const connectionId = input.connectionId ?? existing.connectionId;
     const serviceId = input.serviceId ?? existing.serviceId;
     await this.validateRuleTarget(connectionId, serviceId);
@@ -185,9 +191,9 @@ export class CourierRoutingDispatchService {
   async recommend(orderId: string) {
     const { order, request } = await this.orderRequest(orderId);
     const [connections, services, rules] = await Promise.all([
-      this.dependencies.db.courierConnection.findMany(),
-      this.dependencies.db.courierService.findMany({ include: { methods: true } }),
-      this.dependencies.db.courierRoutingRule.findMany(),
+      this.dependencies.db.courierConnection.findMany({ where: { archivedAt: null } }),
+      this.dependencies.db.courierService.findMany({ where: { archivedAt: null }, include: { methods: { where: { shippingRate: { archivedAt: null } } } } }),
+      this.dependencies.db.courierRoutingRule.findMany({ where: { archivedAt: null } }),
     ]);
     const result = rankCourierRoutes({
       request,
@@ -285,6 +291,70 @@ export class CourierRoutingDispatchService {
     });
   }
 
+  async archiveService(id: string, actorUserId?: string) {
+    const existing = await this.getService(id);
+    if (existing.archivedAt) throw new AdminDeliveryServiceError("Delivery option is already archived", 409);
+    const rules = await this.dependencies.db.courierRoutingRule.count({ where: { serviceId: id, archivedAt: null } });
+    if (rules) return this.blocked("service", existing, "archive", [{ type: "assignment_rules", count: rules, action: "Archive or reassign the assignment rules first" }], actorUserId);
+    const row = await this.dependencies.db.courierService.update({ where: { id }, data: { archivedAt: new Date(), enabled: false }, include: { connection: { include: { provider: true } }, methods: { include: { shippingRate: true } } } });
+    await this.audit("courier.service.archived", actorUserId, `Archived delivery option ${row.displayName}`, { serviceId: id });
+    return mapService(row);
+  }
+
+  async restoreService(id: string, actorUserId?: string) {
+    const existing = await this.getService(id);
+    if (!existing.archivedAt) throw new AdminDeliveryServiceError("Delivery option is not archived", 409);
+    const connection = await this.dependencies.db.courierConnection.findFirst({ where: { id: existing.connectionId, archivedAt: null } });
+    if (!connection) throw new AdminDeliveryServiceError("Restore the courier connection before restoring this delivery option", 409, "PARENT_ARCHIVED");
+    const row = await this.dependencies.db.courierService.update({ where: { id }, data: { archivedAt: null, enabled: false }, include: { connection: { include: { provider: true } }, methods: { include: { shippingRate: true } } } });
+    await this.audit("courier.service.restored", actorUserId, `Restored delivery option ${row.displayName}`, { serviceId: id });
+    return mapService(row);
+  }
+
+  async deleteService(id: string, actorUserId?: string) {
+    const existing = await this.getService(id);
+    if (!existing.archivedAt) throw new AdminDeliveryServiceError("Archive the delivery option before deleting it permanently", 409, "ARCHIVE_REQUIRED");
+    const [rules, dispatches, consignments] = await Promise.all([
+      this.dependencies.db.courierRoutingRule.count({ where: { serviceId: id } }),
+      this.dependencies.db.courierDispatch.count({ where: { serviceId: id } }),
+      this.dependencies.db.courierConsignment.count({ where: { serviceId: id } }),
+    ]);
+    const dependencies = [
+      { type: "assignment_rules", count: rules, action: "Delete the archived assignment rules first" },
+      { type: "shipments", count: dispatches, action: "Historical shipments must be retained" },
+      { type: "consignments", count: consignments, action: "Historical consignments must be retained" },
+    ].filter((item) => item.count > 0);
+    if (dependencies.length) return this.blocked("service", existing, "delete", dependencies, actorUserId);
+    await this.dependencies.db.courierService.delete({ where: { id } });
+    await this.audit("courier.service.deleted", actorUserId, `Permanently deleted delivery option ${existing.displayName}`, { serviceId: id });
+    return { message: "Delivery option permanently deleted" };
+  }
+
+  async archiveRule(id: string, actorUserId?: string) {
+    const existing = await this.getRule(id);
+    if (existing.archivedAt) throw new AdminDeliveryServiceError("Assignment rule is already archived", 409);
+    const row = await this.dependencies.db.courierRoutingRule.update({ where: { id }, data: { archivedAt: new Date(), enabled: false }, include: { connection: { include: { provider: true } }, service: true } });
+    await this.audit("courier.routing_rule.archived", actorUserId, `Archived assignment rule ${row.name}`, { ruleId: id });
+    return mapRule(row);
+  }
+
+  async restoreRule(id: string, actorUserId?: string) {
+    const existing = await this.getRule(id);
+    if (!existing.archivedAt) throw new AdminDeliveryServiceError("Assignment rule is not archived", 409);
+    await this.validateRuleTarget(existing.connectionId, existing.serviceId);
+    const row = await this.dependencies.db.courierRoutingRule.update({ where: { id }, data: { archivedAt: null, enabled: false }, include: { connection: { include: { provider: true } }, service: true } });
+    await this.audit("courier.routing_rule.restored", actorUserId, `Restored assignment rule ${row.name}`, { ruleId: id });
+    return mapRule(row);
+  }
+
+  async deleteRule(id: string, actorUserId?: string) {
+    const existing = await this.getRule(id);
+    if (!existing.archivedAt) throw new AdminDeliveryServiceError("Archive the assignment rule before deleting it permanently", 409, "ARCHIVE_REQUIRED");
+    await this.dependencies.db.courierRoutingRule.delete({ where: { id } });
+    await this.audit("courier.routing_rule.deleted", actorUserId, `Permanently deleted assignment rule ${existing.name}`, { ruleId: id });
+    return { message: "Assignment rule permanently deleted" };
+  }
+
   private async orderRequest(orderId: string): Promise<{ order: any; request: CourierRouteRequest }> {
     const order = await this.dependencies.db.order.findUnique({ where: { id: orderId }, include: { addresses: true, refunds: true } });
     if (!order) throw new AdminDeliveryServiceError("Order not found", 404);
@@ -296,8 +366,25 @@ export class CourierRoutingDispatchService {
   }
 
   private async validateRuleTarget(connectionId: string, serviceId: string) {
-    const service = await this.dependencies.db.courierService.findUnique({ where: { id: serviceId } });
-    if (!service || service.connectionId !== connectionId) throw new AdminDeliveryServiceError("Courier service does not belong to the selected connection", 409);
+    const service = await this.dependencies.db.courierService.findFirst({ where: { id: serviceId, archivedAt: null }, include: { connection: true } });
+    if (!service || service.connectionId !== connectionId || service.connection.archivedAt) throw new AdminDeliveryServiceError("Select a current delivery option and courier connection", 409, "PARENT_ARCHIVED");
+  }
+
+  private async getService(id: string) {
+    const row = await this.dependencies.db.courierService.findUnique({ where: { id } });
+    if (!row) throw new AdminDeliveryServiceError("Delivery option not found", 404);
+    return row;
+  }
+
+  private async getRule(id: string) {
+    const row = await this.dependencies.db.courierRoutingRule.findUnique({ where: { id } });
+    if (!row) throw new AdminDeliveryServiceError("Assignment rule not found", 404);
+    return row;
+  }
+
+  private async blocked(kind: string, row: any, operation: string, dependencies: Array<{ type: string; count: number; action: string }>, actorUserId?: string): Promise<never> {
+    await this.audit(`courier.${kind}.${operation}_blocked`, actorUserId, `Blocked ${operation} of ${kind} ${row.displayName ?? row.name}`, { id: row.id, dependencies });
+    throw new AdminDeliveryServiceError(`Cannot ${operation} ${kind === "service" ? "delivery option" : "assignment rule"} because it is still in use`, 409, "RESOURCE_IN_USE", dependencies);
   }
 
   private audit(type: string, actorUserId: string | undefined, message: string, metadata: Record<string, unknown>) {

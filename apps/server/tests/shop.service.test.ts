@@ -562,6 +562,9 @@ describe("shop service", () => {
     );
 
     expect(result.orderId).toBe("order-1");
+    expect(shippingRateFindFirstMock).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ archivedAt: null }),
+    }));
     expect(orderCreateMock).toHaveBeenCalled();
     expect(orderCreateMock.mock.calls[0]?.[0].data).toEqual(
       expect.objectContaining({

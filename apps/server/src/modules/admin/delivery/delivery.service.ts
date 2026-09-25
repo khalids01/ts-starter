@@ -20,7 +20,12 @@ import type {
 } from "./delivery.dto";
 
 export class AdminDeliveryServiceError extends Error {
-  constructor(message: string, readonly status = 400) {
+  constructor(
+    message: string,
+    readonly status = 400,
+    readonly code?: string,
+    readonly dependencies?: Array<{ type: string; count: number; action: string }>,
+  ) {
     super(message);
   }
 }
@@ -74,11 +79,16 @@ function mapConnection(row: any) {
       row.credentialSource === "encrypted_database" &&
       Boolean(row.credentialCiphertext),
     healthState: row.healthState,
+    archivedAt: row.archivedAt ? iso(row.archivedAt) : null,
     updatedAt:
       row.updatedAt instanceof Date
         ? row.updatedAt.toISOString()
         : row.updatedAt,
   };
+}
+
+function iso(value: Date | string) {
+  return value instanceof Date ? value.toISOString() : value;
 }
 
 function encryptedConfig(row: any) {
@@ -112,8 +122,9 @@ export class AdminDeliveryService {
     return rows.map(mapProvider);
   }
 
-  async listConnections() {
+  async listConnections(archived = false) {
     const rows = await this.dependencies.db.courierConnection.findMany({
+      where: { archivedAt: archived ? { not: null } : null },
       include: { provider: true },
       orderBy: [{ priority: "asc" }, { displayName: "asc" }],
     });
@@ -215,6 +226,7 @@ export class AdminDeliveryService {
     actorUserId?: string,
   ) {
     const existing = await this.getConnectionRow(id);
+    this.requireCurrent(existing, "Archived courier connections cannot be edited");
     let encrypted:
       | ReturnType<typeof encryptCourierCredentials>
       | undefined;
@@ -283,6 +295,7 @@ export class AdminDeliveryService {
 
   async testConnection(id: string, actorUserId?: string) {
     const existing = await this.getConnectionRow(id);
+    this.requireCurrent(existing, "Archived courier connections cannot be tested");
     let healthState = "healthy";
     let errorCode: string | undefined;
     try {
@@ -325,6 +338,7 @@ export class AdminDeliveryService {
 
   async setEnabled(id: string, enabled: boolean, actorUserId?: string) {
     const existing = await this.getConnectionRow(id);
+    this.requireCurrent(existing, "Archived courier connections cannot be enabled or disabled");
     if (enabled && existing.healthState !== "healthy") {
       throw new AdminDeliveryServiceError(
         "Test the courier connection successfully before enabling it",
@@ -345,6 +359,65 @@ export class AdminDeliveryService {
       metadata: { connectionId: connection.id },
     });
     return mapConnection(connection);
+  }
+
+  async archiveConnection(id: string, actorUserId?: string) {
+    const existing = await this.getConnectionRow(id);
+    this.requireCurrent(existing, "Courier connection is already archived");
+    const [services, rules] = await Promise.all([
+      (this.dependencies.db as any).courierService.count({ where: { connectionId: id, archivedAt: null } }),
+      (this.dependencies.db as any).courierRoutingRule.count({ where: { connectionId: id, archivedAt: null } }),
+    ]);
+    const dependencies = [
+      { type: "delivery_options", count: services, action: "Archive or reassign the delivery options first" },
+      { type: "assignment_rules", count: rules, action: "Archive or reassign the assignment rules first" },
+    ].filter((item) => item.count > 0);
+    if (dependencies.length) return this.blocked(existing, "archive", dependencies, actorUserId);
+    const row = await this.dependencies.db.courierConnection.update({ where: { id }, data: { archivedAt: new Date(), enabled: false }, include: { provider: true } });
+    await this.recordLifecycle("archived", row, actorUserId);
+    return mapConnection(row);
+  }
+
+  async restoreConnection(id: string, actorUserId?: string) {
+    const existing = await this.getConnectionRow(id);
+    if (!existing.archivedAt) throw new AdminDeliveryServiceError("Courier connection is not archived", 409);
+    const row = await this.dependencies.db.courierConnection.update({ where: { id }, data: { archivedAt: null, enabled: false }, include: { provider: true } });
+    await this.recordLifecycle("restored", row, actorUserId);
+    return mapConnection(row);
+  }
+
+  async deleteConnection(id: string, actorUserId?: string) {
+    const existing = await this.getConnectionRow(id);
+    if (!existing.archivedAt) throw new AdminDeliveryServiceError("Archive the courier connection before deleting it permanently", 409, "ARCHIVE_REQUIRED");
+    const [services, rules, dispatches, consignments] = await Promise.all([
+      (this.dependencies.db as any).courierService.count({ where: { connectionId: id } }),
+      (this.dependencies.db as any).courierRoutingRule.count({ where: { connectionId: id } }),
+      (this.dependencies.db as any).courierDispatch.count({ where: { connectionId: id } }),
+      (this.dependencies.db as any).courierConsignment.count({ where: { connectionId: id } }),
+    ]);
+    const dependencies = [
+      { type: "delivery_options", count: services, action: "Delete the archived delivery options first" },
+      { type: "assignment_rules", count: rules, action: "Delete the archived assignment rules first" },
+      { type: "shipments", count: dispatches, action: "Historical shipments must be retained" },
+      { type: "consignments", count: consignments, action: "Historical consignments must be retained" },
+    ].filter((item) => item.count > 0);
+    if (dependencies.length) return this.blocked(existing, "delete", dependencies, actorUserId);
+    await this.dependencies.db.courierConnection.delete({ where: { id } });
+    await this.recordLifecycle("deleted", existing, actorUserId);
+    return { message: "Courier connection permanently deleted" };
+  }
+
+  private requireCurrent(connection: any, message: string) {
+    if (connection.archivedAt) throw new AdminDeliveryServiceError(message, 409, "RESOURCE_ARCHIVED");
+  }
+
+  private async blocked(connection: any, operation: string, dependencies: Array<{ type: string; count: number; action: string }>, actorUserId?: string): Promise<never> {
+    await this.dependencies.activity.record({ type: `courier.connection.${operation}_blocked`, actorUserId, severity: "warning", message: `Blocked ${operation} of courier connection ${connection.displayName}`, metadata: { connectionId: connection.id, dependencies } });
+    throw new AdminDeliveryServiceError(`Cannot ${operation} courier connection because it is still in use`, 409, "RESOURCE_IN_USE", dependencies);
+  }
+
+  private recordLifecycle(action: "archived" | "restored" | "deleted", connection: any, actorUserId?: string) {
+    return this.dependencies.activity.record({ type: `courier.connection.${action}`, actorUserId, message: `${action[0]!.toUpperCase()}${action.slice(1)} courier connection ${connection.displayName}`, metadata: { connectionId: connection.id } });
   }
 
   private async getConnectionRow(id: string) {

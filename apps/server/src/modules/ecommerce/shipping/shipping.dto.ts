@@ -7,6 +7,7 @@ export const ShippingRateIdParamDto = t.Object({
 export const ListShippingRatesQueryDto = t.Object({
   currency: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
   active: t.Optional(t.Boolean()),
+  archived: t.Optional(t.Boolean()),
 });
 
 export const CreateShippingRateDto = t.Object({

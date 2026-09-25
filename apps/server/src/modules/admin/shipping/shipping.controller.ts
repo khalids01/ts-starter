@@ -20,7 +20,12 @@ function handleShippingError(error: unknown, set: { status?: number | string }) 
   const status = error instanceof ShippingServiceError ? error.status : 400;
   const message = error instanceof Error ? error.message : "Shipping operation failed";
   set.status = status;
-  return { message, status };
+  return {
+    message,
+    status,
+    ...(error instanceof ShippingServiceError && error.code ? { code: error.code } : {}),
+    ...(error instanceof ShippingServiceError && error.dependencies ? { dependencies: error.dependencies } : {}),
+  };
 }
 
 export const adminShippingController = new Elysia({
@@ -33,16 +38,16 @@ export const adminShippingController = new Elysia({
     query: ListShippingRatesQueryDto,
     detail: { summary: "List shipping rates" },
   })
-  .post("/rates", async ({ body, set }) => {
-    try { return await shippingService.createRate(body); }
+  .post("/rates", async ({ body, set, userId }) => {
+    try { return await shippingService.createRate(body, userId); }
     catch (error) { return handleShippingError(error, set); }
   }, {
     beforeHandle: manageShipping,
     body: CreateShippingRateDto,
     detail: { summary: "Create shipping rate" },
   })
-  .patch("/rates/:id", async ({ params: { id }, body, set }) => {
-    try { return await shippingService.updateRate(id, body); }
+  .patch("/rates/:id", async ({ params: { id }, body, set, userId }) => {
+    try { return await shippingService.updateRate(id, body, userId); }
     catch (error) { return handleShippingError(error, set); }
   }, {
     beforeHandle: manageShipping,
@@ -50,11 +55,27 @@ export const adminShippingController = new Elysia({
     body: UpdateShippingRateDto,
     detail: { summary: "Update shipping rate" },
   })
-  .delete("/rates/:id", async ({ params: { id }, set }) => {
-    try { return await shippingService.disableRate(id); }
+  .post("/rates/:id/archive", async ({ params: { id }, set, userId }) => {
+    try { return await shippingService.archiveRate(id, userId); }
     catch (error) { return handleShippingError(error, set); }
   }, {
     beforeHandle: manageShipping,
     params: ShippingRateIdParamDto,
-    detail: { summary: "Disable shipping rate" },
+    detail: { summary: "Archive shipping method" },
+  })
+  .post("/rates/:id/restore", async ({ params: { id }, set, userId }) => {
+    try { return await shippingService.restoreRate(id, userId); }
+    catch (error) { return handleShippingError(error, set); }
+  }, {
+    beforeHandle: manageShipping,
+    params: ShippingRateIdParamDto,
+    detail: { summary: "Restore shipping method" },
+  })
+  .delete("/rates/:id", async ({ params: { id }, set, userId }) => {
+    try { return await shippingService.deleteRate(id, userId); }
+    catch (error) { return handleShippingError(error, set); }
+  }, {
+    beforeHandle: manageShipping,
+    params: ShippingRateIdParamDto,
+    detail: { summary: "Permanently delete archived shipping method" },
   });

@@ -4,6 +4,7 @@ import { authGuard } from "@/guards/auth.guard";
 import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   CourierConnectionIdDto,
+  ListCourierResourcesQueryDto,
   CourierHandoffDto,
   CourierOrderIdDto,
   CourierResourceIdDto,
@@ -53,7 +54,12 @@ function handleDeliveryError(error: unknown, set: { status?: number | string }) 
   const message =
     error instanceof Error ? error.message : "Courier connection operation failed";
   set.status = status;
-  return { message, status };
+  return {
+    message,
+    status,
+    ...(error instanceof AdminDeliveryServiceError && error.code ? { code: error.code } : {}),
+    ...(error instanceof AdminDeliveryServiceError && error.dependencies ? { dependencies: error.dependencies } : {}),
+  };
 }
 
 export const adminDeliveryController = new Elysia({
@@ -64,8 +70,9 @@ export const adminDeliveryController = new Elysia({
   .get("/providers", () => adminDeliveryService.listProviders(), {
     beforeHandle: readDelivery,
   })
-  .get("/connections", () => adminDeliveryService.listConnections(), {
+  .get("/connections", ({ query }) => adminDeliveryService.listConnections(query.archived), {
     beforeHandle: readDelivery,
+    query: ListCourierResourcesQueryDto,
   })
   .post(
     "/connections",
@@ -126,7 +133,19 @@ export const adminDeliveryController = new Elysia({
     },
     { beforeHandle: manageDelivery, params: CourierConnectionIdDto },
   )
-  .get("/services", () => courierRoutingDispatchService.listServices(), { beforeHandle: readDelivery })
+  .post("/connections/:id/archive", async ({ params: { id }, set, userId }) => {
+    try { return await adminDeliveryService.archiveConnection(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierConnectionIdDto })
+  .post("/connections/:id/restore", async ({ params: { id }, set, userId }) => {
+    try { return await adminDeliveryService.restoreConnection(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierConnectionIdDto })
+  .delete("/connections/:id", async ({ params: { id }, set, userId }) => {
+    try { return await adminDeliveryService.deleteConnection(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierConnectionIdDto })
+  .get("/services", ({ query }) => courierRoutingDispatchService.listServices(query.archived), { beforeHandle: readDelivery, query: ListCourierResourcesQueryDto })
   .post("/services", async ({ body, set, userId }) => {
     try { return await courierRoutingDispatchService.createService(body, userId); }
     catch (error) { return handleDeliveryError(error, set); }
@@ -135,7 +154,19 @@ export const adminDeliveryController = new Elysia({
     try { return await courierRoutingDispatchService.updateService(id, body, userId); }
     catch (error) { return handleDeliveryError(error, set); }
   }, { beforeHandle: manageDelivery, params: CourierResourceIdDto, body: UpdateCourierServiceDto })
-  .get("/routing-rules", () => courierRoutingDispatchService.listRules(), { beforeHandle: readDelivery })
+  .post("/services/:id/archive", async ({ params: { id }, set, userId }) => {
+    try { return await courierRoutingDispatchService.archiveService(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierResourceIdDto })
+  .post("/services/:id/restore", async ({ params: { id }, set, userId }) => {
+    try { return await courierRoutingDispatchService.restoreService(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierResourceIdDto })
+  .delete("/services/:id", async ({ params: { id }, set, userId }) => {
+    try { return await courierRoutingDispatchService.deleteService(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierResourceIdDto })
+  .get("/routing-rules", ({ query }) => courierRoutingDispatchService.listRules(query.archived), { beforeHandle: readDelivery, query: ListCourierResourcesQueryDto })
   .post("/routing-rules", async ({ body, set, userId }) => {
     try { return await courierRoutingDispatchService.createRule(body, userId); }
     catch (error) { return handleDeliveryError(error, set); }
@@ -144,6 +175,18 @@ export const adminDeliveryController = new Elysia({
     try { return await courierRoutingDispatchService.updateRule(id, body, userId); }
     catch (error) { return handleDeliveryError(error, set); }
   }, { beforeHandle: manageDelivery, params: CourierResourceIdDto, body: UpdateCourierRoutingRuleDto })
+  .post("/routing-rules/:id/archive", async ({ params: { id }, set, userId }) => {
+    try { return await courierRoutingDispatchService.archiveRule(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierResourceIdDto })
+  .post("/routing-rules/:id/restore", async ({ params: { id }, set, userId }) => {
+    try { return await courierRoutingDispatchService.restoreRule(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierResourceIdDto })
+  .delete("/routing-rules/:id", async ({ params: { id }, set, userId }) => {
+    try { return await courierRoutingDispatchService.deleteRule(id, userId); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageDelivery, params: CourierResourceIdDto })
   .get("/orders/:orderId/recommendation", async ({ params: { orderId }, set }) => {
     try { return await courierRoutingDispatchService.recommend(orderId); }
     catch (error) { return handleDeliveryError(error, set); }

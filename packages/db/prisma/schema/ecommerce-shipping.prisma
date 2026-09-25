@@ -12,6 +12,7 @@ model ShippingRate {
   destinationRules Json?
   minimumOrderAmount Decimal? @db.Decimal(12, 2)
   maximumOrderAmount Decimal? @db.Decimal(12, 2)
+  archivedAt     DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -22,5 +23,6 @@ model ShippingRate {
   @@index([isDefault])
   @@index([currency])
   @@index([sortOrder])
+  @@index([archivedAt, sortOrder])
   @@map("shipping_rate")
 }
