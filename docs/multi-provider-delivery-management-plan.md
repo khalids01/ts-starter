@@ -20,9 +20,9 @@ Implement the delivery system in reviewable steps. Do not start a later step whi
 4. [x] **Implement the Steadfast adapter.** Add health/authentication, single-consignment creation, status/tracking lookup, idempotent timeout recovery, normalized failures, and sanitized contract fixtures. Full tracking-history parsing remains deferred until the protected response schema is supplied; v1 currently supports status lookup by consignment ID, invoice, and tracking code.
 5. [x] **Build courier connection management.** Add permission-protected Admin UI/API flows to create, edit, disable, test, and inspect connections using either allowed credential source. Never return stored secrets.
 6. [x] **Build routing and dispatch.** Add service mappings, deterministic routing rules, recommendation review/override, immutable routing snapshots, and the durable dispatch outbox worker.
-7. [ ] **Integrate tracking and webhooks.** The provider-neutral pipeline, shared `WebhookEvent` visibility, connection-aware authentication contract, deduplication, status normalization, polling repair, terminal-conflict protection, exception routing, and order tracking UI are implemented. Keep live Steadfast webhook intake fail-closed until its protected authentication/setup, event-ID, retry, and payload schemas are supplied as sanitized fixtures; then implement and contract-test `verifyAndParseWebhook` before checking off this step.
-8. [ ] **Add returns, settlements, and pickup.** Provider-neutral return review, manual pickup/handoff states, COD settlement evidence, mismatch exceptions, delivery-gated payment reconciliation, dedicated permissions, audit events, and Admin UI are implemented. Return completion deliberately does not refund or restock. Keep Steadfast return/payment synchronization and automatic pickup fail-closed until the protected endpoint request/response and pagination fixtures are captured and contract-tested.
-9. [ ] **Complete browser E2E and controlled rollout.** The isolated browser lifecycle now covers real shop checkout, reviewed route confirmation, manual dispatch queueing, courier handoff, delivery-gated COD settlement reconciliation, cancellation, return review/completion, explicit refund/restock, and final inventory assertions. The full 41-test E2E suite passed against the isolated E2E database on 2026-09-25. The external courier acceptance and delivery update are deterministic E2E fixtures, so the suite cannot create a real Steadfast parcel. Complete the live Steadfast contract gates in Steps 7-8 and a sandbox/controlled merchant-account smoke test before checking off this step. Keep auto-dispatch off until live verification passes.
+7. [x] **Integrate tracking and webhooks.** The provider-neutral pipeline, shared `WebhookEvent` visibility, connection-aware Bearer plus HMAC-SHA256 verification, `Idempotency-Key` deduplication, status normalization, return-aware polling repair, terminal-conflict protection, exception routing, and order tracking UI are implemented. Only the documented `delivery_status` and `tracking_update` payloads are processed; other named events remain fail-closed until Steadfast publishes their payload schemas.
+8. [x] **Add returns, settlements, and pickup.** Provider-neutral return review, reviewed Steadfast return submission, reviewed pickup submission, manual handoff states, COD settlement evidence, mismatch exceptions, delivery-gated payment reconciliation, dedicated permissions, audit events, and Admin UI are implemented. Return completion deliberately does not refund or restock. Payment-list/detail reads are adapter-supported, but automatic payout reconciliation remains disabled because the guide does not publish the parcel-detail response schema.
+9. [ ] **Complete browser E2E and controlled rollout.** The isolated browser lifecycle covers real shop checkout, reviewed route confirmation, manual dispatch queueing, courier handoff, delivery-gated COD settlement reconciliation, cancellation, return review/completion, explicit refund/restock, and final inventory assertions. The full 41-test E2E suite passed against the isolated E2E database on 2026-09-25. Add browser coverage for the new pickup form, reviewed provider-return submission, and signed webhook fixture. A real Steadfast parcel/pickup/return cannot be safely automated because Steadfast has no test environment; complete the manual merchant-account smoke checklist before checking off this step. Keep auto-dispatch off until live verification passes.
 
 ## Architecture and Data Changes
 
@@ -106,7 +106,7 @@ The Steadfast adapter will use its documented API key and secret-key authenticat
 - Return and payment APIs where confirmed by the official contract.
 - Delivery-status and tracking webhooks.
 
-Steadfast documents `POST /create_pickup_request`, so the generic adapter retains a `requestPickup` capability. Until that endpoint's expanded schema is captured and tested, v1 represents pickup using handoff states—awaiting pickup, pickup requested externally, handed to courier, and in transit—and does not call it automatically. Cancellation after dispatch remains a review/manual-portal workflow unless Steadfast confirms a supported cancellation endpoint.
+Steadfast documents `POST /create_pickup_request`, so the adapter exposes a reviewed admin action using `address_id`, `police_station_id`, address, contact number, optional note, and estimated quantity. It is never triggered automatically. V1 also retains explicit handoff states—awaiting pickup, pickup requested externally, handed to courier, and in transit. Cancellation after dispatch remains a review/manual-portal workflow because Steadfast does not document a cancellation endpoint.
 
 Before coding the adapter, capture a versioned contract fixture from the [official Steadfast API guide](https://steadfast.com.bd/user/api/guide) and compare it with the currently accessible [API documentation mirror](https://github.com/Mahdi-hasan-shuvo/steadfast/blob/main/steadfast-courier-api-docs.md). Do not implement undocumented endpoints.
 
@@ -140,7 +140,7 @@ This section is the implementation reference for the Steadfast adapter. Informat
 | `GET /status_by_invoice/{invoice}` | Current status by merchant order number | recovery lookup | Yes; use to recover from create timeouts before retrying |
 | `GET /status_by_trackingcode/{tracking_code}` | Current status by tracking code | recovery lookup | Yes |
 | `GET /trackings_by_invoice/{invoice}` | Full tracking history | tracking timeline | Yes |
-| `POST /create_pickup_request` | Request rider pickup from a merchant address | `requestPickup` | Phase 2, after its request/response schema is captured |
+| `POST /create_pickup_request` | Request rider pickup from a merchant address | `requestPickup` | Yes; explicit reviewed admin action only |
 | `POST /create_return_request` | Ask for a parcel to be returned | `createReturn` | Yes |
 | `GET /get_return_requests` | Paginated return requests, newest first | `listReturns` | Yes |
 | `GET /get_return_request/{id}` | One return request | `getReturn` | Yes |
@@ -216,22 +216,20 @@ Status comparison should be case-normalized because example webhook payloads may
 - `POST /create_return_request` accepts one parcel identifier—`consignment_id`, `invoice`, or `tracking_code`—plus optional `reason`. Prefer `consignment_id`. Known return states are `pending`, `approved`, `processing`, `completed`, and `cancelled`.
 - A completed courier return does not itself decide refund amount or inventory disposition. It creates an admin reconciliation task against the existing refund/restock workflow.
 - `GET /get_balance` is expected to return `status` and `current_balance`; store observations for health/operations but do not use balance as proof that a specific order was paid.
-- Reconcile individual COD orders from `GET /payments/{payment_id}` parcel details. The exact protected-guide payment and pagination schemas must be captured before implementing settlement parsing.
-- Prefer provider webhooks for freshness and use polling for repair. The accessible contract describes incoming `delivery_status` and `tracking_update` notifications authenticated with `Authorization: Bearer <configured webhook token>`. This token is merchant-configured and must not automatically be assumed equal to either API credential. Store an admin-entered token encrypted with the same credential protection, or resolve an explicitly configured environment token.
+- `GET /payments` is parsed into payout summaries. Do not reconcile individual COD orders from `GET /payments/{payment_id}` until Steadfast publishes the parcel-detail response schema; the adapter exposes the raw validated object only for reviewed future mapping.
+- Prefer provider webhooks for freshness and use polling for repair. Steadfast sends `Authorization: Bearer <configured webhook token>`, `X-Signature` as a hex HMAC-SHA256 of the raw body using that token, and `Idempotency-Key` for retries. The handler requires and constant-time verifies both authentication mechanisms before parsing. The merchant-configured token must not be assumed equal to either API credential and is stored/resolved through the existing credential protection.
+- Steadfast retries unreachable/5xx webhook delivery after approximately 30 seconds and two minutes, for three attempts total. Any 2xx acknowledges the event; 4xx is not retried.
 - Integrate courier intake and event visibility with the existing webhook-management system (`WebhookEvent` and `/admin/webhooks`), using provider and public connection identifiers. Extend that shared system where needed rather than creating an isolated courier webhook dashboard or event registry. Webhook handlers validate authentication, runtime-validate JSON, deduplicate events, enqueue processing, and respond quickly. Unknown notification types or statuses are preserved and routed to review rather than ignored.
 
-#### Known documentation gaps that block full endpoint implementation
+#### Documented boundaries and remaining provider gaps
 
-The endpoint list is now known, but the supplied screenshots do not include every endpoint's expanded request and response definition. Before implementing the affected capabilities, capture sanitized examples and validation rules from the protected guide for:
+The authenticated guide was reviewed on 2026-09-25. The following contracts remain unpublished or incomplete and therefore stay fail-closed:
 
-- `/create_pickup_request`, including merchant-address identifier, parcel selection, scheduling fields, and response/status values.
 - `/create_order/bulk-order/extended` request envelope and success/error response shapes.
-- `/status_with_return_status_by_cid` and `/trackings_by_invoice` response schemas.
-- Pagination parameters and response envelopes for `/get_return_requests` and `/payments`.
 - Full `/payments/{payment_id}` settlement/consignment schema.
 - `/police_stations` identifiers, district fields, and pagination/cache behavior.
 - `/fraud_check/score/{phone}` response schema, authentication/privacy terms, and rate limits; this remains outside v1 regardless.
-- The current official webhook setup screen, token semantics, retry behavior, event IDs, delivery/tracking payloads, and whether pickup/return/payment webhooks exist.
+- Payload schemas for named webhook events other than `delivery_status` and `tracking_update`: `consignment_update`, `return_list_accepted`, `payment_request`, `cancel_request`, `return_request`, `pickup_request`, and `user_update`.
 - Error response bodies and validation codes for single create, pickup, returns, and all lookup failures.
 
 Agents must implement only contract portions documented above or subsequently added as sanitized fixtures. They must not infer missing payload fields from UI labels or from unofficial SDKs.
