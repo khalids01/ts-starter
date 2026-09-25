@@ -34,7 +34,9 @@ export class CourierTrackingWorker {
       try {
         const credentials = await this.dependencies.resolver.resolve(encryptedConfig(consignment.connection));
         const adapter = this.dependencies.registry.require(consignment.connection.provider.code, "getConsignmentStatus");
-        const status = await adapter.getConsignmentStatus(credentials, consignment.externalId!);
+        const status = adapter.getConsignmentStatusWithReturn
+          ? await adapter.getConsignmentStatusWithReturn(credentials, consignment.externalId!)
+          : await adapter.getConsignmentStatus(credentials, consignment.externalId!);
         await this.dependencies.tracking.record({
           connectionId: consignment.connectionId,
           source: "polling",

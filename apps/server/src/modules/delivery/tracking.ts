@@ -29,9 +29,21 @@ export function normalizeCourierState(providerState: string): CourierStateDecisi
       return { normalizedState: "cancelled" };
     case "hold":
       return { normalizedState: "exception", exceptionKind: "provider_hold" };
+    case "exceptional":
+      return { normalizedState: "exception", exceptionKind: "provider_exceptional" };
     case "partial_delivered_approval_pending":
     case "partial_delivered":
       return { normalizedState: "exception", exceptionKind: "partial_delivery" };
+    case "partial_delivered_return_proccessing":
+    case "partial_delivered_return_rider_assigned":
+      return { normalizedState: "exception", exceptionKind: "partial_return_in_progress" };
+    case "partial_delivered_return_received":
+      return { normalizedState: "exception", exceptionKind: "partial_return_reconciliation_required" };
+    case "cancelled_return_proccessing":
+    case "cancelled_return_rider_assigned":
+      return { normalizedState: "exception", exceptionKind: "return_in_progress" };
+    case "cancelled_return_received":
+      return { normalizedState: "exception", exceptionKind: "return_reconciliation_required" };
     case "unknown_approval_pending":
     case "unknown":
     default:

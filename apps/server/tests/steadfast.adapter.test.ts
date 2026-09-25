@@ -184,4 +184,76 @@ describe("Steadfast courier adapter", () => {
       CourierProviderRequestError,
     );
   });
+
+  it("requests pickup using the official field names", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const adapter = new SteadfastCourierAdapter(queuedFetch([jsonResponse({
+      message: "Pickup request created successfully.",
+      data: { id: 9081, req_status: 0, created_at: "2026-09-20T07:05:31.000000Z" },
+    }, { status: 201 })], calls));
+
+    await expect(adapter.requestPickup(credentials, {
+      addressId: 42,
+      policeStationId: 17,
+      address: "House 17/1, Road 3/A, Dhanmondi, Dhaka",
+      contactNumber: "01712345678",
+      estimatedQuantity: 25,
+    })).resolves.toMatchObject({ externalId: "9081", providerState: "0" });
+    expect(JSON.parse(String(calls[0]?.init?.body))).toEqual({
+      address_id: 42,
+      police_station_id: 17,
+      address: "House 17/1, Road 3/A, Dhanmondi, Dhaka",
+      contact_number: "01712345678",
+      estim_qty: 25,
+    });
+  });
+
+  it("creates and reads provider return requests", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const result = { id: 1, consignment_id: 1424107, reason: "Customer changed their mind", status: "pending", created_at: "2026-09-20T23:11:45.000000Z", updated_at: "2026-09-20T23:11:45.000000Z" };
+    const adapter = new SteadfastCourierAdapter(queuedFetch([
+      jsonResponse(result, { status: 201 }),
+      jsonResponse({ data: [result] }),
+      jsonResponse(result),
+    ], calls));
+
+    await expect(adapter.createReturn(credentials, { invoice: "ORD-10231", reason: "Customer changed their mind" })).resolves.toMatchObject({ externalId: "1", consignmentExternalId: "1424107", providerState: "pending" });
+    await expect(adapter.listReturns(credentials, 2)).resolves.toMatchObject({ page: 2, items: [{ externalId: "1" }] });
+    await expect(adapter.getReturn(credentials, "1")).resolves.toMatchObject({ externalId: "1" });
+    expect(calls.map(({ url }) => url)).toEqual([
+      "https://portal.packzy.com/api/v1/create_return_request",
+      "https://portal.packzy.com/api/v1/get_return_requests?page=2",
+      "https://portal.packzy.com/api/v1/get_return_request/1",
+    ]);
+  });
+
+  it("reads return-aware status and tracking history", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const adapter = new SteadfastCourierAdapter(queuedFetch([
+      jsonResponse({ status: 200, delivery_status: "cancelled_return_rider_assigned" }),
+      jsonResponse({ status: 200, tracking: [{ consignment_id: 1424107, tracking_type: 2, text: "Parcel received at Dhanmondi hub.", created_at: "2026-09-20T11:22:04.000000Z" }] }),
+    ], calls));
+    await expect(adapter.getConsignmentStatusWithReturn(credentials, "1424107")).resolves.toEqual({ providerState: "cancelled_return_rider_assigned" });
+    await expect(adapter.getTrackingHistory(credentials, "ORD-10231")).resolves.toMatchObject([{ externalId: "1424107", providerType: "2", message: "Parcel received at Dhanmondi hub." }]);
+  });
+
+  it("reads balances and paginated payout summaries without treating them as reconciliation", async () => {
+    const adapter = new SteadfastCourierAdapter(queuedFetch([
+      jsonResponse({ status: 200, current_balance: 12450 }),
+      jsonResponse({ status: 1, payments: [{ payment_id: "SFC-88213", amount: 12450, method: "bKash", status_label: "Paid", created_at: "2026-09-18 11:04:22", paid_at: "2026-09-19 10:31:07" }] }),
+      jsonResponse({ payment_id: "SFC-88213", consignments: [{ invoice: "ORD-10231" }] }),
+    ]));
+    await expect(adapter.getBalance(credentials)).resolves.toEqual({ amount: "12450", currency: "BDT" });
+    await expect(adapter.listSettlements(credentials)).resolves.toMatchObject({ page: 1, items: [{ externalId: "SFC-88213", providerState: "paid" }] });
+    await expect(adapter.getSettlement(credentials, "SFC-88213")).resolves.toMatchObject({ payment_id: "SFC-88213" });
+  });
+
+  it("rejects invalid pickup, return, and pagination inputs before requesting", async () => {
+    let requested = false;
+    const adapter = new SteadfastCourierAdapter((async () => { requested = true; return jsonResponse({}); }) as typeof fetch);
+    await expect(adapter.requestPickup(credentials, { addressId: 0, policeStationId: 1, address: "Dhaka", contactNumber: "01712345678" })).rejects.toMatchObject({ details: { code: "validation" } });
+    await expect(adapter.createReturn(credentials, { invoice: "ORD-1", trackingCode: "TRACK-1" })).rejects.toMatchObject({ details: { code: "validation" } });
+    await expect(adapter.listSettlements(credentials, 0)).rejects.toMatchObject({ details: { code: "validation" } });
+    expect(requested).toBe(false);
+  });
 });
