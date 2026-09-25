@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SaveButton, TextField } from "../ui";
+import { SaveButton, SelectField, TextField } from "../ui";
 import type { CourierConnection, CourierProvider } from "../types";
 
 export type CourierConnectionDraft = {
@@ -90,61 +90,32 @@ export function CourierConnectionDialog(props: {
               value={draft.displayName}
               onChange={(displayName) => props.onChange({ ...draft, displayName })}
             />
-            <label className="grid gap-1 text-sm">
-              <span className="font-medium">Courier provider</span>
-              <select
-                className="border-input bg-background h-10 rounded-md border px-3"
-                value={draft.providerCode}
-                disabled={Boolean(draft.id)}
-                onChange={(event) =>
-                  props.onChange({ ...draft, providerCode: event.target.value })
-                }
-              >
-                {props.providers.map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {item.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="grid gap-1 text-sm">
-              <span className="font-medium">Configuration source</span>
-              <select
-                className="border-input bg-background h-10 rounded-md border px-3"
-                value={draft.credentialSource}
-                disabled={Boolean(draft.id)}
-                onChange={(event) =>
-                  props.onChange({
-                    ...draft,
-                    credentialSource: event.target.value as CourierConnectionDraft["credentialSource"],
-                  })
-                }
-              >
-                <option
-                  value="server_environment"
-                  disabled={!provider?.environmentConfigurationAvailable}
-                >
-                  Server environment
-                </option>
-                <option value="encrypted_database">New encrypted credentials</option>
-              </select>
-            </label>
-            <label className="grid gap-1 text-sm">
-              <span className="font-medium">Environment</span>
-              <select
-                className="border-input bg-background h-10 rounded-md border px-3"
-                value={draft.environment}
-                onChange={(event) =>
-                  props.onChange({
-                    ...draft,
-                    environment: event.target.value as CourierConnectionDraft["environment"],
-                  })
-                }
-              >
-                <option value="production">Production</option>
-                <option value="sandbox">Sandbox</option>
-              </select>
-            </label>
+            <SelectField
+              label="Courier provider"
+              value={draft.providerCode}
+              disabled={Boolean(draft.id)}
+              onChange={(providerCode) => props.onChange({ ...draft, providerCode })}
+              options={props.providers.map((item) => ({ value: item.code, label: item.displayName }))}
+            />
+            <SelectField
+              label="Configuration source"
+              value={draft.credentialSource}
+              disabled={Boolean(draft.id)}
+              onChange={(credentialSource) => props.onChange({ ...draft, credentialSource: credentialSource as CourierConnectionDraft["credentialSource"] })}
+              options={[
+                { value: "server_environment", label: "Server environment", disabled: !provider?.environmentConfigurationAvailable },
+                { value: "encrypted_database", label: "New encrypted credentials" },
+              ]}
+            />
+            <SelectField
+              label="Environment"
+              value={draft.environment}
+              onChange={(environment) => props.onChange({ ...draft, environment: environment as CourierConnectionDraft["environment"] })}
+              options={[
+                { value: "production", label: "Production" },
+                { value: "sandbox", label: "Sandbox" },
+              ]}
+            />
             <TextField
               label="Priority"
               type="number"

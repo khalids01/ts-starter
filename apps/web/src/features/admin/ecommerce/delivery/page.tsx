@@ -167,15 +167,8 @@ export function AdminDeliveryPage() {
           <CardHeader>
             <CardTitle>No courier connections</CardTitle>
             <CardDescription>
-              Server credentials do not create connections automatically. Add one explicitly when ready.
+              Add a courier account connection to start configuring delivery options and routing.
             </CardDescription>
-            {canManageDelivery ? (
-              <CardAction>
-                <Button onClick={addConnection}>
-                  <Plus className="mr-2 size-4" /> Add connection
-                </Button>
-              </CardAction>
-            ) : null}
           </CardHeader>
           {!canManageDelivery ? (
             <CardContent className="text-muted-foreground text-sm">
@@ -184,8 +177,13 @@ export function AdminDeliveryPage() {
           ) : null}
         </Card>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {connections.map((connection) => (
+        <section className="space-y-3">
+          <div>
+            <h2 className="font-semibold">Courier account connections</h2>
+            <p className="text-muted-foreground text-sm">Each connection represents one merchant account and its credentials for a courier provider.</p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {connections.map((connection) => (
             <Card key={connection.id}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -227,8 +225,9 @@ export function AdminDeliveryPage() {
                 ) : null}
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <CourierConnectionDialog

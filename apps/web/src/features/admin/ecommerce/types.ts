@@ -416,6 +416,7 @@ export type CourierRoutingRule = {
   conditions: Record<string, unknown>;
   connectionId: string;
   connectionName: string;
+  providerName: string;
   serviceId: string;
   serviceName: string;
   updatedAt: string;
@@ -453,7 +454,7 @@ export type CourierReturn = {
   state: string;
   reason?: string | null;
   createdAt: string;
-  consignment: { order: { orderNumber: string }; connection: { displayName: string } };
+  consignment: { order: { orderNumber: string }; connection: { displayName: string; provider: { displayName: string } }; service: { displayName: string } };
 };
 
 export type CourierSettlement = {
@@ -464,7 +465,7 @@ export type CourierSettlement = {
   currency: string;
   state: string;
   createdAt: string;
-  consignment: { order: { orderNumber: string; paymentStatus: string }; connection: { displayName: string } };
+  consignment: { order: { orderNumber: string; paymentStatus: string }; connection: { displayName: string; provider: { displayName: string } }; service: { displayName: string } };
 };
 
 export type DiscountCode = {

@@ -22,7 +22,7 @@ export class CourierReturnsSettlementsService {
 
   listReturns() {
     return this.dependencies.db.courierReturn.findMany({
-      include: { consignment: { include: { order: { select: { orderNumber: true } }, connection: { select: { displayName: true } } } } },
+      include: { consignment: { include: { order: { select: { orderNumber: true } }, connection: { select: { displayName: true, provider: { select: { displayName: true } } } }, service: { select: { displayName: true } } } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     });
@@ -75,7 +75,7 @@ export class CourierReturnsSettlementsService {
 
   listSettlements() {
     return this.dependencies.db.courierSettlement.findMany({
-      include: { consignment: { include: { order: { select: { orderNumber: true, paymentStatus: true } }, connection: { select: { displayName: true } } } } },
+      include: { consignment: { include: { order: { select: { orderNumber: true, paymentStatus: true } }, connection: { select: { displayName: true, provider: { select: { displayName: true } } } }, service: { select: { displayName: true } } } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     });

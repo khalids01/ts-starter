@@ -53,6 +53,7 @@ function mapRule(row: any) {
     conditions: row.conditions,
     connectionId: row.connectionId,
     connectionName: row.connection?.displayName,
+    providerName: row.connection?.provider?.displayName,
     serviceId: row.serviceId,
     serviceName: row.service?.displayName,
     updatedAt: iso(row.updatedAt),
@@ -145,7 +146,7 @@ export class CourierRoutingDispatchService {
 
   async listRules() {
     const rows = await this.dependencies.db.courierRoutingRule.findMany({
-      include: { connection: true, service: true },
+      include: { connection: { include: { provider: true } }, service: true },
       orderBy: [{ priority: "asc" }, { name: "asc" }],
     });
     return rows.map(mapRule);
@@ -155,7 +156,7 @@ export class CourierRoutingDispatchService {
     await this.validateRuleTarget(input.connectionId, input.serviceId);
     const row = await this.dependencies.db.courierRoutingRule.create({
       data: { ...input, name: input.name.trim(), enabled: false },
-      include: { connection: true, service: true },
+      include: { connection: { include: { provider: true } }, service: true },
     });
     await this.audit("courier.routing_rule.created", actorUserId, `Created courier routing rule ${row.name}`, { ruleId: row.id });
     return mapRule(row);
@@ -175,7 +176,7 @@ export class CourierRoutingDispatchService {
         ...(input.name === undefined ? {} : { name: input.name.trim() }),
         ...(changesConditions ? { version: { increment: 1 } } : {}),
       },
-      include: { connection: true, service: true },
+      include: { connection: { include: { provider: true } }, service: true },
     });
     await this.audit("courier.routing_rule.updated", actorUserId, `Updated courier routing rule ${row.name}`, { ruleId: row.id, version: row.version });
     return mapRule(row);
@@ -279,7 +280,7 @@ export class CourierRoutingDispatchService {
 
   async listDispatches() {
     return this.dependencies.db.courierDispatch.findMany({
-      include: { order: { select: { orderNumber: true } }, connection: { select: { displayName: true } }, service: { select: { displayName: true } }, consignment: { include: { operations: { orderBy: { createdAt: "desc" }, take: 1 } } } },
+      include: { order: { select: { orderNumber: true } }, connection: { select: { displayName: true, provider: { select: { displayName: true } } } }, service: { select: { displayName: true } }, consignment: { include: { operations: { orderBy: { createdAt: "desc" }, take: 1 } } } },
       orderBy: { createdAt: "desc" }, take: 100,
     });
   }
