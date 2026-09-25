@@ -4,7 +4,7 @@ import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Card,
   CardContent,
@@ -33,6 +33,7 @@ import type {
   ShippingRate,
 } from "../types";
 import { readError, SelectField } from "../ui";
+import { formatMoney } from "@/features/shop/utils";
 import { ArchiveActions, ArchiveViewTabs, ResourceActionDialog, type ArchiveView, type ResourceAction } from "../archive-controls";
 
 type Props = {
@@ -270,7 +271,7 @@ export function RoutingManagement({
           {canManage && archiveView === "current" ? (
             <Button
               size="sm"
-              disabled={!eligibleConnections.length || !rates.length}
+              disabled={!eligibleConnections.length}
               onClick={() => {
                 const connectionId = eligibleConnections[0]?.id ?? "";
                 setServiceForm({ id: "", connectionId, code: "home_delivery", displayName: "Home delivery", shippingRateIds: [] });
@@ -655,32 +656,33 @@ export function RoutingManagement({
               />
             </Field>
             <Field label="Delivery methods">
-              <div className="grid gap-2">
-                {rates.map((rate) => (
-                  <label key={rate.id} className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={serviceForm.shippingRateIds.includes(rate.id)}
-                      onCheckedChange={(checked) =>
-                        setServiceForm({
-                          ...serviceForm,
-                          shippingRateIds: checked
-                            ? [...serviceForm.shippingRateIds, rate.id]
-                            : serviceForm.shippingRateIds.filter(
-                                (id) => id !== rate.id
-                              ),
-                        })
-                      }
-                    />
-                    {rate.label}
-                  </label>
-                ))}
-              </div>
+              <MultiSelect
+                placeholder="Search and select shipping methods"
+                emptyLabel="Clear selection"
+                options={rates.map((rate) => ({
+                  id: rate.id,
+                  label: rate.label,
+                  selectedLabel: `${rate.label} · ${rate.code}`,
+                  description: `${rate.code} · ${formatMoney(rate.amount, rate.currency)}${rate.isDefault ? " · Default" : ""} · ${rate.isActive ? "Active" : "Inactive"}`,
+                  searchText: `${rate.code} ${rate.currency} ${rate.amount}`,
+                  disabled: !rate.isActive && !serviceForm.shippingRateIds.includes(rate.id),
+                }))}
+                value={serviceForm.shippingRateIds}
+                onChange={(shippingRateIds) => setServiceForm({ ...serviceForm, shippingRateIds })}
+              />
+              {!rates.length ? (
+                <p className="text-xs text-muted-foreground">Create a current shipping method before configuring a delivery option.</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Search by method name or code. Inactive methods cannot be added, but existing mappings can be removed.</p>
+              )}
             </Field>
           </div>
           <DialogFooter>
             <Button
               disabled={
                 !serviceForm.connectionId ||
+                !serviceForm.code.trim() ||
+                !serviceForm.displayName.trim() ||
                 !serviceForm.shippingRateIds.length ||
                 saveService.isPending
               }
@@ -705,9 +707,15 @@ export function RoutingManagement({
                 }
               />
             </Field>
-            <Field label="Priority">
+            <Field
+              label="Priority"
+              hint="Lower numbers run first. Start at 0; negative numbers are not allowed."
+            >
               <Input
                 type="number"
+                min={0}
+                max={10_000}
+                step={1}
                 value={ruleForm.priority}
                 onChange={(event) =>
                   setRuleForm({ ...ruleForm, priority: event.target.value })
@@ -735,6 +743,9 @@ export function RoutingManagement({
               disabled={
                 !ruleForm.name.trim() ||
                 !ruleForm.serviceId ||
+                !Number.isInteger(Number(ruleForm.priority)) ||
+                Number(ruleForm.priority) < 0 ||
+                Number(ruleForm.priority) > 10_000 ||
                 saveRule.isPending
               }
               onClick={() => saveRule.mutate()}

@@ -58,9 +58,13 @@ export function CourierConnectionDialog(props: {
   const needsCredentials =
     draft?.credentialSource === "encrypted_database" &&
     (!draft.id || replacingCredentials);
+  const priority = Number(draft?.priority);
+  const validPriority =
+    Number.isInteger(priority) && priority >= 0 && priority <= 10_000;
   const valid = Boolean(
     draft?.displayName.trim() &&
       draft.providerCode &&
+      validPriority &&
       (!needsCredentials ||
         (draft.apiKey.trim() &&
           draft.secretKey.trim() &&
@@ -121,6 +125,10 @@ export function CourierConnectionDialog(props: {
               type="number"
               value={draft.priority}
               onChange={(priority) => props.onChange({ ...draft, priority })}
+              min={0}
+              max={10_000}
+              step={1}
+              hint="Lower numbers run first. Start at 0; negative numbers are not allowed."
             />
             {draft.credentialSource === "encrypted_database" ? (
               <>

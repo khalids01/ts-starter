@@ -92,16 +92,23 @@ export function TextField(props: {
   placeholder?: string;
   type?: string;
   disabled?: boolean;
+  hint?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }) {
   const id = useId();
   return (
-    <Field label={props.label} htmlFor={id}>
+    <Field label={props.label} htmlFor={id} hint={props.hint}>
       <Input
         id={id}
         type={props.type}
         value={props.value}
         placeholder={props.placeholder}
         disabled={props.disabled}
+        min={props.min}
+        max={props.max}
+        step={props.step}
         onChange={(event) => props.onChange(event.target.value)}
       />
     </Field>

@@ -11,6 +11,10 @@ import { cn } from "@/lib/utils";
 export type MultiSelectOption = {
   id: string;
   label: string;
+  selectedLabel?: string;
+  description?: string;
+  searchText?: string;
+  disabled?: boolean;
   count?: number;
 };
 
@@ -28,7 +32,11 @@ export function MultiSelect(props: {
   const matchingOptions = useMemo(() => {
     const query = search.trim().toLowerCase();
     return query
-      ? props.options.filter((option) => option.label.toLowerCase().includes(query))
+      ? props.options.filter((option) =>
+          `${option.label} ${option.description ?? ""} ${option.searchText ?? ""}`
+            .toLowerCase()
+            .includes(query),
+        )
       : props.options;
   }, [props.options, search]);
 
@@ -51,7 +59,7 @@ export function MultiSelect(props: {
                   key={option.id}
                   className="inline-flex max-w-full items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium"
                 >
-                  <span className="truncate">{option.label}</span>
+                  <span className="truncate">{option.selectedLabel ?? option.label}</span>
                 </span>
               ))
             ) : (
@@ -65,7 +73,7 @@ export function MultiSelect(props: {
           </span>
           <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-(--anchor-width) gap-1 p-1.5 text-sm">
+        <PopoverContent align="start" className="max-h-80 w-(--anchor-width) gap-1 overflow-y-auto p-1.5 text-sm">
           <input
             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Search..."
@@ -86,7 +94,10 @@ export function MultiSelect(props: {
               onClick={() => toggle(option.id)}
             >
               <Check className="size-4" />
-              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              <span className="min-w-0 flex-1 text-left">
+                <span className="block truncate">{option.label}</span>
+                {option.description ? <span className="block truncate text-xs text-muted-foreground">{option.description}</span> : null}
+              </span>
             </Button>
           ))}
           <div className="px-2 pb-1 pt-2 text-xs font-medium text-muted-foreground">
@@ -109,10 +120,14 @@ export function MultiSelect(props: {
                 type="button"
                 variant="ghost"
                 className="h-auto w-full justify-start gap-2 px-2 py-2 text-left"
+                disabled={option.disabled}
                 onClick={() => toggle(option.id)}
               >
                 <Check className={cn("size-4", isSelected ? "opacity-100" : "opacity-0")} />
-                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                <span className="min-w-0 flex-1 text-left">
+                  <span className="block truncate">{option.label}</span>
+                  {option.description ? <span className="block truncate text-xs text-muted-foreground">{option.description}</span> : null}
+                </span>
                 {typeof option.count === "number" ? (
                   <span className="text-xs text-muted-foreground">{option.count}</span>
                 ) : null}
