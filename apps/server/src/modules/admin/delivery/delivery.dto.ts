@@ -127,6 +127,15 @@ export const CourierHandoffDto = t.Object({
   note: t.Optional(t.String({ minLength: 1, maxLength: 500 })),
 });
 
+export const CourierPickupRequestDto = t.Object({
+  addressId: t.Integer({ minimum: 1, maximum: 2_147_483_647 }),
+  policeStationId: t.Integer({ minimum: 1, maximum: 2_147_483_647 }),
+  address: t.String({ minLength: 1, maxLength: 255 }),
+  contactNumber: t.String({ pattern: "^01[3-9][0-9]{8}$" }),
+  note: t.Optional(t.String({ minLength: 1, maxLength: 500 })),
+  estimatedQuantity: t.Optional(t.Integer({ minimum: 1, maximum: 100_000 })),
+});
+
 export type CreateCourierConnectionInput =
   typeof CreateCourierConnectionDto.static;
 export type UpdateCourierConnectionInput =
@@ -140,3 +149,4 @@ export type CreateCourierReturnInput = typeof CreateCourierReturnDto.static;
 export type UpdateCourierReturnInput = typeof UpdateCourierReturnDto.static;
 export type RecordCourierSettlementInput = typeof RecordCourierSettlementDto.static;
 export type CourierHandoffInput = typeof CourierHandoffDto.static;
+export type CourierPickupRequestInput = typeof CourierPickupRequestDto.static;

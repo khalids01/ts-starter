@@ -1,15 +1,31 @@
 import { randomUUID } from "node:crypto";
 import prisma from "@db/server";
 import { activityService } from "../activity/activity.service";
+import { createConfiguredCourierCredentialResolver } from "../../delivery/credentials.config";
+import type { CourierCredentialResolver } from "../../delivery/provider";
+import { createCourierProviderRegistry } from "../../delivery/registry.config";
+import type { CourierProviderRegistry } from "../../delivery/registry";
 import { AdminDeliveryServiceError } from "./delivery.service";
 import type {
   CourierHandoffInput,
+  CourierPickupRequestInput,
   CreateCourierReturnInput,
   RecordCourierSettlementInput,
   UpdateCourierReturnInput,
 } from "./delivery.dto";
 
-type Dependencies = Readonly<{ db: any; activity: Pick<typeof activityService, "record"> }>;
+type Dependencies = Readonly<{ db: any; activity: Pick<typeof activityService, "record">; resolver?: CourierCredentialResolver; registry?: CourierProviderRegistry }>;
+
+function credentialConfig(row: any) {
+  return {
+    credentialContext: `${row.provider.code}:${row.publicId}`,
+    providerCode: row.provider.code,
+    credentialSource: row.credentialSource,
+    encryptedCredentials: row.credentialCiphertext && row.credentialNonce && row.credentialAuthTag && row.credentialKeyVersion
+      ? { ciphertext: row.credentialCiphertext, nonce: row.credentialNonce, authTag: row.credentialAuthTag, keyVersion: row.credentialKeyVersion }
+      : undefined,
+  } as const;
+}
 
 function money(value: unknown) {
   const amount = Number(value);
@@ -73,6 +89,23 @@ export class CourierReturnsSettlementsService {
     return row;
   }
 
+  async submitReturn(id: string, actorUserId: string) {
+    if (!this.dependencies.resolver || !this.dependencies.registry) throw new AdminDeliveryServiceError("Courier provider integration is unavailable", 503);
+    const existing = await this.dependencies.db.courierReturn.findUnique({ where: { id }, include: { consignment: { include: { order: true, connection: { include: { provider: true } } } } } });
+    if (!existing) throw new AdminDeliveryServiceError("Courier return not found", 404);
+    if (existing.externalId) throw new AdminDeliveryServiceError("This return has already been submitted to the courier", 409);
+    if (!existing.consignment.externalId) throw new AdminDeliveryServiceError("The parcel has not been accepted by the courier yet", 409);
+    const connection = existing.consignment.connection;
+    if (!connection.enabled || connection.archivedAt) throw new AdminDeliveryServiceError("The courier connection is not available", 409);
+    const adapter = this.dependencies.registry.require(connection.provider.code, "createReturn");
+    if (!adapter.createReturn) throw new AdminDeliveryServiceError("This courier does not support returns", 409);
+    const credentials = await this.dependencies.resolver.resolve(credentialConfig(connection));
+    const submitted = await adapter.createReturn(credentials, { externalId: existing.consignment.externalId, reason: existing.reason ?? undefined });
+    const row = await this.dependencies.db.courierReturn.update({ where: { id }, data: { externalId: submitted.externalId, providerState: submitted.providerState, state: submitted.providerState } });
+    await this.dependencies.activity.record({ type: "courier.return.submitted", actorUserId, message: `Submitted return for ${existing.consignment.order.orderNumber} to ${connection.provider.displayName}`, metadata: { returnId: id, consignmentId: existing.consignmentId, providerReturnId: submitted.externalId } });
+    return row;
+  }
+
   listSettlements() {
     return this.dependencies.db.courierSettlement.findMany({
       include: { consignment: { include: { order: { select: { orderNumber: true, paymentStatus: true } }, connection: { select: { displayName: true, provider: { select: { displayName: true } } } }, service: { select: { displayName: true } } } } },
@@ -126,6 +159,26 @@ export class CourierReturnsSettlementsService {
     await this.dependencies.activity.record({ type: "courier.handoff.updated", actorUserId, message: `Updated courier handoff for ${consignment.order.orderNumber}`, metadata: { consignmentId, state: input.state } });
     return { consignmentId, state: input.state };
   }
+
+  async requestPickup(consignmentId: string, input: CourierPickupRequestInput, actorUserId: string) {
+    if (!this.dependencies.resolver || !this.dependencies.registry) throw new AdminDeliveryServiceError("Courier provider integration is unavailable", 503);
+    const consignment = await this.dependencies.db.courierConsignment.findUnique({ where: { id: consignmentId }, include: { order: true, connection: { include: { provider: true } } } });
+    if (!consignment) throw new AdminDeliveryServiceError("Courier consignment not found", 404);
+    if (!consignment.externalId) throw new AdminDeliveryServiceError("The parcel has not been accepted by the courier yet", 409);
+    const connection = consignment.connection;
+    if (!connection.enabled || connection.archivedAt) throw new AdminDeliveryServiceError("The courier connection is not available", 409);
+    const adapter = this.dependencies.registry.require(connection.provider.code, "requestPickup");
+    if (!adapter.requestPickup) throw new AdminDeliveryServiceError("This courier does not support pickup requests", 409);
+    const credentials = await this.dependencies.resolver.resolve(credentialConfig(connection));
+    const pickup = await adapter.requestPickup(credentials, input);
+    const eventKey = `pickup:${pickup.externalId}`;
+    await this.dependencies.db.$transaction(async (tx: any) => {
+      await tx.courierEvent.create({ data: { consignmentId, source: "manual", eventKey, eventType: "pickup_requested", providerState: pickup.providerState, normalizedState: "pickup_requested_externally", payload: { pickupRequestId: pickup.externalId }, occurredAt: pickup.createdAt ?? new Date() } });
+      await tx.courierConsignment.update({ where: { id: consignmentId }, data: { state: "pickup_requested_externally" } });
+    });
+    await this.dependencies.activity.record({ type: "courier.pickup.requested", actorUserId, message: `Requested courier pickup for ${consignment.order.orderNumber}`, metadata: { consignmentId, providerPickupId: pickup.externalId } });
+    return pickup;
+  }
 }
 
-export const courierReturnsSettlementsService = new CourierReturnsSettlementsService({ db: prisma, activity: activityService });
+export const courierReturnsSettlementsService = new CourierReturnsSettlementsService({ db: prisma, activity: activityService, resolver: createConfiguredCourierCredentialResolver(), registry: createCourierProviderRegistry() });

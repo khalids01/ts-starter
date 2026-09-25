@@ -6,6 +6,7 @@ import {
   CourierConnectionIdDto,
   ListCourierResourcesQueryDto,
   CourierHandoffDto,
+  CourierPickupRequestDto,
   CourierOrderIdDto,
   CourierResourceIdDto,
   ConfirmCourierRouteDto,
@@ -207,6 +208,10 @@ export const adminDeliveryController = new Elysia({
     try { return await courierReturnsSettlementsService.markHandoff(id, body, userId!); }
     catch (error) { return handleDeliveryError(error, set); }
   }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto, body: CourierHandoffDto })
+  .post("/consignments/:id/pickup", async ({ params: { id }, body, set, userId }) => {
+    try { return await courierReturnsSettlementsService.requestPickup(id, body, userId!); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto, body: CourierPickupRequestDto })
   .get("/returns", () => courierReturnsSettlementsService.listReturns(), { beforeHandle: readDelivery })
   .post("/returns", async ({ body, set, userId }) => {
     try { return await courierReturnsSettlementsService.createReturn(body, userId!); }
@@ -216,6 +221,10 @@ export const adminDeliveryController = new Elysia({
     try { return await courierReturnsSettlementsService.updateReturn(id, body, userId!); }
     catch (error) { return handleDeliveryError(error, set); }
   }, { beforeHandle: manageReturns, params: CourierResourceIdDto, body: UpdateCourierReturnDto })
+  .post("/returns/:id/submit", async ({ params: { id }, set, userId }) => {
+    try { return await courierReturnsSettlementsService.submitReturn(id, userId!); }
+    catch (error) { return handleDeliveryError(error, set); }
+  }, { beforeHandle: manageReturns, params: CourierResourceIdDto })
   .get("/settlements", () => courierReturnsSettlementsService.listSettlements(), { beforeHandle: readDelivery })
   .post("/settlements", async ({ body, set, userId }) => {
     try { return await courierReturnsSettlementsService.recordSettlement(body, userId!); }
