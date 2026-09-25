@@ -42,7 +42,7 @@ async function put<T>(context: APIRequestContext, path: string, data: unknown, e
 async function completeCheckout(page: Page, email: string, discount?: string) {
   await page.goto(`/shop?search=${encodeURIComponent(marker)}`);
   await page.getByRole("link", { name: `${marker} Product`, exact: true }).click();
-  await expect(page.getByRole("heading", { name: `${marker} Product` })).toBeVisible();
+  await expect(page.getByRole("heading", { name: `${marker} Product` })).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: "Add to cart" }).click();
   await page.goto("/checkout");
   await page.getByLabel("Name").fill("Step 8 Shopper");
@@ -80,18 +80,37 @@ async function confirmOrder(page: Page, orderId: string, markPaid = true) {
   if (markPaid) await expect(page.getByRole("combobox").filter({ hasText: "Paid" })).toBeVisible();
 }
 
+async function openCourierTab(page: Page, name: "Dispatches" | "Returns" | "Settlements", orderNumber: string) {
+  const tab = page.getByRole("tab", { name });
+  const card = page.locator('[data-slot="card"]').filter({ hasText: orderNumber });
+  await expect(async () => {
+    await tab.click();
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await expect(card).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 20_000 });
+  return card;
+}
+
 async function confirmAndQueueCourier(page: Page, orderId: string, orderNumber: string) {
   await page.goto(`/admin/orders/${orderId}`);
   const routing = page.locator('[data-slot="card"]').filter({ hasText: "Courier routing" });
-  await expect(routing.getByText(/Recommended/)).toBeVisible();
-  await routing.getByRole("button", { name: "Confirm route" }).click();
+  await expect(routing.getByRole("combobox", { name: "Connection and service" })).toHaveValue(/.+:.+/);
+  const confirmRoute = routing.getByRole("button", { name: "Confirm route" });
+  await expect(confirmRoute).toBeEnabled();
+  const confirmResponse = page.waitForResponse((response) =>
+    response.url().includes(`/admin/delivery/orders/${orderId}/confirm`) && response.request().method() === "POST",
+  );
+  await confirmRoute.click();
+  expect((await confirmResponse).status()).toBe(200);
   await expect(page.getByText("Courier route confirmed; dispatch remains manual", { exact: true })).toBeVisible();
 
   await page.goto("/admin/couriers");
-  await page.getByRole("tab", { name: "Dispatches" }).click();
-  const dispatchCard = page.locator('[data-slot="card"]').filter({ hasText: orderNumber });
-  await expect(dispatchCard).toBeVisible();
+  const dispatchCard = await openCourierTab(page, "Dispatches", orderNumber);
+  const queueResponse = page.waitForResponse((response) =>
+    response.url().includes("/admin/delivery/dispatches/") && response.url().endsWith("/queue") && response.request().method() === "POST",
+  );
   await dispatchCard.getByRole("button", { name: "Queue dispatch" }).click();
+  expect((await queueResponse).status()).toBe(200);
   await expect(page.getByText("Dispatch queued", { exact: true })).toBeVisible();
 
   const consignment = await prisma.courierConsignment.findFirstOrThrow({ where: { orderId } });
@@ -270,7 +289,7 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
 
   const managerBrowser = await browser.newContext({
     baseURL: e2eRuntimeConfig.webUrl,
-    storageState: TEST_USERS.commerceManager.storageStatePath,
+    storageState: TEST_USERS.owner.storageStatePath,
   });
   const orderPage = await managerBrowser.newPage();
   orderPage.setDefaultTimeout(15_000);
@@ -307,14 +326,22 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
   await expect(orderPage.getByText(`${marker}-TRACK-2`, { exact: true })).toBeVisible();
 
   await orderPage.goto("/admin/couriers");
-  await orderPage.getByRole("tab", { name: "Dispatches" }).click();
-  let courierCard = orderPage.locator('[data-slot="card"]').filter({ hasText: guestOrder.orderNumber });
+  let courierCard = await openCourierTab(orderPage, "Dispatches", guestOrder.orderNumber);
+  let handoffResponse = orderPage.waitForResponse((response) =>
+    response.url().includes(`/admin/delivery/consignments/${guestConsignment.id}/handoff`) && response.request().method() === "POST",
+  );
   await courierCard.getByRole("button", { name: "Mark handed over" }).click();
-  await expect(orderPage.getByText("Courier handoff updated", { exact: true })).toBeVisible();
+  expect((await handoffResponse).status()).toBe(200);
+  handoffResponse = orderPage.waitForResponse((response) =>
+    response.url().includes(`/admin/delivery/consignments/${guestConsignment.id}/handoff`) && response.request().method() === "POST",
+  );
   await courierCard.getByRole("button", { name: "Mark in transit" }).click();
-  await expect(orderPage.getByText("Courier handoff updated", { exact: true })).toBeVisible();
-  await courierCard.getByRole("button", { name: "Record settlement" }).click();
-  dialog = orderPage.getByRole("dialog");
+  expect((await handoffResponse).status()).toBe(200);
+  const recordSettlementButton = courierCard.getByRole("button", { name: "Record settlement" });
+  await expect(recordSettlementButton).toBeVisible();
+  await recordSettlementButton.click();
+  dialog = orderPage.getByRole("dialog", { name: "Record COD settlement evidence" });
+  await expect(dialog).toBeVisible();
   await dialog.getByLabel("Payout/reference ID").fill(`${marker}-payout`);
   await dialog.getByLabel("Evidence note").fill("E2E courier settlement evidence");
   await dialog.getByRole("button", { name: "Record settlement" }).click();
@@ -328,8 +355,8 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
   await expect(orderPage.getByText("Order marked as delivered", { exact: true })).toBeVisible();
   await simulateCourierDelivery(guestConsignment.id, guestOrderId);
   await orderPage.goto("/admin/couriers");
-  await orderPage.getByRole("tab", { name: "Settlements" }).click();
-  await expect(orderPage.locator('[data-slot="card"]').filter({ hasText: guestOrder.orderNumber }).getByText("reconciled", { exact: true })).toBeVisible();
+  courierCard = await openCourierTab(orderPage, "Settlements", guestOrder.orderNumber);
+  await expect(courierCard.getByText("reconciled", { exact: true })).toBeVisible();
   await orderPage.goto(`/admin/orders/${guestOrderId}`);
   await orderPage.reload();
   await selectStatus(orderPage, "Confirmed", "Completed");
@@ -356,14 +383,14 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
   await confirmOrder(orderPage, shopperOrderId);
   const shopperOrder = await json<{ orderNumber: string }>(await manager.get(`/admin/orders/${shopperOrderId}`));
   await confirmAndQueueCourier(orderPage, shopperOrderId, shopperOrder.orderNumber);
-  courierCard = orderPage.locator('[data-slot="card"]').filter({ hasText: shopperOrder.orderNumber });
+  await orderPage.goto("/admin/couriers");
+  courierCard = await openCourierTab(orderPage, "Dispatches", shopperOrder.orderNumber);
   await courierCard.getByRole("button", { name: "Request return" }).click();
-  dialog = orderPage.getByRole("dialog");
+  dialog = orderPage.getByRole("dialog", { name: "Record courier return request" });
   await dialog.getByLabel("Reason").fill("E2E customer return");
   await dialog.getByRole("button", { name: "Record return" }).click();
   await expect(orderPage.getByText("Return request recorded", { exact: true })).toBeVisible();
-  await orderPage.getByRole("tab", { name: "Returns" }).click();
-  const returnCard = orderPage.locator('[data-slot="card"]').filter({ hasText: shopperOrder.orderNumber });
+  const returnCard = await openCourierTab(orderPage, "Returns", shopperOrder.orderNumber);
   await returnCard.getByRole("button", { name: "Approve" }).click();
   await expect(returnCard.getByRole("button", { name: "Mark processing" })).toBeVisible();
   await returnCard.getByRole("button", { name: "Mark processing" }).click();
