@@ -32,15 +32,15 @@ function harness(withParser = true) {
 describe("courier webhook pipeline", () => {
   it("authenticates, records through tracking, and deduplicates through shared webhook events", async () => {
     const { service, tracking, webhookEvents } = harness();
-    expect(await service.process("public-1", "Bearer token", "{}" )).toEqual({ received: true, duplicate: false });
-    expect(await service.process("public-1", "Bearer token", "{}" )).toEqual({ received: true, duplicate: true });
+    expect(await service.process("public-1", "Bearer token", "signature", "event-1", "{}" )).toEqual({ received: true, duplicate: false });
+    expect(await service.process("public-1", "Bearer token", "signature", "event-1", "{}" )).toEqual({ received: true, duplicate: true });
     expect(tracking.record).toHaveBeenCalledTimes(1);
     expect(webhookEvents[0]).toMatchObject({ provider: "courier:fake:public-1", status: "processed" });
   });
 
   it("fails closed for invalid authentication and unimplemented provider contracts", async () => {
-    const authenticated = harness().service.process("public-1", "wrong", "{}");
+    const authenticated = harness().service.process("public-1", "wrong", "signature", "event-1", "{}");
     await expect(authenticated).rejects.toBeInstanceOf(CourierWebhookError);
-    await expect(harness(false).service.process("public-1", null, "{}")).rejects.toMatchObject({ status: 503 });
+    await expect(harness(false).service.process("public-1", null, null, null, "{}")).rejects.toMatchObject({ status: 503 });
   });
 });

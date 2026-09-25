@@ -36,7 +36,7 @@ function uniqueError(error: unknown) {
 export class CourierWebhookService {
   constructor(private readonly dependencies: Dependencies) {}
 
-  async process(connectionPublicId: string, authorization: string | null, body: string) {
+  async process(connectionPublicId: string, authorization: string | null, signature: string | null, idempotencyKey: string | null, body: string) {
     const connection = await this.dependencies.db.courierConnection.findUnique({
       where: { publicId: connectionPublicId },
       include: { provider: true },
@@ -49,7 +49,7 @@ export class CourierWebhookService {
     const credentials = await this.dependencies.resolver.resolve(encryptedConfig(connection));
     let event;
     try {
-      event = await adapter.verifyAndParseWebhook(credentials, { authorization, body });
+      event = await adapter.verifyAndParseWebhook(credentials, { authorization, signature, idempotencyKey, body });
     } catch {
       throw new CourierWebhookError("Courier webhook authentication or payload is invalid", 401);
     }

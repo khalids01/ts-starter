@@ -1,10 +1,12 @@
 import { z } from "zod";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
   ConsignmentResult,
   CourierCredentials,
   CourierPickupRequest,
   CourierProviderAdapter,
   CourierReturnRequest,
+  CourierWebhookEvent,
   CreateConsignmentRequest,
 } from "../provider";
 
@@ -91,6 +93,24 @@ const paymentSchema = z.object({
 const paymentsResponseSchema = z.object({
   payments: z.array(paymentSchema),
 });
+
+const webhookSchema = z.discriminatedUnion("notification_type", [
+  z.object({
+    notification_type: z.literal("delivery_status"),
+    consignment_id: z.union([z.number(), z.string()]),
+    invoice: z.string(),
+    status: z.string(),
+    tracking_message: z.string().optional(),
+    updated_at: z.string(),
+  }).passthrough(),
+  z.object({
+    notification_type: z.literal("tracking_update"),
+    consignment_id: z.union([z.number(), z.string()]),
+    invoice: z.string(),
+    tracking_message: z.string(),
+    updated_at: z.string(),
+  }).passthrough(),
+]);
 
 function parsedDate(value: string | null | undefined) {
   if (!value) return undefined;
@@ -445,6 +465,36 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
     return candidates as Record<string, unknown>[];
   }
 
+  async verifyAndParseWebhook(
+    credentials: CourierCredentials,
+    input: Readonly<{ authorization: string | null; signature: string | null; idempotencyKey: string | null; body: string }>,
+  ): Promise<CourierWebhookEvent> {
+    const token = requiredCredential(credentials, "webhookToken");
+    const bearer = input.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+    if (!bearer || !safeEqual(bearer, token) || !input.signature || !input.idempotencyKey?.trim()) {
+      throw new CourierProviderRequestError("Steadfast webhook authentication is invalid", { code: "authentication", retryable: false });
+    }
+    const expected = createHmac("sha256", token).update(input.body).digest("hex");
+    if (!safeEqual(input.signature.trim().toLowerCase(), expected)) {
+      throw new CourierProviderRequestError("Steadfast webhook signature is invalid", { code: "authentication", retryable: false });
+    }
+    let raw: unknown;
+    try { raw = JSON.parse(input.body); }
+    catch { throw new CourierProviderRequestError("Steadfast webhook body is invalid JSON", { code: "validation", retryable: false }); }
+    const parsed = webhookSchema.safeParse(raw);
+    if (!parsed.success) throw new CourierProviderRequestError("Steadfast webhook payload is unsupported or invalid", { code: "validation", retryable: false });
+    const event = parsed.data;
+    return {
+      eventId: input.idempotencyKey.trim(),
+      eventType: event.notification_type,
+      externalId: String(event.consignment_id),
+      invoice: event.invoice,
+      providerState: event.notification_type === "delivery_status" ? normalizedStatus(event.status) : "tracking_update",
+      occurredAt: parsedDate(event.updated_at),
+      payload: event,
+    };
+  }
+
   async getStatusByInvoice(
     credentials: CourierCredentials,
     invoice: string,
@@ -519,4 +569,10 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
       }
     }
   }
+}
+
+function safeEqual(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
 }

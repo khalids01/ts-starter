@@ -59,4 +59,16 @@ describe("courier tracking persistence", () => {
     expect(db.order.update).not.toHaveBeenCalled();
     expect(exceptions[0].kind).toBe("conflicting_terminal_event");
   });
+
+  it("stores tracking messages without changing delivery state", async () => {
+    const consignment: any = { id: "consignment-1", orderId: "order-1", connectionId: "connection-1", state: "in_transit", order: { deliveryStatus: "out_for_delivery" } };
+    const create = mock(async () => ({}));
+    const update = mock(async () => ({}));
+    const db: any = { courierConsignment: { findFirst: mock(async () => consignment), update }, courierEvent: { create } };
+    const result = await new CourierTrackingService({ db }).record({ connectionId: "connection-1", source: "webhook", eventKey: "tracking-1", eventType: "tracking_update", externalId: "external-1", providerState: "tracking_update", payload: { tracking_message: "At sorting center" } });
+    expect(result).toMatchObject({ processed: true, normalizedState: null });
+    expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ eventType: "tracking_update", normalizedState: null }) });
+    expect(update).not.toHaveBeenCalled();
+    expect(consignment.state).toBe("in_transit");
+  });
 });

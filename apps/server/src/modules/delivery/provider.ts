@@ -136,7 +136,7 @@ export interface CourierProviderAdapter {
   getServiceAreas?(credentials: CourierCredentials): Promise<readonly Record<string, unknown>[]>;
   verifyAndParseWebhook?(
     credentials: CourierCredentials,
-    input: Readonly<{ authorization: string | null; body: string }>,
+    input: Readonly<{ authorization: string | null; signature: string | null; idempotencyKey: string | null; body: string }>,
   ): Promise<CourierWebhookEvent>;
 }
 

@@ -37,6 +37,26 @@ export class CourierTrackingService {
       include: { order: { select: { deliveryStatus: true } } },
     });
     if (!consignment) throw new Error("Courier event does not match a known consignment");
+    if (input.eventType === "tracking_update") {
+      try {
+        await this.dependencies.db.courierEvent.create({
+          data: {
+            consignmentId: consignment.id,
+            source: input.source,
+            eventKey: input.eventKey,
+            eventType: input.eventType,
+            providerState: null,
+            normalizedState: null,
+            payload: sanitizeCourierEventPayload(input.payload),
+            occurredAt: input.occurredAt,
+          },
+        });
+        return { processed: true, duplicate: false, normalizedState: null };
+      } catch (error) {
+        if (uniqueError(error)) return { processed: false, duplicate: true, normalizedState: null };
+        throw error;
+      }
+    }
     const normalized = normalizeCourierState(input.providerState);
     const terminalConflict = ["delivered", "cancelled"].includes(consignment.state) && normalized.normalizedState !== consignment.state;
     const decision = terminalConflict

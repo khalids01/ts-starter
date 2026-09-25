@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { createHmac } from "node:crypto";
 import {
   CourierProviderRequestError,
   SteadfastCourierAdapter,
@@ -255,5 +256,22 @@ describe("Steadfast courier adapter", () => {
     await expect(adapter.createReturn(credentials, { invoice: "ORD-1", trackingCode: "TRACK-1" })).rejects.toMatchObject({ details: { code: "validation" } });
     await expect(adapter.listSettlements(credentials, 0)).rejects.toMatchObject({ details: { code: "validation" } });
     expect(requested).toBe(false);
+  });
+
+  it("verifies signed webhook delivery events and preserves the idempotency key", async () => {
+    const token = "webhook-secret";
+    const body = JSON.stringify({ notification_type: "delivery_status", consignment_id: 1424107, invoice: "ORD-10231", status: "delivered", tracking_message: "Delivered", updated_at: "2026-09-25 13:30:00" });
+    const adapter = new SteadfastCourierAdapter();
+    await expect(adapter.verifyAndParseWebhook({ ...credentials, values: { ...credentials.values, webhookToken: token } }, {
+      authorization: `Bearer ${token}`,
+      signature: createHmac("sha256", token).update(body).digest("hex"),
+      idempotencyKey: "steadfast-event-1",
+      body,
+    })).resolves.toMatchObject({ eventId: "steadfast-event-1", eventType: "delivery_status", externalId: "1424107", providerState: "delivered" });
+  });
+
+  it("rejects unsigned or incorrectly signed webhooks", async () => {
+    const adapter = new SteadfastCourierAdapter();
+    await expect(adapter.verifyAndParseWebhook({ ...credentials, values: { ...credentials.values, webhookToken: "token" } }, { authorization: "Bearer token", signature: "bad", idempotencyKey: "event-1", body: "{}" })).rejects.toMatchObject({ details: { code: "authentication" } });
   });
 });

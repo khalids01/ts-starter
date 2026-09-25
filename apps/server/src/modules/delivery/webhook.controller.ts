@@ -11,6 +11,8 @@ export const courierWebhookController = new Elysia({
       return await courierWebhookService.process(
         connectionPublicId,
         request.headers.get("authorization"),
+        request.headers.get("x-signature"),
+        request.headers.get("idempotency-key"),
         await request.text(),
       );
     } catch (error) {
