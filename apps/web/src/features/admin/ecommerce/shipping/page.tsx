@@ -11,15 +11,18 @@ import { EcommerceHeader, ecommercePermissions, readError } from "../ui";
 import { shippingRateDraft, type ShippingRateDraft } from "./drafts";
 import { ShippingRateDialog } from "./rate-dialog";
 import { ShippingRatesList } from "./rates-list";
+import { ArchiveViewTabs, ResourceActionDialog, type ArchiveView, type ResourceAction } from "../archive-controls";
 
 export function AdminShippingPage() {
   const { session } = useSession();
   const { canManageShipping } = ecommercePermissions(session);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<ShippingRateDraft | null>(null);
+  const [archiveView, setArchiveView] = useState<ArchiveView>("current");
+  const [resourceAction, setResourceAction] = useState<{ action: ResourceAction; rate: ShippingRate } | null>(null);
   const ratesQuery = useQuery({
-    queryKey: queryKeys.admin.ecommerce.shipping.rates(),
-    queryFn: () => ecommerceApi.shipping.rates() as Promise<ShippingRate[]>,
+    queryKey: [...queryKeys.admin.ecommerce.shipping.rates(), archiveView],
+    queryFn: () => ecommerceApi.shipping.rates({ archived: archiveView === "archived" }) as Promise<ShippingRate[]>,
   });
   const refresh = () => void queryClient.invalidateQueries({ queryKey: queryKeys.admin.ecommerce.shipping.all() });
   const save = useMutation({
@@ -47,10 +50,17 @@ export function AdminShippingPage() {
     onSuccess: () => { toast.success("Default shipping rate updated"); refresh(); },
     onError: (error) => toast.error(readError(error, "Failed to update default shipping rate")),
   });
+  const lifecycle = useMutation({
+    mutationFn: ({ action, rate }: NonNullable<typeof resourceAction>) => action === "archive" ? ecommerceApi.shipping.archiveRate(rate.id) : action === "restore" ? ecommerceApi.shipping.restoreRate(rate.id) : ecommerceApi.shipping.deleteRate(rate.id),
+    onSuccess: (_, variables) => { toast.success(variables.action === "archive" ? "Shipping method archived" : variables.action === "restore" ? "Shipping method recovered" : "Shipping method permanently deleted"); setResourceAction(null); refresh(); },
+    onError: (error) => toast.error(readError(error, "Shipping method operation failed")),
+  });
 
   return <div className="space-y-6">
-    <EcommerceHeader title="Shipping" description="Manage checkout delivery methods, pricing, and free-shipping thresholds." action={canManageShipping ? <Button onClick={() => setDraft(shippingRateDraft())}><Plus className="mr-2 size-4" />Shipping rate</Button> : null} />
-    <ShippingRatesList rates={ratesQuery.data ?? []} loading={ratesQuery.isLoading} canManage={canManageShipping} changing={toggleActive.isPending || setDefault.isPending} onEdit={(rate) => setDraft(shippingRateDraft(rate))} onToggleActive={(rate) => toggleActive.mutate(rate)} onSetDefault={(rate) => setDefault.mutate(rate)} />
+    <EcommerceHeader title="Shipping" description="Manage checkout delivery methods, pricing, and free-shipping thresholds." action={canManageShipping && archiveView === "current" ? <Button onClick={() => setDraft(shippingRateDraft())}><Plus className="mr-2 size-4" />Shipping rate</Button> : null} />
+    <ArchiveViewTabs value={archiveView} onChange={(value) => { setArchiveView(value); setResourceAction(null); }} />
+    <ShippingRatesList rates={ratesQuery.data ?? []} loading={ratesQuery.isLoading} canManage={canManageShipping} changing={toggleActive.isPending || setDefault.isPending || lifecycle.isPending} onEdit={(rate) => setDraft(shippingRateDraft(rate))} onToggleActive={(rate) => toggleActive.mutate(rate)} onSetDefault={(rate) => setDefault.mutate(rate)} onArchive={(rate) => setResourceAction({ action: "archive", rate })} onRestore={(rate) => setResourceAction({ action: "restore", rate })} onDelete={(rate) => setResourceAction({ action: "delete", rate })} />
     <ShippingRateDialog draft={draft} loading={save.isPending} onChange={setDraft} onSubmit={(value) => save.mutate(value)} />
+    <ResourceActionDialog action={resourceAction?.action ?? null} resourceName={resourceAction?.rate.label} resourceKind="shipping method" pending={lifecycle.isPending} error={lifecycle.error} onClose={() => { lifecycle.reset(); setResourceAction(null); }} onConfirm={() => resourceAction && lifecycle.mutate(resourceAction)} />
   </div>;
 }

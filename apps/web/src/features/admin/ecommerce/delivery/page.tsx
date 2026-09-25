@@ -18,6 +18,13 @@ import { ecommerceApi } from "../apiCall";
 import type { CourierConnection, CourierProvider } from "../types";
 import { EcommerceHeader, ecommercePermissions, formatDate, readError } from "../ui";
 import {
+  ArchiveActions,
+  ArchiveViewTabs,
+  ResourceActionDialog,
+  type ArchiveView,
+  type ResourceAction,
+} from "../archive-controls";
+import {
   connectionDraft,
   CourierConnectionDialog,
   type CourierConnectionDraft,
@@ -34,13 +41,15 @@ export function CourierConnectionsPage() {
   const { canManageDelivery } = ecommercePermissions(session);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<CourierConnectionDraft | null>(null);
+  const [archiveView, setArchiveView] = useState<ArchiveView>("current");
+  const [resourceAction, setResourceAction] = useState<{ action: ResourceAction; connection: CourierConnection } | null>(null);
   const providersQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.delivery.providers(),
     queryFn: () => ecommerceApi.delivery.providers() as Promise<CourierProvider[]>,
   });
   const connectionsQuery = useQuery({
-    queryKey: queryKeys.admin.ecommerce.delivery.connections(),
-    queryFn: () => ecommerceApi.delivery.connections() as Promise<CourierConnection[]>,
+    queryKey: [...queryKeys.admin.ecommerce.delivery.connections(), archiveView],
+    queryFn: () => ecommerceApi.delivery.connections({ archived: archiveView === "archived" }) as Promise<CourierConnection[]>,
   });
   const refresh = () =>
     void queryClient.invalidateQueries({
@@ -106,6 +115,20 @@ export function CourierConnectionsPage() {
     },
     onError: (error) => toast.error(readError(error, "Failed to update connection")),
   });
+  const lifecycle = useMutation({
+    mutationFn: ({ action, connection }: NonNullable<typeof resourceAction>) =>
+      action === "archive"
+        ? ecommerceApi.delivery.archiveConnection(connection.id)
+        : action === "restore"
+          ? ecommerceApi.delivery.restoreConnection(connection.id)
+          : ecommerceApi.delivery.deleteConnection(connection.id),
+    onSuccess: (_, variables) => {
+      toast.success(variables.action === "archive" ? "Courier connection archived" : variables.action === "restore" ? "Courier connection recovered" : "Courier connection permanently deleted");
+      setResourceAction(null);
+      refresh();
+    },
+    onError: (error) => toast.error(readError(error, "Courier connection operation failed")),
+  });
 
   const providers = providersQuery.data ?? [];
   const connections = connectionsQuery.data ?? [];
@@ -120,13 +143,14 @@ export function CourierConnectionsPage() {
         title="Courier connections"
         description="Manage merchant accounts and credentials for courier providers. Connections remain disabled until their credentials pass a health check."
         action={
-          canManageDelivery && providers.length > 0 ? (
+          canManageDelivery && providers.length > 0 && archiveView === "current" ? (
             <Button onClick={addConnection}>
               <Plus className="mr-2 size-4" /> Add connection
             </Button>
           ) : null
         }
       />
+      <ArchiveViewTabs value={archiveView} onChange={(value) => { setArchiveView(value); setResourceAction(null); }} />
 
       {queriesFailed ? (
         <Card>
@@ -159,9 +183,11 @@ export function CourierConnectionsPage() {
       ) : connections.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No courier connections</CardTitle>
+            <CardTitle>{archiveView === "archived" ? "No archived courier connections" : "No courier connections"}</CardTitle>
             <CardDescription>
-              Add a courier account connection to start configuring delivery options and routing.
+              {archiveView === "archived"
+                ? "Archived courier connections will appear here."
+                : "Add a courier account connection to start configuring delivery options and routing."}
             </CardDescription>
           </CardHeader>
           {!canManageDelivery ? (
@@ -201,6 +227,8 @@ export function CourierConnectionsPage() {
                 </div>
                 {canManageDelivery ? (
                   <div className="flex flex-wrap gap-2">
+                    {!connection.archivedAt ? (
+                      <>
                     <Button variant="outline" size="sm" onClick={() => setDraft(connectionDraft(undefined, connection))}>
                       <Settings2 className="mr-2 size-4" /> Edit
                     </Button>
@@ -215,6 +243,15 @@ export function CourierConnectionsPage() {
                     >
                       {connection.enabled ? "Disable" : "Enable"}
                     </Button>
+                      </>
+                    ) : null}
+                    <ArchiveActions
+                      archived={Boolean(connection.archivedAt)}
+                      disabled={lifecycle.isPending}
+                      onArchive={() => setResourceAction({ action: "archive", connection })}
+                      onRestore={() => setResourceAction({ action: "restore", connection })}
+                      onDelete={() => setResourceAction({ action: "delete", connection })}
+                    />
                   </div>
                 ) : null}
               </CardContent>
@@ -230,6 +267,15 @@ export function CourierConnectionsPage() {
         loading={save.isPending}
         onChange={setDraft}
         onSubmit={(value) => save.mutate(value)}
+      />
+      <ResourceActionDialog
+        action={resourceAction?.action ?? null}
+        resourceName={resourceAction?.connection.displayName}
+        resourceKind="courier connection"
+        pending={lifecycle.isPending}
+        error={lifecycle.error}
+        onClose={() => { lifecycle.reset(); setResourceAction(null); }}
+        onConfirm={() => resourceAction && lifecycle.mutate(resourceAction)}
       />
     </div>
   );

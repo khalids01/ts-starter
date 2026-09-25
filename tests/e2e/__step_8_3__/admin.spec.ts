@@ -50,3 +50,19 @@ test("grouped admin navigation works when expanded and collapsed", async ({ page
   await page.getByRole("menuitem", { name: "Connections" }).click();
   await expect(page).toHaveURL(/\/admin\/couriers\/connections$/);
 });
+
+test("courier configuration and shipping methods switch between current and archived views", async ({ page }) => {
+  for (const route of [
+    "/admin/shipping",
+    "/admin/couriers/connections",
+    "/admin/couriers/delivery-options",
+    "/admin/couriers/assignment-rules",
+  ]) {
+    await test.step(route, async () => {
+      await page.goto(route);
+      await expect(page.getByRole("tab", { name: "Current" })).toHaveAttribute("data-active");
+      await page.getByRole("tab", { name: "Archived" }).click();
+      await expect(page.getByRole("tab", { name: "Archived" })).toHaveAttribute("data-active");
+    });
+  }
+});

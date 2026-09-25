@@ -369,6 +369,7 @@ export type ShippingRate = {
   isDefault: boolean;
   isActive: boolean;
   sortOrder: number;
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -392,6 +393,7 @@ export type CourierConnection = {
   credentialSource: "server_environment" | "encrypted_database";
   hasStoredCredentials: boolean;
   healthState: "unchecked" | "healthy" | "degraded" | "auth_failed";
+  archivedAt?: string | null;
   updatedAt: string;
 };
 
@@ -403,6 +405,7 @@ export type CourierService = {
   code: string;
   displayName: string;
   enabled: boolean;
+  archivedAt?: string | null;
   shippingMethods: Array<{ id: string; code: string; label: string }>;
   updatedAt: string;
 };
@@ -413,6 +416,7 @@ export type CourierRoutingRule = {
   version: number;
   priority: number;
   enabled: boolean;
+  archivedAt?: string | null;
   conditions: Record<string, unknown>;
   connectionId: string;
   connectionName: string;

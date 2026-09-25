@@ -5,7 +5,10 @@ const api = client ;
 async function unwrap<T>(request: Promise<{ data?: T; error?: any }>, fallback: string) {
   const { data, error } = await request;
   if (error) {
-    throw new Error(String(error.value?.message || error.message || fallback));
+    throw Object.assign(
+      new Error(String(error.value?.message || error.message || fallback)),
+      error.value && typeof error.value === "object" ? error.value : {},
+    );
   }
   return data as T;
 }
@@ -106,14 +109,18 @@ export const ecommerceApi = {
       unwrap(api.admin.shipping.rates.post(body), "Failed to create shipping rate"),
     updateRate: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.shipping.rates({ id }).patch(body), "Failed to update shipping rate"),
-    disableRate: (id: string) =>
-      unwrap(api.admin.shipping.rates({ id }).delete(), "Failed to disable shipping rate"),
+    archiveRate: (id: string) =>
+      unwrap(api.admin.shipping.rates({ id }).archive.post(), "Failed to archive shipping method"),
+    restoreRate: (id: string) =>
+      unwrap(api.admin.shipping.rates({ id }).restore.post(), "Failed to restore shipping method"),
+    deleteRate: (id: string) =>
+      unwrap(api.admin.shipping.rates({ id }).delete(), "Failed to delete shipping method"),
   },
   delivery: {
     providers: () =>
       unwrap(api.admin.delivery.providers.get(), "Failed to load courier providers"),
-    connections: () =>
-      unwrap(api.admin.delivery.connections.get(), "Failed to load courier connections"),
+    connections: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.connections.get({ query }), "Failed to load courier connections"),
     createConnection: (body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.connections.post(body as any), "Failed to create courier connection"),
     updateConnection: (id: string, body: Record<string, unknown>) =>
@@ -124,18 +131,36 @@ export const ecommerceApi = {
       unwrap(api.admin.delivery.connections({ id }).enable.post(), "Failed to enable courier connection"),
     disableConnection: (id: string) =>
       unwrap(api.admin.delivery.connections({ id }).disable.post(), "Failed to disable courier connection"),
-    services: () =>
-      unwrap(api.admin.delivery.services.get(), "Failed to load courier services"),
+    archiveConnection: (id: string) =>
+      unwrap(api.admin.delivery.connections({ id }).archive.post(), "Failed to archive courier connection"),
+    restoreConnection: (id: string) =>
+      unwrap(api.admin.delivery.connections({ id }).restore.post(), "Failed to restore courier connection"),
+    deleteConnection: (id: string) =>
+      unwrap(api.admin.delivery.connections({ id }).delete(), "Failed to delete courier connection"),
+    services: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.services.get({ query }), "Failed to load courier services"),
     createService: (body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.services.post(body as any), "Failed to create courier service"),
     updateService: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.services({ id }).patch(body as any), "Failed to update courier service"),
-    rules: () =>
-      unwrap(api.admin.delivery["routing-rules"].get(), "Failed to load courier routing rules"),
+    archiveService: (id: string) =>
+      unwrap(api.admin.delivery.services({ id }).archive.post(), "Failed to archive delivery option"),
+    restoreService: (id: string) =>
+      unwrap(api.admin.delivery.services({ id }).restore.post(), "Failed to restore delivery option"),
+    deleteService: (id: string) =>
+      unwrap(api.admin.delivery.services({ id }).delete(), "Failed to delete delivery option"),
+    rules: (query?: Record<string, unknown>) =>
+      unwrap(api.admin.delivery["routing-rules"].get({ query }), "Failed to load courier routing rules"),
     createRule: (body: Record<string, unknown>) =>
       unwrap(api.admin.delivery["routing-rules"].post(body as any), "Failed to create courier routing rule"),
     updateRule: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.delivery["routing-rules"]({ id }).patch(body as any), "Failed to update courier routing rule"),
+    archiveRule: (id: string) =>
+      unwrap(api.admin.delivery["routing-rules"]({ id }).archive.post(), "Failed to archive assignment rule"),
+    restoreRule: (id: string) =>
+      unwrap(api.admin.delivery["routing-rules"]({ id }).restore.post(), "Failed to restore assignment rule"),
+    deleteRule: (id: string) =>
+      unwrap(api.admin.delivery["routing-rules"]({ id }).delete(), "Failed to delete assignment rule"),
     dispatches: () =>
       unwrap(api.admin.delivery.dispatches.get(), "Failed to load courier dispatches"),
     recommendation: (orderId: string) =>

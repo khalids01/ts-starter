@@ -14,12 +14,15 @@ export function CourierOverviewPage() {
   const dispatches = useQuery({ queryKey: queryKeys.admin.ecommerce.delivery.dispatches(), queryFn: () => ecommerceApi.delivery.dispatches() as Promise<any[]> });
   const returns = useQuery({ queryKey: queryKeys.admin.ecommerce.delivery.returns(), queryFn: () => ecommerceApi.delivery.returns() as Promise<CourierReturn[]> });
   const settlements = useQuery({ queryKey: queryKeys.admin.ecommerce.delivery.settlements(), queryFn: () => ecommerceApi.delivery.settlements() as Promise<CourierSettlement[]> });
+  const archivedConnections = useQuery({ queryKey: [...queryKeys.admin.ecommerce.delivery.connections(), "archived"], queryFn: () => ecommerceApi.delivery.connections({ archived: true }) as Promise<CourierConnection[]> });
+  const archivedServices = useQuery({ queryKey: [...queryKeys.admin.ecommerce.delivery.services(), "archived"], queryFn: () => ecommerceApi.delivery.services({ archived: true }) as Promise<CourierService[]> });
+  const archivedRules = useQuery({ queryKey: [...queryKeys.admin.ecommerce.delivery.rules(), "archived"], queryFn: () => ecommerceApi.delivery.rules({ archived: true }) as Promise<CourierRoutingRule[]> });
   const unhealthy = (connections.data ?? []).filter((item) => item.healthState !== "healthy").length;
 
   const cards = [
-    { title: "Connections", value: connections.data?.length ?? 0, detail: unhealthy ? `${unhealthy} need attention` : "All connections healthy", icon: Cable, to: "/admin/couriers/connections" },
-    { title: "Delivery options", value: services.data?.length ?? 0, detail: `${(services.data ?? []).filter((item) => item.enabled).length} enabled`, icon: PackageCheck, to: "/admin/couriers/delivery-options" },
-    { title: "Assignment rules", value: rules.data?.length ?? 0, detail: `${(rules.data ?? []).filter((item) => item.enabled).length} enabled`, icon: Route, to: "/admin/couriers/assignment-rules" },
+    { title: "Connections", value: connections.data?.length ?? 0, detail: `${unhealthy ? `${unhealthy} need attention` : "All current connections healthy"} · ${archivedConnections.data?.length ?? 0} archived`, icon: Cable, to: "/admin/couriers/connections" },
+    { title: "Delivery options", value: services.data?.length ?? 0, detail: `${(services.data ?? []).filter((item) => item.enabled).length} enabled · ${archivedServices.data?.length ?? 0} archived`, icon: PackageCheck, to: "/admin/couriers/delivery-options" },
+    { title: "Assignment rules", value: rules.data?.length ?? 0, detail: `${(rules.data ?? []).filter((item) => item.enabled).length} enabled · ${archivedRules.data?.length ?? 0} archived`, icon: Route, to: "/admin/couriers/assignment-rules" },
     { title: "Shipments", value: dispatches.data?.length ?? 0, detail: `${(dispatches.data ?? []).filter((item) => !["delivered", "cancelled"].includes(item.consignment?.state)).length} active`, icon: PackageCheck, to: "/admin/couriers/shipments" },
     { title: "Returns", value: returns.data?.length ?? 0, detail: `${(returns.data ?? []).filter((item) => !["completed", "cancelled"].includes(item.state)).length} open`, icon: RotateCcw, to: "/admin/couriers/returns" },
     { title: "COD payouts", value: settlements.data?.length ?? 0, detail: `${(settlements.data ?? []).filter((item) => item.state === "mismatch").length} mismatches`, icon: Banknote, to: "/admin/couriers/cod-payouts" },

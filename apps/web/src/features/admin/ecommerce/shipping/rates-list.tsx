@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatMoney } from "@/features/shop/utils";
+import { ArchiveActions } from "../archive-controls";
 import type { ShippingRate } from "../types";
 import { EmptyTableRow, StatusBadge } from "../ui";
 
@@ -26,6 +27,9 @@ export function ShippingRatesList(props: {
   onEdit: (rate: ShippingRate) => void;
   onToggleActive: (rate: ShippingRate) => void;
   onSetDefault: (rate: ShippingRate) => void;
+  onArchive: (rate: ShippingRate) => void;
+  onRestore: (rate: ShippingRate) => void;
+  onDelete: (rate: ShippingRate) => void;
 }) {
   const [confirmRate, setConfirmRate] = useState<ShippingRate | null>(null);
   if (props.loading) return <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">Loading shipping rates...</div>;
@@ -42,7 +46,7 @@ export function ShippingRatesList(props: {
             </CardHeader>
             <CardContent className="space-y-3">
               <RatePrice rate={rate} />
-              {props.canManage ? <RateActions rate={rate} changing={props.changing} onEdit={props.onEdit} onToggleActive={setConfirmRate} onSetDefault={props.onSetDefault} /> : null}
+              {props.canManage ? <RateActions {...props} rate={rate} onToggleActive={setConfirmRate} /> : null}
             </CardContent>
           </Card>
         ))}
@@ -57,7 +61,7 @@ export function ShippingRatesList(props: {
                 <TableCell><RatePrice rate={rate} /></TableCell>
                 <TableCell><RateBadges rate={rate} /></TableCell>
                 <TableCell>{rate.sortOrder}</TableCell>
-                <TableCell className="text-right">{props.canManage ? <RateActions rate={rate} changing={props.changing} onEdit={props.onEdit} onToggleActive={setConfirmRate} onSetDefault={props.onSetDefault} /> : null}</TableCell>
+                <TableCell className="text-right">{props.canManage ? <RateActions {...props} rate={rate} onToggleActive={setConfirmRate} /> : null}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -93,8 +97,8 @@ function RateBadges({ rate }: { rate: ShippingRate }) {
   return <div className="flex flex-wrap gap-1"><StatusBadge active={rate.isActive} />{rate.isDefault ? <Badge variant="secondary">Default</Badge> : null}</div>;
 }
 
-function RateActions(props: { rate: ShippingRate; changing: boolean; onEdit: (rate: ShippingRate) => void; onToggleActive: (rate: ShippingRate) => void; onSetDefault: (rate: ShippingRate) => void }) {
+function RateActions(props: { rate: ShippingRate; changing: boolean; onEdit: (rate: ShippingRate) => void; onToggleActive: (rate: ShippingRate) => void; onSetDefault: (rate: ShippingRate) => void; onArchive: (rate: ShippingRate) => void; onRestore: (rate: ShippingRate) => void; onDelete: (rate: ShippingRate) => void }) {
   const defaultDisabled = !props.rate.isActive || props.rate.isDefault || props.changing;
   const toggleDisabled = (props.rate.isActive && props.rate.isDefault) || props.changing;
-  return <div className="flex justify-end gap-1"><Button size="sm" variant={props.rate.isDefault ? "secondary" : "ghost"} disabled={defaultDisabled} onClick={() => props.onSetDefault(props.rate)}><Star className="mr-1 size-4" />{props.rate.isDefault ? "Default" : "Set default"}</Button><Button size="icon" variant="ghost" aria-label={`Edit ${props.rate.label}`} onClick={() => props.onEdit(props.rate)}><Pencil className="size-4" /></Button><Button size="icon" variant="ghost" disabled={toggleDisabled} aria-label={`${props.rate.isActive ? "Disable" : "Enable"} ${props.rate.label}`} onClick={() => props.onToggleActive(props.rate)}><Power className="size-4" /></Button></div>;
+  return <div className="flex flex-wrap justify-end gap-1">{!props.rate.archivedAt ? <><Button size="sm" variant={props.rate.isDefault ? "secondary" : "ghost"} disabled={defaultDisabled} onClick={() => props.onSetDefault(props.rate)}><Star className="mr-1 size-4" />{props.rate.isDefault ? "Default" : "Set default"}</Button><Button size="icon" variant="ghost" aria-label={`Edit ${props.rate.label}`} onClick={() => props.onEdit(props.rate)}><Pencil className="size-4" /></Button><Button size="icon" variant="ghost" disabled={toggleDisabled} aria-label={`${props.rate.isActive ? "Disable" : "Enable"} ${props.rate.label}`} onClick={() => props.onToggleActive(props.rate)}><Power className="size-4" /></Button></> : null}<ArchiveActions archived={Boolean(props.rate.archivedAt)} disabled={props.changing} onArchive={() => props.onArchive(props.rate)} onRestore={() => props.onRestore(props.rate)} onDelete={() => props.onDelete(props.rate)} /></div>;
 }

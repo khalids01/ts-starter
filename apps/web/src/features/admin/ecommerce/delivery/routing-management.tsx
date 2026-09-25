@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import type {
   ShippingRate,
 } from "../types";
 import { readError, SelectField } from "../ui";
+import { ArchiveActions, ArchiveViewTabs, ResourceActionDialog, type ArchiveView, type ResourceAction } from "../archive-controls";
 
 type Props = {
   section: CourierManagementSection;
@@ -58,6 +59,12 @@ export function RoutingManagement({
   const [ruleOpen, setRuleOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [settlementOpen, setSettlementOpen] = useState(false);
+  const [archiveView, setArchiveView] = useState<ArchiveView>("current");
+  const [resourceAction, setResourceAction] = useState<
+    | { action: ResourceAction; kind: "service"; item: CourierService }
+    | { action: ResourceAction; kind: "rule"; item: CourierRoutingRule }
+    | null
+  >(null);
   const [operationForm, setOperationForm] = useState({
     consignmentId: "",
     reason: "",
@@ -67,27 +74,30 @@ export function RoutingManagement({
     note: "",
   });
   const [serviceForm, setServiceForm] = useState({
+    id: "",
     connectionId: "",
     code: "home_delivery",
     displayName: "Home delivery",
     shippingRateIds: [] as string[],
   });
   const [ruleForm, setRuleForm] = useState({
+    id: "",
     name: "",
     priority: "100",
     connectionId: "",
     serviceId: "",
+    conditions: {} as Record<string, unknown>,
   });
   const servicesQuery = useQuery({
-    queryKey: queryKeys.admin.ecommerce.delivery.services(),
+    queryKey: [...queryKeys.admin.ecommerce.delivery.services(), section === "services" ? archiveView : "current"],
     queryFn: () =>
-      ecommerceApi.delivery.services() as Promise<CourierService[]>,
+      ecommerceApi.delivery.services({ archived: section === "services" && archiveView === "archived" }) as Promise<CourierService[]>,
     enabled: section === "services" || section === "rules",
   });
   const rulesQuery = useQuery({
-    queryKey: queryKeys.admin.ecommerce.delivery.rules(),
+    queryKey: [...queryKeys.admin.ecommerce.delivery.rules(), archiveView],
     queryFn: () =>
-      ecommerceApi.delivery.rules() as Promise<CourierRoutingRule[]>,
+      ecommerceApi.delivery.rules({ archived: archiveView === "archived" }) as Promise<CourierRoutingRule[]>,
     enabled: section === "rules",
   });
   const dispatchesQuery = useQuery({
@@ -115,10 +125,15 @@ export function RoutingManagement({
     void queryClient.invalidateQueries({
       queryKey: queryKeys.admin.ecommerce.delivery.all(),
     });
-  const createService = useMutation({
-    mutationFn: () => ecommerceApi.delivery.createService(serviceForm),
+  const saveService = useMutation({
+    mutationFn: () => {
+      const body = { connectionId: serviceForm.connectionId, code: serviceForm.code, displayName: serviceForm.displayName, shippingRateIds: serviceForm.shippingRateIds };
+      return serviceForm.id
+        ? ecommerceApi.delivery.updateService(serviceForm.id, { displayName: serviceForm.displayName, shippingRateIds: serviceForm.shippingRateIds })
+        : ecommerceApi.delivery.createService(body);
+    },
     onSuccess: () => {
-      toast.success("Delivery option created");
+      toast.success(serviceForm.id ? "Delivery option updated" : "Delivery option created");
       setServiceOpen(false);
       refresh();
     },
@@ -132,15 +147,19 @@ export function RoutingManagement({
     onError: (error) =>
       toast.error(readError(error, "Failed to update delivery option")),
   });
-  const createRule = useMutation({
-    mutationFn: () =>
-      ecommerceApi.delivery.createRule({
-        ...ruleForm,
+  const saveRule = useMutation({
+    mutationFn: () => {
+      const body = {
+        name: ruleForm.name,
         priority: Number(ruleForm.priority),
-        conditions: {},
-      }),
+        connectionId: ruleForm.connectionId,
+        serviceId: ruleForm.serviceId,
+        conditions: ruleForm.conditions,
+      };
+      return ruleForm.id ? ecommerceApi.delivery.updateRule(ruleForm.id, body) : ecommerceApi.delivery.createRule(body);
+    },
     onSuccess: () => {
-      toast.success("Assignment rule created");
+      toast.success(ruleForm.id ? "Assignment rule updated" : "Assignment rule created");
       setRuleOpen(false);
       refresh();
     },
@@ -213,6 +232,20 @@ export function RoutingManagement({
     onError: (error) =>
       toast.error(readError(error, "Failed to record settlement")),
   });
+  const lifecycle = useMutation({
+    mutationFn: (target: NonNullable<typeof resourceAction>) => {
+      if (target.kind === "service") {
+        return target.action === "archive" ? ecommerceApi.delivery.archiveService(target.item.id) : target.action === "restore" ? ecommerceApi.delivery.restoreService(target.item.id) : ecommerceApi.delivery.deleteService(target.item.id);
+      }
+      return target.action === "archive" ? ecommerceApi.delivery.archiveRule(target.item.id) : target.action === "restore" ? ecommerceApi.delivery.restoreRule(target.item.id) : ecommerceApi.delivery.deleteRule(target.item.id);
+    },
+    onSuccess: (_, target) => {
+      toast.success(target.action === "archive" ? `${target.kind === "service" ? "Delivery option" : "Assignment rule"} archived` : target.action === "restore" ? `${target.kind === "service" ? "Delivery option" : "Assignment rule"} recovered` : `${target.kind === "service" ? "Delivery option" : "Assignment rule"} permanently deleted`);
+      setResourceAction(null);
+      refresh();
+    },
+    onError: (error) => toast.error(readError(error, "Courier configuration operation failed")),
+  });
   const services = servicesQuery.data ?? [];
   const rules = rulesQuery.data ?? [];
   const dispatches = dispatchesQuery.data ?? [];
@@ -226,6 +259,7 @@ export function RoutingManagement({
   return (
     <Tabs value={section} className="space-y-3">
       <TabsContent value="services" className="space-y-3">
+        <ArchiveViewTabs value={archiveView} onChange={(value) => { setArchiveView(value); setResourceAction(null); }} />
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold">Delivery options</h2>
@@ -233,13 +267,13 @@ export function RoutingManagement({
               Connect a courier account and service level to one or more shipping methods shown at checkout.
             </p>
           </div>
-          {canManage ? (
+          {canManage && archiveView === "current" ? (
             <Button
               size="sm"
               disabled={!eligibleConnections.length || !rates.length}
               onClick={() => {
                 const connectionId = eligibleConnections[0]?.id ?? "";
-                setServiceForm((value) => ({ ...value, connectionId }));
+                setServiceForm({ id: "", connectionId, code: "home_delivery", displayName: "Home delivery", shippingRateIds: [] });
                 setServiceOpen(true);
               }}
             >
@@ -250,7 +284,7 @@ export function RoutingManagement({
         {!services.length ? (
           <Card>
             <CardContent className="text-muted-foreground pt-6">
-              No delivery options configured. Add one after a courier connection is enabled and healthy.
+              {archiveView === "archived" ? "No archived delivery options." : "No delivery options configured. Add one after a courier connection is enabled and healthy."}
             </CardContent>
           </Card>
         ) : (
@@ -269,7 +303,11 @@ export function RoutingManagement({
                 </CardDescription>
               </CardHeader>
               {canManage ? (
-                <CardContent>
+                <CardContent className="flex flex-wrap gap-2">
+                  {!service.archivedAt ? <>
+                  <Button size="sm" variant="outline" onClick={() => { setServiceForm({ id: service.id, connectionId: service.connectionId, code: service.code, displayName: service.displayName, shippingRateIds: service.shippingMethods.map((item) => item.id) }); setServiceOpen(true); }}>
+                    <Pencil className="mr-2 size-4" /> Edit
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -282,6 +320,8 @@ export function RoutingManagement({
                   >
                     {service.enabled ? "Disable" : "Enable"}
                   </Button>
+                  </> : null}
+                  <ArchiveActions archived={Boolean(service.archivedAt)} disabled={lifecycle.isPending} onArchive={() => setResourceAction({ action: "archive", kind: "service", item: service })} onRestore={() => setResourceAction({ action: "restore", kind: "service", item: service })} onDelete={() => setResourceAction({ action: "delete", kind: "service", item: service })} />
                 </CardContent>
               ) : null}
             </Card>
@@ -289,6 +329,7 @@ export function RoutingManagement({
         )}
       </TabsContent>
       <TabsContent value="rules" className="space-y-3">
+        <ArchiveViewTabs value={archiveView} onChange={(value) => { setArchiveView(value); setResourceAction(null); }} />
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold">Assignment rules</h2>
@@ -296,17 +337,20 @@ export function RoutingManagement({
               Decide which provider, connection, and delivery option should handle an order. Lower priority numbers run first.
             </p>
           </div>
-          {canManage ? (
+          {canManage && archiveView === "current" ? (
             <Button
               size="sm"
               disabled={!services.length}
               onClick={() => {
                 const service = services[0];
-                setRuleForm((value) => ({
-                  ...value,
+                setRuleForm({
+                  id: "",
+                  name: "",
+                  priority: "100",
                   connectionId: service?.connectionId ?? "",
                   serviceId: service?.id ?? "",
-                }));
+                  conditions: {},
+                });
                 setRuleOpen(true);
               }}
             >
@@ -317,7 +361,7 @@ export function RoutingManagement({
         {!rules.length ? (
           <Card>
             <CardContent className="text-muted-foreground pt-6">
-              No assignment rules configured.
+              {archiveView === "archived" ? "No archived assignment rules." : "No assignment rules configured."}
             </CardContent>
           </Card>
         ) : (
@@ -336,7 +380,11 @@ export function RoutingManagement({
                 </CardDescription>
               </CardHeader>
               {canManage ? (
-                <CardContent>
+                <CardContent className="flex flex-wrap gap-2">
+                  {!rule.archivedAt ? <>
+                  <Button size="sm" variant="outline" onClick={() => { setRuleForm({ id: rule.id, name: rule.name, priority: String(rule.priority), connectionId: rule.connectionId, serviceId: rule.serviceId, conditions: rule.conditions }); setRuleOpen(true); }}>
+                    <Pencil className="mr-2 size-4" /> Edit
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -346,6 +394,8 @@ export function RoutingManagement({
                   >
                     {rule.enabled ? "Disable" : "Enable"}
                   </Button>
+                  </> : null}
+                  <ArchiveActions archived={Boolean(rule.archivedAt)} disabled={lifecycle.isPending} onArchive={() => setResourceAction({ action: "archive", kind: "rule", item: rule })} onRestore={() => setResourceAction({ action: "restore", kind: "rule", item: rule })} onDelete={() => setResourceAction({ action: "delete", kind: "rule", item: rule })} />
                 </CardContent>
               ) : null}
             </Card>
@@ -574,7 +624,7 @@ export function RoutingManagement({
       <Dialog open={serviceOpen} onOpenChange={setServiceOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add delivery option</DialogTitle>
+            <DialogTitle>{serviceForm.id ? "Edit" : "Add"} delivery option</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
             <SelectField
@@ -582,10 +632,12 @@ export function RoutingManagement({
               value={serviceForm.connectionId}
               onChange={(connectionId) => setServiceForm({ ...serviceForm, connectionId })}
               options={eligibleConnections.map((item) => ({ value: item.id, label: `${item.provider.displayName} · ${item.displayName}` }))}
+              disabled={Boolean(serviceForm.id)}
             />
             <Field label="Service code">
               <Input
                 value={serviceForm.code}
+                disabled={Boolean(serviceForm.id)}
                 onChange={(event) =>
                   setServiceForm({ ...serviceForm, code: event.target.value })
                 }
@@ -630,9 +682,9 @@ export function RoutingManagement({
               disabled={
                 !serviceForm.connectionId ||
                 !serviceForm.shippingRateIds.length ||
-                createService.isPending
+                saveService.isPending
               }
-              onClick={() => createService.mutate()}
+              onClick={() => saveService.mutate()}
             >
               Save delivery option
             </Button>
@@ -642,7 +694,7 @@ export function RoutingManagement({
       <Dialog open={ruleOpen} onOpenChange={setRuleOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add assignment rule</DialogTitle>
+            <DialogTitle>{ruleForm.id ? "Edit" : "Add"} assignment rule</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
             <Field label="Rule name">
@@ -683,15 +735,24 @@ export function RoutingManagement({
               disabled={
                 !ruleForm.name.trim() ||
                 !ruleForm.serviceId ||
-                createRule.isPending
+                saveRule.isPending
               }
-              onClick={() => createRule.mutate()}
+              onClick={() => saveRule.mutate()}
             >
               Save assignment rule
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ResourceActionDialog
+        action={resourceAction?.action ?? null}
+        resourceName={resourceAction?.item ? ("displayName" in resourceAction.item ? resourceAction.item.displayName : resourceAction.item.name) : undefined}
+        resourceKind={resourceAction?.kind === "rule" ? "assignment rule" : "delivery option"}
+        pending={lifecycle.isPending}
+        error={lifecycle.error}
+        onClose={() => { lifecycle.reset(); setResourceAction(null); }}
+        onConfirm={() => resourceAction && lifecycle.mutate(resourceAction)}
+      />
       <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
         <DialogContent>
           <DialogHeader>
