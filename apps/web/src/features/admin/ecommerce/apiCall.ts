@@ -173,12 +173,16 @@ export const ecommerceApi = {
       unwrap(api.admin.delivery.dispatches({ id }).queue.post(), "Failed to queue courier dispatch"),
     markHandoff: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.consignments({ id }).handoff.post(body as any), "Failed to update courier handoff"),
+    requestPickup: (id: string, body: Record<string, unknown>) =>
+      unwrap(api.admin.delivery.consignments({ id }).pickup.post(body as any), "Failed to request courier pickup"),
     returns: () =>
       unwrap(api.admin.delivery.returns.get(), "Failed to load courier returns"),
     createReturn: (body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.returns.post(body as any), "Failed to create courier return"),
     updateReturn: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.delivery.returns({ id }).patch(body as any), "Failed to update courier return"),
+    submitReturn: (id: string) =>
+      unwrap(api.admin.delivery.returns({ id }).submit.post(), "Failed to submit courier return"),
     settlements: () =>
       unwrap(api.admin.delivery.settlements.get(), "Failed to load courier settlements"),
     recordSettlement: (body: Record<string, unknown>) =>

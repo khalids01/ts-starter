@@ -455,6 +455,8 @@ export type CourierTracking = {
 export type CourierReturn = {
   id: string;
   consignmentId: string;
+  externalId?: string | null;
+  providerState?: string | null;
   state: string;
   reason?: string | null;
   createdAt: string;

@@ -59,6 +59,7 @@ export function RoutingManagement({
   const [serviceOpen, setServiceOpen] = useState(false);
   const [ruleOpen, setRuleOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
+  const [pickupOpen, setPickupOpen] = useState(false);
   const [settlementOpen, setSettlementOpen] = useState(false);
   const [archiveView, setArchiveView] = useState<ArchiveView>("current");
   const [resourceAction, setResourceAction] = useState<
@@ -74,6 +75,7 @@ export function RoutingManagement({
     currency: "BDT",
     note: "",
   });
+  const [pickupForm, setPickupForm] = useState({ consignmentId: "", addressId: "", policeStationId: "", address: "", contactNumber: "", estimatedQuantity: "1", note: "" });
   const [serviceForm, setServiceForm] = useState({
     id: "",
     connectionId: "",
@@ -193,6 +195,18 @@ export function RoutingManagement({
     onError: (error) =>
       toast.error(readError(error, "Failed to update handoff")),
   });
+  const requestPickup = useMutation({
+    mutationFn: () => ecommerceApi.delivery.requestPickup(pickupForm.consignmentId, {
+      addressId: Number(pickupForm.addressId),
+      policeStationId: Number(pickupForm.policeStationId),
+      address: pickupForm.address,
+      contactNumber: pickupForm.contactNumber,
+      ...(pickupForm.estimatedQuantity ? { estimatedQuantity: Number(pickupForm.estimatedQuantity) } : {}),
+      ...(pickupForm.note.trim() ? { note: pickupForm.note } : {}),
+    }),
+    onSuccess: () => { toast.success("Pickup requested from courier"); setPickupOpen(false); refresh(); },
+    onError: (error) => toast.error(readError(error, "Failed to request pickup")),
+  });
   const createReturn = useMutation({
     mutationFn: () =>
       ecommerceApi.delivery.createReturn({
@@ -215,6 +229,11 @@ export function RoutingManagement({
     onSuccess: refresh,
     onError: (error) =>
       toast.error(readError(error, "Failed to update return")),
+  });
+  const submitReturn = useMutation({
+    mutationFn: (id: string) => ecommerceApi.delivery.submitReturn(id),
+    onSuccess: () => { toast.success("Return submitted to courier"); refresh(); },
+    onError: (error) => toast.error(readError(error, "Failed to submit return")),
   });
   const recordSettlement = useMutation({
     mutationFn: () =>
@@ -463,6 +482,18 @@ export function RoutingManagement({
                       </Button>
                     </>
                   ) : null}
+                  {canDispatch && dispatch.consignment?.externalId && dispatch.consignment.state !== "pickup_requested_externally" ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setPickupForm({ consignmentId: dispatch.consignment.id, addressId: "", policeStationId: "", address: "", contactNumber: "", estimatedQuantity: "1", note: "" });
+                        setPickupOpen(true);
+                      }}
+                    >
+                      Request pickup
+                    </Button>
+                  ) : null}
                   {canManageReturns && dispatch.consignment ? (
                     <Button
                       size="sm"
@@ -535,6 +566,13 @@ export function RoutingManagement({
               {canManageReturns &&
               !["completed", "cancelled"].includes(item.state) ? (
                 <CardContent className="flex flex-wrap gap-2">
+                  {!item.externalId ? (
+                    <Button size="sm" disabled={submitReturn.isPending} onClick={() => submitReturn.mutate(item.id)}>
+                      Submit to courier
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary">Courier ref: {item.externalId}</Badge>
+                  )}
                   {item.state === "pending" ? (
                     <Button
                       size="sm"
@@ -770,8 +808,7 @@ export function RoutingManagement({
             <DialogTitle>Record courier return request</DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground text-sm">
-            Provider submission remains manual until the protected Steadfast
-            return contract is verified.
+            Record the return for review first. Submit it to the courier from the Returns page after confirming the reason.
           </p>
           <Field label="Reason">
             <Input
@@ -791,6 +828,29 @@ export function RoutingManagement({
               onClick={() => createReturn.mutate()}
             >
               Record return
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={pickupOpen} onOpenChange={setPickupOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request courier pickup</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground text-sm">This sends a real pickup request to the selected courier connection. Use the address and police-station IDs from your courier merchant account.</p>
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Pickup address ID"><Input type="number" min={1} value={pickupForm.addressId} onChange={(event) => setPickupForm({ ...pickupForm, addressId: event.target.value })} /></Field>
+              <Field label="Police station ID"><Input type="number" min={1} value={pickupForm.policeStationId} onChange={(event) => setPickupForm({ ...pickupForm, policeStationId: event.target.value })} /></Field>
+            </div>
+            <Field label="Pickup address"><Input value={pickupForm.address} onChange={(event) => setPickupForm({ ...pickupForm, address: event.target.value })} /></Field>
+            <Field label="Contact number" hint="11-digit Bangladesh mobile number beginning 013-019."><Input value={pickupForm.contactNumber} onChange={(event) => setPickupForm({ ...pickupForm, contactNumber: event.target.value })} /></Field>
+            <Field label="Estimated parcel quantity"><Input type="number" min={1} value={pickupForm.estimatedQuantity} onChange={(event) => setPickupForm({ ...pickupForm, estimatedQuantity: event.target.value })} /></Field>
+            <Field label="Pickup note"><Input value={pickupForm.note} onChange={(event) => setPickupForm({ ...pickupForm, note: event.target.value })} /></Field>
+          </div>
+          <DialogFooter>
+            <Button disabled={!pickupForm.consignmentId || Number(pickupForm.addressId) < 1 || Number(pickupForm.policeStationId) < 1 || !pickupForm.address.trim() || !/^01[3-9]\d{8}$/.test(pickupForm.contactNumber) || requestPickup.isPending} onClick={() => requestPickup.mutate()}>
+              Send pickup request
             </Button>
           </DialogFooter>
         </DialogContent>
