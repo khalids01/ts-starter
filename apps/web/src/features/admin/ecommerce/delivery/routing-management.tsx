@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { queryKeys } from "@/constants/query-keys";
 import { ecommerceApi } from "../apiCall";
 import type {
@@ -35,6 +35,7 @@ import type {
 import { readError, SelectField } from "../ui";
 
 type Props = {
+  section: CourierManagementSection;
   connections: CourierConnection[];
   canManage: boolean;
   canDispatch: boolean;
@@ -42,7 +43,10 @@ type Props = {
   canReconcile: boolean;
 };
 
+export type CourierManagementSection = "services" | "rules" | "dispatches" | "returns" | "settlements";
+
 export function RoutingManagement({
+  section,
   connections,
   canManage,
   canDispatch,
@@ -78,28 +82,34 @@ export function RoutingManagement({
     queryKey: queryKeys.admin.ecommerce.delivery.services(),
     queryFn: () =>
       ecommerceApi.delivery.services() as Promise<CourierService[]>,
+    enabled: section === "services" || section === "rules",
   });
   const rulesQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.delivery.rules(),
     queryFn: () =>
       ecommerceApi.delivery.rules() as Promise<CourierRoutingRule[]>,
+    enabled: section === "rules",
   });
   const dispatchesQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.delivery.dispatches(),
     queryFn: () => ecommerceApi.delivery.dispatches() as Promise<any[]>,
+    enabled: section === "dispatches",
   });
   const returnsQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.delivery.returns(),
     queryFn: () => ecommerceApi.delivery.returns() as Promise<CourierReturn[]>,
+    enabled: section === "returns",
   });
   const settlementsQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.delivery.settlements(),
     queryFn: () =>
       ecommerceApi.delivery.settlements() as Promise<CourierSettlement[]>,
+    enabled: section === "settlements",
   });
   const ratesQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.shipping.rates(),
     queryFn: () => ecommerceApi.shipping.rates() as Promise<ShippingRate[]>,
+    enabled: section === "services",
   });
   const refresh = () =>
     void queryClient.invalidateQueries({
@@ -214,23 +224,7 @@ export function RoutingManagement({
   );
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>How courier management works</CardTitle>
-          <CardDescription>
-            A connection is your merchant account with a provider such as Steadfast. A delivery option maps that account to a checkout shipping method. Assignment rules choose an option for each order; shipments, returns, and COD payouts then track the operational work.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    <Tabs defaultValue="services" className="space-y-3">
-      <TabsList className="h-auto max-w-full flex-wrap justify-start overflow-visible">
-        <TabsTrigger value="services">Delivery options</TabsTrigger>
-        <TabsTrigger value="rules">Assignment rules</TabsTrigger>
-        <TabsTrigger value="dispatches">Shipments</TabsTrigger>
-        <TabsTrigger value="returns">Returns</TabsTrigger>
-        <TabsTrigger value="settlements">COD payouts</TabsTrigger>
-      </TabsList>
+    <Tabs value={section} className="space-y-3">
       <TabsContent value="services" className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -802,7 +796,6 @@ export function RoutingManagement({
         </DialogContent>
       </Dialog>
     </Tabs>
-    </div>
   );
 }
 

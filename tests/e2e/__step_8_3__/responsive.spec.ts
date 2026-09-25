@@ -9,6 +9,13 @@ for (const route of [
   "/admin/store-settings",
   "/admin/orders",
   "/admin/customers",
+  "/admin/couriers",
+  "/admin/couriers/connections",
+  "/admin/couriers/delivery-options",
+  "/admin/couriers/assignment-rules",
+  "/admin/couriers/shipments",
+  "/admin/couriers/returns",
+  "/admin/couriers/cod-payouts",
 ]) {
   test(`${route} keeps primary content within the viewport`, async ({ page }) => {
     await page.goto(route);

@@ -80,12 +80,12 @@ async function confirmOrder(page: Page, orderId: string, markPaid = true) {
   if (markPaid) await expect(page.getByRole("combobox").filter({ hasText: "Paid" })).toBeVisible();
 }
 
-async function openCourierTab(page: Page, name: "Shipments" | "Returns" | "COD payouts", orderNumber: string) {
-  const tab = page.getByRole("tab", { name });
+async function openCourierPage(page: Page, name: "Shipments" | "Returns" | "COD payouts", orderNumber: string) {
+  const routes = { Shipments: "/admin/couriers/shipments", Returns: "/admin/couriers/returns", "COD payouts": "/admin/couriers/cod-payouts" } as const;
+  await page.goto(routes[name]);
   const card = page.locator('[data-slot="card"]').filter({ hasText: orderNumber });
   await expect(async () => {
-    await tab.click();
-    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await page.reload();
     await expect(card).toBeVisible({ timeout: 3_000 });
   }).toPass({ timeout: 20_000 });
   return card;
@@ -105,7 +105,7 @@ async function confirmAndQueueCourier(page: Page, orderId: string, orderNumber: 
   await expect(page.getByText("Courier route confirmed; dispatch remains manual", { exact: true })).toBeVisible();
 
   await page.goto("/admin/couriers");
-  const dispatchCard = await openCourierTab(page, "Shipments", orderNumber);
+  const dispatchCard = await openCourierPage(page, "Shipments", orderNumber);
   const queueResponse = page.waitForResponse((response) =>
     response.url().includes("/admin/delivery/dispatches/") && response.url().endsWith("/queue") && response.request().method() === "POST",
   );
@@ -326,7 +326,7 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
   await expect(orderPage.getByText(`${marker}-TRACK-2`, { exact: true })).toBeVisible();
 
   await orderPage.goto("/admin/couriers");
-  let courierCard = await openCourierTab(orderPage, "Shipments", guestOrder.orderNumber);
+  let courierCard = await openCourierPage(orderPage, "Shipments", guestOrder.orderNumber);
   let handoffResponse = orderPage.waitForResponse((response) =>
     response.url().includes(`/admin/delivery/consignments/${guestConsignment.id}/handoff`) && response.request().method() === "POST",
   );
@@ -355,7 +355,7 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
   await expect(orderPage.getByText("Order marked as delivered", { exact: true })).toBeVisible();
   await simulateCourierDelivery(guestConsignment.id, guestOrderId);
   await orderPage.goto("/admin/couriers");
-  courierCard = await openCourierTab(orderPage, "COD payouts", guestOrder.orderNumber);
+  courierCard = await openCourierPage(orderPage, "COD payouts", guestOrder.orderNumber);
   await expect(courierCard.getByText("reconciled", { exact: true })).toBeVisible();
   await orderPage.goto(`/admin/orders/${guestOrderId}`);
   await orderPage.reload();
@@ -384,13 +384,13 @@ test("full ecommerce and courier lifecycle persists dispatch, delivery, returns,
   const shopperOrder = await json<{ orderNumber: string }>(await manager.get(`/admin/orders/${shopperOrderId}`));
   await confirmAndQueueCourier(orderPage, shopperOrderId, shopperOrder.orderNumber);
   await orderPage.goto("/admin/couriers");
-  courierCard = await openCourierTab(orderPage, "Shipments", shopperOrder.orderNumber);
+  courierCard = await openCourierPage(orderPage, "Shipments", shopperOrder.orderNumber);
   await courierCard.getByRole("button", { name: "Request return" }).click();
   dialog = orderPage.getByRole("dialog", { name: "Record courier return request" });
   await dialog.getByLabel("Reason").fill("E2E customer return");
   await dialog.getByRole("button", { name: "Record return" }).click();
   await expect(orderPage.getByText("Return request recorded", { exact: true })).toBeVisible();
-  const returnCard = await openCourierTab(orderPage, "Returns", shopperOrder.orderNumber);
+  const returnCard = await openCourierPage(orderPage, "Returns", shopperOrder.orderNumber);
   await returnCard.getByRole("button", { name: "Approve" }).click();
   await expect(returnCard.getByRole("button", { name: "Mark processing" })).toBeVisible();
   await returnCard.getByRole("button", { name: "Mark processing" }).click();

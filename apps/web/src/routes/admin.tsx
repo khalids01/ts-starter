@@ -45,6 +45,11 @@ import {
   ChartNoAxesColumn,
   Settings,
   PackageOpen,
+  Cable,
+  Route as RouteIcon,
+  PackageCheck,
+  RotateCcw,
+  Banknote,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -133,7 +138,19 @@ function getAdminNavigation(session: ClientSession | null | undefined) {
       icon: Truck,
       items: [
         { title: "Shipping methods", icon: PackageOpen, url: "/admin/shipping", show: canShowShippingNav(session) },
-        { title: "Couriers", icon: Truck, url: "/admin/couriers", show: canShowDeliveryNav(session) },
+      ],
+    },
+    {
+      title: "Couriers",
+      icon: Truck,
+      items: [
+        { title: "Overview", icon: LayoutDashboard, url: "/admin/couriers", show: canShowDeliveryNav(session) },
+        { title: "Connections", icon: Cable, url: "/admin/couriers/connections", show: canShowDeliveryNav(session) },
+        { title: "Delivery options", icon: PackageCheck, url: "/admin/couriers/delivery-options", show: canShowDeliveryNav(session) },
+        { title: "Assignment rules", icon: RouteIcon, url: "/admin/couriers/assignment-rules", show: canShowDeliveryNav(session) },
+        { title: "Shipments", icon: Truck, url: "/admin/couriers/shipments", show: canShowDeliveryNav(session) },
+        { title: "Returns", icon: RotateCcw, url: "/admin/couriers/returns", show: canShowDeliveryNav(session) },
+        { title: "COD payouts", icon: Banknote, url: "/admin/couriers/cod-payouts", show: canShowDeliveryNav(session) },
       ],
     },
     {
@@ -174,8 +191,8 @@ function AdminLayout() {
   const { session } = useSession();
   const navigation = useMemo(() => getAdminNavigation(session), [session]);
   const visibleNavItems = [navigation.overview, ...navigation.groups.flatMap((group) => group.items)];
-  const currentNavItem = visibleNavItems.find((item) => location.pathname === item.url || location.pathname.startsWith(`${item.url}/`));
-  const activeGroup = navigation.groups.find((group) => group.items.some((item) => location.pathname === item.url || location.pathname.startsWith(`${item.url}/`)))?.title;
+  const currentNavItem = [...visibleNavItems].sort((a, b) => b.url.length - a.url.length).find((item) => routeIsActive(location.pathname, item.url));
+  const activeGroup = navigation.groups.find((group) => group.items.some((item) => routeIsActive(location.pathname, item.url)))?.title;
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(activeGroup ? [activeGroup] : []));
 
   useEffect(() => {
@@ -233,19 +250,25 @@ function AdminLayout() {
         </Sidebar>
 
         <SidebarInset className="flex min-w-0 flex-col">
-          <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-6">
-            <div className="flex items-center gap-2">
+          <header className="flex h-16 min-w-0 shrink-0 items-center justify-between gap-2 border-b px-3 sm:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
               <SidebarTrigger className="-ml-1" />
-              <div className="h-4 w-[1px] bg-border mx-2" />
-              <nav className="flex items-center space-x-1 text-sm font-medium">
-                <span className="text-muted-foreground">Admin</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <span className="capitalize">
+              <div className="mx-1 h-4 w-px shrink-0 bg-border sm:mx-2" />
+              <nav className="flex min-w-0 items-center gap-1 overflow-hidden text-sm font-medium">
+                <span className="hidden text-muted-foreground sm:inline">Admin</span>
+                <ChevronRight className="hidden size-4 shrink-0 text-muted-foreground sm:block" />
+                {activeGroup ? (
+                  <>
+                    <span className="hidden text-muted-foreground md:inline">{activeGroup}</span>
+                    <ChevronRight className="hidden size-4 shrink-0 text-muted-foreground md:block" />
+                  </>
+                ) : null}
+                <span className="truncate capitalize">
                   {currentNavItem?.title ?? location.pathname.split("/").pop()}
                 </span>
               </nav>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-3">
               <NotificationBell />
               <ThemeToggle />
               <UserMenu />
@@ -261,6 +284,7 @@ function AdminLayout() {
 }
 
 function routeIsActive(pathname: string, url: string) {
+  if (url === "/admin/couriers") return pathname === url || pathname === `${url}/`;
   return pathname === url || pathname.startsWith(`${url}/`);
 }
 

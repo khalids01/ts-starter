@@ -22,9 +22,6 @@ import {
   CourierConnectionDialog,
   type CourierConnectionDraft,
 } from "./connection-dialog";
-import { RoutingManagement } from "./routing-management";
-import { hasAdminPermission } from "../ui";
-import { Permissions } from "@rbac";
 
 function healthVariant(state: CourierConnection["healthState"]) {
   if (state === "healthy") return "default" as const;
@@ -32,12 +29,9 @@ function healthVariant(state: CourierConnection["healthState"]) {
   return "secondary" as const;
 }
 
-export function AdminDeliveryPage() {
+export function CourierConnectionsPage() {
   const { session } = useSession();
   const { canManageDelivery } = ecommercePermissions(session);
-  const canDispatchDelivery = hasAdminPermission(session, Permissions.AdminDeliveryDispatch);
-  const canManageReturns = hasAdminPermission(session, Permissions.AdminDeliveryReturns);
-  const canReconcileDelivery = hasAdminPermission(session, Permissions.AdminDeliveryReconcile);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<CourierConnectionDraft | null>(null);
   const providersQuery = useQuery({
@@ -123,8 +117,8 @@ export function AdminDeliveryPage() {
   return (
     <div className="space-y-6">
       <EcommerceHeader
-        title="Couriers"
-        description="Manage courier service connections. Connections remain disabled until their credentials pass a health check."
+        title="Courier connections"
+        description="Manage merchant accounts and credentials for courier providers. Connections remain disabled until their credentials pass a health check."
         action={
           canManageDelivery && providers.length > 0 ? (
             <Button onClick={addConnection}>
@@ -236,13 +230,6 @@ export function AdminDeliveryPage() {
         loading={save.isPending}
         onChange={setDraft}
         onSubmit={(value) => save.mutate(value)}
-      />
-      <RoutingManagement
-        connections={connections}
-        canManage={canManageDelivery}
-        canDispatch={canDispatchDelivery}
-        canManageReturns={canManageReturns}
-        canReconcile={canReconcileDelivery}
       />
     </div>
   );

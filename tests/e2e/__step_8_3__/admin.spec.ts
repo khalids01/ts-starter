@@ -9,6 +9,13 @@ const routes = [
   "/admin/store-settings",
   "/admin/customers",
   "/admin/orders",
+  "/admin/couriers",
+  "/admin/couriers/connections",
+  "/admin/couriers/delivery-options",
+  "/admin/couriers/assignment-rules",
+  "/admin/couriers/shipments",
+  "/admin/couriers/returns",
+  "/admin/couriers/cod-payouts",
 ];
 
 test("owner can load every ecommerce admin route without console or request failures", async ({ page }) => {
@@ -39,7 +46,7 @@ test("grouped admin navigation works when expanded and collapsed", async ({ page
   await expect(page).toHaveURL(/\/admin\/products$/);
 
   await page.getByRole("button", { name: "Toggle Sidebar" }).click();
-  await page.getByRole("button", { name: "Delivery" }).click();
-  await page.getByRole("menuitem", { name: "Couriers" }).click();
-  await expect(page).toHaveURL(/\/admin\/couriers$/);
+  await page.getByRole("button", { name: "Couriers" }).click();
+  await page.getByRole("menuitem", { name: "Connections" }).click();
+  await expect(page).toHaveURL(/\/admin\/couriers\/connections$/);
 });
