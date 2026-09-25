@@ -30,3 +30,16 @@ test("owner can load every ecommerce admin route without console or request fail
 
   expect(failures).toEqual([]);
 });
+
+test("grouped admin navigation works when expanded and collapsed", async ({ page }) => {
+  await page.goto("/admin/overview");
+
+  await page.getByRole("button", { name: "Shop" }).click();
+  await page.getByRole("link", { name: "Products", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/products$/);
+
+  await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+  await page.getByRole("button", { name: "Delivery" }).click();
+  await page.getByRole("menuitem", { name: "Couriers" }).click();
+  await expect(page).toHaveURL(/\/admin\/couriers$/);
+});

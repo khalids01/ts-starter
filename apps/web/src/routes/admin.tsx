@@ -13,10 +13,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
   LayoutDashboard,
   Users,
@@ -35,7 +41,12 @@ import {
   Truck,
   BadgePercent,
   Store,
+  ShoppingBag,
+  ChartNoAxesColumn,
+  Settings,
+  PackageOpen,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import UserMenu from "@/components/core/user-menu";
 import { ThemeToggle } from "@/components/core/theme-toggle";
@@ -87,124 +98,104 @@ type AdminNavItem = {
   show: boolean;
 };
 
-function getAdminNavItems(session: ClientSession | null | undefined): AdminNavItem[] {
-  return [
+type AdminNavGroup = {
+  title: string;
+  icon: LucideIcon;
+  items: AdminNavItem[];
+};
+
+const NAV_STATE_KEY = "admin-sidebar-groups";
+
+function getAdminNavigation(session: ClientSession | null | undefined) {
+  const overview: AdminNavItem = { title: "Overview", icon: LayoutDashboard, url: "/admin/overview", show: true };
+  const groups: AdminNavGroup[] = [
     {
-      title: "Overview",
-      icon: LayoutDashboard,
-      url: "/admin/overview",
-      show: true,
+      title: "Shop Management",
+      icon: ShoppingBag,
+      items: [
+        { title: "Products", icon: PackageSearch, url: "/admin/products", show: canShowProductsNav(session) },
+        { title: "Catalog", icon: Boxes, url: "/admin/catalog", show: canShowCatalogNav(session) },
+        { title: "Inventory", icon: Warehouse, url: "/admin/inventory", show: canShowInventoryNav(session) },
+        { title: "Discounts", icon: BadgePercent, url: "/admin/discounts", show: canShowDiscountsNav(session) },
+        { title: "Images", icon: Images, url: "/admin/images", show: canShowImagesNav(session) },
+      ],
     },
     {
-      title: "Users",
-      icon: Users,
-      url: "/admin/users",
-      show: canShowUsersNav(session),
-    },
-    {
-      title: "Roles",
-      icon: Shield,
-      url: "/admin/roles",
-      show: canShowRolesNav(session),
-    },
-    {
-      title: "Catalog",
-      icon: Boxes,
-      url: "/admin/catalog",
-      show: canShowCatalogNav(session),
-    },
-    {
-      title: "Products",
-      icon: PackageSearch,
-      url: "/admin/products",
-      show: canShowProductsNav(session),
-    },
-    {
-      title: "Inventory",
-      icon: Warehouse,
-      url: "/admin/inventory",
-      show: canShowInventoryNav(session),
-    },
-    {
-      title: "Orders",
+      title: "Sales",
       icon: ReceiptText,
-      url: "/admin/orders",
-      show: canShowOrdersNav(session),
+      items: [
+        { title: "Orders", icon: ReceiptText, url: "/admin/orders", show: canShowOrdersNav(session) },
+        { title: "Customers", icon: Users, url: "/admin/customers", show: canShowCustomersNav(session) },
+      ],
     },
     {
-      title: "Customers",
-      icon: Users,
-      url: "/admin/customers",
-      show: canShowCustomersNav(session),
-    },
-    {
-      title: "Shipping",
+      title: "Delivery",
       icon: Truck,
-      url: "/admin/shipping",
-      show: canShowShippingNav(session),
+      items: [
+        { title: "Shipping methods", icon: PackageOpen, url: "/admin/shipping", show: canShowShippingNav(session) },
+        { title: "Couriers", icon: Truck, url: "/admin/couriers", show: canShowDeliveryNav(session) },
+      ],
     },
     {
-      title: "Couriers",
-      icon: Truck,
-      url: "/admin/couriers",
-      show: canShowDeliveryNav(session),
-    },
-    {
-      title: "Discounts",
-      icon: BadgePercent,
-      url: "/admin/discounts",
-      show: canShowDiscountsNav(session),
-    },
-    {
-      title: "Store settings",
+      title: "Storefront",
       icon: Store,
-      url: "/admin/store-settings",
-      show: canShowStoreSettingsNav(session),
+      items: [
+        { title: "Store settings", icon: Settings, url: "/admin/store-settings", show: canShowStoreSettingsNav(session) },
+        { title: "Feedback", icon: MessageSquare, url: "/admin/feedback", show: canShowFeedbackNav(session) },
+      ],
     },
     {
-      title: "Images",
-      icon: Images,
-      url: "/admin/images",
-      show: canShowImagesNav(session),
+      title: "Analytics",
+      icon: ChartNoAxesColumn,
+      items: [
+        { title: "Visitors", icon: Activity, url: "/admin/visitors", show: canShowVisitorsNav(session) },
+      ],
     },
     {
-      title: "Feedback",
-      icon: MessageSquare,
-      url: "/admin/feedback",
-      show: canShowFeedbackNav(session),
-    },
-    {
-      title: "Rate Limits",
-      icon: ShieldAlert,
-      url: "/admin/rate-limits",
-      show: canShowRateLimitsNav(session),
-    },
-    {
-      title: "Visitors",
-      icon: Activity,
-      url: "/admin/visitors",
-      show: canShowVisitorsNav(session),
-    },
-    {
-      title: "Activity",
-      icon: History,
-      url: "/admin/activity",
-      show: canShowActivityNav(session),
-    },
-    {
-      title: "Webhooks",
-      icon: Webhook,
-      url: "/admin/webhooks",
-      show: canShowWebhooksNav(session),
+      title: "Administration",
+      icon: Shield,
+      items: [
+        { title: "Users", icon: Users, url: "/admin/users", show: canShowUsersNav(session) },
+        { title: "Roles", icon: Shield, url: "/admin/roles", show: canShowRolesNav(session) },
+        { title: "Activity", icon: History, url: "/admin/activity", show: canShowActivityNav(session) },
+        { title: "Rate limits", icon: ShieldAlert, url: "/admin/rate-limits", show: canShowRateLimitsNav(session) },
+        { title: "Webhooks", icon: Webhook, url: "/admin/webhooks", show: canShowWebhooksNav(session) },
+      ],
     },
   ];
+  return {
+    overview,
+    groups: groups.map((group) => ({ ...group, items: group.items.filter((item) => item.show) })).filter((group) => group.items.length > 0),
+  };
 }
 
 function AdminLayout() {
   const location = useLocation();
   const { session } = useSession();
-  const visibleNavItems = getAdminNavItems(session).filter((item) => item.show);
-  const currentNavItem = visibleNavItems.find((item) => item.url === location.pathname);
+  const navigation = useMemo(() => getAdminNavigation(session), [session]);
+  const visibleNavItems = [navigation.overview, ...navigation.groups.flatMap((group) => group.items)];
+  const currentNavItem = visibleNavItems.find((item) => location.pathname === item.url || location.pathname.startsWith(`${item.url}/`));
+  const activeGroup = navigation.groups.find((group) => group.items.some((item) => location.pathname === item.url || location.pathname.startsWith(`${item.url}/`)))?.title;
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(activeGroup ? [activeGroup] : []));
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(NAV_STATE_KEY) ?? "[]") as string[];
+      setOpenGroups(new Set([...stored, ...(activeGroup ? [activeGroup] : [])]));
+    } catch {
+      setOpenGroups(new Set(activeGroup ? [activeGroup] : []));
+    }
+  }, [activeGroup]);
+
+  const setGroupOpen = (title: string, open: boolean) => {
+    setOpenGroups((current) => {
+      const next = new Set(current);
+      if (open) next.add(title);
+      else next.delete(title);
+      localStorage.setItem(NAV_STATE_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   return (
     <SidebarProvider>
@@ -225,33 +216,16 @@ function AdminLayout() {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {visibleNavItems.map((item) => {
-                    const isActive = location.pathname === item.url;
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          tooltip={item.title}
-                          size="lg"
-                          render={(buttonProps) => (
-                            <Link
-                              to={item.url}
-                              {...buttonProps}
-                              className={
-                                buttonProps.className +
-                                " group-data-[collapsible=icon]:justify-center"
-                              }
-                            >
-                              <item.icon className="h-4 w-4" />
-                              <span className="group-data-[collapsible=icon]:hidden">
-                                {item.title}
-                              </span>
-                            </Link>
-                          )}
-                        />
-                      </SidebarMenuItem>
-                    );
-                  })}
+                  <AdminNavLink item={navigation.overview} pathname={location.pathname} />
+                  {navigation.groups.map((group) => (
+                    <AdminNavCategory
+                      key={group.title}
+                      group={group}
+                      pathname={location.pathname}
+                      open={openGroups.has(group.title)}
+                      onOpenChange={(open) => setGroupOpen(group.title, open)}
+                    />
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -283,5 +257,89 @@ function AdminLayout() {
         </SidebarInset>
       </div>
     </SidebarProvider>
+  );
+}
+
+function routeIsActive(pathname: string, url: string) {
+  return pathname === url || pathname.startsWith(`${url}/`);
+}
+
+function AdminNavLink({ item, pathname }: { item: AdminNavItem; pathname: string }) {
+  const { isMobile, setOpenMobile } = useSidebar();
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={routeIsActive(pathname, item.url)}
+        tooltip={item.title}
+        size="lg"
+        render={(buttonProps) => (
+          <Link
+            to={item.url}
+            {...buttonProps}
+            onClick={() => isMobile && setOpenMobile(false)}
+            className={`${buttonProps.className} group-data-[collapsible=icon]:justify-center`}
+          >
+            <item.icon className="size-4" />
+            <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+          </Link>
+        )}
+      />
+    </SidebarMenuItem>
+  );
+}
+
+function AdminNavCategory({ group, pathname, open, onOpenChange }: { group: AdminNavGroup; pathname: string; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const active = group.items.some((item) => routeIsActive(pathname, item.url));
+
+  if (state === "collapsed" && !isMobile) {
+    return (
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<SidebarMenuButton isActive={active} tooltip={group.title} size="lg" className="justify-center" />}
+          >
+            <group.icon className="size-4" />
+            <span className="sr-only">{group.title}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="start" className="min-w-56">
+            <div className="text-muted-foreground px-2 py-2 text-sm font-medium">{group.title}</div>
+            {group.items.map((item) => (
+              <DropdownMenuItem key={item.url} render={<Link to={item.url} />}>
+                <item.icon className="size-4" />
+                {item.title}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    );
+  }
+
+  return (
+    <Collapsible open={open} onOpenChange={onOpenChange} render={<SidebarMenuItem />}>
+      <CollapsibleTrigger render={<SidebarMenuButton isActive={active} tooltip={group.title} size="lg" />}>
+        <group.icon className="size-4" />
+        <span>{group.title}</span>
+        <ChevronRight className={`ml-auto size-4 transition-transform ${open ? "rotate-90" : ""}`} />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <SidebarMenuSub>
+          {group.items.map((item) => (
+            <SidebarMenuSubItem key={item.url}>
+              <SidebarMenuSubButton
+                isActive={routeIsActive(pathname, item.url)}
+                render={(buttonProps) => (
+                  <Link to={item.url} {...buttonProps} onClick={() => isMobile && setOpenMobile(false)}>
+                    <item.icon className="size-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                )}
+              />
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
