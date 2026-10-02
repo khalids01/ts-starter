@@ -115,6 +115,7 @@ model CourierDispatch {
   status             String   @default("confirmed")
   createdAt          DateTime @default(now())
 
+  shipmentClaim CourierShipmentClaim?
   consignment CourierConsignment?
 
   @@index([orderId, createdAt])
@@ -220,6 +221,7 @@ model CourierSettlement {
   currency      String
   state         String
   evidence      Json
+  payment       OrderPayment?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -242,4 +244,15 @@ model CourierException {
   @@index([state, createdAt])
   @@index([consignmentId, state])
   @@map("courier_exception")
+}
+
+// Acquire with dispatch confirmation in one transaction; release only after reconciliation.
+model CourierShipmentClaim {
+  orderId       String          @id
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  dispatchId    String          @unique
+  dispatch      CourierDispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
+  createdAt     DateTime        @default(now())
+
+  @@map("courier_shipment_claim")
 }

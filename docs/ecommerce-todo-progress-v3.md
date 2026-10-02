@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–16 are not started. Implementation requires separate next-step authorization.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Step 2 foundation implemented; awaiting user schema prerequisite/review. Steps 3–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -66,7 +66,7 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | Step | Outcome | Status | Remaining after completion |
 | --- | --- | --- | --- |
 | 1 | Confirm launch scope and inspect current invariants | Complete: inspection and user launch-scope confirmation recorded | 15 |
-| 2 | Define shared lifecycle/custody/money rules and required schema | Not started | 14 |
+| 2 | Define shared lifecycle/custody/money rules and required schema | Foundation implemented; awaiting schema prerequisite/review | 14 |
 | 3 | Make cancellation and physical restocking safe | Not started | 13 |
 | 4 | Correct COD accounting and settlement boundaries | Not started | 12 |
 | 5 | Enforce one active shipment under concurrency | Not started | 11 |
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 1 is complete with the user launch-scope answers recorded below. Next is Step 2: define shared lifecycle/custody/money rules and minimal schema for the selected scope. Do not begin Step 2 under Step 1 authorization. **15 steps remain.**
+Step 1 is complete with the user launch-scope answers recorded below. Step 2 foundation and rules are recorded in section 10; review them and complete the user-controlled schema prerequisite. Next implementation is Step 3 only after authorization. **15 steps remain**, including Step 2 awaiting acceptance.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -540,3 +540,136 @@ These are detailed implementation policies, not unresolved launch-scope choices:
 - Partial-payment evidence, actor/action permissions, duplicate references, money allocation/refund rules, outstanding COD, stale queued snapshots, and courier fee versus order-total settlement semantics.
 
 Step 2 may inspect and propose concrete options before seeking missing business choices. No schema or behavior change is authorized by recording these requirements.
+
+## 10. Step 2 rules and schema foundation — 2026-09-27
+
+### Scope and implementation boundary
+
+Step 2 authorized after committing the guide as `ae358f8`. The changes below add persistence contracts and a pure money helper, not new operational endpoints. No migration SQL, database commands/access, seed, or service startup. Step 2 changes remain uncommitted; the commit instruction covered the existing guide before this work.
+
+### Lifecycle and custody invariants
+
+| Phase | Allowed actions | Stock and claim rule |
+| --- | --- | --- |
+| Pending/reserved | Confirm with valid unexpired reservations; cancel/release | Reserve is not sale; atomic commit/expiry/release, never negative reserved stock. |
+| Confirmed/processing, no external submission | Review route; acquire one claim; queue | Claim created with confirmation transaction. Stock committed once. |
+| Queued, never attempted | Stop queue atomically on cancellation; invalidate changed review | Only proven no-submit operations allow immediate stock recovery without return receipt. |
+| Submitting, crashed, timed out, or unknown provider result | Recover using stable invoice; hold cancellation for review | No second booking, no stock recovery, no claim release while provider acceptance is uncertain. |
+| Provider accepted, awaiting handoff | Reviewed handoff; tracking; cancellation/recovery review | Booking acceptance is not custody proof. Without documented cancellation confirmation, do not assume parcel absence or permit duplicate dispatch. |
+| Handed off/in transit | Track; request documented return; hold exceptions | Commercial cancellation does not recover goods. No sellable stock increase. |
+| Delivered | Accept matching collection evidence; complete only if money settled | Delivery does not prove paid. Historical claim release is audited; no automatic second shipment. |
+| Provider cancelled or return completed | Record physical receipt and inspect | Provider state alone is not warehouse receipt or permission to restock. Retain review ownership until uncertain shipment/stock recovery is reconciled. |
+| Physically received | Whole-order receipt, sellable/unsafe disposition | Sellable recovery is once-only; unsafe/awaiting inspection never increases sellable stock. |
+
+- `OrderStatus`, `DeliveryStatus`, courier status strings, and operation state remain distinct; do not overload one status to represent all custody/money facts.
+- Completed requires delivered, fully covered collection evidence, no blocking reconciliation exception, and no unresolved cancellation/return. Do not infer completion from a success toast or a single status field.
+- Manual fulfillment must use the same custody policy. Explicit manual shipment/receipt events are evidence; legacy orders without evidence go to review, not automatic recovery.
+- Active claim is operational exclusivity, not permission for arbitrary re-dispatch. Step 5 must require an explicit audited subsequent attempt and unique attempt invoice, while preserving one identity for every retry of that attempt.
+- Keep original order number as merchant context; a later attempt must not violate existing `(connectionId, invoice)` uniqueness. Do not regenerate invoices during retries.
+- Cancellation, refund, status editing, manual fulfillment, webhook/poll updates, and reservation expiry must obey these invariants. Later steps must remove the inspected general-return/completion bypasses.
+- Receipt/disposition is whole-order for this baseline. Mixed sellable/unsafe returned items require item-level recovery scope; reject that operation rather than restock everything. Partial monetary refunds remain supported independently.
+- Ordinary stock adjustments remain separate audited operations, not a shortcut for order-return reconciliation.
+
+### Recovery schema and permission contract
+
+Added `OrderRecovery`, unique by order, with receipt timestamp/actor/note, disposition, inspection timestamp/actor/note, and restock timestamp/actor. Disposition is `awaiting_inspection`, `sellable`, or `unsafe`.
+
+- Require complete physical receipt before creation; record courier return/reference evidence in the order timeline alongside it. For a manual shipment, require explicit operator receipt evidence.
+- Inspection changes must be audited; once restocked, reject changing the disposition or issuing another restock.
+- Add `restocked` to reservation status. Step 3 must transition each recovered committed reservation in the same transaction as stock, recovery stamp, order flag, and history. A new enum alone fixes nothing.
+- Use order fulfillment permission for physical receipt/inspection and order refund permission for refund money; existing courier return permission covers provider-return actions. The actual recovery/restock mutation must also require inventory manage permission. Guard the server, not only the form. Confirm operator/custom-role ergonomics in Step 3 before finalizing the endpoint.
+- Actor IDs in new records are immutable audit identifiers; they intentionally remain stored if an auth user is removed. Validate actor identity from authentication, never accept it from client payload.
+
+### Payment ledger and money contract
+
+Added `OrderPayment` with receipt/reversal entries, positive exact amount/currency/method, global idempotency key, reference/note, actor, received timestamp, one-to-one reversal relation, and optional unique courier settlement linkage. Existing `OrderRefund` remains the separate actual-refund record.
+
+`apps/server/src/modules/ecommerce/orders/payment-policy.ts` defines exact minor-unit parsing and derives:
+
+- Received = receipts minus receipt corrections/reversals.
+- Outstanding = approved order total minus received.
+- Net received = received minus actual refunds.
+- COD = outstanding for eligible COD orders; refunds do not increase it.
+- Refund sum cannot exceed received. Negative received, overpayment, currency mismatch, zero payment entries, and unsupported precision are rejected.
+
+Integration rules for Step 4:
+
+1. Store only confirmed receipts; pending promises, authorized gateway amounts, courier balance, and delivery status are not receipts.
+2. Validate reversals reference one same-order/same-currency receipt and exactly reverse its amount. A receipt may have one reversal only; reversal entries cannot themselves be reversed. Never reverse collection already refunded without reconciling the resulting inconsistency.
+3. Receipt correction means evidence was wrong; actual money returned is a refund. Do not use reversals to bypass refund permission or history.
+4. Enforce duplicate reference protection for manual receipts using a canonical method/reference-derived idempotency key. Replaying the same key with different order/money data must return conflict, not silently reuse it. Additional receipts need actual independent evidence, not arbitrary new keys.
+5. Recording money requires dedicated action permission. Step 4 should add an order-payment permission rather than relying on general order manage; update catalog/defaults/tests then report the user-controlled RBAC prerequisite. No RBAC changes are made in Step 2.
+6. Add and expose `partially_paid` during Step 4 together with DTO/UI/status derivation. It is intentionally not added alone now because endpoints could expose unsupported transitions.
+7. Payment status is derived from ledger and refunds, never a free manual edit after ledger adoption. A refunded fully collected order has zero outstanding; commercial replacement/extra charge needs explicit scope, not inferred new COD.
+8. Settlement evidence produces at most one receipt through unique settlement linkage. It must not double-count a manual receipt for the same collection. Match actual gross customer collection separately from provider fees/net payout; do not equate net payout with order money.
+9. Existing paid/refunded orders have no ledger. Never automatically synthesize receipts or recalculate them as unpaid. User-controlled reviewed legacy reconciliation is required before ledger-dependent actions; block ambiguous cases. No backfill is executed here.
+10. Changing money or address after route review invalidates approval. Compare reviewed snapshot at queue and before booking. After external acceptance, freeze the booking and route mismatches to reconciliation.
+11. All money mutations lock/serialize the order, derive from current evidence, persist history atomically, and handle transaction conflicts safely. Pure arithmetic does not prove database concurrency.
+
+### One active shipment claim
+
+Added `CourierShipmentClaim`: order ID primary key, unique dispatch ID, restrictive foreign keys to order and dispatch, creation timestamp.
+
+- Step 5 creates dispatch/snapshot and claim in one transaction; competing connections hit the same order uniqueness guard.
+- Queue and worker must verify ownership; repeat queue reuses existing operation/consignment.
+- Release only in reconciled safe terminal state, with an order timeline event; never on a timeout or bare provider-cancelled status.
+- Existing dispatches are not claimed automatically. Before enabling new flows, the user must reconcile existing active dispatches, duplicates and uncertain submissions. New empty table alone does not protect historical active bookings.
+- Do not delete historical dispatch/consignment records when releasing the claim.
+
+### Catalog policy design for Step 8
+
+Inspection corrected a planning assumption: `Product.categoryId` is required and singular. Category/attribute relationships are many-to-many; product/category membership is not. Preserve the single category and its ancestor chain. Do not add multi-category assignment to implement warranty.
+
+Proposed typed policy, to implement with its resolver/admin validation in Step 8:
+
+- Category handling classification: nullable inherited value `general`, `gadget`, `clothing`, `packaged_food`, or `prepared_food`.
+- The nearest explicit ancestor establishes classification; a conflicting descendant classification under a classified ancestor is rejected. Specialized child categories share their parent classification.
+- Defaults for serialized tracking and warranty duration/terms may inherit through category ancestors. Product/variant overrides may select supported serial requirements and warranty duration/terms only inside eligible gadget classification.
+- No food/clothing warranty override, attribute, or child category may bypass eligibility. General products remain ineligible until explicitly classified as eligible gadgets. Validate catalog reassignment and overrides server-side.
+- Serial policy distinguishes none, manufacturer serial required, and serial plus IMEI required. Not all gadgets require IMEI. Product attributes remain descriptive; operational IDs belong to physical units.
+- Warranty sale snapshot preserves policy version, duration, terms, covered unit, start time and eligibility. Later edits affect future sales only.
+- Category policy schema is deliberately not added in isolation in Step 2: expose it alongside resolver/DTO/UI tests in Step 8, after detailed warranty terms are chosen. Required launch features are not deferred out of scope.
+
+Minimal operational model blueprint for Step 8 (not added yet):
+
+| Record | Required relationships and constraints |
+| --- | --- |
+| Serialized inventory unit | Variant, location and optional batch, lifecycle/condition; typed identifiers with normalized global `(kind, value)` uniqueness per independently deployed shop. Quantity on-hand must equal eligible unassigned units for serialized stock; no duplicate aggregate stock on receipt. |
+| Unit fulfillment assignment | Unit and order line, assignment/release/return history; one active assignment per unit, exact line quantity before handoff, inventory reservation coordination. Preserve original assignment on return/replacement. |
+| Warranty coverage | Sold unit and order line, immutable eligibility/terms/duration/start/end snapshot; reject food/clothing and uncovered units. |
+| Warranty claim | Coverage, authenticated/verified claimant or audited operator, status/reason/evidence, assigned operator, timestamps/history, resolution. Pending/review/accepted/rejected/repair/replacement/closed transitions; no automatic money or stock mutation on status change. |
+| Replacement linkage | Original claim/unit and replacement assignment with stock/history; serial substitution never overwrites original sale. Define coverage for replacement explicitly before implementation. |
+
+### Food handling design for Steps 7–8
+
+Proposed engineering defaults, to review before implementing business-dependent UI:
+
+- Use Asia/Dhaka for shop date entry/display; store UTC timestamps. Date-only packaged-food expiry becomes the exclusive start of the following local day. Compare one explicit clock against normalized timestamps; no server-local-time assumptions.
+- Packaged food requires a valid expiry date for saleable received batches. Undated gadget/general stock is permitted. Fresh prepared inventory follows production/shelf-life policy, not a fabricated packaged batch date.
+- Allocate earliest valid expiry first with deterministic receipt/ID ties; exclude expired, unsafe/quarantined and inactive-location stock from availability/reservation/commit.
+- Fresh delivery requires explicit eligible area and dated delivery slot; no unrestricted parcel fallback. Merchant configures areas, slots, cutoff and capacity; missing configuration disables fresh checkout with a clear message.
+- Capacity uses sellable prepared units per slot for the baseline, reserved atomically with stock/checkout and released exactly once on eligible cancellation. Merchants must confirm whether kitchen workload needs weighted capacity before Step 8.
+- Mixed packaged/prepared carts must satisfy all selected handling/slot/area rules. Until a single compatible fulfillment can be guaranteed, reject incompatible carts clearly; no silent split shipment.
+- After preparation starts, cancellation goes to operator review; perishables do not automatically restock. Monetary refund policy is separate and needs merchant-confirmed terms.
+- Fresh pickup/delivery partners must be explicitly designated suitable by the merchant. Steadfast integration alone establishes no cold-chain or meal-delivery capability.
+
+### Decisions for user review before the niche implementation
+
+Step 2 supplies concrete defaults; it does not invent merchant warranty/refund terms. Before Step 8, confirm warranty duration/start date (proposed delivery date), repair/replacement outcomes, prepared-unit capacity suitability, service areas/slots/cutoffs, prepared-food shelf life and cancellation/refund terms. These do not block the current additive foundation; do not implement dependent behavior until settled.
+
+### Schema rollout prerequisite and compatibility
+
+Changed `ecommerce-orders.prisma`, `ecommerce-delivery.prisma`, and `ecommerce-inventory.prisma` only. New relations/models and reservation enum are additive; no existing model/field is renamed or removed. Generation does not create/apply database tables or backfill records.
+
+The user must prepare/review/apply the corresponding database changes separately before runtime code selects the new relations/statuses. No database state was inspected. Existing handlers are not yet wired to these records; current bugs remain until Steps 3–6. Legacy payment/active-shipment/recovery records require deliberate reconciliation, not silent data fabrication.
+
+### Step 2 handoff
+
+- Changed: three schema files; pure payment policy and five focused tests; this guide with transition tables, money/custody rules, and niche model blueprint.
+- Permissions/config/API: no runtime changes; future payment permission and partial-paid status reserved for Step 4.
+- Verified: client generation passed; pure policy tests 5/5 passed, 17 assertions. Database-package/server static results recorded below after completion.
+- Runtime test after user starts app: no new operational UI exists in Step 2. Review order/return/settlement controls against the tables above; do not assume the existing cancellation/restock/dispatch bugs are fixed. After user-applied schema and later implementation, execute their dedicated positive/negative workflows on fictional isolated data.
+- Next: Step 3, after user review/authorization, starts with all restock callers and general returned-status bypass, using this recovery contract.
+- Step 2 status: foundation implemented and safely checked; awaiting user schema prerequisite/review. Therefore 15 unfinished steps remain, including Step 2; 14 remain after its acceptance. No Step 2 commit made.
+
+Step 2 final safe verification: `bun run db:generate` passed; `bun test apps/server/tests/order.payment-policy.test.ts` passed 5/5 with 17 assertions; `bun run --cwd packages/db check-types` and `bun run --cwd apps/server check-types` completed with exit code 0; `git diff --check` passed. No app/browser/real-database/live-provider tests or migrations/seeds were run. Commit `ae358f8` contains the guide before Step 2 only; Step 2 diff remains uncommitted.

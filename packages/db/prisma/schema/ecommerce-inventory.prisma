@@ -14,6 +14,7 @@ enum StockReservationStatus {
   committed
   released
   expired
+  restocked
 }
 
 model Supplier {

@@ -100,6 +100,9 @@ model Order {
   addresses          OrderAddress[]
   lineItems          OrderLineItem[]
   statusEvents       OrderStatusEvent[]
+  payments           OrderPayment[]
+  recovery           OrderRecovery?
+  shipmentClaim      CourierShipmentClaim?
   refunds            OrderRefund[]
   discountRedemption DiscountRedemption?
   courierConsignments CourierConsignment[]
@@ -205,4 +208,60 @@ model OrderStatusEvent {
   @@index([type, createdAt])
   @@index([actorUserId])
   @@map("order_status_event")
+}
+
+// Confirmed receipts only. Corrections are append-only reversals, never edits/deletes.
+enum OrderPaymentEntryType {
+  receipt
+  reversal
+}
+
+model OrderPayment {
+  id             String                @id @default(cuid())
+  orderId        String
+  order          Order                 @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  entryType      OrderPaymentEntryType  @default(receipt)
+  amount         Decimal               @db.Decimal(12, 2)
+  currency       String
+  method         PaymentMethod
+  idempotencyKey String                @unique
+  reference      String?
+  note           String?               @db.Text
+  actorUserId    String
+  receivedAt     DateTime
+  createdAt      DateTime              @default(now())
+  reversesId     String?               @unique
+  reverses       OrderPayment?         @relation("PaymentReversal", fields: [reversesId], references: [id], onDelete: Restrict)
+  reversal       OrderPayment?         @relation("PaymentReversal")
+  settlementId   String?               @unique
+  settlement     CourierSettlement?    @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, createdAt])
+  @@map("order_payment")
+}
+
+enum OrderRecoveryDisposition {
+  awaiting_inspection
+  sellable
+  unsafe
+}
+
+// Whole-order physical recovery only. Provider return completion is not receipt evidence.
+model OrderRecovery {
+  id             String                   @id @default(cuid())
+  orderId        String                   @unique
+  order          Order                    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  receivedAt     DateTime
+  receivedByUserId String
+  receiptNote    String                   @db.Text
+  disposition    OrderRecoveryDisposition @default(awaiting_inspection)
+  inspectedAt    DateTime?
+  inspectedByUserId String?
+  inspectionNote String?                  @db.Text
+  restockedAt    DateTime?
+  restockedByUserId String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@map("order_recovery")
 }
