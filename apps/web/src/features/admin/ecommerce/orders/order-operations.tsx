@@ -94,14 +94,14 @@ export function OrderOperationsCard(props: {
     (sum, refund) => sum + Number(refund.amount),
     0,
   );
-  const remainingAmount = Math.max(Number(order.totalAmount) - refundedAmount, 0);
+  const remainingAmount = Math.max(Number(order.money?.netReceived ?? 0), 0);
   const canCancelOrder =
     props.canCancel &&
     order.orderStatus !== "cancelled" &&
     order.deliveryStatus !== "delivered" &&
     !order.deliveredAt;
   const canRecordRefund =
-    props.canRefund && ["paid", "partially_refunded"].includes(order.paymentStatus);
+    props.canRefund && !order.money?.error && Number(order.money?.netReceived ?? 0) > 0;
   const canRefundRestock = props.canRestock && order.inventoryStatus === "committed"
     && order.recovery?.disposition === "sellable" && Boolean(order.recovery.inspectedAt)
     && !order.recovery.restockedAt;
@@ -150,7 +150,7 @@ export function OrderOperationsCard(props: {
       ) : null}
       {props.canRefund && !canRecordRefund ? (
         <p className="text-xs text-muted-foreground">
-          Refunds can only be recorded for paid or partially refunded orders.
+          Refunds require confirmed, unrefunded collection evidence.
         </p>
       ) : null}
 

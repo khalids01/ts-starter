@@ -625,15 +625,15 @@ export function RoutingManagement({
       </TabsContent>
       <TabsContent value="settlements" className="space-y-3">
         <div>
-          <h2 className="font-semibold">COD payouts</h2>
+          <h2 className="font-semibold">COD collections</h2>
           <p className="text-muted-foreground text-sm">
-            Record money received from a courier. The amount must match the shipment's COD amount before the order payment is reconciled.
+            Record gross customer collection against the shipment's COD amount. Do not enter net payout after courier fees.
           </p>
         </div>
         {!settlements.length ? (
           <Card>
             <CardContent className="text-muted-foreground pt-6">
-              No COD payouts recorded.
+              No COD collections recorded.
             </CardContent>
           </Card>
         ) : (
@@ -858,12 +858,12 @@ export function RoutingManagement({
       <Dialog open={settlementOpen} onOpenChange={setSettlementOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Record COD settlement evidence</DialogTitle>
+            <DialogTitle>Record gross COD collection evidence</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
-            <Field label="Payout/reference ID">
+            <Field label="Collection/reference ID">
               <Input
-                aria-label="Payout/reference ID"
+                aria-label="Collection/reference ID"
                 value={operationForm.externalId}
                 onChange={(event) =>
                   setOperationForm({

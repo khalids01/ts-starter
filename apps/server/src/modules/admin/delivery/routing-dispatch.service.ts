@@ -1,3 +1,5 @@
+import { courierCod } from "../../ecommerce/orders/payment-accounting";
+import { courierRequestSnapshot, assertReviewedCourierRequest } from "../../delivery/dispatch-snapshot";
 import prisma from "@db/server";
 import { activityService } from "../activity/activity.service";
 import { rankCourierRoutes, type CourierRouteRequest } from "../../delivery/routing";
@@ -63,22 +65,8 @@ function mapRule(row: any) {
 }
 
 export function calculateCourierCod(order: any) {
-  const total = Number(order.totalAmount);
-  const refunded = (order.refunds ?? []).reduce(
-    (sum: number, refund: any) => sum + Number(refund.amount),
-    0,
-  );
-  if (!Number.isFinite(total) || !Number.isFinite(refunded) || total < 0 || refunded < 0 || refunded > total) {
-    throw new AdminDeliveryServiceError("Order payment amounts are inconsistent", 409);
-  }
-  if (order.currency !== "BDT") {
-    throw new AdminDeliveryServiceError("Courier dispatch currently requires BDT", 409);
-  }
-  if (order.paymentStatus === "paid" || order.paymentStatus === "refunded") return 0;
-  if (order.paymentMethod !== "cash_on_delivery") {
-    throw new AdminDeliveryServiceError("Unpaid non-COD orders cannot be dispatched", 409);
-  }
-  return Math.max(0, total - refunded);
+  try { return Number(courierCod(order)); }
+  catch (error) { throw new AdminDeliveryServiceError((error as Error).message, 409); }
 }
 
 function addressLine(address: any) {
@@ -206,6 +194,7 @@ export class CourierRoutingDispatchService {
       orderId: order.id,
       orderNumber: order.orderNumber,
       request,
+      reviewedRequest: courierRequestSnapshot(order),
       payloadPreview: {
         invoice: order.orderNumber.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100),
         recipientName: shipping?.fullName ?? order.customerName,
@@ -228,7 +217,8 @@ export class CourierRoutingDispatchService {
     const active = await this.dependencies.db.courierDispatch.findFirst({ where: { orderId, status: { in: ["confirmed", "queued", "processing", "submitted"] } } });
     if (active) throw new AdminDeliveryServiceError("This order already has an active courier dispatch", 409);
     const snapshot = {
-      schemaVersion: 1,
+      schemaVersion: 2,
+      reviewedRequest: recommendation.reviewedRequest,
       createdAt: new Date().toISOString(),
       request: recommendation.request,
       evaluatedRules: recommendation.evaluatedRules,
@@ -249,7 +239,7 @@ export class CourierRoutingDispatchService {
   async queue(dispatchId: string, actorUserId: string) {
     const dispatch = await this.dependencies.db.courierDispatch.findUnique({
       where: { id: dispatchId },
-      include: { order: { include: { addresses: true, refunds: true } }, connection: true, service: true, consignment: true },
+      include: { order: { include: { addresses: true, refunds: true, payments: true } }, connection: true, service: true, consignment: true },
     });
     if (!dispatch) throw new AdminDeliveryServiceError("Courier dispatch not found", 404);
     if (dispatch.consignment) return dispatch.consignment;
@@ -258,29 +248,19 @@ export class CourierRoutingDispatchService {
     if (!["confirmed", "processing"].includes(order.orderStatus) || order.inventoryStatus !== "committed") {
       throw new AdminDeliveryServiceError("Order must be confirmed with committed inventory before dispatch", 409);
     }
-    const shipping = order.addresses.find((item: any) => item.type === "shipping");
-    if (!shipping) throw new AdminDeliveryServiceError("Shipping address is missing", 409);
-    const codAmount = calculateCourierCod(order);
     const invoice = order.orderNumber.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100);
-    const requestSnapshot = {
-      schemaVersion: 1,
-      invoice,
-      recipientName: shipping.fullName,
-      recipientPhone: shipping.phone ?? order.customerPhone,
-      recipientAddress: addressLine(shipping),
-      codAmount: codAmount.toFixed(2),
-      currency: order.currency,
-      note: order.customerNotes?.slice(0, 480) || undefined,
-    };
     const result = await this.dependencies.db.$transaction(async (tx: any) => {
-      const currentOrder = await tx.order.findUnique({ where: { id: order.id }, include: { recovery: true } });
+      const currentOrder = await tx.order.findUnique({ where: { id: order.id }, include: { recovery: true, payments: true, refunds: true, addresses: true } });
       if (!currentOrder || !["confirmed", "processing"].includes(currentOrder.orderStatus) || currentOrder.inventoryStatus !== "committed" || currentOrder.recovery || currentOrder.deliveryStatus === "returned") {
         throw new AdminDeliveryServiceError("Order was cancelled or recovered; reload before dispatch", 409);
       }
+      let requestSnapshot;
+      try { requestSnapshot = assertReviewedCourierRequest(currentOrder, jsonObject(dispatch.routingSnapshot).reviewedRequest); }
+      catch (error) { throw new AdminDeliveryServiceError((error as Error).message, 409); }
       const queued = await tx.courierDispatch.updateMany({ where: { id: dispatchId, status: "confirmed" }, data: { status: "queued" } });
       if (queued.count !== 1) throw new AdminDeliveryServiceError("Dispatch changed; reload before queueing", 409);
       const consignment = await tx.courierConsignment.create({
-        data: { orderId: order.id, dispatchId, connectionId: dispatch.connectionId, serviceId: dispatch.serviceId, invoice, codAmount: codAmount.toFixed(2), currency: order.currency, requestSnapshot },
+        data: { orderId: order.id, dispatchId, connectionId: dispatch.connectionId, serviceId: dispatch.serviceId, invoice, codAmount: requestSnapshot.codAmount, currency: currentOrder.currency, requestSnapshot },
       });
       await tx.courierOperation.create({ data: { consignmentId: consignment.id, kind: "create", identity: `create:${dispatchId}` } });
       return consignment;
@@ -361,7 +341,7 @@ export class CourierRoutingDispatchService {
   }
 
   private async orderRequest(orderId: string): Promise<{ order: any; request: CourierRouteRequest }> {
-    const order = await this.dependencies.db.order.findUnique({ where: { id: orderId }, include: { addresses: true, refunds: true } });
+    const order = await this.dependencies.db.order.findUnique({ where: { id: orderId }, include: { addresses: true, refunds: true, payments: true } });
     if (!order) throw new AdminDeliveryServiceError("Order not found", 404);
     if (!order.shippingRateId) throw new AdminDeliveryServiceError("Order has no delivery method", 409);
     const shipping = order.addresses.find((item: any) => item.type === "shipping");

@@ -9,6 +9,7 @@ enum OrderStatus {
 enum PaymentStatus {
   unpaid
   authorized
+  partially_paid
   paid
   partially_refunded
   refunded

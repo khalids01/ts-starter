@@ -4,6 +4,9 @@ import { authGuard } from "@/guards/auth.guard";
 import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
   IdParamDto,
+  RecordOrderPaymentDto,
+  ReverseOrderPaymentDto,
+  PaymentIdParamDto,
   CancelOrderDto,
   ListOrdersQueryDto,
   MarkOrderDeliveredDto,
@@ -22,6 +25,7 @@ import {
 } from "./orders.service";
 import { orderFulfillmentService } from "./fulfillment.service";
 import { orderOperationsService } from "./order-operations.service";
+import { orderPaymentsService } from "./order-payments.service";
 import { orderRecoveryService } from "./order-recovery.service";
 
 function handleOrderError(error: unknown, set: { status?: number | string }) {
@@ -56,6 +60,7 @@ const refundOrders = requireAllPermissions([
   Permissions.AdminAccess,
   Permissions.AdminOrdersRefund,
 ]);
+const recordPayments = requireAllPermissions([Permissions.AdminAccess, Permissions.AdminOrdersPayments]);
 const restockOrders = requireAllPermissions([
   Permissions.AdminAccess,
   Permissions.AdminOrdersFulfill,
@@ -185,6 +190,14 @@ export const adminOrdersController = new Elysia({
       },
     },
   )
+  .post("/:id/payments", async ({ params: { id }, body, set, userId }) => {
+    try { return await orderPaymentsService.receive(id, body, userId!); }
+    catch (error) { return handleOrderError(error, set); }
+  }, { beforeHandle: recordPayments, params: IdParamDto, body: RecordOrderPaymentDto, detail: { summary: "Record confirmed collection evidence" } })
+  .post("/:id/payments/:paymentId/reverse", async ({ params, body, set, userId }) => {
+    try { return await orderPaymentsService.reverse(params.id, params.paymentId, body.note, userId!); }
+    catch (error) { return handleOrderError(error, set); }
+  }, { beforeHandle: recordPayments, params: PaymentIdParamDto, body: ReverseOrderPaymentDto, detail: { summary: "Correct a manual receipt with an audited reversal" } })
   .post("/:id/recovery", async ({ params: { id }, body, set, userId }) => {
     try { return await orderRecoveryService.receive(id, body, userId!); }
     catch (error) { return handleOrderError(error, set); }

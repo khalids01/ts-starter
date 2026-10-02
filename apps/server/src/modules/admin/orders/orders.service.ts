@@ -1,3 +1,4 @@
+import { OrderMoneyError, orderMoney, paymentSummary } from "../../ecommerce/orders/payment-accounting";
 import prisma, { type Prisma } from "@db/server";
 import type {
   ListOrdersQuery,
@@ -22,6 +23,7 @@ export async function withOrderTransaction<T>(work: (tx: Prisma.TransactionClien
   try {
     return await prisma.$transaction(work, { isolationLevel: "Serializable" });
   } catch (error) {
+    if (error instanceof OrderMoneyError) throw new AdminOrdersServiceError(error.message, 409);
     if (typeof error === "object" && error !== null && "code" in error && ["P2034", "P2002"].includes(String(error.code))) {
       throw new AdminOrdersServiceError("Order changed during this operation; reload and try again", 409);
     }
@@ -100,6 +102,7 @@ function stockKey(variantId: string, locationId: string, batchId?: string | null
 function orderInclude() {
   return {
     recovery: true,
+    payments: { orderBy: { createdAt: "asc" } },
     user: {
       select: {
         id: true,
@@ -302,6 +305,8 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
       ? (row.statusEvents ?? []).map(mapStatusEvent)
       : undefined,
     refunds: options.detail ? (row.refunds ?? []).map(mapRefund) : undefined,
+    payments: options.detail ? (row.payments ?? []).map((entry: any) => ({ ...entry, amount: decimalToString(entry.amount), receivedAt: toIso(entry.receivedAt), createdAt: toIso(entry.createdAt) })) : undefined,
+    money: options.detail ? paymentSummary(row) : undefined,
     recovery: options.detail && row.recovery ? {
       ...row.recovery,
       receivedAt: toIso(row.recovery.receivedAt),
@@ -660,6 +665,20 @@ export const adminOrdersService = {
         throw new AdminOrdersServiceError("Order not found", 404);
       }
 
+      if (input.paymentStatus !== undefined && input.paymentStatus !== current.paymentStatus) {
+        throw new AdminOrdersServiceError("Payment status is derived from receipts and refunds; use payment actions", 403);
+      }
+      if ((input.orderStatus ?? current.orderStatus) === "completed") {
+        const evidenced = await tx.order.findUniqueOrThrow({ where: { id }, include: { payments: true, refunds: true, recovery: true } });
+        const money = orderMoney(evidenced);
+        const exception = await tx.courierException.findFirst({ where: { consignment: { orderId: id }, state: "open" } });
+        const pendingReturn = await tx.courierReturn.findFirst({ where: { consignment: { orderId: id }, state: { notIn: ["cancelled"] } } });
+        if (current.deliveryStatus !== "delivered" || input.deliveryStatus && input.deliveryStatus !== "delivered"
+          || money.outstanding !== 0n || evidenced.recovery || exception || pendingReturn || current.inventoryStatus !== "committed") {
+          throw new AdminOrdersServiceError("Complete only delivered, fully collected orders without recovery or reconciliation", 409);
+        }
+      }
+
       if (
         input.orderStatus === "cancelled" &&
         input.orderStatus !== current.orderStatus
@@ -677,28 +696,6 @@ export const adminOrdersService = {
       ) {
         throw new AdminOrdersServiceError(
           "A cancelled order status cannot be changed",
-          409,
-        );
-      }
-
-      if (
-        input.paymentStatus !== current.paymentStatus &&
-        input.paymentStatus !== undefined &&
-        ["partially_refunded", "refunded"].includes(input.paymentStatus)
-      ) {
-        throw new AdminOrdersServiceError(
-          "Use the refund action to record refunded payments",
-          403,
-        );
-      }
-
-      if (
-        ["partially_refunded", "refunded"].includes(current.paymentStatus) &&
-        input.paymentStatus !== undefined &&
-        input.paymentStatus !== current.paymentStatus
-      ) {
-        throw new AdminOrdersServiceError(
-          "Refunded payment status is controlled by refund records",
           409,
         );
       }
@@ -731,21 +728,6 @@ export const adminOrdersService = {
           type: "order",
           previousValue: current.orderStatus,
           newValue: input.orderStatus,
-          note,
-          actorUserId: actor.userId ?? null,
-        });
-      }
-
-      if (
-        input.paymentStatus !== undefined &&
-        input.paymentStatus !== current.paymentStatus
-      ) {
-        data.paymentStatus = input.paymentStatus;
-        events.push({
-          orderId: id,
-          type: "payment",
-          previousValue: current.paymentStatus,
-          newValue: input.paymentStatus,
           note,
           actorUserId: actor.userId ?? null,
         });
@@ -792,12 +774,16 @@ export const adminOrdersService = {
   },
 
   async updateOrder(id: string, input: UpdateOrderInput) {
-    return prisma.$transaction(async (tx) => {
+    return withOrderTransaction(async (tx) => {
       const existing = await tx.order.findUnique({ where: { id } });
       if (!existing) {
         throw new AdminOrdersServiceError("Order not found", 404);
       }
 
+      if (input.customerName !== undefined || input.customerPhone !== undefined || input.customerNotes !== undefined || input.addresses?.length) {
+        const booking = await tx.courierDispatch.findFirst({ where: { orderId: id, status: { in: ["confirmed", "queued", "processing", "submitted"] } } });
+        if (booking) throw new AdminOrdersServiceError("Shipping details are frozen by courier review; reconcile or cancel that review first", 409);
+      }
       const data: Prisma.OrderUpdateInput = {};
       if (input.customerName !== undefined) {
         data.customerName = input.customerName.trim();

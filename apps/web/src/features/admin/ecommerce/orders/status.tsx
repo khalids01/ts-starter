@@ -51,6 +51,7 @@ export const paymentStatusMeta = {
     className:
       "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
   },
+  partially_paid: { label: "Partially paid", className: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200" },
   authorized: {
     label: "Authorized",
     className: "bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-200",
@@ -273,15 +274,11 @@ export function PaymentStatusSelect(props: {
   onChange: (value: PaymentStatus) => void;
 }) {
   const meta = paymentStatusMeta[props.value];
-  const options = paymentStatusOptions.filter(
-    (option) =>
-      ["partially_refunded", "refunded"].includes(props.currentValue ?? "")
-        ? option.value === props.currentValue
-        : !["partially_refunded", "refunded"].includes(option.value),
-  );
+  const options = paymentStatusOptions.filter((option) => option.value === props.value);
   return (
     <StatusSelect
       {...props}
+      disabled
       label={meta.label}
       className={meta.className}
       options={options}

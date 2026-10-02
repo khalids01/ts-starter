@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2 and 3 implemented with safe checks; awaiting user schema prerequisite and runtime acceptance. Steps 4–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–4 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Steps 5–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 1 is complete. Step 2 foundation is recorded in section 10; Step 3 implementation and acceptance checklist are recorded in section 11. The user-controlled Step 2 schema prerequisite remains unconfirmed. Next implementation is Step 4 only after authorization. **13 implementation steps remain (4–16); 15 acceptance gates remain unfinished including Steps 2 and 3.** Do not equate safe mocked/static checks with runtime acceptance.
+Step 1 is complete. Steps 2–4 implementation/evidence are recorded in sections 10–12. Schema application, updated RBAC catalog/defaults, and runtime acceptance remain unconfirmed. Next implementation is Step 5 only after authorization. **12 implementation steps remain (5–16); 15 acceptance gates remain unfinished including Steps 2–4.** Local Steadfast simulation research is recorded in `docs/courier-simulator-e2e.md`; mappings/installation/E2E remain future work, not a passed provider acceptance gate.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -749,3 +749,84 @@ Use isolated fictional orders after personally confirming schema prerequisites a
 ### Commit handoff — 2026-10-02
 
 User authorized commits after Step 3. Step 2 was already committed as `8370197`. The existing user/workspace-provided `20261002144938_returned_restocked/migration.sql` is recorded in a separate schema-migration commit; the agent did not create, edit, or execute that SQL. Its presence does not establish that the database schema has been applied. Step 3 code, tests, UI, and this handoff are committed together. Earlier “uncommitted/no commit” statements describe the evidence at their original handoff time and are superseded by this entry. No push or database command performed. Next remains Step 4; 13 implementation steps and 15 unfinished acceptance gates remain.
+
+
+## 12. Step 4 — Receipt accounting, COD and settlement correctness — 2026-10-02
+
+### Authorization and status
+
+User authorized “do it” following the Step 4 proposal and asked to find a locally installable Steadfast-compatible courier simulator for future E2E. Step 4 code/UI and safe checks implemented; runtime acceptance pending. No app/simulator startup, database access, migration creation/application, seed execution, E2E setup execution, live courier request, staging, commit, or push performed. Previous commit authorization was fulfilled for Steps 2–3; it does not automatically commit this step.
+
+### Chosen behavior
+
+1. POST `/admin/orders/:id/payments` records confirmed receipt evidence: exact amount, matching order currency, collection method, real reference, evidence note, authenticated actor and timestamp. It does not move money. Partial collection derives `partially_paid`; full collection derives `paid`.
+2. Canonical method/reference-derived idempotency keys prevent repeated manual evidence from crediting twice. Reference normalization trims/collapses whitespace, applies Unicode NFKC and lowercases before hashing. Same data replays the existing receipt; changed order/amount/currency conflicts. Independent receipts need independent actual evidence.
+3. POST `/admin/orders/:id/payments/:paymentId/reverse` appends a full reversal of a same-order manual receipt. No edits/deletes and no partial reversal. Reversal of a reversed receipt, courier settlement receipt, or refunded collection that would make refunds exceed received is rejected. Actual customer money returned belongs to the refund action, not correction.
+4. Refunded money cannot exceed confirmed received money. Refunds of deposits are allowed within that bound; status follows total receipts/reversals and cumulative refunds. Refunds do not increase outstanding COD. Fully collected orders remain zero COD after refunds.
+5. General order/status management can no longer change payment state. The UI shows derived payment status and uses dedicated evidence actions. Fully covered non-COD orders may dispatch; outstanding non-COD orders cannot. COD dispatch remains BDT only and exact minor-unit accounting supplies the authoritative outstanding amount.
+6. Paid/refunded/authorized legacy orders without receipt evidence are held for reviewed reconciliation. No backfill or synthetic receipt is created. Read-only order detail shows the accounting issue; money/dispatch/completion actions reject ambiguous evidence. Legacy reconciliation tooling/data review remains user-controlled; do not invent an automatic conversion.
+7. Review freezes a schema-version-2 request containing recipient/address, COD and a receipt/refund fingerprint. Queue rereads ledger/address inside its serializable transaction; worker checks current evidence before submission. Old version-1 reviews require renewed review. Generic shipping/contact edits are blocked while an active courier review/booking exists.
+8. Payment/refund/correction changes cancel confirmed reviews and safely stop never-attempted queued operations. Attempted/accepted booking amounts are preserved, retries are held, and `payment_review_changed` exceptions require reconciliation. A request already in flight cannot be unsent. No second booking or provider amount-change API is claimed.
+9. Settlement records represent **gross customer collection**, not merchant balance, fees, net payout, or an inferred payment from delivery. Exact collection must match booked COD, current outstanding evidence and currency. Mismatches/legacy ambiguity/cancelled recovery open review without credit. Zero-COD shipments do not generate payment receipts.
+10. Same consignment/reference settlement replay is idempotent; conflicting data returns conflict. Accepted collection creates one linked receipt and one history event. Additional references cannot double-credit already covered collection. Manual cash receipt for a courier-managed parcel is rejected; use settlement evidence. Independent bank/mobile receipts which conflict with booked courier collection are held for reconciliation.
+11. Matching pre-delivery collection remains `matched_pending_delivery` without a receipt. Delayed delivery processes pending evidence through the same accounting helper and never blindly sets paid. Later refunds are preserved on replay or mismatch; delivery alone leaves unpaid orders unpaid. Automatic provider payout mapping stays disabled.
+12. Completion requires delivered status, fully covered collection evidence, committed inventory, no physical recovery, no open courier exception, and no recorded unresolved courier return. No manual paid/completed shortcut is accepted. Money writes serialize and conflicts return reload/retry responses; mock race tests do not prove real PostgreSQL isolation.
+
+### Files and integration map
+
+- Exact accounting/status/legacy validation: `apps/server/src/modules/ecommerce/orders/payment-accounting.ts`, using the Step 2 `payment-policy.ts`.
+- Review invalidation: `ecommerce/orders/payment-dispatch.ts`; snapshot comparison: `delivery/dispatch-snapshot.ts`.
+- Manual receipt/correction service: `admin/orders/order-payments.service.ts`; routes/validation: `orders.controller.ts`, `orders.dto.ts`.
+- Refund bounds, summary mapping, general payment guards and completion: `order-operations.service.ts`, `orders.service.ts`.
+- Courier review/queue/submission: `admin/delivery/routing-dispatch.service.ts`, `delivery/dispatch-worker.ts`.
+- Shared gross collection credit: `delivery/settlement-accounting.ts`, used by `admin/delivery/returns-settlements.service.ts` and `delivery/tracking.service.ts`.
+- Admin UI: new `orders/order-payments.tsx`, order detail/status/refund components, API/types, and courier collection copy.
+- Permissions: `packages/rbac/src/permissions.ts`; catalog/default synchronization source `packages/db/prisma/seed/rbac.ts`; isolated auth/provision fixture source updated. No fixture/seed run.
+- Regression files: payment policy/service, admin order operations/service/controller/fulfillment, routing/worker/returns-settlements/tracking, and RBAC permission catalog tests.
+
+### User-controlled prerequisites
+
+- Step 2 schema must exist and the additional `PaymentStatus.partially_paid` enum value must be applied by the user. `db:generate` only generated the client; it does not update the database. No Step 4 migration SQL was created.
+- New permission is `admin.orders.payments` (`AdminOrdersPayments`). Permission catalog source version is 13; default owner/admin maps include it and platform user does not. The user must apply the permission catalog/default updates through their approved process, verify custom-role assignment, and refresh stale permission caches/sessions. This agent did not run seeds or Redis operations.
+- Existing paid/refunded data needs independently reviewed actual receipts/reconciliation before ledger-dependent actions. Review reference uniqueness conventions across bank/mobile/cash evidence. Do not fabricate evidence to get past the guard.
+
+### Safe verification
+
+- `bun run db:generate`: passed; Prisma client generated. No database query/migration performed.
+- Server and DB package typechecks, web client-boundary check and `git diff --check`: passed.
+- Vite web client/server build with fictional `tests/env/.env`: passed. No app server or browser started.
+- Focused tests ran in separate processes to isolate module mocks: payment policy 5/17 assertions; payment service/accounting 24/75; admin operations 26/86; admin service 14/26; admin controller 8/13; fulfillment 11/17; dispatch worker 7/16; routing/queue 13/29; returns/settlements 6/19; tracking 5/15; RBAC catalog 3/62. Total **122 tests passed, 375 assertions, zero failures**.
+- Initial implementation/harness failures were corrected and the focused files rerun. These are mock/static checks; no full-suite, browser, database concurrency, live merchant or simulator-backed E2E claim.
+- Standalone web TypeScript checking still reports repository-wide server alias/import and existing UI typing problems. The new unused payment-selector import was removed. Do not report a clean full web typecheck.
+
+### App acceptance checklist after the user starts the isolated app
+
+Use fictional data and local simulation when its profile has been implemented; do not submit these tests to Steadfast production.
+
+1. As a role with order-manage permission alone, try payment recording and reversal APIs. Expect 403 and no ledger/history change. Grant dedicated payment authority through the user-managed role process and refresh the session.
+2. Create a 100 BDT COD order. Record a real fictional confirmed bank receipt of 30 BDT with reference `E2E-DEPOSIT-1` and evidence note. Expect partially paid, received 30, outstanding/COD 70. Reload and verify persistence/actor/history.
+3. Replay that reference with whitespace/case changes and identical amount/order/method/currency. Expect the same receipt and no duplicate history. Change amount or order with the same canonical reference; expect conflict. Empty note/reference, zero/negative/three-decimal amounts, wrong currency or excess receipt must fail atomically.
+4. Record a second independent 70 BDT receipt. Expect paid and zero COD. Partially refund 20 BDT; expect partially refunded and COD still zero. Refund beyond remaining received money must fail.
+5. On a deposit-only 100 BDT order with 30 received, refund up to the received amount; do not refund the unpaid 70. Verify refund does not increase original outstanding 70. Inventory is unchanged unless the separately authorized whole-order recovery is selected with its Step 3 evidence.
+6. Correct a mistaken unrefunded manual receipt with a reason. Expect one append-only reversal, updated balance/status, no customer-refund record, and timeline actor. Repeat reversal, reverse a settlement receipt, or reverse collection already refunded beyond the resulting balance; expect rejection.
+7. Try ordinary status editing/direct API to paid, partially paid or refunded. Expect rejection. The list/detail payment display remains derived/read-only. A legacy paid/refunded order without receipts displays a review issue; payment/COD/completion operations must not silently reset it to unpaid.
+8. Review a 70 BDT COD route, then change payment evidence before queue. Expect the old review stopped/invalid, and queue/submission rejects stale money. Review again using current evidence. Also test changed address and legacy version-1 snapshot rejection.
+9. Queue a never-attempted fake-provider operation, then record new money. Expect queued create stopped without stock restoration. If the worker wins the stop race, receipt recording conflicts and rolls back. If provider submission already started/was accepted, original booking amount remains frozen and reconciliation opens; no second booking.
+10. On a delivered fictional 70-COD shipment after a 30 deposit, record gross collection 70 with a stable reference. Expect one linked receipt, fully covered collection and paid status. Repeat identical reference; no duplicate payment/history. Change its amount/reference association; conflict or mismatch rather than double credit.
+11. Enter net payout 65, wrong currency or collection inconsistent with existing manual receipts. Expect mismatch/open exception and no payment credit. Do not use merchant balance or a provider payout total as order evidence.
+12. Record matching collection before delivery. Expect pending delivery evidence and no credit. Deliver through the fake callback/poll flow; expect one credit. Repeat delivery/settlement after refund; refunded status and totals must remain correct. Delivery without collection must leave payment unpaid.
+13. Attempt completion while unpaid, partially paid, undelivered, recovered, awaiting courier-return reconciliation or with an open courier exception. Expect rejection. Complete a delivered, fully evidenced, committed order with no blocking recovery/reconciliation; expect success/history.
+14. Test competing receipt/refund/settlement requests using an authorized real isolated database. Verify no overpayment/over-refund/duplicate credit, transaction conflicts are recoverable and stock/history do not partially change. Record this as new runtime evidence; mocks do not substitute for it.
+
+### Simulator finding and next handoff
+
+Read `docs/courier-simulator-e2e.md`. No maintained ready-made Steadfast emulator was verified in the search. WireMock Open Source is locally installable and suitable as the engine; Steadfast-specific stateful mappings, signature helper if needed, network isolation and adapter/E2E verification still need implementation. No installation/startup or E2E DB setup was performed. Add that implementation to Step 12, retain all fault/identity/payment scenarios, and keep live merchant acceptance separate.
+
+Next agent: first read sections 10–12 and the current uncommitted diff, payment accounting/invalidation, queue/worker snapshots, and settlement reconciliation. Start **Step 5 — one active shipment under concurrency** only after authorization. In particular, integrate shipment-claim ownership/release with cancelled never-attempted reviews from payment invalidation without releasing uncertain accepted bookings. Wider worker lifecycle and tracking authority remain Steps 6/9.
+
+**12 implementation steps remain (5–16); 15 unfinished acceptance gates remain including Steps 2–4 prerequisites/runtime acceptance. Step 4 remains uncommitted.**
+
+
+### Step 4 commit authorization — 2026-10-03
+
+User authorized committing Step 4 before starting Step 5. The existing workspace-provided payment-status migration is recorded separately; the agent did not create/edit/apply its SQL. Step 4 source, tests, and documentation are committed together. Earlier uncommitted statements describe the original handoff and are superseded by this entry. Schema/permission application and runtime acceptance remain unconfirmed.

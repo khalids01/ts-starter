@@ -188,3 +188,13 @@ describe("physical recovery action permissions", () => {
     expect(response.status).toBe(403);
   });
 });
+
+
+describe("payment action permissions", () => {
+  it("rejects order managers without dedicated payment authority", async () => {
+    getAuthSessionMock.mockResolvedValueOnce({ user: { id: "manager", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, Permissions.AdminOrdersManage] });
+    const { adminOrdersController } = await import("../src/modules/admin/orders/orders.controller");
+    const response = await new Elysia().use(adminOrdersController).handle(new Request("http://localhost/admin/orders/order-1/payments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: "10", currency: "BDT", method: "manual_bank", reference: "TX-1", note: "Verified" }) }));
+    expect(response.status).toBe(403);
+  });
+});

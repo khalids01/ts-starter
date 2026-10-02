@@ -1,3 +1,4 @@
+import { reconcileCourierSettlement } from "./settlement-accounting";
 import prisma from "@db/server";
 import { normalizeCourierState } from "./tracking";
 import { sanitizeCourierEventPayload } from "./redaction";
@@ -104,14 +105,18 @@ export class CourierTrackingService {
             },
           });
           if (decision.orderDeliveryStatus === "delivered") {
-            const settlement = await tx.courierSettlement.findFirst({
+            const settlements = await tx.courierSettlement.findMany({
               where: { consignmentId: consignment.id, state: "matched_pending_delivery" },
-              orderBy: { createdAt: "desc" },
+              orderBy: { createdAt: "asc" },
             });
-            if (settlement) {
-              await tx.courierSettlement.update({ where: { id: settlement.id }, data: { state: "reconciled" } });
-              await tx.order.update({ where: { id: consignment.orderId }, data: { paymentStatus: "paid" } });
-              await tx.orderStatusEvent.create({ data: { orderId: consignment.orderId, type: "payment", previousValue: null, newValue: "paid", note: "Courier COD settlement reconciled after delivery", metadata: { settlementId: settlement.id, consignmentId: consignment.id } } });
+            for (const settlement of settlements) {
+              const delivered = await tx.courierConsignment.findUnique({ where: { id: consignment.id } });
+              const evidence = settlement.evidence as { recordedByUserId?: string } | null;
+              if (evidence?.recordedByUserId) await reconcileCourierSettlement(tx, delivered, settlement, evidence.recordedByUserId);
+              else {
+                await tx.courierSettlement.update({ where: { id: settlement.id }, data: { state: "mismatch" } });
+                await tx.courierException.create({ data: { consignmentId: consignment.id, kind: "settlement_mismatch", details: { settlementId: settlement.id, reason: "Legacy settlement lacks authenticated collection evidence" } } });
+              }
             }
           }
         }
@@ -119,7 +124,7 @@ export class CourierTrackingService {
           const existing = await tx.courierException.findFirst({ where: { consignmentId: consignment.id, kind: decision.exceptionKind, state: "open" } });
           if (!existing) await tx.courierException.create({ data: { consignmentId: consignment.id, kind: decision.exceptionKind, details: { eventKey: input.eventKey, providerState: input.providerState } } });
         }
-      });
+      }, { isolationLevel: "Serializable" });
       return { processed: true, duplicate: false, normalizedState: decision.normalizedState };
     } catch (error) {
       if (uniqueError(error)) return { processed: false, duplicate: true, normalizedState: decision.normalizedState };

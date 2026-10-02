@@ -13,6 +13,7 @@ describe("ecommerce permissions", () => {
     expect(AllPermissions).toContain(Permissions.AdminOrdersManage);
     expect(AllPermissions).toContain(Permissions.AdminOrdersFulfill);
     expect(AllPermissions).toContain(Permissions.AdminOrdersCancel);
+    expect(AllPermissions).toContain(Permissions.AdminOrdersPayments);
     expect(AllPermissions).toContain(Permissions.AdminOrdersRefund);
     expect(AllPermissions).toContain(Permissions.AdminImagesRead);
     expect(AllPermissions).toContain(Permissions.AdminImagesManage);
@@ -44,6 +45,9 @@ describe("ecommerce permissions", () => {
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
       Permissions.AdminOrdersCancel,
+    );
+    expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
+      Permissions.AdminOrdersPayments,
     );
     expect(RolePermissionMap[Roles.PlatformOwner]).toContain(
       Permissions.AdminOrdersRefund,
@@ -112,4 +116,11 @@ describe("ecommerce permissions", () => {
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminStoreSettingsRead);
     expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminCustomersRead);
   });
+});
+
+
+it("assigns collection recording to administrative defaults only", () => {
+  expect(RolePermissionMap[Roles.PlatformOwner]).toContain(Permissions.AdminOrdersPayments);
+  expect(RolePermissionMap[Roles.PlatformAdmin]).toContain(Permissions.AdminOrdersPayments);
+  expect(RolePermissionMap[Roles.PlatformUser]).not.toContain(Permissions.AdminOrdersPayments);
 });

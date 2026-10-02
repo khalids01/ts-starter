@@ -12,7 +12,7 @@ const pageCopy: Record<CourierManagementSection, { title: string; description: s
   rules: { title: "Assignment rules", description: "Control which courier connection and delivery option should handle each order." },
   dispatches: { title: "Shipments", description: "Queue courier submissions and record parcel handoff progress." },
   returns: { title: "Courier returns", description: "Review and track parcels being returned through a courier." },
-  settlements: { title: "COD payouts", description: "Record and reconcile cash-on-delivery payments received from couriers." },
+  settlements: { title: "COD collections", description: "Record gross customer collection evidence against booked COD. Courier fees and net payouts are separate." },
 };
 
 export function CourierOperationsPage({ section }: { section: CourierManagementSection }) {

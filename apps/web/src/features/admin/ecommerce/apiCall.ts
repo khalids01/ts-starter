@@ -228,6 +228,8 @@ export const ecommerceApi = {
       unwrap(api.admin.orders({ id }).delivered.post(body), "Failed to mark order delivered"),
     cancel: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.orders({ id }).cancel.post(body), "Failed to cancel order"),
+    recordPayment: (id: string, body: Record<string, unknown>) => unwrap(api.admin.orders({ id }).payments.post(body as never), "Failed to record payment"),
+    reversePayment: (id: string, paymentId: string, note: string) => unwrap(api.admin.orders({ id }).payments({ paymentId }).reverse.post({ note }), "Failed to reverse receipt"),
     recordRefund: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.orders({ id }).refunds.post(body), "Failed to record refund"),
     receiveRecovery: (id: string, body: { allItemsReceived: true; note: string }) =>

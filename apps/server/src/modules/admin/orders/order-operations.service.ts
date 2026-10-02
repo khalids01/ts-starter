@@ -1,3 +1,5 @@
+import { orderMoney, moneyStatus, minorUnitsString } from "../../ecommerce/orders/payment-accounting";
+import { invalidatePaymentDispatches } from "../../ecommerce/orders/payment-dispatch";
 import type {
   CancelOrderInput,
   RecordOrderRefundInput,
@@ -47,28 +49,13 @@ function refundAmount(value: string) {
   return { value: `${whole}.${fraction.padEnd(2, "0")}`, cents };
 }
 
-function moneyToCents(value: unknown) {
-  const normalized = String(value);
-  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
-    throw new AdminOrdersServiceError("Order money data is invalid", 500);
-  }
-  const parts = normalized.split(".");
-  const whole = parts[0]!;
-  const fraction = parts[1] ?? "";
-  return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
-}
-
-function centsToMoney(value: bigint) {
-  return `${value / 100n}.${String(value % 100n).padStart(2, "0")}`;
-}
-
 export const orderOperationsService = {
   async cancelOrder(id: string, input: CancelOrderInput, actor: OrdersActor) {
     const reason = requiredTrimmed(input.reason, "Cancellation reason");
     const note = nullableTrimmed(input.note);
 
     return withOrderTransaction(async (tx) => {
-      const current = await tx.order.findUnique({ where: { id } });
+      const current = await tx.order.findUnique({ where: { id }, include: { payments: true, refunds: true } });
       if (!current) {
         throw new AdminOrdersServiceError("Order not found", 404);
       }
@@ -137,6 +124,7 @@ export const orderOperationsService = {
     input: RecordOrderRefundInput,
     actor: OrdersActor,
   ) {
+    if (!actor.userId) throw new AdminOrdersServiceError("Authenticated refund actor is required", 403);
     const amount = refundAmount(input.amount);
     const reason = requiredTrimmed(input.reason, "Refund reason");
     const note = nullableTrimmed(input.note);
@@ -145,29 +133,21 @@ export const orderOperationsService = {
     if (restockInventory && !actor.canRestock) throw new AdminOrdersServiceError("Inventory management and fulfillment permissions are required to restock", 403);
     return withOrderTransaction(
       async (tx) => {
-        const current = await tx.order.findUnique({ where: { id } });
+        const current = await tx.order.findUnique({ where: { id }, include: { payments: true, refunds: true } });
         if (!current) {
           throw new AdminOrdersServiceError("Order not found", 404);
         }
-        if (!["paid", "partially_refunded"].includes(current.paymentStatus)) {
+        if (!["paid", "partially_paid", "partially_refunded", "refunded"].includes(current.paymentStatus)) {
           throw new AdminOrdersServiceError(
             "Refunds can only be recorded for paid or partially refunded orders",
             409,
           );
         }
 
-        const aggregate = await tx.orderRefund.aggregate({
-          where: { orderId: id },
-          _sum: { amount: true },
-        });
-        const alreadyRefunded = moneyToCents(aggregate._sum.amount ?? "0");
-        const orderTotal = moneyToCents(current.totalAmount);
-        const nextRefunded = alreadyRefunded + amount.cents;
-        if (nextRefunded > orderTotal) {
-          throw new AdminOrdersServiceError(
-            `Refund exceeds the remaining order total of ${centsToMoney(orderTotal - alreadyRefunded)} ${current.currency}`,
-            409,
-          );
+        const money = orderMoney(current);
+        const nextRefunded = money.refunded + amount.cents;
+        if (nextRefunded > money.received) {
+          throw new AdminOrdersServiceError(`Refund exceeds remaining received money of ${minorUnitsString(money.netReceived)} ${current.currency}`, 409);
         }
 
         let affectedReservations = 0;
@@ -202,9 +182,7 @@ export const orderOperationsService = {
             actorUserId: actor.userId ?? null,
           },
         });
-        const paymentStatus = nextRefunded === orderTotal
-          ? "refunded"
-          : "partially_refunded";
+        const paymentStatus = moneyStatus({ ...money, refunded: nextRefunded, netReceived: money.received - nextRefunded });
 
         await tx.order.update({
           where: { id },
@@ -230,13 +208,14 @@ export const orderOperationsService = {
           },
         });
 
+        await invalidatePaymentDispatches(tx, id);
         return {
           id: refund.id,
           orderId: id,
           amount: amount.value,
           currency: current.currency,
           paymentStatus,
-          totalRefunded: centsToMoney(nextRefunded),
+          totalRefunded: minorUnitsString(nextRefunded),
           restockInventory,
         };
       },

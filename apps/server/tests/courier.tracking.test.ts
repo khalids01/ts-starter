@@ -1,6 +1,8 @@
 import { describe, expect, it, mock } from "bun:test";
 import { normalizeCourierState } from "../src/modules/delivery/tracking";
-import { CourierTrackingService } from "../src/modules/delivery/tracking.service";
+mock.module("@db/server", () => ({ default: {} }));
+mock.module("@env/server", () => ({ env: {} }));
+const { CourierTrackingService } = await import("../src/modules/delivery/tracking.service");
 
 describe("courier status normalization", () => {
   it("maps safe Steadfast states without treating approval-pending as final", () => {

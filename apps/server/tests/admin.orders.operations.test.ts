@@ -16,7 +16,7 @@ let loseOperationClaim: boolean;
 
 const db: any = {
   order: {
-    findUnique: mock(async () => ({ ...order, recovery })),
+    findUnique: mock(async () => ({ ...order, recovery, refunds })),
     update: mock(async ({ data }: any) => Object.assign(order, data)),
     updateMany: mock(async ({ where, data }: any) => {
       if (order.inventoryStatus !== where.inventoryStatus) return { count: 0 };
@@ -90,7 +90,7 @@ const { orderRecoveryService } = await import("../src/modules/admin/orders/order
 const { withOrderTransaction } = await import("../src/modules/admin/orders/orders.service");
 
 beforeEach(() => {
-  order = { id: "order-1", totalAmount: "300.00", currency: "BDT", orderStatus: "confirmed", paymentStatus: "paid", deliveryStatus: "unfulfilled", inventoryStatus: "committed", shippedAt: null, deliveredAt: null };
+  order = { id: "order-1", payments: [{ id: "receipt-1", amount: "300.00", currency: "BDT", entryType: "receipt" }], totalAmount: "300.00", currency: "BDT", orderStatus: "confirmed", paymentStatus: "paid", deliveryStatus: "unfulfilled", inventoryStatus: "committed", shippedAt: null, deliveredAt: null };
   reservations = [{ id: "reservation-1", variantId: "variant-1", locationId: "location-1", batchId: null, quantity: 2, status: "committed" }];
   shipments = []; recovery = null; refunds = []; events = []; movements = []; exceptions = []; stock = 0; reserved = 0; loseReservationClaim = false; loseOperationClaim = false;
 });
@@ -204,9 +204,8 @@ describe("refunds and stock are independent", () => {
     expect(result.paymentStatus).toBe("partially_refunded"); expect(stock).toBe(0); expect(result.totalRefunded).toBe("100.00");
   });
   it("completes cumulative full refund and rejects excess", async () => {
-    refunds.push({ amount: "100" });
+    refunds.push({ amount: "100" }); order.paymentStatus = "partially_refunded";
     expect((await orderOperationsService.recordRefund(order.id, { amount: "200", reason: "Refund remainder" }, actor)).paymentStatus).toBe("refunded");
-    order.paymentStatus = "partially_refunded";
     await expect(orderOperationsService.recordRefund(order.id, { amount: "1", reason: "Too much" }, actor)).rejects.toThrow("exceeds"); expect(refunds).toHaveLength(2);
   });
   it("rejects refund restock without receipt or inventory authority", async () => {

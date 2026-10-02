@@ -56,6 +56,9 @@ const prismaMock = {
   inventoryMovement: {
     create: inventoryMovementCreateMock,
   },
+  courierException: { findFirst: mock(async () => null) },
+  courierReturn: { findFirst: mock(async () => null) },
+  courierDispatch: { findFirst: mock(async () => null) },
   orderAddress: {
     upsert: orderAddressUpsertMock,
   },
@@ -367,7 +370,7 @@ describe("admin orders service", () => {
         { paymentStatus: "refunded" },
         { userId: "admin-1" },
       ),
-    ).rejects.toThrow("Use the refund action to record refunded payments");
+    ).rejects.toThrow("Payment status is derived from receipts and refunds; use payment actions");
   });
 
   it("rejects returned-status editing without physical receipt", async () => {
@@ -405,4 +408,34 @@ describe("admin orders service", () => {
       data: expect.objectContaining({ inventoryStatus: "released" }),
     });
   });
+});
+
+
+describe("ledger completion guards", () => {
+  it("rejects setting paid manually", async () => {
+    const { adminOrdersService } = await import("../src/modules/admin/orders/orders.service");
+    await expect(adminOrdersService.updateOrderStatuses("order-1", { paymentStatus: "paid" }, { userId: "admin-1" })).rejects.toMatchObject({ status: 403 });
+  });
+  it.each(["unfulfilled", "delivered"])("rejects completion with unpaid %s inventory", async (deliveryStatus) => {
+    const { adminOrdersService } = await import("../src/modules/admin/orders/orders.service");
+    const row = orderRow({ orderStatus: "confirmed", deliveryStatus, inventoryStatus: "committed" });
+    orderFindUniqueMock.mockResolvedValueOnce(row); orderFindUniqueOrThrowMock.mockResolvedValueOnce({ ...row, payments: [], refunds: [], recovery: null });
+    await expect(adminOrdersService.updateOrderStatuses("order-1", { orderStatus: "completed" }, { userId: "admin-1" })).rejects.toMatchObject({ status: 409 });
+  });
+  it("permits completion only with delivered and fully received money", async () => {
+    const { adminOrdersService } = await import("../src/modules/admin/orders/orders.service");
+    const row = { ...orderRow({ orderStatus: "confirmed", deliveryStatus: "delivered", paymentStatus: "paid", inventoryStatus: "committed" }), payments: [{ id: "receipt-1", entryType: "receipt", amount: "1060", currency: "BDT" }], refunds: [], recovery: null };
+    row.totalAmount = "1060";
+    orderFindUniqueMock.mockResolvedValueOnce(row); orderFindUniqueOrThrowMock.mockResolvedValueOnce(row);
+    await adminOrdersService.updateOrderStatuses("order-1", { orderStatus: "completed" }, { userId: "admin-1" });
+    expect(orderUpdateMock.mock.calls.some(([args]) => args.data.orderStatus === "completed")).toBe(true);
+  });
+});
+
+
+it("cannot keep completed status while regressing delivery", async () => {
+  const { adminOrdersService } = await import("../src/modules/admin/orders/orders.service");
+  const row = { ...orderRow({ orderStatus: "completed", deliveryStatus: "delivered", paymentStatus: "paid", inventoryStatus: "committed" }), totalAmount: "1060", payments: [{ id: "receipt-1", entryType: "receipt", amount: "1060", currency: "BDT" }], refunds: [], recovery: null };
+  orderFindUniqueMock.mockResolvedValueOnce(row); orderFindUniqueOrThrowMock.mockResolvedValueOnce(row);
+  await expect(adminOrdersService.updateOrderStatuses("order-1", { deliveryStatus: "preparing" }, { userId: "admin-1" })).rejects.toMatchObject({ status: 409 });
 });

@@ -1,5 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
-import { CourierReturnsSettlementsService } from "../src/modules/admin/delivery/returns-settlements.service";
+mock.module("@db/server", () => ({ default: {} }));
+mock.module("@env/server", () => ({ env: {} }));
+const { CourierReturnsSettlementsService } = await import("../src/modules/admin/delivery/returns-settlements.service");
 import { CourierProviderRegistry } from "../src/modules/delivery/registry";
 import type { CourierProviderAdapter } from "../src/modules/delivery/provider";
 
@@ -13,9 +15,11 @@ function harness(options: { delivered?: boolean; settlementAmount?: string } = {
     externalId: "1424107",
     connectionId: "connection-1",
     connection: { id: "connection-1", publicId: "public-1", enabled: true, archivedAt: null, credentialSource: "server_environment", provider: { code: "fake", displayName: "Fake Courier" } },
-    order: { id: "order-1", orderNumber: "ORD-1", paymentStatus: "unpaid", deliveryStatus: options.delivered ? "delivered" : "out_for_delivery" },
+    order: { id: "order-1", orderNumber: "ORD-1", totalAmount: "1060.00", currency: "BDT", payments: [], refunds: [], orderStatus: "confirmed", paymentStatus: "unpaid", deliveryStatus: options.delivered ? "delivered" : "out_for_delivery" },
   };
   let courierReturn: any;
+  const payments: any[] = [];
+  const settlements: any[] = [];
   const exceptions: any[] = [];
   const statusEvents: any[] = [];
   const orderUpdates: any[] = [];
@@ -27,10 +31,18 @@ function harness(options: { delivered?: boolean; settlementAmount?: string } = {
       create: mock(async ({ data }: any) => { courierReturn = { id: "return-1", ...data }; return courierReturn; }),
       update: mock(async ({ data }: any) => { courierReturn = { ...courierReturn, ...data }; return courierReturn; }),
     },
-    courierSettlement: { create: mock(async ({ data }: any) => ({ id: "settlement-1", ...data })) },
+    courierSettlement: {
+      findUnique: mock(async ({ where }: any) => settlements.find((row) => row.externalId === where.consignmentId_externalId.externalId) ?? null),
+      create: mock(async ({ data }: any) => { const row = { id: "settlement-1", ...data }; settlements.push(row); return row; }),
+      update: mock(async ({ where, data }: any) => Object.assign(settlements.find((row) => row.id === where.id), data)),
+    },
+    orderPayment: {
+      findUnique: mock(async ({ where }: any) => payments.find((row) => row.settlementId === where.settlementId) ?? null),
+      create: mock(async ({ data }: any) => { const row = { id: "payment-1", ...data }; payments.push(row); return row; }),
+    },
     courierException: { findFirst: mock(async () => null), create: mock(async ({ data }: any) => { exceptions.push(data); return data; }) },
     courierEvent: { create: mock(async () => ({})) },
-    order: { update: mock(async ({ data }: any) => { orderUpdates.push(data); }) },
+    order: { findUnique: mock(async () => ({ ...consignment.order, payments })), update: mock(async ({ data }: any) => { orderUpdates.push(data); Object.assign(consignment.order, data); }) },
     orderStatusEvent: { create: mock(async ({ data }: any) => { statusEvents.push(data); }) },
   };
   db.$transaction = async (callback: any) => callback(db);

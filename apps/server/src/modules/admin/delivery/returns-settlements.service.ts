@@ -1,3 +1,5 @@
+import { paymentMinorUnits } from "../../ecommerce/orders/payment-policy";
+import { reconcileCourierSettlement } from "../../delivery/settlement-accounting";
 import { randomUUID } from "node:crypto";
 import prisma from "@db/server";
 import { activityService } from "../activity/activity.service";
@@ -25,12 +27,6 @@ function credentialConfig(row: any) {
       ? { ciphertext: row.credentialCiphertext, nonce: row.credentialNonce, authTag: row.credentialAuthTag, keyVersion: row.credentialKeyVersion }
       : undefined,
   } as const;
-}
-
-function money(value: unknown) {
-  const amount = Number(value);
-  if (!Number.isFinite(amount) || amount < 0) throw new AdminDeliveryServiceError("Settlement amount is invalid");
-  return Math.round(amount * 100);
 }
 
 export class CourierReturnsSettlementsService {
@@ -115,32 +111,33 @@ export class CourierReturnsSettlementsService {
   }
 
   async recordSettlement(input: RecordCourierSettlementInput, actorUserId: string) {
-    const consignment = await this.dependencies.db.courierConsignment.findUnique({ where: { id: input.consignmentId }, include: { order: true } });
-    if (!consignment) throw new AdminDeliveryServiceError("Courier consignment not found", 404);
+    const externalId = input.externalId.trim();
     const currency = input.currency.trim().toUpperCase();
-    const matches = currency === consignment.currency && money(input.amount) === money(consignment.codAmount);
-    const state = matches ? (consignment.state === "delivered" ? "reconciled" : "matched_pending_delivery") : "mismatch";
-    const row = await this.dependencies.db.$transaction(async (tx: any) => {
-      const settlement = await tx.courierSettlement.create({
-        data: {
-          consignmentId: consignment.id,
-          externalId: input.externalId.trim(),
-          amount: input.amount,
-          currency,
-          state,
-          evidence: { source: "manual_admin", note: input.note?.trim() ?? null, recordedByUserId: actorUserId },
-        },
-      });
-      if (state === "reconciled" && consignment.order.paymentStatus !== "paid") {
-        await tx.order.update({ where: { id: consignment.orderId }, data: { paymentStatus: "paid" } });
-        await tx.orderStatusEvent.create({ data: { orderId: consignment.orderId, type: "payment", previousValue: consignment.order.paymentStatus, newValue: "paid", note: "Courier COD settlement reconciled", actorUserId, metadata: { settlementId: settlement.id } } });
-      }
-      if (!matches) {
-        await tx.courierException.create({ data: { consignmentId: consignment.id, kind: "settlement_mismatch", details: { settlementId: settlement.id, expectedAmount: String(consignment.codAmount), expectedCurrency: consignment.currency, receivedAmount: input.amount, receivedCurrency: currency } } });
-      }
-      return settlement;
-    });
-    await this.dependencies.activity.record({ type: "courier.settlement.recorded", actorUserId, severity: matches ? "info" : "warning", message: `Recorded courier settlement for ${consignment.order.orderNumber}`, metadata: { settlementId: row.id, consignmentId: consignment.id, state } });
+    if (!externalId) throw new AdminDeliveryServiceError("Collection evidence reference is required");
+    try { if (paymentMinorUnits(input.amount) <= 0n) throw new Error("Collection amount must be positive"); }
+    catch (error) { throw new AdminDeliveryServiceError((error as Error).message); }
+    let row;
+    try {
+      row = await this.dependencies.db.$transaction(async (tx: any) => {
+        const consignment = await tx.courierConsignment.findUnique({ where: { id: input.consignmentId }, include: { order: true } });
+        if (!consignment) throw new AdminDeliveryServiceError("Courier consignment not found", 404);
+        const prior = await tx.courierSettlement.findUnique({ where: { consignmentId_externalId: { consignmentId: consignment.id, externalId } } });
+        if (prior) {
+          if (prior.currency !== currency || paymentMinorUnits(String(prior.amount)) !== paymentMinorUnits(input.amount)) throw new AdminDeliveryServiceError("Settlement reference conflicts with existing collection evidence", 409);
+          return { ...prior, duplicate: true };
+        }
+        const settlement = await tx.courierSettlement.create({ data: {
+          consignmentId: consignment.id, externalId, amount: input.amount, currency, state: "pending_review",
+          evidence: { source: "manual_admin_gross_collection", note: input.note?.trim() ?? null, recordedByUserId: actorUserId },
+        } });
+        const state = await reconcileCourierSettlement(tx, consignment, settlement, actorUserId);
+        return { ...settlement, state, duplicate: false };
+      }, { isolationLevel: "Serializable" });
+    } catch (error) {
+      if (typeof error === "object" && error && "code" in error && ["P2034", "P2002"].includes(String(error.code))) throw new AdminDeliveryServiceError("Collection changed concurrently; reload and retry", 409);
+      throw error;
+    }
+    if (!row.duplicate) await this.dependencies.activity.record({ type: "courier.settlement.recorded", actorUserId, severity: row.state === "mismatch" ? "warning" : "info", message: "Recorded courier gross collection evidence", metadata: { settlementId: row.id, consignmentId: input.consignmentId, state: row.state } });
     return row;
   }
 

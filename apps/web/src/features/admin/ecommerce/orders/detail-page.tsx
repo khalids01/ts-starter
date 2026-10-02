@@ -46,6 +46,7 @@ import {
 import { formatMoney } from "./orders-table";
 import { FulfillmentCard } from "./fulfillment";
 import { OrderOperationsCard } from "./order-operations";
+import { OrderPaymentsCard } from "./order-payments";
 import { OrderRecoveryCard } from "./order-recovery";
 import { CourierRoutingCard } from "./courier-routing";
 import { CourierTrackingCard } from "./courier-tracking";
@@ -58,7 +59,6 @@ import {
   OrderStatusBadge,
   OrderStatusSelect,
   PaymentStatusBadge,
-  PaymentStatusSelect,
   deliveryStatusMeta,
   orderStatusMeta,
   paymentStatusMeta,
@@ -305,19 +305,9 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
           </StatusSummary>
           <StatusSummary
             label="Payment"
-            explanation="Whether payment is due, authorized, paid, failed, or refunded."
+            explanation="Derived from confirmed receipts and refunds; record payment evidence below."
           >
-            {canManageOrders && form ? (
-              <PaymentStatusSelect
-                value={form.paymentStatus}
-                currentValue={order.paymentStatus}
-                onChange={(paymentStatus) =>
-                  setForm({ ...form, paymentStatus })
-                }
-              />
-            ) : (
-              <PaymentStatusBadge status={order.paymentStatus} />
-            )}
+            <PaymentStatusBadge status={order.paymentStatus} />
           </StatusSummary>
           <StatusSummary
             label="Delivery"
@@ -395,6 +385,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
             canRefund={canRefundOrders}
             canRestock={canRestockOrders}
           />
+          <OrderPaymentsCard order={order} canRecord={hasAdminPermission(session, Permissions.AdminOrdersPayments)} />
           <OrderRecoveryCard order={order} canReceive={canFulfillOrders} canRestock={canRestockOrders} />
           <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
           <CourierRoutingCard orderId={order.id} canDispatch={canDispatchCourier} />

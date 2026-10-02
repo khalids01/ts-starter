@@ -1,3 +1,4 @@
+import { assertReviewedCourierRequest } from "./dispatch-snapshot";
 import prisma from "@db/server";
 import { createConfiguredCourierCredentialResolver } from "./credentials.config";
 import type { CourierCredentialResolver, CreateConsignmentRequest } from "./provider";
@@ -72,12 +73,18 @@ export class CourierDispatchWorker {
   private async process(operationId: string) {
     const operation = await this.dependencies.db.courierOperation.findUnique({
       where: { id: operationId },
-      include: { consignment: { include: { connection: { include: { provider: true } }, dispatch: true, order: { include: { recovery: true } } } } },
+      include: { consignment: { include: { connection: { include: { provider: true } }, dispatch: true, order: { include: { recovery: true, payments: true, refunds: true, addresses: true } } } } },
     });
     if (!operation || operation.kind !== "create" || operation.state !== "processing") return;
     const { consignment } = operation;
     if (!["confirmed", "processing"].includes(consignment.order.orderStatus) || consignment.order.inventoryStatus !== "committed" || consignment.order.recovery) {
       await this.manualReview(operation, "order_no_longer_dispatchable");
+      return;
+    }
+    try {
+      assertReviewedCourierRequest(consignment.order, consignment.requestSnapshot);
+    } catch {
+      await this.manualReview(operation, "payment_or_address_review_changed");
       return;
     }
     try {

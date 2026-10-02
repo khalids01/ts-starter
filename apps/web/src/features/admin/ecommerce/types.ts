@@ -8,7 +8,7 @@ export type PageResult<T> = {
 
 export type ProductStatus = "draft" | "active" | "archived";
 export type OrderStatus = "pending" | "confirmed" | "processing" | "completed" | "cancelled";
-export type PaymentStatus = "unpaid" | "authorized" | "paid" | "partially_refunded" | "refunded" | "failed";
+export type PaymentStatus = "unpaid" | "authorized" | "partially_paid" | "paid" | "partially_refunded" | "refunded" | "failed";
 export type PaymentMethod = "cash_on_delivery" | "manual_bank" | "manual_mobile" | "online_gateway";
 export type OrderInventoryStatus = "reserved" | "committed" | "released" | "restocked";
 export type DeliveryStatus =
@@ -370,6 +370,8 @@ export type Order = {
   lineItems?: OrderLineItem[];
   statusEvents?: OrderStatusEvent[];
   refunds?: OrderRefund[];
+  payments?: { id: string; entryType: "receipt" | "reversal"; amount: string; currency: string; method: PaymentMethod; reference: string | null; note: string | null; reversesId?: string | null; settlementId?: string | null; receivedAt: string; actorUserId: string }[];
+  money?: { received: string | null; refunded: string | null; outstanding: string | null; netReceived: string | null; error: string | null };
   recovery?: OrderRecovery | null;
 };
 

@@ -15,6 +15,7 @@ export const OrderStatusDto = t.Union([
 export const PaymentStatusDto = t.Union([
   t.Literal("unpaid"),
   t.Literal("authorized"),
+  t.Literal("partially_paid"),
   t.Literal("paid"),
   t.Literal("partially_refunded"),
   t.Literal("refunded"),
@@ -147,3 +148,14 @@ export type CancelOrderInput = typeof CancelOrderDto.static;
 export type RecordOrderRefundInput = typeof RecordOrderRefundDto.static;
 export type ReceiveOrderRecoveryInput = typeof ReceiveOrderRecoveryDto.static;
 export type InspectOrderRecoveryInput = typeof InspectOrderRecoveryDto.static;
+
+export const RecordOrderPaymentDto = t.Object({
+  amount: t.String({ minLength: 1, maxLength: 32 }),
+  currency: t.String({ minLength: 3, maxLength: 3 }),
+  method: PaymentMethodDto,
+  reference: t.String({ minLength: 1, maxLength: 200 }),
+  note: t.String({ minLength: 1, maxLength: 2000 }),
+});
+export const ReverseOrderPaymentDto = t.Object({ note: t.String({ minLength: 1, maxLength: 2000 }) });
+export const PaymentIdParamDto = t.Object({ id: t.String({ minLength: 1 }), paymentId: t.String({ minLength: 1 }) });
+export type RecordOrderPaymentInput = typeof RecordOrderPaymentDto.static;
