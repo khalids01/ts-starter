@@ -2,6 +2,13 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import { Elysia } from "elysia";
 import { Permissions } from "@rbac";
 
+mock.module("@/rbac/resolve/get-effective", () => ({
+  getEffectivePermissions: async () => { throw new Error("Tests must supply session permissions"); },
+  createPermissionChecker: (permissions: ReadonlySet<string>) => (permission: string) => permissions.has(permission),
+}));
+
+mock.module("@db/server", () => ({ default: { $transaction: () => { throw new Error("A denied request must not reach persistence"); } } }));
+
 const getAuthSessionMock = mock(async () => ({
   user: {
     id: "admin-1",
@@ -153,5 +160,31 @@ describe("admin orders controller RBAC", () => {
 
       expect(response.status).toBe(403);
     }
+  });
+});
+
+
+describe("physical recovery action permissions", () => {
+  it("requires fulfillment for receipt and inspection", async () => {
+    for (const method of ["POST", "PATCH"]) {
+      getAuthSessionMock.mockResolvedValueOnce({ user: { id: "reader", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, Permissions.AdminOrdersManage, Permissions.AdminInventoryManage] });
+      const { adminOrdersController } = await import("../src/modules/admin/orders/orders.controller");
+      const response = await new Elysia().use(adminOrdersController).handle(new Request("http://localhost/admin/orders/order-1/recovery", { method, headers: { "content-type": "application/json" }, body: JSON.stringify(method === "POST" ? { allItemsReceived: true, note: "Receipt" } : { disposition: "sellable", note: "Inspection" }) }));
+      expect(response.status).toBe(403);
+    }
+  });
+  it("requires both fulfillment and inventory management to restock", async () => {
+    for (const permission of [Permissions.AdminOrdersFulfill, Permissions.AdminInventoryManage]) {
+      getAuthSessionMock.mockResolvedValueOnce({ user: { id: "restricted", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, permission] });
+      const { adminOrdersController } = await import("../src/modules/admin/orders/orders.controller");
+      const response = await new Elysia().use(adminOrdersController).handle(new Request("http://localhost/admin/orders/order-1/recovery/restock", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ note: "Restock" }) }));
+      expect(response.status).toBe(403);
+    }
+  });
+  it("rejects refund restocking with refund permission alone before touching persistence", async () => {
+    getAuthSessionMock.mockResolvedValueOnce({ user: { id: "refund-only", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, Permissions.AdminOrdersRefund] });
+    const { adminOrdersController } = await import("../src/modules/admin/orders/orders.controller");
+    const response = await new Elysia().use(adminOrdersController).handle(new Request("http://localhost/admin/orders/order-1/refunds", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ amount: "10", reason: "Refund", restockInventory: true }) }));
+    expect(response.status).toBe(403);
   });
 });

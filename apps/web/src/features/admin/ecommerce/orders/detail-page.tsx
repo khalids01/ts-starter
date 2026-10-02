@@ -46,6 +46,7 @@ import {
 import { formatMoney } from "./orders-table";
 import { FulfillmentCard } from "./fulfillment";
 import { OrderOperationsCard } from "./order-operations";
+import { OrderRecoveryCard } from "./order-recovery";
 import { CourierRoutingCard } from "./courier-routing";
 import { CourierTrackingCard } from "./courier-tracking";
 import { hasAdminPermission } from "../ui";
@@ -127,6 +128,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
   } = ecommercePermissions(session);
   const canDispatchCourier = hasAdminPermission(session, Permissions.AdminDeliveryDispatch);
   const canReadCourier = hasAdminPermission(session, Permissions.AdminDeliveryRead) || canDispatchCourier;
+  const canRestockOrders = canFulfillOrders && hasAdminPermission(session, Permissions.AdminInventoryManage);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.admin.ecommerce.orders.detail(props.orderId),
@@ -391,7 +393,9 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
             order={order}
             canCancel={canCancelOrders}
             canRefund={canRefundOrders}
+            canRestock={canRestockOrders}
           />
+          <OrderRecoveryCard order={order} canReceive={canFulfillOrders} canRestock={canRestockOrders} />
           <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
           <CourierRoutingCard orderId={order.id} canDispatch={canDispatchCourier} />
           <CourierTrackingCard orderId={order.id} canRead={canReadCourier} />

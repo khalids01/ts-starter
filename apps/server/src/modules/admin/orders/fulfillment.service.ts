@@ -74,7 +74,7 @@ export const orderFulfillmentService = {
         },
       });
       return fulfillmentResult(updated);
-    });
+    }, { isolationLevel: "Serializable" });
   },
 
   async updateTracking(id: string, input: UpdateOrderTrackingInput, actor: FulfillmentActor) {
@@ -114,7 +114,7 @@ export const orderFulfillmentService = {
         },
       });
       return fulfillmentResult(updated);
-    });
+    }, { isolationLevel: "Serializable" });
   },
 
   async markDelivered(id: string, input: MarkOrderDeliveredInput, actor: FulfillmentActor) {
@@ -142,6 +142,6 @@ export const orderFulfillmentService = {
         },
       });
       return fulfillmentResult(updated);
-    });
+    }, { isolationLevel: "Serializable" });
   },
 };

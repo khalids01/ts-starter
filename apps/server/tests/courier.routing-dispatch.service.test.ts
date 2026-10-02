@@ -1,9 +1,8 @@
 import { describe, expect, it, mock } from "bun:test";
-import {
-  calculateCourierCod,
-  CourierRoutingDispatchService,
-} from "../src/modules/admin/delivery/routing-dispatch.service";
-import { AdminDeliveryServiceError } from "../src/modules/admin/delivery/delivery.service";
+mock.module("@db/server", () => ({ default: {} }));
+mock.module("@env/server", () => ({ env: {} }));
+const { calculateCourierCod, CourierRoutingDispatchService } = await import("../src/modules/admin/delivery/routing-dispatch.service");
+const { AdminDeliveryServiceError } = await import("../src/modules/admin/delivery/delivery.service");
 
 const order = {
   id: "order-1",
@@ -95,5 +94,42 @@ describe("courier routing and dispatch review", () => {
     const service = new CourierRoutingDispatchService({ db, activity: { record: mock(async () => ({})) } });
     await service.deleteRule("rule-1", "admin-1");
     expect(remove).toHaveBeenCalledWith({ where: { id: "rule-1" } });
+  });
+});
+
+describe("queue cancellation and recovery boundary", () => {
+  function queueHarness(currentOrder: any = order) {
+    const dispatch = { id: "dispatch-1", status: "confirmed", connectionId: "connection-1", serviceId: "service-1", order, consignment: null };
+    const db: any = {
+      order: { findUnique: mock(async () => currentOrder) },
+      courierDispatch: { findUnique: mock(async () => dispatch), updateMany: mock(async () => ({ count: 1 })) },
+      courierConsignment: { create: mock(async ({ data }: any) => ({ id: "consignment-1", ...data })) },
+      courierOperation: { create: mock(async () => ({})) },
+    };
+    db.$transaction = mock(async (work: any) => work(db));
+    const service = new CourierRoutingDispatchService({ db, activity: { record: mock(async () => ({})) } });
+    return { service, db };
+  }
+  it("queues valid committed stock and creates one operation", async () => {
+    const { service, db } = queueHarness();
+    await service.queue("dispatch-1", "admin-1");
+    expect(db.courierOperation.create).toHaveBeenCalledTimes(1);
+    expect(db.$transaction.mock.calls[0]?.[1]).toEqual({ isolationLevel: "Serializable" });
+  });
+  it.each([
+    { ...order, orderStatus: "cancelled" },
+    { ...order, inventoryStatus: "restocked" },
+    { ...order, recovery: { id: "recovery-1" } },
+    { ...order, deliveryStatus: "returned" },
+  ])("rejects an order changed after the initial queue read", async (current) => {
+    const { service, db } = queueHarness(current);
+    await expect(service.queue("dispatch-1", "admin-1")).rejects.toMatchObject({ status: 409 });
+    expect(db.courierOperation.create).not.toHaveBeenCalled();
+  });
+  it("rejects cancellation that already stopped the dispatch", async () => {
+    const { service, db } = queueHarness();
+    db.courierDispatch.updateMany.mockResolvedValueOnce({ count: 0 });
+    await expect(service.queue("dispatch-1", "admin-1")).rejects.toMatchObject({ status: 409 });
+    expect(db.courierConsignment.create).not.toHaveBeenCalled();
   });
 });

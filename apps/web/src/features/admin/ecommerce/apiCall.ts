@@ -230,6 +230,12 @@ export const ecommerceApi = {
       unwrap(api.admin.orders({ id }).cancel.post(body), "Failed to cancel order"),
     recordRefund: (id: string, body: Record<string, unknown>) =>
       unwrap(api.admin.orders({ id }).refunds.post(body), "Failed to record refund"),
+    receiveRecovery: (id: string, body: { allItemsReceived: true; note: string }) =>
+      unwrap(api.admin.orders({ id }).recovery.post(body), "Failed to record physical receipt"),
+    inspectRecovery: (id: string, body: { disposition: "sellable" | "unsafe"; note: string }) =>
+      unwrap(api.admin.orders({ id }).recovery.patch(body), "Failed to record inspection"),
+    restockRecovery: (id: string, body: { note: string }) =>
+      unwrap(api.admin.orders({ id }).recovery.restock.post(body), "Failed to restock received inventory"),
     releaseExpiredReservations: () =>
       unwrap(api.admin.orders["release-expired-reservations"].post(), "Failed to release expired reservations"),
   },

@@ -310,6 +310,19 @@ export type OrderRefund = {
   createdAt: string;
 };
 
+export type OrderRecovery = {
+  id: string;
+  orderId: string;
+  receivedAt: string;
+  receivedByUserId: string;
+  receiptNote: string;
+  disposition: "awaiting_inspection" | "sellable" | "unsafe";
+  inspectedAt?: string | null;
+  inspectedByUserId?: string | null;
+  inspectionNote?: string | null;
+  restockedAt?: string | null;
+};
+
 export type Order = {
   id: string;
   orderNumber: string;
@@ -357,6 +370,7 @@ export type Order = {
   lineItems?: OrderLineItem[];
   statusEvents?: OrderStatusEvent[];
   refunds?: OrderRefund[];
+  recovery?: OrderRecovery | null;
 };
 
 export type ShippingRate = {

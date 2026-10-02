@@ -18,6 +18,17 @@ type OrdersActor = {
   userId?: string;
 };
 
+export async function withOrderTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  try {
+    return await prisma.$transaction(work, { isolationLevel: "Serializable" });
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && ["P2034", "P2002"].includes(String(error.code))) {
+      throw new AdminOrdersServiceError("Order changed during this operation; reload and try again", 409);
+    }
+    throw error;
+  }
+}
+
 function normalizePagination(page?: number, limit?: number) {
   const normalizedLimit = Math.min(Math.max(limit ?? 20, 1), 100);
   return {
@@ -88,6 +99,7 @@ function stockKey(variantId: string, locationId: string, batchId?: string | null
 
 function orderInclude() {
   return {
+    recovery: true,
     user: {
       select: {
         id: true,
@@ -290,6 +302,14 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
       ? (row.statusEvents ?? []).map(mapStatusEvent)
       : undefined,
     refunds: options.detail ? (row.refunds ?? []).map(mapRefund) : undefined,
+    recovery: options.detail && row.recovery ? {
+      ...row.recovery,
+      receivedAt: toIso(row.recovery.receivedAt),
+      inspectedAt: toIso(row.recovery.inspectedAt),
+      restockedAt: toIso(row.recovery.restockedAt),
+      createdAt: toIso(row.recovery.createdAt),
+      updatedAt: toIso(row.recovery.updatedAt),
+    } : null,
   };
 }
 
@@ -394,6 +414,10 @@ export async function releaseReservations(
   const nextStatus = input.expired ? "expired" : "released";
 
   for (const reservation of reservations) {
+    const claimed = await tx.stockReservation.updateMany({
+      where: { id: reservation.id, status: "active" }, data: { status: nextStatus },
+    });
+    if (claimed.count !== 1) throw new AdminOrdersServiceError("Reservation changed; reload the order", 409);
     await tx.inventoryStock.update({
       where: {
         stockKey: stockKey(
@@ -405,10 +429,6 @@ export async function releaseReservations(
       data: {
         quantityReserved: { decrement: reservation.quantity },
       },
-    });
-    await tx.stockReservation.update({
-      where: { id: reservation.id },
-      data: { status: nextStatus },
     });
     await tx.inventoryMovement.create({
       data: {
@@ -493,8 +513,25 @@ export async function restockCommittedReservations(
   tx: Prisma.TransactionClient,
   input: { orderId: string; actorUserId?: string; reason: string },
 ) {
-  const reservations = await getOrderReservations(tx, input.orderId, "committed");
+  const reservations = await tx.stockReservation.findMany({
+    where: { referenceType: "order", referenceId: input.orderId, status: "committed" },
+    include: { batch: { select: { expiryDate: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  if (reservations.length === 0) throw new AdminOrdersServiceError("No committed inventory was available to restock", 409);
+  if (reservations.some((reservation) => reservation.batch?.expiryDate && reservation.batch.expiryDate <= new Date())) {
+    throw new AdminOrdersServiceError("Expired inventory cannot be returned to saleable stock", 409);
+  }
+  const claimed = await tx.order.updateMany({
+    where: { id: input.orderId, inventoryStatus: "committed" },
+    data: { inventoryStatus: "restocked", stockReleasedAt: new Date() },
+  });
+  if (claimed.count !== 1) throw new AdminOrdersServiceError("Order inventory has already changed or been restocked", 409);
   for (const reservation of reservations) {
+    const recovered = await tx.stockReservation.updateMany({
+      where: { id: reservation.id, status: "committed" }, data: { status: "restocked" },
+    });
+    if (recovered.count !== 1) throw new AdminOrdersServiceError("Reservation has already changed or been restocked", 409);
     await tx.inventoryStock.update({
       where: {
         stockKey: stockKey(
@@ -522,16 +559,6 @@ export async function restockCommittedReservations(
     });
   }
 
-  if (reservations.length > 0) {
-    await tx.order.update({
-      where: { id: input.orderId },
-      data: {
-        inventoryStatus: "restocked",
-        stockReleasedAt: new Date(),
-      },
-    });
-  }
-
   return reservations.length;
 }
 
@@ -551,17 +578,6 @@ async function applyInventorySideEffects(
     return commitReservations(tx, {
       orderId: input.order.id,
       actorUserId: input.actorUserId,
-    });
-  }
-
-  if (
-    input.nextDeliveryStatus === "returned" &&
-    input.order.inventoryStatus === "committed"
-  ) {
-    return restockCommittedReservations(tx, {
-      orderId: input.order.id,
-      actorUserId: input.actorUserId,
-      reason: "Order returned",
     });
   }
 
@@ -638,7 +654,7 @@ export const adminOrdersService = {
       throw new AdminOrdersServiceError("At least one status is required");
     }
 
-    return prisma.$transaction(async (tx) => {
+    return withOrderTransaction(async (tx) => {
       const current = await tx.order.findUnique({ where: { id } });
       if (!current) {
         throw new AdminOrdersServiceError("Order not found", 404);
@@ -696,6 +712,10 @@ export const adminOrdersService = {
           "Use the fulfillment actions to mark an order shipped or delivered",
           403,
         );
+      }
+
+      if (input.deliveryStatus === "returned" && current.deliveryStatus !== "returned") {
+        throw new AdminOrdersServiceError("Use physical receipt and inspection to record a returned order", 403);
       }
 
       const events: Prisma.OrderStatusEventCreateManyInput[] = [];
@@ -825,7 +845,7 @@ export const adminOrdersService = {
   },
 
   async releaseExpiredReservations(actor: OrdersActor) {
-    return prisma.$transaction(async (tx) => {
+    return withOrderTransaction(async (tx) => {
       const reservations = await tx.stockReservation.findMany({
         where: {
           referenceType: "order",
@@ -842,6 +862,10 @@ export const adminOrdersService = {
           continue;
         }
         orderIds.add(reservation.referenceId);
+        const claimed = await tx.stockReservation.updateMany({
+          where: { id: reservation.id, status: "active" }, data: { status: "expired" },
+        });
+        if (claimed.count !== 1) throw new AdminOrdersServiceError("Reservation changed; retry expiry release", 409);
         await tx.inventoryStock.update({
           where: {
             stockKey: stockKey(
@@ -853,10 +877,6 @@ export const adminOrdersService = {
           data: {
             quantityReserved: { decrement: reservation.quantity },
           },
-        });
-        await tx.stockReservation.update({
-          where: { id: reservation.id },
-          data: { status: "expired" },
         });
         await tx.inventoryMovement.create({
           data: {

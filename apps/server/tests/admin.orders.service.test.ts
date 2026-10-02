@@ -23,6 +23,7 @@ const stockReservationFindManyMock = mock(async () => []);
 const stockReservationUpdateMock = mock(async (args: any) =>
   reservationRow({ id: args.where.id, ...args.data }),
 );
+const stockReservationUpdateManyMock = mock(async () => ({ count: 1 }));
 const inventoryStockUpdateMock = mock(async () => ({ id: "stock-1" }));
 const inventoryMovementCreateMock = mock(async (args: any) => ({
   id: "movement-1",
@@ -47,6 +48,7 @@ const prismaMock = {
   stockReservation: {
     findMany: stockReservationFindManyMock,
     update: stockReservationUpdateMock,
+    updateMany: stockReservationUpdateManyMock,
   },
   inventoryStock: {
     update: inventoryStockUpdateMock,
@@ -227,6 +229,7 @@ afterEach(() => {
     statusEventCreateManyMock,
     stockReservationFindManyMock,
     stockReservationUpdateMock,
+    stockReservationUpdateManyMock,
     inventoryStockUpdateMock,
     inventoryMovementCreateMock,
     orderAddressUpsertMock,
@@ -367,33 +370,12 @@ describe("admin orders service", () => {
     ).rejects.toThrow("Use the refund action to record refunded payments");
   });
 
-  it("restocks committed stock once when delivery is returned", async () => {
-    orderFindUniqueMock.mockResolvedValueOnce(
-      orderRow({ orderStatus: "confirmed", inventoryStatus: "committed" }),
-    );
-    stockReservationFindManyMock.mockResolvedValueOnce([
-      reservationRow({ status: "committed" }),
-    ]);
-    const { adminOrdersService } = await import(
-      "../src/modules/admin/orders/orders.service"
-    );
-
-    await adminOrdersService.updateOrderStatuses(
-      "order-1",
-      { deliveryStatus: "returned" },
-      { userId: "admin-1" },
-    );
-
-    expect(inventoryStockUpdateMock).toHaveBeenCalledWith({
-      where: { stockKey: "variant-1:loc-main:no_batch" },
-      data: { quantityOnHand: { increment: 2 } },
-    });
-    expect(inventoryMovementCreateMock).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        type: "return",
-        delta: 2,
-      }),
-    });
+  it("rejects returned-status editing without physical receipt", async () => {
+    orderFindUniqueMock.mockResolvedValueOnce(orderRow({ orderStatus: "confirmed", inventoryStatus: "committed" }));
+    const { adminOrdersService } = await import("../src/modules/admin/orders/orders.service");
+    await expect(adminOrdersService.updateOrderStatuses("order-1", { deliveryStatus: "returned" }, { userId: "admin-1" })).rejects.toMatchObject({ status: 403 });
+    expect(inventoryStockUpdateMock).not.toHaveBeenCalled();
+    expect(inventoryMovementCreateMock).not.toHaveBeenCalled();
   });
 
   it("releases expired reservations in bulk", async () => {
@@ -411,8 +393,8 @@ describe("admin orders service", () => {
     });
 
     expect(result).toEqual({ releasedReservations: 1, affectedOrders: 1 });
-    expect(stockReservationUpdateMock).toHaveBeenCalledWith({
-      where: { id: "reservation-1" },
+    expect(stockReservationUpdateManyMock).toHaveBeenCalledWith({
+      where: { id: "reservation-1", status: "active" },
       data: { status: "expired" },
     });
     expect(orderUpdateManyMock).toHaveBeenCalledWith({

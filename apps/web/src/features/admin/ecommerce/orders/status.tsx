@@ -299,7 +299,7 @@ export function DeliveryStatusSelect(props: {
   const meta = deliveryStatusMeta[props.value];
   const options = deliveryStatusOptions.filter(
     (option) =>
-      !["shipped", "delivered"].includes(option.value) ||
+      !["shipped", "delivered", "returned"].includes(option.value) ||
       option.value === props.currentValue,
   );
   return (

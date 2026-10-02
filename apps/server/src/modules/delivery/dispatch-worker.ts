@@ -40,6 +40,7 @@ export class CourierDispatchWorker {
     const rows = await this.dependencies.db.courierOperation.findMany({
       where: {
         nextAttemptAt: { lte: now },
+        consignment: { order: { orderStatus: { in: ["confirmed", "processing"] }, inventoryStatus: "committed", recovery: { is: null } } },
         OR: [
           { state: { in: ["pending", "retry"] }, leaseUntil: null },
           { state: { in: ["pending", "retry", "processing"] }, leaseUntil: { lt: now } },
@@ -53,6 +54,7 @@ export class CourierDispatchWorker {
       const claimed = await this.dependencies.db.courierOperation.updateMany({
         where: {
           id: row.id,
+          consignment: { order: { orderStatus: { in: ["confirmed", "processing"] }, inventoryStatus: "committed", recovery: { is: null } } },
           OR: [
             { state: { in: ["pending", "retry"] }, leaseUntil: null },
             { state: { in: ["pending", "retry", "processing"] }, leaseUntil: { lt: now } },
@@ -70,10 +72,14 @@ export class CourierDispatchWorker {
   private async process(operationId: string) {
     const operation = await this.dependencies.db.courierOperation.findUnique({
       where: { id: operationId },
-      include: { consignment: { include: { connection: { include: { provider: true } }, dispatch: true } } },
+      include: { consignment: { include: { connection: { include: { provider: true } }, dispatch: true, order: { include: { recovery: true } } } } },
     });
-    if (!operation || operation.kind !== "create") return;
+    if (!operation || operation.kind !== "create" || operation.state !== "processing") return;
     const { consignment } = operation;
+    if (!["confirmed", "processing"].includes(consignment.order.orderStatus) || consignment.order.inventoryStatus !== "committed" || consignment.order.recovery) {
+      await this.manualReview(operation, "order_no_longer_dispatchable");
+      return;
+    }
     try {
       const credentials = await this.dependencies.resolver.resolve(credentialConfig(consignment.connection));
       const adapter = this.dependencies.registry.require(consignment.connection.provider.code, "createConsignment");

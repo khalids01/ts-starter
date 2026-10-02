@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Step 2 foundation implemented; awaiting user schema prerequisite/review. Steps 3–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2 and 3 implemented with safe checks; awaiting user schema prerequisite and runtime acceptance. Steps 4–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 1 is complete with the user launch-scope answers recorded below. Step 2 foundation and rules are recorded in section 10; review them and complete the user-controlled schema prerequisite. Next implementation is Step 3 only after authorization. **15 steps remain**, including Step 2 awaiting acceptance.
+Step 1 is complete. Step 2 foundation is recorded in section 10; Step 3 implementation and acceptance checklist are recorded in section 11. The user-controlled Step 2 schema prerequisite remains unconfirmed. Next implementation is Step 4 only after authorization. **13 implementation steps remain (4–16); 15 acceptance gates remain unfinished including Steps 2 and 3.** Do not equate safe mocked/static checks with runtime acceptance.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -673,3 +673,79 @@ The user must prepare/review/apply the corresponding database changes separately
 - Step 2 status: foundation implemented and safely checked; awaiting user schema prerequisite/review. Therefore 15 unfinished steps remain, including Step 2; 14 remain after its acceptance. No Step 2 commit made.
 
 Step 2 final safe verification: `bun run db:generate` passed; `bun test apps/server/tests/order.payment-policy.test.ts` passed 5/5 with 17 assertions; `bun run --cwd packages/db check-types` and `bun run --cwd apps/server check-types` completed with exit code 0; `git diff --check` passed. No app/browser/real-database/live-provider tests or migrations/seeds were run. Commit `ae358f8` contains the guide before Step 2 only; Step 2 diff remains uncommitted.
+
+
+## 11. Step 3 — Safe cancellation and physical inventory recovery — 2026-10-02
+
+### Authorization and status
+
+User authorized “do step 3”. Implemented cancellation/custody guards, physical receipt, inspection, explicit whole-order restocking, server permissions, UI, and focused regression tests. No database access, migration, seed, application startup, live courier action, staging, or commit performed. Previously staged Step 2 changes were preserved. Step 3 is implemented with safe checks; runtime acceptance remains pending. No Step 4 behavior is implemented.
+
+### Resulting policies
+
+1. Cancel retained, unshipped reserved inventory by releasing its reservations once. For retained committed inventory, automatic restoration also requires inventory-management permission and unexpired batches.
+2. Stop never-attempted queued create operations transactionally. A lost operation lease or reservation claim aborts the transaction. Historical handoff, accepted booking, attempted submission, missing/contradictory operation evidence, and uncertain custody keep inventory unavailable.
+3. Cancellation after actual delivery remains rejected; use the physical return/recovery workflow. Cancellation changes commercial state; it does not refund money or call a provider cancellation API.
+4. For committed inventory requiring recovery, record full physical receipt with operator identity, timestamp, and evidence. Courier tracking/return completion alone is insufficient. Pending/in-flight create operations prevent receipt/restocking until resolved.
+5. Inspect all received goods as `sellable` or `unsafe`; the initial disposition is `awaiting_inspection`, and the UI inspection choice defaults to unsafe. Receipt and inspection do not change stock or money.
+6. Explicit restoration requires receipt, sellable inspection, committed reservations, unexpired batches, and fulfillment plus inventory-management permissions. Stamp recovery, transition order and reservations to `restocked`, increment original stock, and write movements/history in one serializable transaction. Repeated restoration fails without an additional stock increase.
+7. Ordinary refunds never restore stock. A separately selected refund/restock action requires refund, fulfillment, and inventory-management permissions and the same recovery evidence. Even a partial monetary refund restores the **whole order** when explicitly selected; the UI states this. Partial or mixed-condition physical returns remain unavailable pending later reconciliation.
+8. General status editing cannot newly set `returned`; physical receipt owns that transition. Queueing rereads order/recovery in its transaction, and the worker checks current order eligibility before claiming/submitting. An already-running external request cannot be unsent: preserve its result and retain recovery review rather than release stock.
+9. Cancellation with uncertain courier custody opens an `order_recovery_required` exception; attempted retries stop for manual review. Shipment claims and unresolved courier exceptions are retained. Physical receipt does not prove that an external booking has been cancelled.
+
+### Changed areas and next-agent read order
+
+- Pure evidence policy: `apps/server/src/modules/ecommerce/orders/recovery-policy.ts`.
+- Custody and booking control: `apps/server/src/modules/admin/orders/order-custody.ts`.
+- Recovery workflow: `apps/server/src/modules/admin/orders/order-recovery.service.ts`.
+- Cancellation/refunds: `admin/orders/order-operations.service.ts`; shared transaction, stock and returned-status guards: `admin/orders/orders.service.ts`.
+- API validation/authorization: `admin/orders/orders.dto.ts`, `orders.controller.ts`. New actions: POST `/:id/recovery`, PATCH `/:id/recovery`, POST `/:id/recovery/restock` under `/admin/orders`.
+- Related race boundaries: `admin/orders/fulfillment.service.ts`, `admin/delivery/routing-dispatch.service.ts`, `delivery/dispatch-worker.ts`.
+- UI/types: `apps/web/src/features/admin/ecommerce/types.ts`, `apiCall.ts`, and `orders/{detail-page,order-operations,order-recovery,status}.tsx`.
+- Tests: `apps/server/tests/admin.orders.{operations,service,controller}.test.ts` and `courier.{dispatch-worker,routing-dispatch.service}.test.ts`; existing fulfillment regression tests also pass.
+
+### Schema and permissions prerequisite
+
+No additional schema or permission-catalog changes in Step 3. The generated Step 2 schema/client must match the user-managed database before app testing: `OrderRecovery`, reservation `restocked`, and other Step 2 additions must exist. Schema application is **not confirmed**. Do not run database commands to supply this evidence.
+
+Receipt/inspection require admin access and order fulfillment. Explicit restock additionally requires inventory manage. Refund/restock additionally requires refund authority. Cancellation authority by itself permits cancellation but does not grant committed-stock restoration. Use existing permission assignments; no new seed requirement. Verify custom-role combinations through the app.
+
+### Safe verification evidence
+
+- `bun run --cwd apps/server check-types`: passed.
+- Focused files run in separate Bun processes to isolate module mocks: operations 26 tests/86 assertions, service 9/21, controller 7/12, fulfillment 11/17, worker 6/13, routing/queue 11/25. Total **70 passed, 174 assertions, zero failures**.
+- Tests use in-memory Prisma/provider/environment mocks. Lost conditional updates, serializable conflict mapping, and rollback assertions are code evidence; they do not prove real PostgreSQL concurrency or provider behavior.
+- Web Vite build with `tests/env/.env` and web boundary check passed. This build does not start the app or access the database.
+- Raw web TypeScript checking remains blocked by repository-wide server import/path-alias and existing UI typing errors; the new cancellation result guard was corrected. Do not claim a clean full web typecheck.
+- `git diff --check`: passed. Full server test suite, real database concurrency, browser behavior, and live providers were not tested.
+
+### User-run app acceptance: step by step
+
+Use isolated fictional orders after personally confirming schema prerequisites and starting the app. Record before/after stock quantities, reservation states, recovery, and order timeline. Do not use live courier credentials for these checks.
+
+1. Cancel an unshipped reserved order. Expect one release, no refund, cancelled status. Repeat cancellation; expect conflict and unchanged quantities.
+2. Cancel an unshipped committed order with inventory authority. Expect original inventory restored once, each committed reservation changed to `restocked`, stock movements and actor/reason history. Repeat; no increase.
+3. Cancel a committed order as a role with cancel permission but no inventory manage. Expect commercial cancellation and a recovery warning; stock remains unavailable. Use an authorized recovery operator for subsequent receipt/inspection/restock.
+4. For a fake-provider dispatch whose create operation has never been attempted, cancel it. Expect create job/dispatch stopped; a worker must not submit it. Check unchanged booking count.
+5. For attempted/in-flight/accepted fake-provider submission or manually shipped inventory, cancel. Expect recovery review and no stock restoration. An in-flight booking may still complete; its result must remain available for reconciliation. Receipt/restock during active processing must conflict.
+6. For a delivered order, cancellation must conflict. Record full physical receipt instead. Missing confirmation or blank evidence must fail. Receipt changes delivery to returned and creates recovery/history without increasing stock or refunding.
+7. Inspect received goods as unsafe. Stock stays unavailable; explicit restock conflicts. Awaiting-inspection goods must also fail. Do not mark expired or damaged goods sellable merely to bypass the workflow.
+8. On a different complete, unexpired return, inspect every item as sellable and explicitly restock. Expect all original quantities restored once, recovery actor/time stamped and movement/history recorded. Repeat restock, including two competing requests; only one may succeed. Real concurrency remains an acceptance requirement.
+9. Attempt restoring an expired batch after sellable inspection. Expect rejection and no partial stock/recovery changes. Partial/missing/mixed-condition physical receipts cannot use this whole-order action.
+10. Record a refund without selecting restock. Expect money/history change only. On another fully received/inspected paid order, explicitly select restock with a partial refund; expect partial money refund and full-order stock restoration, as the dialog states. Refund totals and deposit behavior are completed in Step 4.
+11. Test roles with fulfillment alone, inventory manage alone, refund alone, and the required combinations. Buttons and server API must enforce the same boundaries; denied requests must leave stock/money unchanged.
+12. Try general status editing to `returned`; expect rejection. Reload order/inventory/delivery screens after successful actions; verify quantities, recovery evidence, actor history, and stopped jobs persist. Verify queued/recovered orders cannot submit through direct API calls.
+
+### Remaining limits and handoff
+
+- No partial-item recovery, replacement sale, disposal, or quarantine workflow is claimed. Unsafe goods remain unavailable. Prepared-food/product policy, serial tracking, and warranty rules are Step 8 scope.
+- Payment receipts/deposits, completion invariants, settlement/refund reconciliation, and delayed tracking writers remain Step 4 work. Current refund eligibility remains the existing paid/partially-refunded contract.
+- Duplicate-dispatch claim lifecycle remains Step 5. General worker lease/retry/crash behavior, uncertain external reconciliation, and exception resolution remain Step 6. No undocumented provider cancellation is called.
+- Real transaction isolation, browser UX, schema application, permission assignments, and fake/live provider acceptance require later user-controlled testing. Passing mocks/build do not establish ecommerce launch readiness.
+- Next agent: read sections 10–11, inspect the current staged/unstaged diff without staging or reverting it, and start Step 4 only when authorized. Trace every payment/completion writer, including settlements and delayed delivery reconciliation, before changing behavior.
+- **Next: Step 4. 13 implementation steps remain (4–16). 15 unfinished acceptance gates remain, including schema/runtime acceptance for Steps 2 and 3. No commit made.**
+
+
+### Commit handoff — 2026-10-02
+
+User authorized commits after Step 3. Step 2 was already committed as `8370197`. The existing user/workspace-provided `20261002144938_returned_restocked/migration.sql` is recorded in a separate schema-migration commit; the agent did not create, edit, or execute that SQL. Its presence does not establish that the database schema has been applied. Step 3 code, tests, UI, and this handoff are committed together. Earlier “uncommitted/no commit” statements describe the evidence at their original handoff time and are superseded by this entry. No push or database command performed. Next remains Step 4; 13 implementation steps and 15 unfinished acceptance gates remain.

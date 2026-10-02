@@ -1,4 +1,3 @@
-import prisma from "@db/server";
 import type {
   CancelOrderInput,
   RecordOrderRefundInput,
@@ -7,10 +6,14 @@ import {
   AdminOrdersServiceError,
   releaseReservations,
   restockCommittedReservations,
+  withOrderTransaction,
 } from "./orders.service";
+import { orderNeedsPhysicalRecovery, stopUnsubmittedDispatches } from "./order-custody";
+import { restockReceivedOrder } from "./order-recovery.service";
 
 type OrdersActor = {
   userId?: string;
+  canRestock?: boolean;
 };
 
 function requiredTrimmed(value: string, field: string) {
@@ -64,7 +67,7 @@ export const orderOperationsService = {
     const reason = requiredTrimmed(input.reason, "Cancellation reason");
     const note = nullableTrimmed(input.note);
 
-    return prisma.$transaction(async (tx) => {
+    return withOrderTransaction(async (tx) => {
       const current = await tx.order.findUnique({ where: { id } });
       if (!current) {
         throw new AdminOrdersServiceError("Order not found", 404);
@@ -76,16 +79,23 @@ export const orderOperationsService = {
         throw new AdminOrdersServiceError("A delivered order cannot be cancelled", 409);
       }
 
+      const courier = await stopUnsubmittedDispatches(tx, id);
+      const physicalRecoveryRequired = await orderNeedsPhysicalRecovery(tx, current, courier.recoveryRequired);
+      const expiredInventory = current.inventoryStatus === "committed" && Boolean(await tx.stockReservation.findFirst({
+        where: { referenceType: "order", referenceId: id, status: "committed", batch: { expiryDate: { lte: new Date() } } },
+      }));
+      const recoveryRequired = physicalRecoveryRequired || expiredInventory || (current.inventoryStatus === "committed" && !actor.canRestock);
+
       let inventorySideEffect = "none";
       let affectedReservations = 0;
-      if (current.inventoryStatus === "reserved") {
+      if (current.inventoryStatus === "reserved" && !physicalRecoveryRequired) {
         affectedReservations = await releaseReservations(tx, {
           orderId: id,
           actorUserId: actor.userId,
           reason: `Order cancelled: ${reason}`,
         });
         inventorySideEffect = affectedReservations > 0 ? "released" : "none";
-      } else if (current.inventoryStatus === "committed") {
+      } else if (current.inventoryStatus === "committed" && !recoveryRequired) {
         affectedReservations = await restockCommittedReservations(tx, {
           orderId: id,
           actorUserId: actor.userId,
@@ -112,11 +122,13 @@ export const orderOperationsService = {
             previousInventoryStatus: current.inventoryStatus,
             inventorySideEffect,
             affectedReservations,
+            recoveryRequired,
+            expiredInventory,
           },
         },
       });
 
-      return { orderId: id, orderStatus: "cancelled", inventorySideEffect };
+      return { orderId: id, orderStatus: "cancelled", inventorySideEffect, recoveryRequired };
     });
   },
 
@@ -130,7 +142,8 @@ export const orderOperationsService = {
     const note = nullableTrimmed(input.note);
     const restockInventory = input.restockInventory ?? false;
 
-    return prisma.$transaction(
+    if (restockInventory && !actor.canRestock) throw new AdminOrdersServiceError("Inventory management and fulfillment permissions are required to restock", 403);
+    return withOrderTransaction(
       async (tx) => {
         const current = await tx.order.findUnique({ where: { id } });
         if (!current) {
@@ -167,11 +180,9 @@ export const orderOperationsService = {
               409,
             );
           }
-          affectedReservations = await restockCommittedReservations(tx, {
-            orderId: id,
-            actorUserId: actor.userId,
-            reason: `Manual refund: ${reason}`,
-          });
+          if (!actor.userId) throw new AdminOrdersServiceError("An authenticated restock actor is required", 403);
+          const recovery = await restockReceivedOrder(tx, id, actor.userId, `Manual refund (whole-order recovery): ${reason}`);
+          affectedReservations = recovery.affectedReservations;
           if (affectedReservations === 0) {
             throw new AdminOrdersServiceError(
               "No committed inventory was available to restock",
@@ -229,7 +240,6 @@ export const orderOperationsService = {
           restockInventory,
         };
       },
-      { isolationLevel: "Serializable" },
     );
   },
 };

@@ -125,6 +125,18 @@ export const RecordOrderRefundDto = t.Object({
   restockInventory: t.Optional(t.Boolean({ default: false })),
 });
 
+export const ReceiveOrderRecoveryDto = t.Object({
+  allItemsReceived: t.Literal(true),
+  note: t.String({ minLength: 1, maxLength: 2000 }),
+});
+export const InspectOrderRecoveryDto = t.Object({
+  disposition: t.Union([t.Literal("sellable"), t.Literal("unsafe")]),
+  note: t.String({ minLength: 1, maxLength: 2000 }),
+});
+export const RestockOrderRecoveryDto = t.Object({
+  note: t.String({ minLength: 1, maxLength: 2000 }),
+});
+
 export type ListOrdersQuery = typeof ListOrdersQueryDto.static;
 export type UpdateOrderStatusesInput = typeof UpdateOrderStatusesDto.static;
 export type UpdateOrderInput = typeof UpdateOrderDto.static;
@@ -133,3 +145,5 @@ export type UpdateOrderTrackingInput = typeof UpdateOrderTrackingDto.static;
 export type MarkOrderDeliveredInput = typeof MarkOrderDeliveredDto.static;
 export type CancelOrderInput = typeof CancelOrderDto.static;
 export type RecordOrderRefundInput = typeof RecordOrderRefundDto.static;
+export type ReceiveOrderRecoveryInput = typeof ReceiveOrderRecoveryDto.static;
+export type InspectOrderRecoveryInput = typeof InspectOrderRecoveryDto.static;

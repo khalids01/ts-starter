@@ -9,6 +9,9 @@ import {
   MarkOrderDeliveredDto,
   MarkOrderShippedDto,
   RecordOrderRefundDto,
+  ReceiveOrderRecoveryDto,
+  InspectOrderRecoveryDto,
+  RestockOrderRecoveryDto,
   UpdateOrderDto,
   UpdateOrderStatusesDto,
   UpdateOrderTrackingDto,
@@ -19,6 +22,7 @@ import {
 } from "./orders.service";
 import { orderFulfillmentService } from "./fulfillment.service";
 import { orderOperationsService } from "./order-operations.service";
+import { orderRecoveryService } from "./order-recovery.service";
 
 function handleOrderError(error: unknown, set: { status?: number | string }) {
   if (error instanceof AdminOrdersServiceError) {
@@ -51,6 +55,11 @@ const cancelOrders = requireAllPermissions([
 const refundOrders = requireAllPermissions([
   Permissions.AdminAccess,
   Permissions.AdminOrdersRefund,
+]);
+const restockOrders = requireAllPermissions([
+  Permissions.AdminAccess,
+  Permissions.AdminOrdersFulfill,
+  Permissions.AdminInventoryManage,
 ]);
 
 export const adminOrdersController = new Elysia({
@@ -142,9 +151,9 @@ export const adminOrdersController = new Elysia({
   )
   .post(
     "/:id/cancel",
-    async ({ params: { id }, body, set, userId }) => {
+    async ({ params: { id }, body, set, userId, hasPermission }) => {
       try {
-        return await orderOperationsService.cancelOrder(id, body, { userId });
+        return await orderOperationsService.cancelOrder(id, body, { userId, canRestock: hasPermission(Permissions.AdminInventoryManage) });
       } catch (error) {
         return handleOrderError(error, set);
       }
@@ -154,15 +163,15 @@ export const adminOrdersController = new Elysia({
       params: IdParamDto,
       body: CancelOrderDto,
       detail: {
-        summary: "Cancel an order and reverse its inventory once",
+        summary: "Cancel an order and safely release or review its inventory",
       },
     },
   )
   .post(
     "/:id/refunds",
-    async ({ params: { id }, body, set, userId }) => {
+    async ({ params: { id }, body, set, userId, hasPermission }) => {
       try {
-        return await orderOperationsService.recordRefund(id, body, { userId });
+        return await orderOperationsService.recordRefund(id, body, { userId, canRestock: hasPermission(Permissions.AdminInventoryManage) && hasPermission(Permissions.AdminOrdersFulfill) });
       } catch (error) {
         return handleOrderError(error, set);
       }
@@ -176,6 +185,18 @@ export const adminOrdersController = new Elysia({
       },
     },
   )
+  .post("/:id/recovery", async ({ params: { id }, body, set, userId }) => {
+    try { return await orderRecoveryService.receive(id, body, userId!); }
+    catch (error) { return handleOrderError(error, set); }
+  }, { beforeHandle: fulfillOrders, params: IdParamDto, body: ReceiveOrderRecoveryDto, detail: { summary: "Record full physical receipt without restocking" } })
+  .patch("/:id/recovery", async ({ params: { id }, body, set, userId }) => {
+    try { return await orderRecoveryService.inspect(id, body, userId!); }
+    catch (error) { return handleOrderError(error, set); }
+  }, { beforeHandle: fulfillOrders, params: IdParamDto, body: InspectOrderRecoveryDto, detail: { summary: "Inspect physically received inventory" } })
+  .post("/:id/recovery/restock", async ({ params: { id }, body, set, userId }) => {
+    try { return await orderRecoveryService.restock(id, body.note, userId!); }
+    catch (error) { return handleOrderError(error, set); }
+  }, { beforeHandle: restockOrders, params: IdParamDto, body: RestockOrderRecoveryDto, detail: { summary: "Restock inspected sellable inventory once" } })
   .post(
     "/:id/ship",
     async ({ params: { id }, body, set, userId }) => {

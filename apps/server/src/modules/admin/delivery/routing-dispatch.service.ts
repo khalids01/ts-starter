@@ -273,13 +273,18 @@ export class CourierRoutingDispatchService {
       note: order.customerNotes?.slice(0, 480) || undefined,
     };
     const result = await this.dependencies.db.$transaction(async (tx: any) => {
+      const currentOrder = await tx.order.findUnique({ where: { id: order.id }, include: { recovery: true } });
+      if (!currentOrder || !["confirmed", "processing"].includes(currentOrder.orderStatus) || currentOrder.inventoryStatus !== "committed" || currentOrder.recovery || currentOrder.deliveryStatus === "returned") {
+        throw new AdminDeliveryServiceError("Order was cancelled or recovered; reload before dispatch", 409);
+      }
+      const queued = await tx.courierDispatch.updateMany({ where: { id: dispatchId, status: "confirmed" }, data: { status: "queued" } });
+      if (queued.count !== 1) throw new AdminDeliveryServiceError("Dispatch changed; reload before queueing", 409);
       const consignment = await tx.courierConsignment.create({
         data: { orderId: order.id, dispatchId, connectionId: dispatch.connectionId, serviceId: dispatch.serviceId, invoice, codAmount: codAmount.toFixed(2), currency: order.currency, requestSnapshot },
       });
       await tx.courierOperation.create({ data: { consignmentId: consignment.id, kind: "create", identity: `create:${dispatchId}` } });
-      await tx.courierDispatch.update({ where: { id: dispatchId }, data: { status: "queued" } });
       return consignment;
-    });
+    }, { isolationLevel: "Serializable" });
     await this.audit("courier.dispatch.queued", actorUserId, `Queued courier dispatch for ${order.orderNumber}`, { dispatchId, consignmentId: result.id, operationIdentity: `create:${dispatchId}` });
     return result;
   }

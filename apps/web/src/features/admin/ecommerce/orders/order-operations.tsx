@@ -42,16 +42,18 @@ export function OrderOperationsCard(props: {
   order: Order;
   canCancel: boolean;
   canRefund: boolean;
+  canRestock: boolean;
 }) {
   const { order } = props;
   const queryClient = useQueryClient();
   const [cancelDraft, setCancelDraft] = useState<OperationDraft | null>(null);
   const [refundDraft, setRefundDraft] = useState<RefundDraft | null>(null);
 
-  const invalidateOrders = () =>
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.admin.ecommerce.orders.all(),
-    });
+  const invalidateOrders = () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.admin.ecommerce.orders.all() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.admin.ecommerce.inventory.all() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.admin.ecommerce.delivery.all() }),
+  ]);
 
   const cancelOrder = useMutation({
     mutationFn: (draft: OperationDraft) =>
@@ -59,8 +61,12 @@ export function OrderOperationsCard(props: {
         reason: draft.reason.trim(),
         note: draft.note.trim() || null,
       }),
-    onSuccess: () => {
-      toast.success("Order cancelled");
+    onSuccess: (result) => {
+      const recoveryRequired = typeof result === "object" && result !== null
+        && "recoveryRequired" in result && result.recoveryRequired;
+      toast.success(recoveryRequired
+        ? "Order cancelled; inventory requires recovery review"
+        : "Order cancelled");
       setCancelDraft(null);
       void invalidateOrders();
     },
@@ -96,6 +102,9 @@ export function OrderOperationsCard(props: {
     !order.deliveredAt;
   const canRecordRefund =
     props.canRefund && ["paid", "partially_refunded"].includes(order.paymentStatus);
+  const canRefundRestock = props.canRestock && order.inventoryStatus === "committed"
+    && order.recovery?.disposition === "sellable" && Boolean(order.recovery.inspectedAt)
+    && !order.recovery.restockedAt;
 
   return (
     <section className="space-y-4 rounded-lg border p-4 sm:p-5">
@@ -196,8 +205,9 @@ export function OrderOperationsCard(props: {
           <DialogHeader>
             <DialogTitle>Cancel order?</DialogTitle>
             <DialogDescription>
-              This records an audit event and releases reserved stock or restocks
-              committed stock. The inventory side effect runs only once.
+              Unattempted dispatches are stopped. Stock already sent to a courier,
+              or with an uncertain booking, stays unavailable until physical recovery
+              and inspection. Cancellation does not cancel a parcel in the courier portal.
             </DialogDescription>
           </DialogHeader>
           {cancelDraft ? (
@@ -245,9 +255,9 @@ export function OrderOperationsCard(props: {
               <OperationFields draft={refundDraft} onChange={setRefundDraft} />
               <label className="flex items-start gap-3 rounded-md border p-3 text-sm">
                 <Checkbox
-                  aria-label="Restock committed inventory"
+                  aria-label="Restock all inspected inventory"
                   checked={refundDraft.restockInventory}
-                  disabled={order.inventoryStatus !== "committed"}
+                  disabled={!canRefundRestock}
                   onCheckedChange={(checked) =>
                     setRefundDraft({
                       ...refundDraft,
@@ -256,10 +266,11 @@ export function OrderOperationsCard(props: {
                   }
                 />
                 <span>
-                  <span className="font-medium">Restock committed inventory</span>
+                  <span className="font-medium">Restock all inspected inventory</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    Optional and available once. Leave this unchecked when the
-                    customer keeps the items or inventory was already reversed.
+                    Restocks every item in this order once, even for a partial refund.
+                    Requires full physical receipt, a sellable inspection, and inventory
+                    management plus fulfillment permissions. Leave unchecked for money-only refunds.
                   </span>
                 </span>
               </label>
