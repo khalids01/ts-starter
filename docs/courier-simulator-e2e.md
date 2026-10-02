@@ -28,7 +28,9 @@ A local simulation demonstrates our HTTP integration and application behavior ag
 5. `E2E_MODE=true` currently disables the dispatch timer. A future E2E harness must invoke `runOnce` through an isolated test process/helper. Do not expose a production worker-trigger endpoint or silently enable uncontrolled workers.
 6. Existing Prisma-based E2E fixtures require separately authorized DB provisioning/reset. Simulator research does not authorize those operations.
 
-## Implementation instructions for Step 12
+The detailed execution guide is [Steadfast courier simulation plan](steadfast-courier-simulation-plan.md). Use its 12-step ledger for implementation; this document retains research and integration context.
+
+## Simulator preparation for V3 Steps 10–11
 
 Do this after the preceding payment, shipment-claim, retry, tracking, and authorization fixes. The simulator can be installed by the user earlier, but that is not acceptance of the unfinished delivery workflow.
 
