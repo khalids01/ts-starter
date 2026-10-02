@@ -1,6 +1,7 @@
+import { releaseUnsubmittedShipmentClaim } from "../../delivery/shipment-claim";
 import { OrderMoneyError } from "./payment-accounting";
 /** Payment evidence invalidates reviewed booking requests; never silently rewrite them. */
-export async function invalidatePaymentDispatches(tx: any, orderId: string) {
+export async function invalidatePaymentDispatches(tx: any, orderId: string, actorUserId?: string) {
   await tx.courierDispatch.updateMany({
     where: { orderId, status: "confirmed", consignment: { is: null } },
     data: { status: "cancelled" },
@@ -27,4 +28,5 @@ export async function invalidatePaymentDispatches(tx: any, orderId: string) {
       if (!existing) await tx.courierException.create({ data: { consignmentId: consignment.id, kind: "payment_review_changed", details: { orderId, bookingAmountFrozen: true } } });
     }
   }
+  await releaseUnsubmittedShipmentClaim(tx, orderId, actorUserId, "Payment evidence invalidated an unsubmitted courier review");
 }

@@ -17,7 +17,7 @@ export async function restockReceivedOrder(tx: Prisma.TransactionClient, orderId
   if (!recovery?.receivedAt || recovery.disposition !== "sellable" || !recovery.inspectedAt || !recovery.inspectedByUserId || recovery.restockedAt) {
     throw new AdminOrdersServiceError("Record full physical receipt and a sellable inspection before restocking", 409);
   }
-  await stopUnsubmittedDispatches(tx, orderId);
+  await stopUnsubmittedDispatches(tx, orderId, actorUserId);
   await assertNoBookingInProgress(tx, orderId);
   const stamped = await tx.orderRecovery.updateMany({
     where: { id: recovery.id, disposition: "sellable", restockedAt: null },
@@ -45,7 +45,7 @@ export const orderRecoveryService = {
       if (order.orderStatus !== "cancelled" && !["shipped", "out_for_delivery", "delivered", "returned", "failed"].includes(order.deliveryStatus)) {
         throw new AdminOrdersServiceError("Cancel an unshipped order before recording its recovery", 409);
       }
-      await stopUnsubmittedDispatches(tx, orderId);
+      await stopUnsubmittedDispatches(tx, orderId, actorUserId);
       await assertNoBookingInProgress(tx, orderId);
       const recovery = await tx.orderRecovery.create({ data: { orderId, receivedAt: new Date(), receivedByUserId: actorUserId, receiptNote } });
       await tx.order.update({ where: { id: orderId }, data: { deliveryStatus: "returned" } });

@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import { assertShipmentClaim, ShipmentClaimConflict } from "../../delivery/shipment-claim";
+import { shipmentNeedsRecovery, manualShipmentNeedsRecovery } from "../../ecommerce/orders/recovery-policy";
 import { courierCod } from "../../ecommerce/orders/payment-accounting";
 import { courierRequestSnapshot, assertReviewedCourierRequest } from "../../delivery/dispatch-snapshot";
 import prisma from "@db/server";
@@ -214,11 +217,10 @@ export class CourierRoutingDispatchService {
     if (!selected) throw new AdminDeliveryServiceError("The selected courier route is not currently eligible", 409);
     const isOverride = Boolean(recommended && (recommended.connectionId !== selected.connectionId || recommended.serviceId !== selected.serviceId));
     if (isOverride && !input.overrideReason?.trim()) throw new AdminDeliveryServiceError("An override reason is required", 400);
-    const active = await this.dependencies.db.courierDispatch.findFirst({ where: { orderId, status: { in: ["confirmed", "queued", "processing", "submitted"] } } });
-    if (active) throw new AdminDeliveryServiceError("This order already has an active courier dispatch", 409);
+
     const snapshot = {
       schemaVersion: 2,
-      reviewedRequest: recommendation.reviewedRequest,
+      reviewedRequest: { ...recommendation.reviewedRequest, invoice: `${recommendation.reviewedRequest.invoice.slice(0, 83)}_${randomUUID().replaceAll("-", "").slice(0, 16)}` },
       createdAt: new Date().toISOString(),
       request: recommendation.request,
       evaluatedRules: recommendation.evaluatedRules,
@@ -229,30 +231,44 @@ export class CourierRoutingDispatchService {
       overrideReason: input.overrideReason?.trim() ?? null,
       confirmedByUserId: actorUserId,
     };
-    const dispatch = await this.dependencies.db.courierDispatch.create({
-      data: { orderId, connectionId: input.connectionId, serviceId: input.serviceId, routingSnapshot: snapshot, overrideReason: input.overrideReason?.trim(), confirmedByUserId: actorUserId, status: "confirmed" },
+    const dispatch = await this.shipmentTransaction(async (tx: any) => {
+      const order = await tx.order.findUnique({ where: { id: orderId }, include: { addresses: true, refunds: true, payments: true, recovery: true, statusEvents: { where: { type: "delivery" }, select: { newValue: true } } } });
+      if (!order || !["confirmed", "processing"].includes(order.orderStatus) || order.inventoryStatus !== "committed" || order.recovery
+        || !["unfulfilled", "preparing", "ready_to_ship"].includes(order.deliveryStatus) || order.shippedAt || order.deliveredAt) {
+        throw new AdminDeliveryServiceError("Only unshipped, confirmed orders with committed inventory can acquire a shipment", 409);
+      }
+      try { assertReviewedCourierRequest(order, recommendation.reviewedRequest); }
+      catch (error) { throw new AdminDeliveryServiceError((error as Error).message, 409); }
+      const active = await tx.courierDispatch.findFirst({ where: { orderId, status: { notIn: ["cancelled", "completed"] } } });
+      const history = await tx.courierConsignment.findMany({ where: { orderId }, include: { operations: true } });
+      if (active || history.some(shipmentNeedsRecovery) || manualShipmentNeedsRecovery({ ...order, statusEvents: order.statusEvents ?? [] })) throw new AdminDeliveryServiceError("Reconcile existing or uncertain shipments before confirming another route", 409);
+      const created = await tx.courierDispatch.create({
+        data: { orderId, connectionId: input.connectionId, serviceId: input.serviceId, routingSnapshot: snapshot, overrideReason: input.overrideReason?.trim(), confirmedByUserId: actorUserId, status: "confirmed" },
+      });
+      await tx.courierShipmentClaim.create({ data: { orderId, dispatchId: created.id } });
+      await tx.orderStatusEvent.create({ data: {
+        orderId, type: "delivery", newValue: "shipment_claim_acquired", actorUserId,
+        note: "Courier route confirmed", metadata: { action: "shipment_claim_acquired", dispatchId: created.id, connectionId: input.connectionId, serviceId: input.serviceId, invoice: snapshot.reviewedRequest.invoice },
+      } });
+      return created;
     });
     await this.audit(isOverride ? "courier.dispatch.route_overridden" : "courier.dispatch.route_confirmed", actorUserId, `Confirmed courier route for ${recommendation.orderNumber}`, { dispatchId: dispatch.id, orderId, connectionId: input.connectionId, serviceId: input.serviceId });
     return { ...dispatch, routingSnapshot: snapshot };
   }
 
   async queue(dispatchId: string, actorUserId: string) {
-    const dispatch = await this.dependencies.db.courierDispatch.findUnique({
-      where: { id: dispatchId },
-      include: { order: { include: { addresses: true, refunds: true, payments: true } }, connection: true, service: true, consignment: true },
-    });
-    if (!dispatch) throw new AdminDeliveryServiceError("Courier dispatch not found", 404);
-    if (dispatch.consignment) return dispatch.consignment;
-    if (dispatch.status !== "confirmed") throw new AdminDeliveryServiceError("Courier dispatch is not awaiting submission", 409);
-    const order = dispatch.order;
-    if (!["confirmed", "processing"].includes(order.orderStatus) || order.inventoryStatus !== "committed") {
-      throw new AdminDeliveryServiceError("Order must be confirmed with committed inventory before dispatch", 409);
-    }
-    const invoice = order.orderNumber.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100);
-    const result = await this.dependencies.db.$transaction(async (tx: any) => {
-      const currentOrder = await tx.order.findUnique({ where: { id: order.id }, include: { recovery: true, payments: true, refunds: true, addresses: true } });
-      if (!currentOrder || !["confirmed", "processing"].includes(currentOrder.orderStatus) || currentOrder.inventoryStatus !== "committed" || currentOrder.recovery || currentOrder.deliveryStatus === "returned") {
-        throw new AdminDeliveryServiceError("Order was cancelled or recovered; reload before dispatch", 409);
+    let orderNumber = "";
+    let newlyQueued = false;
+    const result = await this.shipmentTransaction(async (tx: any) => {
+      const dispatch = await tx.courierDispatch.findUnique({ where: { id: dispatchId }, include: { consignment: true } });
+      if (!dispatch) throw new AdminDeliveryServiceError("Courier dispatch not found", 404);
+      await assertShipmentClaim(tx, dispatch.orderId, dispatchId);
+      if (dispatch.consignment) return dispatch.consignment;
+      if (dispatch.status !== "confirmed") throw new AdminDeliveryServiceError("Courier dispatch is not awaiting submission", 409);
+      const currentOrder = await tx.order.findUnique({ where: { id: dispatch.orderId }, include: { recovery: true, payments: true, refunds: true, addresses: true } });
+      if (!currentOrder || !["confirmed", "processing"].includes(currentOrder.orderStatus) || currentOrder.inventoryStatus !== "committed" || currentOrder.recovery
+        || !["unfulfilled", "preparing", "ready_to_ship"].includes(currentOrder.deliveryStatus) || currentOrder.shippedAt || currentOrder.deliveredAt) {
+        throw new AdminDeliveryServiceError("Order was cancelled, shipped or recovered; reload before dispatch", 409);
       }
       let requestSnapshot;
       try { requestSnapshot = assertReviewedCourierRequest(currentOrder, jsonObject(dispatch.routingSnapshot).reviewedRequest); }
@@ -260,12 +276,14 @@ export class CourierRoutingDispatchService {
       const queued = await tx.courierDispatch.updateMany({ where: { id: dispatchId, status: "confirmed" }, data: { status: "queued" } });
       if (queued.count !== 1) throw new AdminDeliveryServiceError("Dispatch changed; reload before queueing", 409);
       const consignment = await tx.courierConsignment.create({
-        data: { orderId: order.id, dispatchId, connectionId: dispatch.connectionId, serviceId: dispatch.serviceId, invoice, codAmount: requestSnapshot.codAmount, currency: currentOrder.currency, requestSnapshot },
+        data: { orderId: dispatch.orderId, dispatchId, connectionId: dispatch.connectionId, serviceId: dispatch.serviceId, invoice: requestSnapshot.invoice, codAmount: requestSnapshot.codAmount, currency: currentOrder.currency, requestSnapshot },
       });
       await tx.courierOperation.create({ data: { consignmentId: consignment.id, kind: "create", identity: `create:${dispatchId}` } });
+      orderNumber = currentOrder.orderNumber;
+      newlyQueued = true;
       return consignment;
-    }, { isolationLevel: "Serializable" });
-    await this.audit("courier.dispatch.queued", actorUserId, `Queued courier dispatch for ${order.orderNumber}`, { dispatchId, consignmentId: result.id, operationIdentity: `create:${dispatchId}` });
+    });
+    if (newlyQueued) await this.audit("courier.dispatch.queued", actorUserId, `Queued courier dispatch for ${orderNumber}`, { dispatchId, consignmentId: result.id, operationIdentity: `create:${dispatchId}` });
     return result;
   }
 
@@ -338,6 +356,17 @@ export class CourierRoutingDispatchService {
     await this.dependencies.db.courierRoutingRule.delete({ where: { id } });
     await this.audit("courier.routing_rule.deleted", actorUserId, `Permanently deleted assignment rule ${existing.name}`, { ruleId: id });
     return { message: "Assignment rule permanently deleted" };
+  }
+
+  private async shipmentTransaction<T>(work: (tx: any) => Promise<T>): Promise<T> {
+    try { return await this.dependencies.db.$transaction(work, { isolationLevel: "Serializable" }); }
+    catch (error) {
+      if (error instanceof ShipmentClaimConflict) throw new AdminDeliveryServiceError(error.message, 409);
+      if (typeof error === "object" && error && "code" in error && ["P2002", "P2034"].includes(String(error.code))) {
+        throw new AdminDeliveryServiceError("Shipment changed or another route won ownership; reload and retry", 409);
+      }
+      throw error;
+    }
   }
 
   private async orderRequest(orderId: string): Promise<{ order: any; request: CourierRouteRequest }> {

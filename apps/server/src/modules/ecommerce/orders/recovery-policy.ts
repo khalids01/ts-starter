@@ -2,7 +2,7 @@ export type ShipmentEvidence = Readonly<{
   state: string;
   externalId: string | null;
   submittedAt: Date | null;
-  operations: readonly Readonly<{ kind: string; state: string; attemptCount: number }>[];
+  operations: readonly Readonly<{ kind: string; state: string; attemptCount: number; leaseUntil?: Date | null }>[];
 }>;
 
 /** Missing or contradictory evidence must never put goods back into saleable stock. */
@@ -11,7 +11,7 @@ export function shipmentNeedsRecovery(shipment: ShipmentEvidence) {
   if (!["pending_submission", "cancelled_before_submission"].includes(shipment.state)) return true;
   const creates = shipment.operations.filter((operation) => operation.kind === "create");
   return creates.length !== 1 || creates.some((operation) =>
-    operation.attemptCount !== 0 || !["pending", "cancelled"].includes(operation.state),
+    operation.attemptCount !== 0 || Boolean(operation.leaseUntil) || !["pending", "cancelled"].includes(operation.state),
   );
 }
 

@@ -24,6 +24,7 @@ function harness(options: { delivered?: boolean; settlementAmount?: string } = {
   const statusEvents: any[] = [];
   const orderUpdates: any[] = [];
   const db: any = {
+    courierShipmentClaim: { findUnique: mock(async () => null) },
     courierConsignment: { findUnique: mock(async () => consignment), update: mock(async ({ data }: any) => Object.assign(consignment, data)) },
     courierReturn: {
       findFirst: mock(async () => null),

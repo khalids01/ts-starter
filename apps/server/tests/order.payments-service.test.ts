@@ -9,6 +9,7 @@ let settlements: any[];
 let consignments: any[];
 let exceptions: any[];
 const db: any = {
+  courierShipmentClaim: { findUnique: mock(async () => null) },
   order: {
     findUnique: mock(async () => ({ ...order, payments, refunds })),
     update: mock(async ({ data }: any) => Object.assign(order, data)),
@@ -22,7 +23,7 @@ const db: any = {
   courierConsignment: {
     findMany: mock(async () => consignments.filter((entry) => entry.active)),
     findFirst: mock(async () => { const row = consignments.find((entry) => entry.active || entry.submittedAt); return row ? { ...row, order: { deliveryStatus: order.deliveryStatus } } : null; }),
-    findUnique: mock(async ({ where }: any) => consignments.find((entry) => entry.id === where.id)),
+    findUnique: mock(async ({ where }: any) => { const row = consignments.find((entry) => entry.id === where.id); return row ? { ...row, order: { ...order, payments, refunds } } : null; }),
     update: mock(async ({ where, data }: any) => Object.assign(consignments.find((entry) => entry.id === where.id), data)),
   },
   courierOperation: { updateMany: mock(async () => ({ count: 1 })) },

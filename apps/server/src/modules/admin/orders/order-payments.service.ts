@@ -1,3 +1,4 @@
+import { releaseDeliveredShipmentClaim } from "../../delivery/shipment-claim";
 import { createHash } from "node:crypto";
 import { invalidatePaymentDispatches } from "../../ecommerce/orders/payment-dispatch";
 import { minorUnitsString, moneyStatus, orderMoney } from "../../ecommerce/orders/payment-accounting";
@@ -29,7 +30,9 @@ async function persistPayment(tx: any, order: any, entry: any, actorUserId: stri
     note: entry.note, actorUserId,
     metadata: { action: entry.entryType === "receipt" ? "payment_receipt_recorded" : "payment_receipt_reversed", paymentId: payment.id, amount: entry.amount, currency: entry.currency, method: entry.method, reference: entry.reference },
   } });
-  await invalidatePaymentDispatches(tx, order.id);
+  await invalidatePaymentDispatches(tx, order.id, actorUserId);
+  const delivered = await tx.courierConsignment.findMany({ where: { orderId: order.id, state: "delivered" } });
+  for (const shipment of delivered) await releaseDeliveredShipmentClaim(tx, shipment.id, actorUserId);
   return payment;
 }
 

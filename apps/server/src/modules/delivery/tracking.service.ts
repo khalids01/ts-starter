@@ -1,3 +1,4 @@
+import { releaseDeliveredShipmentClaim } from "./shipment-claim";
 import { reconcileCourierSettlement } from "./settlement-accounting";
 import prisma from "@db/server";
 import { normalizeCourierState } from "./tracking";
@@ -120,6 +121,7 @@ export class CourierTrackingService {
             }
           }
         }
+        if (decision.orderDeliveryStatus === "delivered") await releaseDeliveredShipmentClaim(tx, consignment.id);
         if (decision.exceptionKind) {
           const existing = await tx.courierException.findFirst({ where: { consignmentId: consignment.id, kind: decision.exceptionKind, state: "open" } });
           if (!existing) await tx.courierException.create({ data: { consignmentId: consignment.id, kind: decision.exceptionKind, details: { eventKey: input.eventKey, providerState: input.providerState } } });

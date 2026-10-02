@@ -1,3 +1,4 @@
+import { releaseDeliveredShipmentClaim } from "./shipment-claim";
 import { minorUnitsString, moneyStatus, orderMoney } from "../ecommerce/orders/payment-accounting";
 import { paymentMinorUnits } from "../ecommerce/orders/payment-policy";
 
@@ -11,7 +12,10 @@ async function mismatch(tx: any, consignment: any, settlement: any, reason: stri
 /** Shared by direct settlement recording and delayed delivery; never infer payment from delivery. */
 export async function reconcileCourierSettlement(tx: any, consignment: any, settlement: any, actorUserId: string) {
   const credited = await tx.orderPayment.findUnique({ where: { settlementId: settlement.id } });
-  if (credited) return "reconciled";
+  if (credited) {
+    await releaseDeliveredShipmentClaim(tx, consignment.id, actorUserId);
+    return "reconciled";
+  }
   const order = await tx.order.findUnique({ where: { id: consignment.orderId }, include: { payments: true, refunds: true, recovery: true } });
   let money;
   try {
@@ -40,5 +44,6 @@ export async function reconcileCourierSettlement(tx: any, consignment: any, sett
     note: "Courier gross COD collection reconciled", actorUserId,
     metadata: { settlementId: settlement.id, consignmentId: consignment.id, paymentId: payment.id },
   } });
+  await releaseDeliveredShipmentClaim(tx, consignment.id, actorUserId);
   return "reconciled";
 }

@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–4 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Steps 5–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–5 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Steps 6–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 1 is complete. Steps 2–4 implementation/evidence are recorded in sections 10–12. Schema application, updated RBAC catalog/defaults, and runtime acceptance remain unconfirmed. Next implementation is Step 5 only after authorization. **12 implementation steps remain (5–16); 15 acceptance gates remain unfinished including Steps 2–4.** Local Steadfast simulation research is recorded in `docs/courier-simulator-e2e.md`; mappings/installation/E2E remain future work, not a passed provider acceptance gate.
+Step 1 is complete. Steps 2–5 implementation/evidence are recorded in sections 10–13. Schema application, updated permission catalog/defaults, and runtime acceptance remain unconfirmed. Next implementation is Step 6 only after authorization. **11 implementation steps remain (6–16); 15 acceptance gates remain unfinished including Steps 2–5.** Steps 4–5 are committed; the detailed `docs/steadfast-courier-simulation-plan.md` is recorded in a separate documentation commit. The simulator plan has a separate 12-step ledger; no simulator/E2E readiness is claimed.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -830,3 +830,81 @@ Next agent: first read sections 10–12 and the current uncommitted diff, paymen
 ### Step 4 commit authorization — 2026-10-03
 
 User authorized committing Step 4 before starting Step 5. The existing workspace-provided payment-status migration is recorded separately; the agent did not create/edit/apply its SQL. Step 4 source, tests, and documentation are committed together. Earlier uncommitted statements describe the original handoff and are superseded by this entry. Schema/permission application and runtime acceptance remain unconfirmed.
+
+
+## 13. Step 5 — One active shipment under concurrency — 2026-10-03
+
+### Authorization, commit boundary and status
+
+User asked to commit existing work first, implement Step 5, and create a detailed Steadfast courier simulation plan. Existing payment-status migration recorded as `b78fd13`; Step 4 source/tests/docs committed as `b636550`. Neither operation applied SQL or accessed a database. Step 5 implementation and the new simulator plan remain uncommitted; the instruction was to commit before starting Step 5.
+
+Step 5 is implemented with focused mocked/static checks. Real PostgreSQL uniqueness/isolation, multi-runtime races, schema application and browser acceptance remain pending. No migrations, schema edits/generation, seeds, DB access, simulator/app startup, E2E provisioning, live provider calls, or push performed in Step 5.
+
+### Final ownership and attempt policies
+
+1. Route confirmation uses a serializable transaction. It rereads current order/ledger/address, rejects cancelled/shipped/recovered/noncommitted orders and historical handoff, checks existing active/uncertain dispatch history, creates the immutable dispatch and `CourierShipmentClaim`, and writes acquisition history atomically.
+2. `CourierShipmentClaim.orderId` primary key is the cross-connection/cross-runtime ownership authority. A uniqueness/serialization conflict returns 409 with reload/retry guidance. No process-local lock is used in production. Failure rolls back dispatch/claim/history rather than leaving an orphan owner.
+3. Each reviewed attempt gets one bounded invoice: sanitized order-number prefix plus a random 16-hex-character attempt suffix, at most 100 characters. Queue uses the frozen invoice; operation identity remains `create:<dispatchId>`. Retrying never mints another invoice. The snapshot comparator preserves the reviewed attempt invoice while rechecking money/address.
+4. Queue reads current dispatch and validates claim ownership inside the transaction. Existing consignment replay returns the same record only while that dispatch owns the claim; otherwise it conflicts. Creating consignment, outbox operation and queued status is atomic. Concurrent queue losers may receive 409; a subsequent valid retry reuses the existing record.
+5. Worker scan/lease filters require a dispatch with a claim. The worker checks exact order/dispatch ownership before credential resolution and again before the provider call. Claimless/changed ownership is held for manual review without submission. Wider lease-version, crash-recovery, retry/auth/cooldown work remains Step 6.
+6. Commercial cancellation and payment invalidation release ownership only when the cancelled dispatch has no consignment, or its sole create operation is cancelled, never attempted, has no lease, and its consignment is `cancelled_before_submission` without acceptance evidence. Release and its order timeline event occur in the same transaction as the action. Stock restoration remains governed by Step 3, not claim deletion.
+7. Attempted/retry/processing/manual-review/accepted/cancelled/returned parcels retain ownership until reconciled. Bare provider-cancelled, timeout, inactive flags and physical receipt alone do not release uncertain bookings. Contradictory lease evidence is treated as uncertain custody.
+8. Delivered terminal release requires actual consignment/order delivered state, fully evidenced collection, committed inventory, no unfinished create operation, no cancellation/recovery, no open courier exception and no unresolved courier return. Release marks dispatch completed and records history. It is invoked from delivery tracking, collection reconciliation and manual payment evidence for delivered parcels. Legacy ambiguous paid evidence cannot satisfy release.
+9. Terminal release does not permit another shipment of a delivered/previously submitted order. This baseline permits a new review only after **proven never-submitted** cancellation while the order still has eligible committed stock. New attempt gets a new invoice; old dispatch/consignment/outbox/history remains intact. Post-handoff replacement/re-dispatch is not introduced here.
+10. Existing active/uncertain legacy dispatches are not silently claimed or overwritten. Confirmation rejects their history, queue rejects missing ownership, and worker excludes claimless dispatches. User-controlled review of duplicates/uncertainty and deliberate ownership reconciliation is a prerequisite before existing jobs can resume. This agent performs no backfill.
+
+### Files changed and first reads for the next agent
+
+- New `apps/server/src/modules/delivery/shipment-claim.ts`: exact ownership assertion, proven-unsubmitted release, reconciled-delivered release and atomic release audit.
+- `admin/delivery/routing-dispatch.service.ts`: serializable confirmation, unique claim creation, transaction-scoped queue replay/creation and safe conflict mapping.
+- `delivery/dispatch-snapshot.ts`: fixed invoice preservation; `delivery/dispatch-worker.ts`: claim filters and exact ownership checks.
+- `admin/orders/order-custody.ts`, `order-operations.service.ts`, `order-recovery.service.ts`, `order-payments.service.ts`, `orders.service.ts`: action integration, authenticated release actors and conflict mapping.
+- `ecommerce/orders/payment-dispatch.ts`, `recovery-policy.ts`: invalidation release and conservative leased-operation evidence.
+- `delivery/settlement-accounting.ts`, `tracking.service.ts`: delivered/money terminal release without deleting history.
+- New `apps/server/tests/courier.shipment-claim.test.ts`: rollback/uniqueness fixture, competing confirmation/queue, release/hold policies and action integration. Existing affected fixtures updated for required claim lookups.
+- New `docs/steadfast-courier-simulation-plan.md`: 12 detailed future simulator steps; research document links to it. No simulator source/configuration/runtime was created.
+
+### Schema, permissions and legacy prerequisite
+
+No new schema or permission identifiers in Step 5. Requires user-applied Step 2 `CourierShipmentClaim` and preceding payment/recovery schema plus Step 4 payment enum/catalog. Those applications are unconfirmed. A generated client, committed migration or empty claim table is insufficient runtime evidence.
+
+No automatic adoption of existing active jobs. The user must review legacy dispatch/consignment/operation evidence and duplicates before ownership is explicitly reconciled through an approved process. Do not use unrestricted SQL, reset records, release uncertain ownership or invent a successful external cancellation to unblock jobs. Operator exception-resolution tooling and broader recovery remain Step 6; no generic claim-delete API is exposed.
+
+### Safe evidence
+
+- Server typecheck, web client boundary check and `git diff --check`: passed.
+- Vite web client/server build with fictional `tests/env/.env`: passed; no service start/DB access.
+- Focused files run in separate Bun processes to isolate mocks: shipment claims **24 tests/66 assertions**; routing/queue 13/29; dispatch worker 9/20; admin operations 26/86; payment service 24/75; returns/settlements 6/19; tracking 5/15; admin controller 8/13; admin service 14/26; fulfillment 11/17; payment policy 5/17. Total **145 tests passed, 383 assertions, zero failures**.
+- New fixture simulates serialized persistence, rollback and unique keys. Initial missing-routing-rule/invalid-relation fixture failures were corrected and rerun. Promise-based competing calls in this fixture are **not** real database/multi-runtime concurrency evidence.
+- No full-suite, browser, real PostgreSQL, simulator HTTP or live courier test run. Previously recorded standalone web typecheck alias/UI issues remain unresolved; build success is not a clean full web typecheck claim.
+
+### User-run app acceptance after schema and isolated services are ready
+
+Do not send these tests to live Steadfast. Use the later local simulator or authorized fake provider test environment. Record observed identities, stock, ledger, timeline and exact booking count.
+
+1. Prepare one eligible confirmed/committed unshipped fictional order and two eligible courier connections. Open two admin tabs with different selected connections; confirm simultaneously. Exactly one dispatch/claim/history acquisition may succeed. Other request must conflict without an orphan dispatch.
+2. Inspect winning attempt invoice: merchant order context plus bounded suffix. Double queue that dispatch; expect one consignment and one `create:<dispatchId>` operation, or a safe conflict followed by reuse. Invoice must be unchanged across replay.
+3. Check queue/worker against an isolated legacy dispatch without a claim. Expect review-required rejection/no provider call, not silent ownership adoption. Do not create a competing claim by hand without reviewing historical submissions.
+4. Change payment evidence after a confirmed review with no submission. Expect cancelled review, release history, and eligible fresh review with a different invoice. Retain the old dispatch record.
+5. Repeat after queueing a never-attempted job. Expect cancelled create/consignment, released claim and no stock effect from payment invalidation. Review/queue again; expect new attempt invoice and outbox identity. Old cancelled operation must not book later.
+6. Cancel the commercial order before submission. Expect safe claim release combined with the Step 3 stock policy; cancellation audit includes actor. A cancelled commercial order cannot start another shipment merely because its claim is gone.
+7. Inject attempted/in-flight/retry/manual-review or accepted booking. Cancellation/payment change must retain claim and booking identity, with no second confirmation or unsafe stock restoration. Provider cancellation/return-received flags alone must not release it.
+8. Deliver unpaid COD without collection evidence. Expect delivered state but retained claim and unpaid status. Reconcile exact gross collection; when no open recovery/return/exception exists, expect dispatch completed, one release event, claim removed and unchanged historical consignment.
+9. For a fully evidenced prepaid order, deliver through the fake callback/poll. Expect the same reconciled terminal release. A later replay must not add another release event.
+10. With open exceptions, physical recovery or unresolved courier return, matching money/delivery must still retain ownership. Do not bypass review by changing active/status flags.
+11. After successful delivered release, try another confirmation. Expect rejection because the order has shipped/delivered history. Release is cleanup of operational ownership, not authorization to resend delivered goods.
+12. With authorized real PostgreSQL and independent runtimes, repeat two-connection confirmation, double queue, lease-vs-cancellation/payment race and failure rollback. Verify one owner/outbox, no orphan writes and no provider duplicate. Record actual persistence/browser evidence before accepting concurrency readiness.
+
+### Handoff and remaining work
+
+Read claim/routing/worker and action integrations first. Next is **Step 6 — harden dispatch eligibility and recovery**: connection/service/capability checks immediately before submission, lease overlap/version ownership, recovery before uncertain retry, auth/cooldown handling, provider-success/local-save failure separation, and clear operator reconciliation. Do not turn conservative Step 5 holds into automatic resubmission or release.
+
+The separate simulator plan is ready for future execution; all 12 simulator steps remain unstarted. Follow its contract provenance, per-invoice state, real adapter HTTP, signed callback, fault, money and isolated E2E gates. Simulator success will not establish live merchant acceptance.
+
+**11 ecommerce implementation steps remain (6–16); 15 acceptance gates remain unfinished including Steps 2–5 prerequisites/runtime acceptance. Step 5 and the new plan are uncommitted.**
+
+### Step 5 commit authorization and simulator sequencing correction
+
+User authorized committing Step 5 and the simulator documentation. Step 5 source, focused tests, and this guide are committed together; the simulator plan and research link are committed separately. Earlier uncommitted statements describe their historical handoff time and are superseded by this entry. No push, database command, service startup, or live courier action was performed.
+
+Correction to the earlier Step 4 simulator handoff: prepare the simulator before V3 Steps 10–11 persistence/browser verification; V3 Step 12 is security verification, not simulator implementation. The simulator has its own 12-step ledger. Next ecommerce implementation remains Step 6; 11 implementation steps and 15 unfinished acceptance gates remain. User asked whether the remaining work can run together; this does not authorize implementing those steps yet.

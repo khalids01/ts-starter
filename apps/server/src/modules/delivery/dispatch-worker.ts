@@ -1,3 +1,4 @@
+import { assertShipmentClaim } from "./shipment-claim";
 import { assertReviewedCourierRequest } from "./dispatch-snapshot";
 import prisma from "@db/server";
 import { createConfiguredCourierCredentialResolver } from "./credentials.config";
@@ -41,7 +42,7 @@ export class CourierDispatchWorker {
     const rows = await this.dependencies.db.courierOperation.findMany({
       where: {
         nextAttemptAt: { lte: now },
-        consignment: { order: { orderStatus: { in: ["confirmed", "processing"] }, inventoryStatus: "committed", recovery: { is: null } } },
+        consignment: { dispatch: { shipmentClaim: { isNot: null } }, order: { orderStatus: { in: ["confirmed", "processing"] }, inventoryStatus: "committed", recovery: { is: null } } },
         OR: [
           { state: { in: ["pending", "retry"] }, leaseUntil: null },
           { state: { in: ["pending", "retry", "processing"] }, leaseUntil: { lt: now } },
@@ -55,7 +56,7 @@ export class CourierDispatchWorker {
       const claimed = await this.dependencies.db.courierOperation.updateMany({
         where: {
           id: row.id,
-          consignment: { order: { orderStatus: { in: ["confirmed", "processing"] }, inventoryStatus: "committed", recovery: { is: null } } },
+          consignment: { dispatch: { shipmentClaim: { isNot: null } }, order: { orderStatus: { in: ["confirmed", "processing"] }, inventoryStatus: "committed", recovery: { is: null } } },
           OR: [
             { state: { in: ["pending", "retry"] }, leaseUntil: null },
             { state: { in: ["pending", "retry", "processing"] }, leaseUntil: { lt: now } },
@@ -81,6 +82,11 @@ export class CourierDispatchWorker {
       await this.manualReview(operation, "order_no_longer_dispatchable");
       return;
     }
+    try { await assertShipmentClaim(this.dependencies.db, consignment.orderId, consignment.dispatchId); }
+    catch {
+      await this.manualReview(operation, "shipment_claim_missing_or_changed");
+      return;
+    }
     try {
       assertReviewedCourierRequest(consignment.order, consignment.requestSnapshot);
     } catch {
@@ -90,6 +96,8 @@ export class CourierDispatchWorker {
     try {
       const credentials = await this.dependencies.resolver.resolve(credentialConfig(consignment.connection));
       const adapter = this.dependencies.registry.require(consignment.connection.provider.code, "createConsignment");
+      try { await assertShipmentClaim(this.dependencies.db, consignment.orderId, consignment.dispatchId); }
+      catch { await this.manualReview(operation, "shipment_claim_missing_or_changed"); return; }
       const request = consignment.requestSnapshot as CreateConsignmentRequest;
       const steadfast = adapter as SteadfastCourierAdapter;
       const submission = typeof steadfast.createConsignmentWithRecovery === "function"

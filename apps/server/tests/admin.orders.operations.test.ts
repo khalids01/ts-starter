@@ -15,6 +15,7 @@ let loseReservationClaim: boolean;
 let loseOperationClaim: boolean;
 
 const db: any = {
+  courierShipmentClaim: { findUnique: mock(async () => null) },
   order: {
     findUnique: mock(async () => ({ ...order, recovery, refunds })),
     update: mock(async ({ data }: any) => Object.assign(order, data)),

@@ -8,11 +8,12 @@ import type { CourierProviderAdapter } from "../src/modules/delivery/provider";
 
 function harness() {
   const operation: any = { id: "operation-1", consignmentId: "consignment-1", kind: "create", identity: "create:dispatch-1", state: "pending", attemptCount: 0, nextAttemptAt: new Date(0), leaseUntil: null };
-  const consignment: any = { id: "consignment-1", dispatchId: "dispatch-1", requestSnapshot: { invoice: "ORD-1", recipientName: "Jahid", recipientPhone: "01712345678", recipientAddress: "Dhaka", codAmount: "100", currency: "BDT" }, connection: { publicId: "public-1", credentialSource: "server_environment", provider: { code: "fake" } }, dispatch: { id: "dispatch-1" }, order: { orderStatus: "confirmed", inventoryStatus: "committed", recovery: null } };
+  const consignment: any = { id: "consignment-1", orderId: "order-1", dispatchId: "dispatch-1", requestSnapshot: { invoice: "ORD-1", recipientName: "Jahid", recipientPhone: "01712345678", recipientAddress: "Dhaka", codAmount: "100", currency: "BDT" }, connection: { publicId: "public-1", credentialSource: "server_environment", provider: { code: "fake" } }, dispatch: { id: "dispatch-1" }, order: { orderStatus: "confirmed", inventoryStatus: "committed", recovery: null } };
   Object.assign(consignment.order, { orderNumber: "ORD-1", totalAmount: "100.00", currency: "BDT", paymentMethod: "cash_on_delivery", paymentStatus: "unpaid", payments: [], refunds: [], addresses: [{ type: "shipping", fullName: "Jahid", phone: "01712345678", line1: "Dhaka" }] });
   consignment.requestSnapshot = courierRequestSnapshot(consignment.order);
   const updates: any[] = [];
   const db: any = {
+    courierShipmentClaim: { findUnique: mock(async () => ({ orderId: "order-1", dispatchId: "dispatch-1" })) },
     courierOperation: {
       findMany: mock(async () => [operation]),
       updateMany: mock(async ({ data }: any) => { operation.state = data.state; operation.attemptCount += 1; operation.leaseUntil = data.leaseUntil; return { count: 1 }; }),
@@ -85,4 +86,12 @@ it("holds changed money for review before any provider call", async () => {
   consignment.order.payments = [{ id: "deposit-1", entryType: "receipt", amount: "30", currency: "BDT" }];
   await worker.runOnce();
   expect(adapter.createConsignment).not.toHaveBeenCalled(); expect(operation.state).toBe("manual_review"); expect(operation.lastErrorCode).toBe("payment_or_address_review_changed");
+});
+
+
+it.each([null, { orderId: "order-1", dispatchId: "other-dispatch" }])("never submits without the matching claim %j", async (claim) => {
+  const { worker, adapter, operation, db } = harness();
+  db.courierShipmentClaim.findUnique.mockResolvedValue(claim);
+  await worker.runOnce();
+  expect(adapter.createConsignment).not.toHaveBeenCalled(); expect(operation.lastErrorCode).toBe("shipment_claim_missing_or_changed");
 });

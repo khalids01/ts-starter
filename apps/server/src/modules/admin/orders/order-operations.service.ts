@@ -66,7 +66,7 @@ export const orderOperationsService = {
         throw new AdminOrdersServiceError("A delivered order cannot be cancelled", 409);
       }
 
-      const courier = await stopUnsubmittedDispatches(tx, id);
+      const courier = await stopUnsubmittedDispatches(tx, id, actor.userId);
       const physicalRecoveryRequired = await orderNeedsPhysicalRecovery(tx, current, courier.recoveryRequired);
       const expiredInventory = current.inventoryStatus === "committed" && Boolean(await tx.stockReservation.findFirst({
         where: { referenceType: "order", referenceId: id, status: "committed", batch: { expiryDate: { lte: new Date() } } },
@@ -208,7 +208,7 @@ export const orderOperationsService = {
           },
         });
 
-        await invalidatePaymentDispatches(tx, id);
+        await invalidatePaymentDispatches(tx, id, actor.userId);
         return {
           id: refund.id,
           orderId: id,

@@ -1,9 +1,10 @@
+import { releaseUnsubmittedShipmentClaim } from "../../delivery/shipment-claim";
 import type { Prisma } from "@db/server";
 import { shipmentNeedsRecovery, manualShipmentNeedsRecovery } from "../../ecommerce/orders/recovery-policy";
 import { AdminOrdersServiceError } from "./orders.service";
 
 /** Called inside the same serializable transaction as cancellation/recovery. */
-export async function stopUnsubmittedDispatches(tx: Prisma.TransactionClient, orderId: string) {
+export async function stopUnsubmittedDispatches(tx: Prisma.TransactionClient, orderId: string, actorUserId?: string) {
   const shipments = await tx.courierConsignment.findMany({
     where: { orderId },
     include: { operations: true },
@@ -35,6 +36,7 @@ export async function stopUnsubmittedDispatches(tx: Prisma.TransactionClient, or
     }
   }
   await tx.courierDispatch.updateMany({ where: { orderId, status: "confirmed", consignment: { is: null } }, data: { status: "cancelled" } });
+  await releaseUnsubmittedShipmentClaim(tx, orderId, actorUserId, "Cancelled before any courier submission");
   return { recoveryRequired, shipments };
 }
 

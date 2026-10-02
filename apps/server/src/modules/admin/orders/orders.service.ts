@@ -1,3 +1,4 @@
+import { ShipmentClaimConflict } from "../../delivery/shipment-claim";
 import { OrderMoneyError, orderMoney, paymentSummary } from "../../ecommerce/orders/payment-accounting";
 import prisma, { type Prisma } from "@db/server";
 import type {
@@ -23,7 +24,7 @@ export async function withOrderTransaction<T>(work: (tx: Prisma.TransactionClien
   try {
     return await prisma.$transaction(work, { isolationLevel: "Serializable" });
   } catch (error) {
-    if (error instanceof OrderMoneyError) throw new AdminOrdersServiceError(error.message, 409);
+    if (error instanceof OrderMoneyError || error instanceof ShipmentClaimConflict) throw new AdminOrdersServiceError(error.message, 409);
     if (typeof error === "object" && error !== null && "code" in error && ["P2034", "P2002"].includes(String(error.code))) {
       throw new AdminOrdersServiceError("Order changed during this operation; reload and try again", 409);
     }
