@@ -11,7 +11,7 @@ import {
   getConfiguredCourierCredentialKeyring,
 } from "../../delivery/credentials.config";
 import type { CourierCredentialResolver } from "../../delivery/provider";
-import { CourierProviderRequestError } from "../../delivery/providers/steadfast";
+import { CourierProviderRequestError } from "../../delivery/provider";
 import { createCourierProviderRegistry } from "../../delivery/registry.config";
 import type { CourierProviderRegistry } from "../../delivery/registry";
 import type {

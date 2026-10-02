@@ -1,3 +1,4 @@
+import { categoryPolicy, NichePolicyError } from "../../ecommerce/niche/policy";
 import prisma, { type Prisma } from "@db/server";
 import { brandConfig } from "@config/brand";
 import { getEffectiveCategoryAttributes } from "@/modules/catalog/category-template";
@@ -151,6 +152,9 @@ function mapCategory(row: any) {
     })),
     imageUrl: row.imageUrl,
     iconUrl: row.iconUrl,
+    fulfillmentKind: row.fulfillmentKind ?? "standard",
+    serialTracking: row.serialTracking ?? "none",
+    warrantyDays: row.warrantyDays ?? 0,
     brandPolicy: row.brandPolicy,
     showStoreBrand: row.showStoreBrand,
     isActive: row.isActive,
@@ -347,6 +351,8 @@ export class AdminCatalogService {
   }
 
   async createCategory(input: CreateCategoryInput) {
+    let policy;
+    try { policy = categoryPolicy(input); } catch (e) { if (e instanceof NichePolicyError) throw new CatalogServiceError(e.message, e.status); throw e; }
     if (input.parentId) {
       await assertCategoryExists(input.parentId);
     }
@@ -359,6 +365,7 @@ export class AdminCatalogService {
         parentId: input.parentId ?? null,
         imageUrl: input.imageUrl ?? null,
         iconUrl: input.iconUrl ?? null,
+        ...policy,
         brandPolicy: input.brandPolicy ?? "optional",
         showStoreBrand: input.showStoreBrand ?? false,
         isActive: input.isActive ?? true,
@@ -399,6 +406,10 @@ export class AdminCatalogService {
     }
 
     const data: Prisma.CategoryUpdateInput = {};
+    if (input.fulfillmentKind !== undefined || input.serialTracking !== undefined || input.warrantyDays !== undefined) {
+      const existing = await prisma.category.findUnique({ where: { id } });
+      try { Object.assign(data, categoryPolicy({ fulfillmentKind: existing!.fulfillmentKind, serialTracking: existing!.serialTracking, warrantyDays: existing!.warrantyDays, ...input })); } catch (e) { if (e instanceof NichePolicyError) throw new CatalogServiceError(e.message, e.status); throw e; }
+    }
 
     if (input.name !== undefined) {
       data.name = input.name.trim();

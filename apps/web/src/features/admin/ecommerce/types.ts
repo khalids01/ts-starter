@@ -70,6 +70,9 @@ export type CategoryAttribute = {
 };
 
 export type Category = {
+  fulfillmentKind?: "standard" | "packaged_food" | "fresh_food" | "gadget" | "clothing";
+  serialTracking?: "none" | "serial" | "imei" | "serial_and_imei";
+  warrantyDays?: number;
   id: string;
   name: string;
   slug: string;
@@ -222,6 +225,7 @@ export type InventoryStock = {
     id: string;
     batchNumber?: string | null;
     expiryDate?: string | null;
+    disposition?: "sellable" | "quarantined" | "unsafe";
     supplier?: InventorySupplier | null;
   } | null;
   quantityOnHand: number;
@@ -262,7 +266,15 @@ export type OrderAddress = {
   notes?: string | null;
 } | null;
 
+export type TrackedUnit = { id: string; serial: string | null; imei: string | null; state: string };
+export type UnitAllocation = { id: string; state: string; unit: TrackedUnit; claims: { id: string; state: string; issue: string; resolution: string | null }[] };
+export type FoodSlot = { id: string; label: string; postalCodes: string[]; startsAt: string; endsAt: string; cutoffAt: string; capacityUnits: number; reservedUnits: number; isActive: boolean };
 export type OrderLineItem = {
+  fulfillmentKind?: "standard" | "packaged_food" | "fresh_food" | "gadget" | "clothing";
+  serialTracking?: "none" | "serial" | "imei" | "serial_and_imei";
+  warrantyDays?: number;
+  units?: TrackedUnit[];
+  unitAllocations?: UnitAllocation[];
   id: string;
   orderId: string;
   productId?: string | null;
@@ -324,6 +336,7 @@ export type OrderRecovery = {
 };
 
 export type Order = {
+  foodBooking?: { state: string; quantity: number; slot: FoodSlot } | null;
   id: string;
   orderNumber: string;
   userId?: string | null;
@@ -453,6 +466,9 @@ export type CourierRouteRecommendation = {
 };
 
 export type CourierTracking = {
+  canReconcileBooking?: boolean;
+  canRetryHold?: boolean;
+  operation?: { state: string; attemptCount: number; lastErrorCode: string | null; nextAttemptAt: string | null } | null;
   id: string;
   connectionName: string;
   providerName: string;

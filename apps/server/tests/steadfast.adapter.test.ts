@@ -275,3 +275,15 @@ describe("Steadfast courier adapter", () => {
     await expect(adapter.verifyAndParseWebhook({ ...credentials, values: { ...credentials.values, webhookToken: "token" } }, { authorization: "Bearer token", signature: "bad", idempotencyKey: "event-1", body: "{}" })).rejects.toMatchObject({ details: { code: "authentication" } });
   });
 });
+
+it("uncertain recovery uses invoice lookup only and never fabricates a recovered booking ID", async () => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  const adapter = new SteadfastCourierAdapter(queuedFetch([jsonResponse(statusFixture)], calls));
+  expect(await adapter.recoverConsignment(credentials, request.invoice)).toMatchObject({ kind: "uncertain" });
+  expect(calls).toHaveLength(1); expect(calls[0]?.url).toContain("/status_by_invoice/"); expect(calls[0]?.init?.method).not.toBe("POST");
+});
+it("missing recovery status cannot authorize a second create", async () => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  const adapter = new SteadfastCourierAdapter(queuedFetch([jsonResponse({}, { status: 404 })], calls));
+  await expect(adapter.recoverConsignment(credentials, request.invoice)).rejects.toThrow(); expect(calls).toHaveLength(1); expect(calls[0]?.url).not.toContain("create_order");
+});

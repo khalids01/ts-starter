@@ -33,6 +33,10 @@ const orderAddressUpsertMock = mock(async (args: any) => args.create);
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
 const prismaMock = {
+  foodOrderBooking: { findUnique: mock(async () => null), updateMany: mock(async () => ({ count: 0 })) },
+  orderLineItem: { findMany: mock(async () => []) },
+  unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+  inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
   $transaction: transactionMock,
   order: {
     count: orderCountMock,
@@ -193,9 +197,10 @@ function reservationRow(overrides: Record<string, any> = {}) {
     variantId: overrides.variantId ?? "variant-1",
     locationId: overrides.locationId ?? "loc-main",
     batchId: overrides.batchId ?? null,
+    batch: overrides.batch ?? null,
     quantity: overrides.quantity ?? 2,
     status: overrides.status ?? "active",
-    expiresAt: overrides.expiresAt ?? new Date("2026-06-15T09:30:00.000Z"),
+    expiresAt: overrides.expiresAt ?? new Date("2099-06-15T09:30:00.000Z"),
     referenceType: overrides.referenceType ?? "order",
     referenceId: overrides.referenceId ?? "order-1",
     createdAt: new Date("2026-06-15T09:00:00.000Z"),
@@ -438,4 +443,11 @@ it("cannot keep completed status while regressing delivery", async () => {
   const row = { ...orderRow({ orderStatus: "completed", deliveryStatus: "delivered", paymentStatus: "paid", inventoryStatus: "committed" }), totalAmount: "1060", payments: [{ id: "receipt-1", entryType: "receipt", amount: "1060", currency: "BDT" }], refunds: [], recovery: null };
   orderFindUniqueMock.mockResolvedValueOnce(row); orderFindUniqueOrThrowMock.mockResolvedValueOnce(row);
   await expect(adminOrdersService.updateOrderStatuses("order-1", { deliveryStatus: "preparing" }, { userId: "admin-1" })).rejects.toMatchObject({ status: 409 });
+});
+
+it.each([{ expiryDate: new Date(0), disposition: "sellable" }, { expiryDate: null, disposition: "quarantined" }])("does not partially commit an unsafe reserved batch %j", async (batch) => {
+  const { adminOrdersService } = await import("../src/modules/admin/orders/orders.service");
+  stockReservationFindManyMock.mockResolvedValueOnce([reservationRow(), reservationRow({ id: "unsafe", batch })]);
+  await expect(adminOrdersService.updateOrderStatuses("order-1", { orderStatus: "confirmed" }, { userId: "admin-1" })).rejects.toThrow("Reserved inventory expired");
+  expect(inventoryStockUpdateMock).not.toHaveBeenCalled(); expect(stockReservationUpdateMock).not.toHaveBeenCalled();
 });

@@ -1,3 +1,8 @@
+import { markOrderUnits } from "../../ecommerce/niche/gadgets";
+import { canRetryUnsubmittedHold, canReconcileBooking } from "../../delivery/dispatch-policy";
+import { orderHasUnsafeCommittedStock } from "../../ecommerce/inventory/stock-policy";
+import { assertNicheShipmentReady } from "../../ecommerce/niche/fulfillment";
+import { NichePolicyError } from "../../ecommerce/niche/policy";
 import { randomUUID } from "node:crypto";
 import { assertShipmentClaim, ShipmentClaimConflict } from "../../delivery/shipment-claim";
 import { shipmentNeedsRecovery, manualShipmentNeedsRecovery } from "../../ecommerce/orders/recovery-policy";
@@ -237,6 +242,7 @@ export class CourierRoutingDispatchService {
         || !["unfulfilled", "preparing", "ready_to_ship"].includes(order.deliveryStatus) || order.shippedAt || order.deliveredAt) {
         throw new AdminDeliveryServiceError("Only unshipped, confirmed orders with committed inventory can acquire a shipment", 409);
       }
+      try { if ((await assertNicheShipmentReady(tx, orderId)).freshFood) throw new NichePolicyError("Fresh food requires local delivery, not a general parcel service"); } catch (e) { throw new AdminDeliveryServiceError((e as Error).message, 409); }
       try { assertReviewedCourierRequest(order, recommendation.reviewedRequest); }
       catch (error) { throw new AdminDeliveryServiceError((error as Error).message, 409); }
       const active = await tx.courierDispatch.findFirst({ where: { orderId, status: { notIn: ["cancelled", "completed"] } } });
@@ -265,6 +271,7 @@ export class CourierRoutingDispatchService {
       await assertShipmentClaim(tx, dispatch.orderId, dispatchId);
       if (dispatch.consignment) return dispatch.consignment;
       if (dispatch.status !== "confirmed") throw new AdminDeliveryServiceError("Courier dispatch is not awaiting submission", 409);
+      try { if ((await assertNicheShipmentReady(tx, dispatch.orderId)).freshFood) throw new NichePolicyError("Fresh food requires local delivery"); } catch (e) { throw new AdminDeliveryServiceError((e as Error).message, 409); }
       const currentOrder = await tx.order.findUnique({ where: { id: dispatch.orderId }, include: { recovery: true, payments: true, refunds: true, addresses: true } });
       if (!currentOrder || !["confirmed", "processing"].includes(currentOrder.orderStatus) || currentOrder.inventoryStatus !== "committed" || currentOrder.recovery
         || !["unfulfilled", "preparing", "ready_to_ship"].includes(currentOrder.deliveryStatus) || currentOrder.shippedAt || currentOrder.deliveredAt) {
@@ -285,6 +292,56 @@ export class CourierRoutingDispatchService {
     });
     if (newlyQueued) await this.audit("courier.dispatch.queued", actorUserId, `Queued courier dispatch for ${orderNumber}`, { dispatchId, consignmentId: result.id, operationIdentity: `create:${dispatchId}` });
     return result;
+  }
+
+  async reconcileBooking(consignmentId: string, input: { invoice: string; externalId: string; trackingCode?: string | null; providerState: string; note: string }, actorUserId: string) {
+    const externalId = input.externalId.trim(), note = input.note.trim(), providerState = input.providerState.trim();
+    if (!externalId || !note || !providerState) throw new AdminDeliveryServiceError("Merchant booking identity, status and evidence are required", 400);
+    return this.shipmentTransaction(async (tx: any) => {
+      const c = await tx.courierConsignment.findUnique({ where: { id: consignmentId }, include: { operations: true, order: { include: { recovery: true } } } });
+      if (!c || input.invoice.trim() !== c.invoice) throw new AdminDeliveryServiceError("Evidence invoice must match the original booking attempt", 409);
+      const operation = c.operations.length === 1 ? c.operations[0] : null;
+      if (c.externalId === externalId && operation?.state === "completed") return { success: true, duplicate: true };
+      if (!operation || !canReconcileBooking(operation, c)) throw new AdminDeliveryServiceError("Only an unleased uncertain booking can be reconciled from merchant evidence", 409);
+      if (c.order.inventoryStatus !== "committed") throw new AdminDeliveryServiceError("Review inventory custody before accepting this booking identity", 409);
+      await assertShipmentClaim(tx, c.orderId, c.dispatchId);
+      const previousReason = operation.lastErrorCode;
+      const changed = await tx.courierOperation.updateMany({ where: { id: operation.id, state: "manual_review", leaseUntil: null, attemptCount: operation.attemptCount, lastErrorCode: previousReason }, data: { state: "completed", leaseToken: null, leaseUntil: null, lastErrorCode: null } });
+      if (changed.count !== 1) throw new AdminDeliveryServiceError("Booking changed; reload before reconciliation", 409);
+      const trackingCode = input.trackingCode?.trim() || null;
+      await tx.courierConsignment.update({ where: { id: consignmentId }, data: { externalId, trackingCode, providerState, state: "submitted", submittedAt: new Date() } });
+      await tx.courierDispatch.update({ where: { id: c.dispatchId }, data: { status: "submitted" } });
+      await tx.courierException.updateMany({ where: { consignmentId, kind: previousReason, state: "open" }, data: { state: "resolved", resolvedByUserId: actorUserId, resolvedAt: new Date() } });
+      // Preserve cancellation/recovery and money exceptions. Identity evidence is not delivery, collection or physical receipt.
+      if (!c.order.recovery) await markOrderUnits(tx, c.orderId, "shipped");
+      await tx.orderStatusEvent.create({ data: { orderId: c.orderId, type: "delivery", previousValue: c.order.deliveryStatus, newValue: c.order.deliveryStatus, actorUserId, note, metadata: { action: "courier_booking_identity_reconciled", consignmentId, externalId, operationIdentity: operation.identity, previousReason } } });
+      return { success: true, duplicate: false };
+    });
+  }
+
+  async retryUnsubmittedHold(consignmentId: string, note: string, actorUserId: string) {
+    if (!note.trim()) throw new AdminDeliveryServiceError("Review evidence is required", 400);
+    return this.shipmentTransaction(async (tx: any) => {
+      const c = await tx.courierConsignment.findUnique({ where: { id: consignmentId }, include: { operations: true, connection: true, service: true, order: { include: { addresses: true, payments: true, refunds: true, recovery: true } } } });
+      const operation = c?.operations.length === 1 ? c.operations[0] : null;
+      if (!c || !operation || !canRetryUnsubmittedHold(operation, c)) throw new AdminDeliveryServiceError("Uncertain or previously submitted bookings require reconciliation; retry is unavailable", 409);
+      const previousReason = operation.lastErrorCode;
+      const now = new Date();
+      if (!c.connection.enabled || c.connection.archivedAt || c.connection.healthState !== "healthy" || c.connection.cooldownUntil > now || !c.service.enabled || c.service.archivedAt || c.service.connectionId !== c.connectionId) throw new AdminDeliveryServiceError("Restore the connection and service before retrying", 409);
+      if (!["confirmed", "processing"].includes(c.order.orderStatus) || c.order.inventoryStatus !== "committed" || c.order.recovery || c.order.shippedAt || c.order.deliveredAt) throw new AdminDeliveryServiceError("Order is no longer eligible for shipment", 409);
+      await assertShipmentClaim(tx, c.orderId, c.dispatchId);
+      try { assertReviewedCourierRequest(c.order, c.requestSnapshot); if ((await assertNicheShipmentReady(tx, c.orderId)).freshFood) throw new NichePolicyError("Fresh food requires local delivery"); }
+      catch (e) { throw new AdminDeliveryServiceError((e as Error).message, 409); }
+      if (await orderHasUnsafeCommittedStock(tx, c.orderId)) throw new AdminDeliveryServiceError("Committed stock remains unavailable", 409);
+      if (await tx.courierException.findFirst({ where: { consignmentId, state: "open", kind: { not: operation.lastErrorCode } } })) throw new AdminDeliveryServiceError("Resolve other exceptions before retrying", 409);
+      const changed = await tx.courierOperation.updateMany({ where: { id: operation.id, state: "manual_review", attemptCount: 1, leaseUntil: null, lastErrorCode: operation.lastErrorCode }, data: { state: "pending", attemptCount: 0, leaseToken: null, leaseUntil: null, lastErrorCode: null, nextAttemptAt: now } });
+      if (changed.count !== 1) throw new AdminDeliveryServiceError("Dispatch changed; reload", 409);
+      await tx.courierException.updateMany({ where: { consignmentId, state: "open", kind: previousReason }, data: { state: "resolved", resolvedByUserId: actorUserId, resolvedAt: now } });
+      await tx.courierConsignment.update({ where: { id: consignmentId }, data: { state: "pending_submission" } });
+      await tx.courierDispatch.update({ where: { id: c.dispatchId }, data: { status: "queued" } });
+      await tx.orderStatusEvent.create({ data: { orderId: c.orderId, type: "delivery", previousValue: c.order.deliveryStatus, newValue: c.order.deliveryStatus, actorUserId, note: note.trim(), metadata: { action: "unsubmitted_dispatch_hold_retried", consignmentId, operationIdentity: operation.identity, previousReason } } });
+      return { success: true };
+    });
   }
 
   async listDispatches() {

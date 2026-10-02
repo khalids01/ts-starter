@@ -1,3 +1,4 @@
+import { availableStockQuantity } from "@/modules/ecommerce/inventory/stock-policy";
 import { decimalToNumber, decimalToString, optionalNumber, toIso } from "./format";
 
 export function mapVariant(row: any) {
@@ -69,6 +70,8 @@ export function mapProduct(row: any) {
     slug: row.slug,
     description: row.description,
     descriptionHtml: row.descriptionHtml,
+    fulfillmentKind: row.category?.fulfillmentKind ?? "standard",
+    warrantyDays: row.category?.fulfillmentKind === "gadget" ? row.category.warrantyDays ?? 0 : 0,
     categoryId: row.categoryId,
     category: row.category ?? null,
     brandId: row.brandId,
@@ -123,18 +126,11 @@ export function isVariantSellable(variant: any) {
 }
 
 export function availableQuantityFromStocks(stocks: any[] = []) {
-  return stocks.reduce(
-    (sum, stock) => sum + Math.max(0, stock.quantityOnHand - stock.quantityReserved),
-    0,
-  );
+  return availableStockQuantity(stocks);
 }
 
 export function productHasStock(product: any) {
-  return (product.variants ?? []).some((variant: any) =>
-    (variant.inventoryStocks ?? []).some(
-      (stock: any) => stock.quantityOnHand > stock.quantityReserved,
-    ),
-  );
+  return (product.variants ?? []).some((variant: any) => availableQuantityFromStocks(variant.inventoryStocks) > 0);
 }
 
 export function defaultVariantPrice(product: any) {

@@ -1,7 +1,8 @@
+import { canRetryUnsubmittedHold, canReconcileBooking } from "./dispatch-policy";
 import { releaseDeliveredShipmentClaim } from "./shipment-claim";
 import { reconcileCourierSettlement } from "./settlement-accounting";
 import prisma from "@db/server";
-import { normalizeCourierState } from "./tracking";
+import { normalizeCourierState, type CourierStateDecision } from "./tracking";
 import { sanitizeCourierEventPayload } from "./redaction";
 
 type Dependencies = Readonly<{ db: any }>;
@@ -39,7 +40,8 @@ export class CourierTrackingService {
       include: { order: { select: { deliveryStatus: true } } },
     });
     if (!consignment) throw new Error("Courier event does not match a known consignment");
-    if (input.eventType === "tracking_update") {
+    const identityConflict = Boolean(input.externalId && consignment.externalId && input.externalId !== consignment.externalId || input.invoice && consignment.invoice && input.invoice !== consignment.invoice || input.trackingCode && consignment.trackingCode && input.trackingCode !== consignment.trackingCode);
+    if (input.eventType === "tracking_update" && !identityConflict) {
       try {
         await this.dependencies.db.courierEvent.create({
           data: {
@@ -60,12 +62,20 @@ export class CourierTrackingService {
       }
     }
     const normalized = normalizeCourierState(input.providerState);
-    const terminalConflict = ["delivered", "cancelled"].includes(consignment.state) && normalized.normalizedState !== consignment.state;
-    const decision = terminalConflict
-      ? { normalizedState: "exception" as const, exceptionKind: "conflicting_terminal_event" }
-      : normalized;
+    let decision: CourierStateDecision = normalized;
     try {
       await this.dependencies.db.$transaction(async (tx: any) => {
+        // Serialize lifecycle decisions with the current row, not the earlier invoice lookup.
+        const current = await tx.courierConsignment.findUnique({ where: { id: consignment.id }, include: { order: { select: { deliveryStatus: true, orderStatus: true } } } });
+        if (!current) throw new Error("Courier consignment no longer exists");
+        const currentIdentityConflict = identityConflict || Boolean(input.externalId && current.externalId && input.externalId !== current.externalId || input.invoice && current.invoice && input.invoice !== current.invoice || input.trackingCode && current.trackingCode && input.trackingCode !== current.trackingCode);
+        const terminalConflict = ["delivered", "cancelled"].includes(current.state) && normalized.normalizedState !== current.state;
+        const rank: Record<string, number> = { submitted: 1, in_transit: 2, delivery_pending_approval: 3, delivered: 4 };
+        const regression = Boolean(rank[current.state] && rank[normalized.normalizedState] && rank[normalized.normalizedState]! < rank[current.state]!);
+        decision = currentIdentityConflict ? { normalizedState: "exception", exceptionKind: "conflicting_consignment_identity" }
+          : terminalConflict ? { normalizedState: "exception", exceptionKind: "conflicting_terminal_event" }
+          : regression ? { normalizedState: "exception", exceptionKind: "out_of_order_delivery_event" }
+          : normalized;
         await tx.courierEvent.create({
           data: {
             consignmentId: consignment.id,
@@ -78,12 +88,12 @@ export class CourierTrackingService {
             occurredAt: input.occurredAt,
           },
         });
-        await tx.courierConsignment.update({
+        if (!currentIdentityConflict && !terminalConflict && !regression) await tx.courierConsignment.update({
           where: { id: consignment.id },
           data: {
             providerState: input.providerState,
             state: decision.normalizedState,
-            ...(decision.normalizedState === "delivered" ? { deliveredAt: input.occurredAt ?? new Date(), active: false } : {}),
+            ...(decision.normalizedState === "delivered" ? { deliveredAt: current.deliveredAt ?? input.occurredAt ?? new Date(), active: false } : {}),
             ...(decision.normalizedState === "cancelled" ? { active: false } : {}),
           },
         });
@@ -92,14 +102,14 @@ export class CourierTrackingService {
             where: { id: consignment.orderId },
             data: {
               deliveryStatus: decision.orderDeliveryStatus,
-              ...(decision.orderDeliveryStatus === "delivered" ? { deliveredAt: input.occurredAt ?? new Date() } : {}),
+              ...(decision.orderDeliveryStatus === "delivered" ? { deliveredAt: current.deliveredAt ?? input.occurredAt ?? new Date() } : {}),
             },
           });
           await tx.orderStatusEvent.create({
             data: {
               orderId: consignment.orderId,
               type: "delivery",
-              previousValue: consignment.order.deliveryStatus,
+              previousValue: current.order.deliveryStatus,
               newValue: decision.orderDeliveryStatus,
               note: `Courier ${input.source} update`,
               metadata: { consignmentId: consignment.id, eventKey: input.eventKey },
@@ -140,6 +150,7 @@ export class CourierTrackingService {
       include: {
         connection: { include: { provider: true } },
         service: true,
+        operations: { orderBy: { createdAt: "desc" } },
         events: { orderBy: { createdAt: "desc" }, take: 100 },
         exceptions: { where: { state: "open" }, orderBy: { createdAt: "desc" } },
       },
@@ -151,6 +162,9 @@ export class CourierTrackingService {
       providerName: row.connection.provider.displayName,
       serviceName: row.service.displayName,
       invoice: row.invoice,
+      canReconcileBooking: row.operations?.length === 1 && canReconcileBooking(row.operations[0], row),
+      canRetryHold: row.operations?.length === 1 && canRetryUnsubmittedHold(row.operations[0], row),
+      operation: row.operations?.[0] ? { state: row.operations[0].state, attemptCount: row.operations[0].attemptCount, lastErrorCode: row.operations[0].lastErrorCode, nextAttemptAt: row.operations[0].nextAttemptAt?.toISOString() ?? null } : null,
       trackingCode: row.trackingCode,
       trackingUrl: row.trackingUrl,
       state: row.state,

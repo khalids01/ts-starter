@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–5 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Steps 6–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Step 9 regression checks implemented; coverage gates remain open. Steps 10–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -67,13 +67,13 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | --- | --- | --- | --- |
 | 1 | Confirm launch scope and inspect current invariants | Complete: inspection and user launch-scope confirmation recorded | 15 |
 | 2 | Define shared lifecycle/custody/money rules and required schema | Foundation implemented; awaiting schema prerequisite/review | 14 |
-| 3 | Make cancellation and physical restocking safe | Not started | 13 |
-| 4 | Correct COD accounting and settlement boundaries | Not started | 12 |
-| 5 | Enforce one active shipment under concurrency | Not started | 11 |
-| 6 | Recheck queued dispatches and harden worker recovery | Not started | 10 |
-| 7 | Enforce food expiry and safe batch allocation | Not started | 9 |
-| 8 | Complete selected niche behavior and operator UI | Not started | 8 |
-| 9 | Complete focused regression and contract coverage | Not started | 7 |
+| 3 | Make cancellation and physical restocking safe | Implementation checked; awaiting schema/runtime acceptance | 13 |
+| 4 | Correct COD accounting and settlement boundaries | Implementation checked; awaiting schema/runtime acceptance | 12 |
+| 5 | Enforce one active shipment under concurrency | Implementation checked; awaiting schema/runtime acceptance | 11 |
+| 6 | Recheck queued dispatches and harden worker recovery | Implementation checked; awaiting schema/runtime acceptance | 10 |
+| 7 | Enforce food expiry and safe batch allocation | Implementation checked; awaiting schema/runtime acceptance | 9 |
+| 8 | Complete selected niche behavior and operator UI | Implementation checked; awaiting schema/runtime acceptance | 8 |
+| 9 | Complete focused regression and contract coverage | Regression assertions pass; coverage and runtime gates open | 7 |
 | 10 | Verify real persistence and concurrency with user-run tests | Not started | 6 |
 | 11 | Verify full browser workflows and permissions | Not started | 5 |
 | 12 | Complete security verification and fixes | Not started | 4 |
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 1 is complete. Steps 2–5 implementation/evidence are recorded in sections 10–13. Schema application, updated permission catalog/defaults, and runtime acceptance remain unconfirmed. Next implementation is Step 6 only after authorization. **11 implementation steps remain (6–16); 15 acceptance gates remain unfinished including Steps 2–5.** Steps 4–5 are committed; the detailed `docs/steadfast-courier-simulation-plan.md` is recorded in a separate documentation commit. The simulator plan has a separate 12-step ledger; no simulator/E2E readiness is claimed.
+Steps 6–9 were authorized together and implementation/evidence are recorded in sections 14–17. Steps 2–8 still require schema application, permission prerequisites and runtime acceptance; Step 9 additionally has open coverage gates. **Next numbered step: Step 10. Seven implementation steps remain (10–16); 15 numbered acceptance gates remain unfinished (2–16).** No further implementation, database setup, app startup or commits are authorized by this batch. Steps 4–5 and the simulator plan were committed previously; this batch remains uncommitted. The simulator has its own 12-step ledger and has not been implemented; it is a prerequisite for applicable simulated courier E2E evidence, not proof of live Steadfast compatibility.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -908,3 +908,147 @@ The separate simulator plan is ready for future execution; all 12 simulator step
 User authorized committing Step 5 and the simulator documentation. Step 5 source, focused tests, and this guide are committed together; the simulator plan and research link are committed separately. Earlier uncommitted statements describe their historical handoff time and are superseded by this entry. No push, database command, service startup, or live courier action was performed.
 
 Correction to the earlier Step 4 simulator handoff: prepare the simulator before V3 Steps 10–11 persistence/browser verification; V3 Step 12 is security verification, not simulator implementation. The simulator has its own 12-step ledger. Next ecommerce implementation remains Step 6; 11 implementation steps and 15 unfinished acceptance gates remain. User asked whether the remaining work can run together; this does not authorize implementing those steps yet.
+
+## 14. Step 6/16 — Dispatch eligibility and recovery — 2026-10-03
+
+Status: implemented; awaiting user schema prerequisite and isolated runtime verification. User authorized Steps 6–9 as one batch, overriding the per-step pause for this batch only. No commits authorized for this batch.
+
+What changed:
+- Operation lease tokens and per-connection durable lease/cooldown fields added to the Prisma delivery schema. User must apply schema separately; generation passed. No migration SQL or DB access.
+- Worker serializes provider requests per connection across runtimes. Its 30-second request deadline is below the 120-second lease; completion/retry/review mutations require the current token and unexpired lease. Credential resolution is followed by a fresh eligibility read.
+- Cancelled/recovered/uncommitted orders, missing ownership, changed money/address, unavailable connection/service, and unsupported operations/capabilities are held with durable exception reasons. Authentication disables the connection; 429 persists cooldown. Cooldown skips do not count as provider attempts.
+- A previous attempt/crashed lease invokes the neutral adapter recovery contract before any create. Missing/status-only recovery is held, including Steadfast's status-only invoice endpoint. No proof of rejection is inferred from 404. Provider-success/local-save failure is held without automatic recreation.
+
+What was checked:
+- `bun run db:generate`: passed. `bun test apps/server/tests/courier.dispatch-worker.test.ts`: 23 passed / 50 assertions. `bun run --cwd apps/server check-types`: passed.
+- Tests use mocked persistence/provider, not real lease/concurrency proof. No service, DB, browser, or live provider action.
+
+How you can test after running the app:
+1. Apply schema in a separately controlled workflow and use the later isolated simulator.
+2. Queue an eligible order, disable/archive its connection or service, or change payment/address before the tick. Expect no booking, manual review and an exception reason; claim and inventory remain intact.
+3. Inject authentication failure. Expect connection disabled/auth_failed and no sibling booking. Fix credentials, run the existing health check and explicitly enable; held jobs still need reviewed reconciliation, not automatic resumption.
+4. Inject 429; verify durable cooldown. Inject timeout/crash after acceptance; retry must recover the same invoice and never issue another create when recovery is incomplete.
+5. Run competing runtimes and stale-result/local-save-failure scenarios. Verify token guards, one connection request, no late overwrite and no second booking. This remains Step 10 evidence.
+
+Open issues: existing legacy jobs need ownership review; no generic manual-review reset or claim-delete endpoint is introduced. Operator intervention must not manufacture booking evidence.
+Next: Step 7 — expiry-safe inventory (authorized in this batch).
+Steps left: 10 implementation steps (7–16); Steps 2–6 runtime acceptance remains pending.
+Git: no staging/commit/push.
+
+## 15. Step 7/16 — Expiry-safe inventory — 2026-10-03
+
+Status: implemented; awaiting user schema prerequisite and runtime verification.
+
+What changed:
+- Shared `ecommerce/inventory/stock-policy.ts`: exclusive expiry instant (`expiryDate <= now` is unavailable), including timezone-equivalent instants; undated inventory remains allowed. A date-only input means UTC midnight at the start of that date, not an inclusive end-of-day promise. The receiving UI now accepts a local datetime and sends an absolute ISO instant. Operators must enter the intended timestamp; do not silently reinterpret legacy timestamps.
+- Storefront product/checkout/filter stock queries exclude expired, quarantined/unsafe, and inactive-location stock. Availability subtracts reservations; in-stock query uses the database reserved-quantity field rather than merely on-hand > 0.
+- Checkout uses earliest eligible expiry then stable stock ID, undated last. Existing serializable checkout/rollback and last-unit protections retained. Commitment validates all reservations before any stock writes, including reservation expiry. Manual shipment and worker recheck committed batch safety; cancellation/restocking cannot make unsafe stock sellable.
+- Batch disposition enum/field added; audited inventory-management endpoint and existing stock-table inspection dialog allow quarantine/unsafe/sellable disposition without changing quantities. Expired batches cannot be marked sellable. User-applied schema required; generation passed.
+
+What was checked:
+- Pure inventory policy: 4 tests / 8 assertions. Shop service: 12 / 38 including FEFO allocation. Admin order service: 16 / 32 including no partial unsafe commit. Manual fulfillment: 11 / 17. Worker: 24 / 52. Inventory service: 7 / 13. Server typecheck passed before final UI; final batch checks will verify the resulting UI/API.
+- Fixtures are mocked; real last-unit/expiry races and browser behavior remain Steps 10–11. No DB/service/live action.
+
+How you can test after running the app:
+1. Apply disposition schema separately; use fictional dated stock and an undated gadget.
+2. In Inventory, inspect a batch as awaiting inspection or unsafe with evidence. Availability becomes zero; history records actor/reason with zero quantity change. Returning to sellable is rejected if expired.
+3. Receive expired, early-future and late-future batches; storefront count excludes expired and reserved units. Checkout reserves early-future first; verify batch in reservation/movement history.
+4. Let a reservation expire or its batch expire/become quarantined before confirming. Confirmation fails with no partial stock commitment. Repeat after commitment and before manual/courier shipment; shipment is rejected/held, with no provider call.
+5. Verify undated gadget checkout still works; repeat last-unit concurrent checkout on an authorized real DB. Do not treat the mocked fixture as that evidence.
+
+Open issues: legacy expiry timestamps and batch safety must be reviewed by operators; no automatic backfill/disposal. No regulatory compliance claim.
+Next: Step 8 — selected food/gadget workflows and operator UI (authorized in batch).
+Steps left: 9 implementation steps (8–16); Steps 2–7 runtime acceptance remains pending.
+Git: no staging/commit/push.
+
+## 16. Step 8/16 — Selected food/gadget workflows and operator controls — 2026-10-03
+
+Status: implemented baseline; awaiting user schema/configuration prerequisites and browser/persistence verification. Both food scopes, launch serial/IMEI tracking, category-based warranty, and partial payments remain selected. No ledger expansion or new framework introduced.
+
+What changed:
+- Explicit category `fulfillmentKind` (standard, packaged_food, fresh_food, gadget, clothing), `serialTracking` (none, serial, imei, serial_and_imei), and `warrantyDays` (0 disables; up to 3650). Only gadgets can have tracking/warranty; warranty requires tracked units. Configure each actual product category: handling is deliberately **not inherited** from parents or guessed from slugs/attributes. Existing catalog templates/specs remain for ingredients, storage, size, and other product information; product detail shows configured gadget warranty duration and fresh-food slot requirements. No regulatory validation claim.
+- Checkout stores immutable category handling/tracking/warranty snapshots on order lines. Later category edits cannot remove an existing purchase's tracking requirement or change its warranty duration.
+- Fresh delivery slots have explicit postal-code areas, absolute cutoff/start/end instants, and capacity measured in total fresh-food item units. Checkout reserves slot capacity in the stock/order serializable transaction. No slot, wrong area, cutoff reached, full/closed slot or CAS loss rejects the order. Mixed fresh/ordinary carts use one local shipment/window for the whole order.
+- Admin Orders exposes dated slot creation/closure; slots are immutable apart from closure. Local browser datetimes are submitted as absolute ISO timestamps. Slots are publicly selectable at checkout by postal code. Bookings move reserved -> preparing -> ready; preparing stores an irreversible timestamp and actor/evidence timeline. Shipment requires ready state within the active [start,end) window.
+- General parcel dispatch is blocked for fresh food in route confirmation, queue, and worker. Use manually recorded local delivery. This baseline deliberately does not assume Steadfast freshness/temperature suitability. A merchant must arrange appropriate transport and configure actual areas/cutoffs/capacity; software alone does not establish freshness safety.
+- Cancellation before preparation releases capacity once; after preparation it retains consumed capacity and forces recovery review. Prepared food cannot be saleably restocked even after a sellable inspection. Packaged-food returns still require the existing physical receipt/inspection and valid batch safety.
+- `InventoryUnit` identifies already received gadget stock; normalized serial and IMEI each have a unique key. One 15-digit IMEI per unit is supported; no device-authenticity or carrier validation is claimed. Registration never increases stock. Register before stock commitment. Allocation requires matching variant/committed batch/location, exactly one unit per tracked item quantity, atomic availability claim, and no courier review/handoff. Operators can unassign before review/shipment to correct allocation.
+- Shipment, full physical receipt, unsafe inspection and saleable restock update unit custody in the same order transactions. `UnitAllocation` preserves the purchase history when a returned unit is restocked/resold. Never infer a physical receipt from provider return status.
+- Warranty starts at accepted delivery, lasts elapsed 24-hour days with an exclusive deadline, and belongs to the purchased allocation. Non-gadgets, untracked/no-warranty, undelivered, cancelled, fully refunded, returned and expired purchases reject claims. Claim references are idempotent, only one open claim per purchase is accepted, decisions require evidence/actor and are final. Approval records warranty review; it does not automatically refund, replace, book a return or restock inventory.
+- Customers can open claims only for their signed-in purchase. Customer order lookup now requires the purchasing account; knowing another customer's email/phone is not authorization. Customer responses omit adminNotes. **Guest checkout remains supported, but guest private tracking/warranty access is unavailable until a separately reviewed verified-access flow exists.** Do not reintroduce email/phone-only authorization. Guest customers require operator assistance in this baseline.
+- Existing Orders, Inventory, Catalog, Checkout and Track Order screens provide the controls with loading/error states. Manual fulfillment now rejects courier-managed consignments/claims, preventing conflicting tracking/shipping/delivery actions.
+- Courier Tracking exposes submission state, attempts, next check and durable exception reasons. Dispatch permission can resume only a reviewed **first-attempt pre-submission eligibility hold**, with current claim, money/address, order, niche and stock checks. Same invoice/operation is retained. Authentication/network/uncertain/accepted/local-save-failed or leased bookings cannot be reset into a fresh create. The hold reason is resolved and retry evidence audited atomically; generic exception dismissal/claim deletion remains unavailable.
+
+Schema prerequisite:
+- User must apply all changed delivery, inventory, catalog and order Prisma models/fields outside this agent workflow. Includes batch disposition, lease/cooldown fields, category and line snapshots, InventoryUnit, UnitAllocation, WarrantyClaim, FoodDeliverySlot and FoodOrderBooking/preparedAt. Generation passed; no migration SQL created/edited/applied. Existing categories default standard/none/0; existing lines default standard/none/0. **Those defaults do not retroactively classify food/gadgets or establish legacy tracking/warranty entitlement.** Configure categories and review legacy orders before accepting launch data; no backfill performed.
+
+Permissions/API:
+- Category policies: existing Catalog manage; registration/disposition: Inventory manage; available-unit list: Inventory read; allocation/unassignment: Orders fulfill + Inventory manage; slot manage/closure: Orders manage; preparation/warranty decisions: Orders fulfill. All also require Admin access. No new permission identifiers/default role changes.
+- New APIs: `/admin/inventory/units`, `/admin/inventory/batches/:id/disposition`, `/admin/orders/food-slots`, `/admin/orders/:id/preparation`, `/admin/orders/:id/units`, `/admin/orders/:id/warranty-claims`, `/shop/food-slots`, `/shop/warranty-claims`, `/admin/delivery/consignments/:id/retry-hold`. Typed DTOs bound identifiers, evidence, times, capacity and quantities.
+
+What was checked:
+- Niche policy/service fixtures: 28 tests / 75 assertions; niche operator service: 6 / 22; reviewed hold retry: 12 tests (final batch ledger below records final assertion count). Order controller permission tests include every new slot/preparation/allocation/warranty mutation; customer service tests cover ownership and required fresh slot/snapshots.
+- No real DB, services, browser or live provider work. Final Step 9 ledger supersedes intermediate test counts.
+
+How you can test after running the app:
+1. Apply schema separately. In Catalog, set a actual gadget category to gadget/serial_and_imei/warrantyDays=30; set food categories to packaged_food or fresh_food and clothing to clothing. Attempt warranty on food/clothing and expect server rejection. Enter product facts via existing templates.
+2. Receive undated gadget stock at a known location/batch; in Inventory register its unique serial/15-digit IMEI. Repeat the same serial/IMEI and expect conflict, unchanged quantity. Place/confirm an order, then assign the registered unit in Order details. A wrong variant/batch/location or another order's assigned unit must reject. Assign before confirming a courier route. Shipment without all required units rejects.
+3. Unassign/reassign before courier review; verify allocation timeline. Once reviewed/queued/shipped, corrections reject. Deliver through manual fulfillment or the isolated courier simulator; verify the same allocated unit and purchase history.
+4. As the purchasing account, Track Order shows unit/warranty evidence and allows a claim. Another account knowing the order number/email/phone must get not found. Repeat the claim reference and verify one claim/audit; another open claim rejects. A fulfillment operator approves/rejects with evidence; history records actor and no stock/money changes occur. Test expired, returned, refunded, undelivered, food and clothing purchases.
+5. Physically receive a returned gadget, inspect, and restock once. Current unit becomes available while the original purchase allocation stays returned. Resell it through a new order; preserve both allocations and deny warranty to the returned purchase.
+6. In Orders, create a future fresh slot for a fictional postal code, cutoff before start, end after start and capacity 2 units. Checkout fresh food with matching code/slot; test missing/wrong code/full/cutoff/closed cases. Confirm stock; record preparation evidence then ready evidence. General courier route rejects; local manual shipment succeeds only in the active ready window.
+7. Cancel a reserved fresh booking and verify one capacity release. Cancel after preparation and verify consumed capacity retained, recovery required, no automatic restock, and prepared food cannot return to saleable stock even if an operator tries sellable inspection.
+8. Hold an ordinary courier job by disabling its service before processing, restore the service, record retry review evidence. Expect the same invoice/operation requeued, one resolved hold exception and an actor timeline event. Try a timed-out/accepted booking: retry must reject and preserve ownership/evidence.
+9. Verify all controls on mobile/tablet and with keyboard; role without the action permission must receive 403 regardless of hidden buttons. Guest order assistance is an explicit limitation, not an ownership bypass.
+
+Open issues/limits: actual merchant food areas, slot times/capacity, transport suitability, gadget warranty durations/terms and legacy classifications must be configured/reviewed. No weighted food sales, recurring slot scheduler, cold-chain telemetry, dual-IMEI device support, partial physical returns, automatic warranty replacement/refund, or verified guest-access flow introduced. Do not present these as implemented.
+Next: Step 9 — focused regression and contract coverage (authorized in batch).
+Steps left: 8 implementation steps (9–16); runtime acceptance remains pending.
+Git: no staging/commit/push.
+
+## 17. Step 9/16 — Regression evidence and cross-agent handoff (2026-10-03)
+
+**Status: regression implementation and safe assertion checks done; coverage acceptance remains open.** This section supersedes earlier test counts and current-next-action statements. No database command, migration SQL, seed, service startup, live courier request, E2E execution, staging or commit was performed in this batch.
+
+### What changed
+
+1. Expanded 22 isolated mocked suites around dispatch leases, timeout/crash recovery, authentication/cooldown holds, immutable shipment ownership, stale tracking events, stock expiry/FEFO, physical custody, money boundaries, fresh-food preparation/capacity, gadget unit history, warranty ownership and HTTP permission denials.
+2. Closed manual-fulfillment bypass of courier ownership; fresh-food parcel routing is blocked and prepared food cannot be returned to sellable stock. Reservation release also releases an unprepared food booking's capacity.
+3. Added an audited retry only for a proven first-attempt pre-submission hold. Uncertain bookings and authentication failures cannot be reset into fresh creates. Restore connection credentials/health before progressing; ambiguous outcomes remain operator review rather than automatic rebooking. A definitive rejected/not-booked disposition workflow remains an operational limitation requiring reviewed proof before any claim release or new attempt.
+4. Added `POST /admin/delivery/consignments/:id/reconcile-booking` and the tracking-card evidence form under `AdminDeliveryReconcile`. The operator supplies the exact original invoice, merchant consignment ID, optional tracking code, merchant status and source evidence. It completes only an unleased uncertain original operation, preserves shipment claim and money/cancellation/recovery facts, resolves only its submission exception, and performs no provider create. `submittedAt` records local confirmation time, not a claimed historical merchant booking timestamp. Duplicate identical booking identity is idempotent. Evidence must be verified by the operator; typed text is not provider authentication or delivery proof.
+
+### Safe verification and limitations
+
+- All 22 inspected isolated assertion suites pass. The refreshed run has **294 tests and 757 assertions**, including reconciliation identity checks and its permission denial. Isolation is intentional because Bun module mocks are global; this is not evidence that a monolithic repository run or real database concurrency passed.
+- Server and generated database TypeScript checks, web boundary checks and production web build pass. Raw web TypeScript checking still has existing alias/UI errors; do not claim that gate passes. New niche components had no reported errors in the inspected raw check.
+- Prisma client generation ran after schema changes. No schema was applied to a database and no migration was authored. Actual unique constraints, Serializable contention, FK behavior and restart durability remain Step 10 evidence.
+- Coverage artifacts live in ignored `tests/artifacts/coverage/v3-steps6-9/<suite>/` (`tests.txt`, `coverage.txt`, `lcov.info`). The existing root thresholds are 80% lines and 70% functions. **21 of 22 isolated coverage commands fail these thresholds** because imported unexercised modules are counted; only the payment-policy suite passes. These failures are preserved and were not bypassed or weakened. `summary.json` has refreshed assertion totals; inspect each refreshed coverage log for the two changed suites rather than treating earlier coverage percentages as current.
+- Bun LCOV output here has line/function totals but no branch records or function identity suitable for trustworthy cross-suite union. The Step 8/9 critical-branch targets are **not verified**. Next verifier must choose and document an approved branch-capable measurement approach, add meaningful missing cases, and pass the established coverage gate; do not sum isolated percentages or claim the branch target from line coverage.
+- Signed-in purchasers can access private order tracking and their own warranty allocations. Guest checkout remains supported, but guest private tracking/warranty requires operator assistance until a separately reviewed verified-access flow exists.
+- No actual food safety/temperature suitability, merchant operating schedule, dual-IMEI support, automatic warranty replacement/refund, partial physical return or live provider capability is proven by these changes.
+
+### How to test after the user runs the app
+
+1. First have the user apply/review schema changes and refresh the existing permission catalog through their own approved process. An agent must not infer authorization to run migrations, seed, query or start services from this guide.
+2. Run the Step 6 operator checklist: disable a queued connection, restore a proven preflight hold with review evidence, verify one request per connection across workers, trigger timeout/429/authentication fixtures, and confirm uncertain submissions never generate another create. For a verified existing parcel, record its exact invoice/merchant identity under reconciliation permission; verify dispatch completes but payment/delivery remain unchanged. A dispatch-only account must receive 403.
+3. Run Step 7 checks at an expiry boundary and across sellable/quarantined/unsafe batches. Verify storefront availability, reservation FEFO, commitment, shipment and restock agree. Test actual concurrent stock contention separately in Step 10.
+4. Run Step 8 checklists with explicitly configured categories: food/clothing reject warranty, gadget identifiers bind to committed units, cancellation/return preserves history, only the purchasing account can claim within the window. Configure a future food slot, fill capacity, test area/cutoff, prepare it, cancel, and confirm prepared capacity/custody cannot be undone or restocked as sellable.
+5. Test tracking regression/identity conflicts and duplicate reconciliation while checking persisted order, operation, exception and claim facts through approved user-run fixtures. Browser appearance and real persistence are unverified here.
+6. Store actual observed results and failures in this document. Keep Steps 6–9 awaiting acceptance until their missing evidence is supplied; security verification and tutorial recording are later gates.
+
+### What is next and steps left
+
+**Next: Step 10, real persistence and concurrency verification. Seven numbered implementation steps remain (10–16), and 15 numbered acceptance gates remain unfinished (2–16).** Step 9 coverage gates remain open. Build the separately planned local simulator when explicitly authorized before using it for courier E2E. Do not start Step 10 database/E2E setup, Step 12 security scans, Step 15 tutorial generation or make commits without the applicable user authorization.
+
+Next agent first reads: this header/ledger/current action, sections 14–17, `delivery/dispatch-worker.ts`, `delivery/tracking-worker.ts`, `delivery/dispatch-policy.ts`, `admin/delivery/routing-dispatch.service.ts`, `ecommerce/inventory/stock-policy.ts`, `ecommerce/niche/*`, `admin/orders/niche-operations.service.ts`, the four ecommerce schema files, and the simulator plan. Read current git diff before modifying anything; this batch is intentionally uncommitted. Preserve neutral provider contracts, exact lease/claim ownership, historical allocations, audit evidence, no warranty for food/clothing, and the no-database-operation boundary.
+
+## 18. User-authorized migration, RBAC refresh and commit handoff
+
+The user explicitly authorized running Prisma migration in `packages/db`, seeding RBAC, and committing this batch. This supersedes the earlier no-migration/no-seed/no-commit boundary only for these actions.
+
+- Ran `bunx prisma migrate dev --name ecommerce_v3_dispatch_stock_niche` from `packages/db`. Prisma connected to local PostgreSQL database `ecommerce`, public schema, at `localhost:5432`; created and successfully applied `20261002210646_ecommerce_v3_dispatch_stock_niche`. Prisma reported the database in sync. No reset was required or performed.
+- Ran `bun run db:seed:rbac` from `packages/db`. Prisma Client 7.8.0 generation and RBAC seeding completed successfully. Used the dedicated permission/role seed; the full demo ecommerce seed was not run.
+- Committing the authorized Steps 6–9 implementation, regression tests, guide and generated migration. This removes the local schema-application/RBAC prerequisite for this database only; it does not prove database concurrency, browser acceptance, another deployment's schema, coverage thresholds, or release readiness.
+- After starting the app, verify the updated permissions in a refreshed admin session, then run the step-specific operator checklists. Recheck explicitly configured category policies, inventory batch disposition and future food slots; legacy records retain conservative defaults.
+
+**Next: Step 10. Seven implementation steps remain (10–16); the previous 15 unfinished numbered acceptance gates remain open until runtime/review evidence is recorded.** No app startup, real courier call, active scan or E2E execution was authorized or performed in this follow-up. Use this section as the latest database/commit authorization evidence; older sections describe the state before this follow-up.

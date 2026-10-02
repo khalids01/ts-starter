@@ -1,9 +1,10 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { Permissions } from "@rbac";
 import { authGuard } from "@/guards/auth.guard";
 import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
-  AdjustStockDto,
+  AdjustStockDto, RegisterUnitDto,
+  UpdateBatchDispositionDto,
   CreateLocationDto,
   CreateSupplierDto,
   IdParamDto,
@@ -47,6 +48,8 @@ export const adminInventoryController = new Elysia({
   },
 })
   .use(authGuard)
+  .get("/units", ({ query }) => adminInventoryService.listUnits(query.variantId), { beforeHandle: readInventory, query: t.Object({ variantId: t.String({ minLength: 1, maxLength: 128 }) }) })
+  .post("/units", async ({ body, userId, set }) => { try { return await adminInventoryService.registerUnit(body, userId!); } catch (e) { return handleInventoryError(e, set); } }, { beforeHandle: manageInventory, body: RegisterUnitDto })
   .get(
     "/suppliers",
     ({ query }) => adminInventoryService.listSuppliers(query),
@@ -220,6 +223,10 @@ export const adminInventoryController = new Elysia({
       detail: { summary: "Receive inventory stock" },
     },
   )
+  .patch("/batches/:id/disposition", async ({ params, body, userId, set }) => {
+    try { return await adminInventoryService.updateBatchDisposition(params.id, body, userId!); }
+    catch (error) { return handleInventoryError(error, set); }
+  }, { beforeHandle: manageInventory, params: IdParamDto, body: UpdateBatchDispositionDto, detail: { summary: "Record batch safety inspection" } })
   .post(
     "/adjust",
     async ({ body, userId, set }) => {

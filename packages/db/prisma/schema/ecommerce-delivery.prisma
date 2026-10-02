@@ -32,6 +32,9 @@ model CourierConnection {
   credentialAuthTag    Bytes?
   credentialKeyVersion Int?
   healthState         String   @default("unchecked")
+  dispatchLeaseToken  String?
+  dispatchLeaseUntil  DateTime?
+  cooldownUntil       DateTime?
   webhookIdentifier   String?  @unique
   settings            Json?
   archivedAt          DateTime?
@@ -169,6 +172,7 @@ model CourierOperation {
   state         String   @default("pending")
   attemptCount  Int      @default(0)
   nextAttemptAt DateTime @default(now())
+  leaseToken    String?
   leaseUntil    DateTime?
   lastErrorCode String?
   createdAt     DateTime @default(now())

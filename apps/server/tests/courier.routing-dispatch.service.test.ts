@@ -25,6 +25,9 @@ const order = {
 function harness() {
   const dispatches: any[] = [];
   const db: any = {
+    orderLineItem: { findMany: mock(async () => []) },
+    unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+    inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
     order: { findUnique: mock(async () => order) },
     courierConsignment: { findMany: mock(async () => []) },
     courierShipmentClaim: { create: mock(async () => ({})) },
@@ -73,6 +76,9 @@ describe("courier routing and dispatch review", () => {
     let serviceRow: any = { id: "service-1", connectionId: "connection-1", code: "home", displayName: "Home", enabled: true, archivedAt: null };
     const ruleCount = mock(async () => 1);
     const db: any = {
+    orderLineItem: { findMany: mock(async () => []) },
+    unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+    inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
       courierService: {
         findUnique: mock(async () => serviceRow),
         update: mock(async ({ data }: any) => serviceRow = { ...serviceRow, ...data, connection: { displayName: "Primary", provider: { displayName: "Steadfast" } }, methods: [] }),
@@ -92,6 +98,9 @@ describe("courier routing and dispatch review", () => {
   it("allows permanent deletion of an archived assignment rule", async () => {
     const remove = mock(async () => ({}));
     const db: any = {
+    orderLineItem: { findMany: mock(async () => []) },
+    unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+    inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
       courierRoutingRule: {
         findUnique: mock(async () => ({ id: "rule-1", name: "Rule", archivedAt: new Date() })),
         delete: remove,
@@ -107,6 +116,9 @@ describe("queue cancellation and recovery boundary", () => {
   function queueHarness(currentOrder: any = order) {
     const dispatch = { id: "dispatch-1", orderId: order.id, status: "confirmed", connectionId: "connection-1", serviceId: "service-1", order, routingSnapshot: { reviewedRequest: courierRequestSnapshot(order) }, consignment: null };
     const db: any = {
+    orderLineItem: { findMany: mock(async () => []) },
+    unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+    inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
       order: { findUnique: mock(async () => currentOrder) },
       courierShipmentClaim: { findUnique: mock(async () => ({ orderId: order.id, dispatchId: "dispatch-1" })) },
       courierDispatch: { findUnique: mock(async () => dispatch), updateMany: mock(async () => ({ count: 1 })) },

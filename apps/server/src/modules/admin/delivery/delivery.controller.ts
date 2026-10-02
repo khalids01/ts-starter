@@ -3,7 +3,7 @@ import { Permissions } from "@rbac";
 import { authGuard } from "@/guards/auth.guard";
 import { requireAllPermissions } from "@/rbac/guards/permissions.guard";
 import {
-  CourierConnectionIdDto,
+  CourierConnectionIdDto, RetryCourierHoldDto, ReconcileBookingDto,
   ListCourierResourcesQueryDto,
   CourierHandoffDto,
   CourierPickupRequestDto,
@@ -204,6 +204,8 @@ export const adminDeliveryController = new Elysia({
     try { return await courierRoutingDispatchService.queue(id, userId!); }
     catch (error) { return handleDeliveryError(error, set); }
   }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto })
+  .post("/consignments/:id/reconcile-booking", async ({ params, body, userId, set }) => { try { return await courierRoutingDispatchService.reconcileBooking(params.id, body, userId!); } catch (e) { return handleDeliveryError(e, set); } }, { beforeHandle: reconcileDelivery, params: CourierResourceIdDto, body: ReconcileBookingDto })
+  .post("/consignments/:id/retry-hold", async ({ params, body, userId, set }) => { try { return await courierRoutingDispatchService.retryUnsubmittedHold(params.id, body.note, userId!); } catch (e) { return handleDeliveryError(e, set); } }, { beforeHandle: dispatchDelivery, params: CourierResourceIdDto, body: RetryCourierHoldDto })
   .post("/consignments/:id/handoff", async ({ params: { id }, body, set, userId }) => {
     try { return await courierReturnsSettlementsService.markHandoff(id, body, userId!); }
     catch (error) { return handleDeliveryError(error, set); }

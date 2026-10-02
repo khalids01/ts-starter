@@ -41,6 +41,7 @@ export const CheckoutDto = t.Object({
   customerPhone: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
   shippingAddress: CheckoutAddressDto,
   billingAddress: t.Optional(t.Union([CheckoutAddressDto, t.Null()])),
+  foodSlotId: t.Optional(t.String({ minLength: 1, maxLength: 128 })),
   shippingRateId: t.Optional(t.String({ maxLength: 128 })),
   shippingRateCode: t.Optional(t.String({ maxLength: 80 })),
   paymentMethod: t.Optional(PaymentMethodDto),

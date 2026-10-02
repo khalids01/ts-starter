@@ -15,6 +15,10 @@ let loseReservationClaim: boolean;
 let loseOperationClaim: boolean;
 
 const db: any = {
+  foodOrderBooking: { findUnique: mock(async () => null), updateMany: mock(async () => ({ count: 0 })) },
+  orderLineItem: { findMany: mock(async () => []) },
+  unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+  inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
   courierShipmentClaim: { findUnique: mock(async () => null) },
   order: {
     findUnique: mock(async () => ({ ...order, recovery, refunds })),
@@ -195,7 +199,7 @@ describe("physical receipt, inspection and explicit recovery", () => {
   });
   it("rejects expired stock even after a sellable inspection", async () => {
     await receiveAndInspect(); reservations[0].batch = { expiryDate: new Date(0) };
-    await expect(orderRecoveryService.restock(order.id, "Restock", actor.userId)).rejects.toThrow("Expired inventory"); expect(stock).toBe(0); expect(recovery.restockedAt).toBeNull();
+    await expect(orderRecoveryService.restock(order.id, "Restock", actor.userId)).rejects.toThrow("Expired, quarantined"); expect(stock).toBe(0); expect(recovery.restockedAt).toBeNull();
   });
 });
 
@@ -222,4 +226,12 @@ describe("refunds and stock are independent", () => {
   it("translates a serializable conflict into a reviewable HTTP conflict", async () => {
     await expect(withOrderTransaction(async () => { throw { code: "P2034" }; })).rejects.toMatchObject({ status: 409 });
   });
+});
+
+it("prepared food can never be restocked even after a sellable inspection", async () => {
+  order.deliveryStatus = "shipped";
+  await receiveAndInspect();
+  db.foodOrderBooking.findUnique.mockResolvedValueOnce({ state: "cancelled", preparedAt: new Date() });
+  await expect(orderRecoveryService.restock(order.id, "Inspection", actor.userId)).rejects.toThrow("Prepared food cannot");
+  expect(stock).toBe(0); expect(recovery.restockedAt).toBeNull();
 });

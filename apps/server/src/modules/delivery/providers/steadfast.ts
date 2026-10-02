@@ -1,8 +1,11 @@
+import { CourierProviderRequestError } from "../provider";
+export { CourierProviderRequestError } from "../provider";
 import { z } from "zod";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
   ConsignmentResult,
   CourierCredentials,
+  CourierRecoveryResult,
   CourierPickupRequest,
   CourierProviderAdapter,
   CourierReturnRequest,
@@ -147,19 +150,6 @@ export type SteadfastSubmissionResult =
       reason: "provider_found_invoice" | "status_not_found" | "status_unavailable";
     }>;
 
-export class CourierProviderRequestError extends Error {
-  constructor(
-    message: string,
-    readonly details: Readonly<{
-      code: "authentication" | "rate_limited" | "validation" | "provider" | "network" | "invalid_response";
-      retryable: boolean;
-      httpStatus?: number;
-      retryAfterSeconds?: number;
-    }>,
-  ) {
-    super(message);
-  }
-}
 
 function normalizedBaseUrl(baseUrl: string) {
   return baseUrl.replace(/\/+$/, "");
@@ -345,11 +335,13 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
   async createConsignment(
     credentials: CourierCredentials,
     request: CreateConsignmentRequest,
+    options?: { signal: AbortSignal },
   ): Promise<ConsignmentResult> {
     const payload = validateCreateRequest(request);
     const raw = await this.request(credentials, "/create_order", {
       method: "POST",
       body: JSON.stringify(payload),
+      signal: options?.signal,
     });
     const parsed = createResponseSchema.safeParse(raw);
     if (!parsed.success) {
@@ -376,12 +368,13 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
   async getConsignmentStatus(
     credentials: CourierCredentials,
     externalId: string,
+    options?: { signal: AbortSignal },
   ) {
-    return this.getStatus(credentials, `/status_by_cid/${encodeURIComponent(externalId)}`);
+    return this.getStatus(credentials, `/status_by_cid/${encodeURIComponent(externalId)}`, options);
   }
 
-  async getConsignmentStatusWithReturn(credentials: CourierCredentials, externalId: string) {
-    return this.getStatus(credentials, `/status_with_return_status_by_cid/${encodeURIComponent(externalId)}`);
+  async getConsignmentStatusWithReturn(credentials: CourierCredentials, externalId: string, options?: { signal: AbortSignal }) {
+    return this.getStatus(credentials, `/status_with_return_status_by_cid/${encodeURIComponent(externalId)}`, options);
   }
 
   async getTrackingHistory(credentials: CourierCredentials, invoice: string) {
@@ -515,9 +508,9 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
     );
   }
 
-  private async getStatus(credentials: CourierCredentials, path: string) {
+  private async getStatus(credentials: CourierCredentials, path: string, options?: { signal: AbortSignal }) {
     const parsed = statusSchema.safeParse(
-      await this.request(credentials, path),
+      await this.request(credentials, path, { signal: options?.signal }),
     );
     if (!parsed.success) {
       throw new CourierProviderRequestError(
@@ -526,6 +519,14 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
       );
     }
     return { providerState: parsed.data.delivery_status };
+  }
+
+  async recoverConsignment(credentials: CourierCredentials, invoice: string, options?: { signal: AbortSignal }): Promise<CourierRecoveryResult> {
+    // This documented endpoint supplies status only. Never invent a booking ID
+    // or treat a missing status as proof that a previous create was rejected.
+    const raw = await this.request(credentials, `/status_by_invoice/${encodeURIComponent(invoice)}`, { signal: options?.signal });
+    const parsed = statusSchema.safeParse(raw);
+    return parsed.success ? { kind: "uncertain", providerState: parsed.data.delivery_status } : { kind: "uncertain" };
   }
 
   async createConsignmentWithRecovery(

@@ -1,3 +1,4 @@
+import { FoodSlots } from "./food-slots";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
@@ -156,6 +157,7 @@ export function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
+      <FoodSlots canManage={canManageOrders} />
       <EcommerceHeader
         title="Orders"
         description="Review customer orders, payment state, delivery progress, and operational history."

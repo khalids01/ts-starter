@@ -150,3 +150,7 @@ export type UpdateCourierReturnInput = typeof UpdateCourierReturnDto.static;
 export type RecordCourierSettlementInput = typeof RecordCourierSettlementDto.static;
 export type CourierHandoffInput = typeof CourierHandoffDto.static;
 export type CourierPickupRequestInput = typeof CourierPickupRequestDto.static;
+
+export const RetryCourierHoldDto = t.Object({ note: t.String({ minLength: 1, maxLength: 2000 }) });
+
+export const ReconcileBookingDto = t.Object({ invoice: t.String({ minLength: 1, maxLength: 100 }), externalId: t.String({ minLength: 1, maxLength: 128 }), trackingCode: t.Optional(t.Union([t.String({ maxLength: 128 }), t.Null()])), providerState: t.String({ minLength: 1, maxLength: 128 }), note: t.String({ minLength: 1, maxLength: 2000 }) });

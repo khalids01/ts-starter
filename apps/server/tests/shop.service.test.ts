@@ -74,6 +74,7 @@ const prismaMock = {
     findMany: shippingRateFindManyMock,
   },
   inventoryStock: {
+    fields: { quantityReserved: "quantityReserved" },
     findMany: inventoryStockFindManyMock,
     update: inventoryStockUpdateMock,
   },
@@ -229,6 +230,7 @@ function stockRow(overrides: Record<string, any> = {}) {
     variantId: overrides.variantId ?? "variant-1",
     locationId: overrides.locationId ?? "loc-main",
     batchId: overrides.batchId ?? null,
+    batch: overrides.batch ?? null,
     quantityOnHand: overrides.quantityOnHand ?? 10,
     quantityReserved: overrides.quantityReserved ?? 0,
     reorderLevel: overrides.reorderLevel ?? null,
@@ -488,7 +490,7 @@ describe("shop service", () => {
             variants: {
               some: {
                 isActive: true,
-                inventoryStocks: { some: { quantityOnHand: { gt: 0 } } },
+                inventoryStocks: { some: expect.objectContaining({ location: { isActive: true }, quantityOnHand: { gt: "quantityReserved" }, OR: expect.any(Array) }) },
               },
             },
           },
@@ -533,7 +535,7 @@ describe("shop service", () => {
               variants: {
                 some: {
                   isActive: true,
-                  inventoryStocks: { some: { quantityOnHand: { gt: 0 } } },
+                  inventoryStocks: { some: expect.objectContaining({ location: { isActive: true }, quantityOnHand: { gt: "quantityReserved" }, OR: expect.any(Array) }) },
                 },
               },
             },
@@ -728,4 +730,31 @@ describe("shop service", () => {
     ).rejects.toThrow("is no longer available");
     expect(orderCreateMock).not.toHaveBeenCalled();
   });
+});
+
+it("checkout reserves earliest eligible expiry and excludes an expired batch", async () => {
+  const { orderService } = await import("../src/modules/shop/services/order.service");
+  inventoryStockFindManyMock.mockResolvedValueOnce([
+    stockRow({ id: "later", batchId: "later", batch: { expiryDate: new Date("2099-02-01"), disposition: "sellable" } }),
+    stockRow({ id: "expired", batchId: "expired", batch: { expiryDate: new Date(0), disposition: "sellable" } }),
+    stockRow({ id: "earlier", batchId: "earlier", batch: { expiryDate: new Date("2099-01-01"), disposition: "sellable" } }),
+  ]);
+  await orderService.checkout("user-1", { items: [{ variantId: "variant-1", quantity: 2 }], customerName: "Customer", customerEmail: "customer@example.test", shippingAddress: { line1: "House 1", city: "Dhaka" } });
+  expect(stockReservationCreateMock.mock.calls[0]?.[0].data.batchId).toBe("earlier");
+  expect(inventoryStockUpdateMock).toHaveBeenCalledTimes(1);
+});
+
+it("another customer cannot read an order using the purchaser's email or phone", async () => {
+  const { orderService } = await import("../src/modules/shop/services/order.service");
+  orderFindUniqueMock.mockResolvedValue({ userId: "purchaser", customerEmail: "owner@example.test", customerPhone: "01700000000" });
+  await expect(orderService.getCustomerOrder("other", "ORD-1", { email: "owner@example.test" })).rejects.toThrow("Order not found");
+  await expect(orderService.getCustomerOrder("other", "ORD-1", { phone: "01700000000" })).rejects.toThrow("Order not found");
+});
+it("fresh checkout requires a slot and snapshots policy onto its order item", async () => {
+  const { orderService } = await import("../src/modules/shop/services/order.service");
+  const variant = variantRow(); variant.product.category.fulfillmentKind = "fresh_food";
+  productVariantFindManyMock.mockResolvedValueOnce([variant]);
+  await expect(orderService.checkout("user-1", { items: [{ variantId: "variant-1", quantity: 1 }], customerName: "Customer", customerEmail: "customer@example.test", shippingAddress: { line1: "House 1", postalCode: "1207" } })).rejects.toThrow("Choose a delivery slot");
+  expect(stockReservationCreateMock).not.toHaveBeenCalled();
+  expect(orderCreateMock.mock.calls[0]?.[0].data.lineItems.create[0]).toMatchObject({ fulfillmentKind: "fresh_food", serialTracking: "none", warrantyDays: 0 });
 });

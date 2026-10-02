@@ -2,6 +2,10 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import { Elysia } from "elysia";
 import { Permissions } from "@rbac";
 
+mock.module("@env/server", () => ({ env: {} }));
+mock.module("@db/server", () => ({ default: { $transaction: () => { throw new Error("Denied action must not reach persistence"); } } }));
+mock.module("@/rbac/resolve/get-effective", () => ({ getEffectivePermissions: async () => { throw new Error("Session permissions must be explicit"); }, createPermissionChecker: (permissions: ReadonlySet<string>) => (permission: string) => permissions.has(permission) }));
+
 const getAuthSessionMock = mock(async () => ({
   user: { id: "admin-1", role: "ADMIN", banned: false, archived: false },
   permissions: [Permissions.AdminAccess],
@@ -77,4 +81,18 @@ describe("admin delivery controller RBAC", () => {
     expect(returnResponse.status).toBe(403);
     expect(settlementResponse.status).toBe(403);
   });
+});
+
+it("retry-hold requires dispatch permission, not delivery read permission", async () => {
+  getAuthSessionMock.mockResolvedValueOnce({ user: { id: "admin-1", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, Permissions.AdminDeliveryRead] });
+  const { adminDeliveryController } = await import("../src/modules/admin/delivery/delivery.controller");
+  const response = await new Elysia().use(adminDeliveryController).handle(new Request("http://localhost/admin/delivery/consignments/consignment/retry-hold", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ note: "Reviewed" }) }));
+  expect(response.status).toBe(403);
+});
+
+it("existing booking evidence requires reconciliation permission even for dispatch operators", async () => {
+  getAuthSessionMock.mockResolvedValueOnce({ user: { id: "admin-1", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, Permissions.AdminDeliveryRead, Permissions.AdminDeliveryDispatch] });
+  const { adminDeliveryController } = await import("../src/modules/admin/delivery/delivery.controller");
+  const response = await new Elysia().use(adminDeliveryController).handle(new Request("http://localhost/admin/delivery/consignments/consignment/reconcile-booking", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ invoice: "ORD-1", externalId: "merchant", providerState: "pending", note: "Merchant evidence" }) }));
+  expect(response.status).toBe(403);
 });

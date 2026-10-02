@@ -1,3 +1,6 @@
+import { categoryPolicy } from "@/modules/ecommerce/niche/policy";
+import { reserveFoodSlot } from "@/modules/ecommerce/niche/food";
+import { eligibleStockWhere, expiryOrderedStocks } from "@/modules/ecommerce/inventory/stock-policy";
 import prisma, { type Prisma } from "@db/server";
 import type { CheckoutInput, OrderLookupQuery } from "../dto/order.dto";
 import { checkoutVariantInclude, orderInclude } from "../lib/includes";
@@ -89,6 +92,7 @@ function checkoutLineFromItem(item: any) {
 
   const subtotal = unitPrice * item.quantity;
   return {
+    ...categoryPolicy(item.variant.product.category),
     variantId: item.variantId,
     productId: item.variant.productId,
     productName: item.variant.product.name,
@@ -113,12 +117,13 @@ async function reserveLineStock(tx: Prisma.TransactionClient, input: {
   const stocks = await tx.inventoryStock.findMany({
     where: {
       variantId: input.line.variantId,
-      location: { isActive: true },
+      ...eligibleStockWhere(),
     },
-    orderBy: [{ updatedAt: "asc" }],
+    include: { batch: true, location: true },
+    orderBy: [{ id: "asc" }],
   });
   let remaining = input.line.quantity;
-  for (const stock of stocks) {
+  for (const stock of expiryOrderedStocks(stocks)) {
     const available = stock.quantityOnHand - stock.quantityReserved;
     if (available <= 0) {
       continue;
@@ -381,6 +386,9 @@ export const orderService = {
               sku: line.sku,
               imageUrl: line.imageUrl,
               attributesSnapshot: line.attributesSnapshot,
+              fulfillmentKind: line.fulfillmentKind,
+              serialTracking: line.serialTracking,
+              warrantyDays: line.warrantyDays,
               quantity: line.quantity,
               unitPrice: line.unitPrice.toFixed(2),
               discountAmount: "0.00",
@@ -403,6 +411,7 @@ export const orderService = {
         },
       });
 
+      await reserveFoodSlot(tx, { orderId: created.id, slotId: input.foodSlotId, postalCode: shippingAddress.postalCode, quantity: lines.filter(line => line.fulfillmentKind === "fresh_food").reduce((sum, line) => sum + line.quantity, 0) });
       for (const line of lines) {
         await reserveLineStock(tx, {
           orderId: created.id,
@@ -476,7 +485,7 @@ export const orderService = {
   async getCustomerOrder(
     userId: string,
     orderNumber: string,
-    query: OrderLookupQuery = {},
+    _query: OrderLookupQuery = {},
   ) {
     const order = await prisma.order.findUnique({
       where: { orderNumber },
@@ -486,13 +495,7 @@ export const orderService = {
       throw new ShopServiceError("Order not found", 404);
     }
 
-    const email = normalizedEmail(query.email);
-    const phone = nullableTrimmed(query.phone);
-    const canRead =
-      (userId && order.userId === userId) ||
-      (email && order.customerEmail.toLowerCase() === email) ||
-      (phone && order.customerPhone === phone);
-
+    const canRead = Boolean(userId && order.userId === userId);
     if (!canRead) {
       throw new ShopServiceError("Order not found", 404);
     }

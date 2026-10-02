@@ -1,3 +1,7 @@
+import { NichePolicyError } from "../../ecommerce/niche/policy";
+import { cancelFoodBooking } from "../../ecommerce/niche/food";
+import { markOrderUnits } from "../../ecommerce/niche/gadgets";
+import { batchSellable } from "../../ecommerce/inventory/stock-policy";
 import { ShipmentClaimConflict } from "../../delivery/shipment-claim";
 import { OrderMoneyError, orderMoney, paymentSummary } from "../../ecommerce/orders/payment-accounting";
 import prisma, { type Prisma } from "@db/server";
@@ -24,6 +28,7 @@ export async function withOrderTransaction<T>(work: (tx: Prisma.TransactionClien
   try {
     return await prisma.$transaction(work, { isolationLevel: "Serializable" });
   } catch (error) {
+    if (error instanceof NichePolicyError) throw new AdminOrdersServiceError(error.message, error.status);
     if (error instanceof OrderMoneyError || error instanceof ShipmentClaimConflict) throw new AdminOrdersServiceError(error.message, 409);
     if (typeof error === "object" && error !== null && "code" in error && ["P2034", "P2002"].includes(String(error.code))) {
       throw new AdminOrdersServiceError("Order changed during this operation; reload and try again", 409);
@@ -112,8 +117,11 @@ function orderInclude() {
         image: true,
       },
     },
+    foodBooking: { include: { slot: true } },
     lineItems: {
       include: {
+        units: true,
+        unitAllocations: { include: { unit: true, claims: true } },
         product: {
           select: {
             id: true,
@@ -191,6 +199,11 @@ function mapLineItem(row: any) {
     sku: row.sku,
     imageUrl: row.imageUrl,
     attributesSnapshot: row.attributesSnapshot ?? null,
+    fulfillmentKind: row.fulfillmentKind ?? "standard",
+    serialTracking: row.serialTracking ?? "none",
+    warrantyDays: row.warrantyDays ?? 0,
+    units: row.units ?? [],
+    unitAllocations: row.unitAllocations ?? [],
     quantity: row.quantity,
     unitPrice: decimalToString(row.unitPrice),
     discountAmount: decimalToString(row.discountAmount),
@@ -300,6 +313,7 @@ function mapOrder(row: any, options: { detail?: boolean } = {}) {
     placedAt: toIso(row.placedAt),
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
+    foodBooking: options.detail ? row.foodBooking ?? null : undefined,
     lineItemCount: row._count?.lineItems ?? row.lineItems?.length ?? 0,
     lineItems: options.detail ? (row.lineItems ?? []).map(mapLineItem) : undefined,
     statusEvents: options.detail
@@ -403,6 +417,7 @@ async function getOrderReservations(
       referenceId: orderId,
       status,
     },
+    include: { batch: true, location: true },
     orderBy: { createdAt: "asc" },
   });
 }
@@ -461,6 +476,7 @@ export async function releaseReservations(
     });
   }
 
+  if (reservations.length > 0) await cancelFoodBooking(tx, input.orderId);
   return reservations.length;
 }
 
@@ -469,6 +485,10 @@ async function commitReservations(
   input: { orderId: string; actorUserId?: string },
 ) {
   const reservations = await getOrderReservations(tx, input.orderId, "active");
+  const now = new Date();
+  if (reservations.some(reservation => reservation.expiresAt <= now || reservation.location?.isActive === false || !batchSellable(reservation.batch, now))) {
+    throw new AdminOrdersServiceError("Reserved inventory expired or is unavailable; release and place a new order", 409);
+  }
   for (const reservation of reservations) {
     await tx.inventoryStock.update({
       where: {
@@ -521,12 +541,14 @@ export async function restockCommittedReservations(
 ) {
   const reservations = await tx.stockReservation.findMany({
     where: { referenceType: "order", referenceId: input.orderId, status: "committed" },
-    include: { batch: { select: { expiryDate: true } } },
+    include: { batch: { select: { expiryDate: true, disposition: true } }, location: true },
     orderBy: { createdAt: "asc" },
   });
+  const foodBooking = await tx.foodOrderBooking.findUnique({ where: { orderId: input.orderId } });
+  if (foodBooking?.preparedAt) throw new AdminOrdersServiceError("Prepared food cannot be returned to saleable stock", 409);
   if (reservations.length === 0) throw new AdminOrdersServiceError("No committed inventory was available to restock", 409);
-  if (reservations.some((reservation) => reservation.batch?.expiryDate && reservation.batch.expiryDate <= new Date())) {
-    throw new AdminOrdersServiceError("Expired inventory cannot be returned to saleable stock", 409);
+  if (reservations.some((reservation) => !batchSellable(reservation.batch) || reservation.location?.isActive === false)) {
+    throw new AdminOrdersServiceError("Expired, quarantined or inactive-location inventory cannot be returned to saleable stock", 409);
   }
   const claimed = await tx.order.updateMany({
     where: { id: input.orderId, inventoryStatus: "committed" },
@@ -565,6 +587,7 @@ export async function restockCommittedReservations(
     });
   }
 
+  await markOrderUnits(tx, input.orderId, "available");
   return reservations.length;
 }
 
@@ -785,6 +808,8 @@ export const adminOrdersService = {
         const booking = await tx.courierDispatch.findFirst({ where: { orderId: id, status: { in: ["confirmed", "queued", "processing", "submitted"] } } });
         if (booking) throw new AdminOrdersServiceError("Shipping details are frozen by courier review; reconcile or cancel that review first", 409);
       }
+      const foodBooking = input.addresses?.length ? await tx.foodOrderBooking.findUnique({ where: { orderId: id } }) : null;
+      if (foodBooking) throw new AdminOrdersServiceError("Fresh-food delivery area is frozen; cancel and place a corrected order", 409);
       const data: Prisma.OrderUpdateInput = {};
       if (input.customerName !== undefined) {
         data.customerName = input.customerName.trim();
@@ -880,6 +905,7 @@ export const adminOrdersService = {
         });
       }
 
+      for (const orderId of orderIds) await cancelFoodBooking(tx, orderId);
       if (orderIds.size > 0) {
         await tx.order.updateMany({
           where: {

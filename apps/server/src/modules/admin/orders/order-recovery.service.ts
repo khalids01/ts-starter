@@ -1,3 +1,4 @@
+import { markOrderUnits } from "../../ecommerce/niche/gadgets";
 import type { Prisma } from "@db/server";
 import { assertNoBookingInProgress, stopUnsubmittedDispatches } from "./order-custody";
 import { AdminOrdersServiceError, restockCommittedReservations, withOrderTransaction } from "./orders.service";
@@ -53,6 +54,7 @@ export const orderRecoveryService = {
         orderId, type: "delivery", previousValue: order.deliveryStatus, newValue: "returned", note: receiptNote, actorUserId,
         metadata: { action: "physical_receipt_recorded", recoveryId: recovery.id, wholeOrder: true, disposition: "awaiting_inspection", inventorySideEffect: "none" },
       } });
+      await markOrderUnits(tx, orderId, "returned");
       return recovery;
     });
   },
@@ -68,6 +70,7 @@ export const orderRecoveryService = {
         orderId, type: "delivery", previousValue: "returned", newValue: "returned", note, actorUserId,
         metadata: { action: "physical_receipt_inspected", recoveryId: recovery.id, previousDisposition: recovery.disposition, disposition: input.disposition, inventorySideEffect: "none" },
       } });
+      if (input.disposition === "unsafe") await markOrderUnits(tx, orderId, "unsafe");
       return updated;
     });
   },

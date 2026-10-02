@@ -83,6 +83,8 @@ export function ShopProductPage(props: { slug: string }) {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">{product.name}</h1>
+                    {product.fulfillmentKind === "fresh_food" ? <p className="mt-3 text-sm">Fresh food requires an available local delivery slot for your postal code at checkout.</p> : null}
+                    {product.fulfillmentKind === "gadget" && (product.warrantyDays ?? 0) > 0 ? <p className="mt-3 text-sm">{product.warrantyDays} days of warranty from delivery. Claims are reviewed against your purchased unit.</p> : null}
                     {product.description ? (
                       <p className="mt-3 leading-7 text-muted-foreground">{product.description}</p>
                     ) : null}

@@ -18,14 +18,9 @@ import { PublicShopFooter } from "@/components/public-footer";
 
 export function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
-  const [contact, setContact] = useState("");
   const lookup = useMutation({
     mutationFn: async () => {
-      const value = contact.trim();
-      const query = value.includes("@") ? { email: value } : { phone: value };
-      const { data, error } = await client.shop
-        .orders({ orderNumber: orderNumber.trim() })
-        .get({ query });
+      const { data, error } = await client.shop.orders({ orderNumber: orderNumber.trim() }).get({ query: {} });
       if (error) {
         throw new Error(
           String(
@@ -39,7 +34,7 @@ export function TrackOrderPage() {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (orderNumber.trim() && contact.trim()) {
+    if (orderNumber.trim()) {
       lookup.mutate();
     }
   };
@@ -55,7 +50,7 @@ export function TrackOrderPage() {
             Check your delivery status
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-            Enter the order number and the email or phone used during checkout.
+            Sign in with the account that placed the order, then enter its order number.
           </p>
         </section>
 
@@ -73,20 +68,11 @@ export function TrackOrderPage() {
                 placeholder="ORD-..."
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="order-contact">Email or phone</Label>
-              <Input
-                id="order-contact"
-                value={contact}
-                onChange={(event) => setContact(event.target.value)}
-                placeholder="customer@example.com"
-              />
-            </div>
             <Button
               type="submit"
               className="w-full"
               disabled={
-                !orderNumber.trim() || !contact.trim() || lookup.isPending
+                !orderNumber.trim() || lookup.isPending
               }
             >
               <Search className="size-4" />
@@ -99,11 +85,10 @@ export function TrackOrderPage() {
               <EmptyTrackState />
             ) : lookup.isError ? (
               <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-                Order not found. Check the order number and customer email or
-                phone.
+                Order not found. Check the order number and sign in with the purchasing account.
               </div>
             ) : lookup.data ? (
-              <OrderDetails order={lookup.data} />
+              <OrderDetails order={lookup.data} onRefresh={() => lookup.mutate()} />
             ) : (
               <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
                 Loading order...
@@ -122,8 +107,7 @@ function EmptyTrackState() {
       <PackageSearch className="mx-auto size-10 text-muted-foreground" />
       <h2 className="mt-4 font-medium">Find an order</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Guest orders can be opened with the order number and matching email or
-        phone.
+        Only the signed-in purchasing account can open an order.
       </p>
       <Link
         to="/shop"
@@ -135,7 +119,7 @@ function EmptyTrackState() {
   );
 }
 
-function OrderDetails(props: { order: ShopOrder }) {
+function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
   return (
     <div className="grid gap-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
@@ -199,6 +183,7 @@ function OrderDetails(props: { order: ShopOrder }) {
                 {item.variantName ?? item.sku ?? "Product"} x {item.quantity}
               </p>
             </div>
+            <div className="col-span-full">{(item.unitAllocations ?? []).map(unit => <CustomerWarranty key={unit.id} unit={unit} days={item.warrantyDays ?? 0} delivered={Boolean(props.order.deliveredAt)} onRefresh={props.onRefresh} />)}</div>
             <p className="text-sm font-semibold">
               {formatMoney(item.totalAmount, props.order.currency)}
             </p>
@@ -272,4 +257,11 @@ function SummaryRow(props: {
       </span>
     </div>
   );
+}
+
+function CustomerWarranty({ unit, days, delivered, onRefresh }: { unit: NonNullable<ShopOrder["lineItems"][number]["unitAllocations"]>[number]; days: number; delivered: boolean; onRefresh: () => void }) {
+  const [issue, setIssue] = useState("");
+  const [reference, setReference] = useState(() => crypto.randomUUID());
+  const claim = useMutation({ mutationFn: async () => { const { error } = await client.shop["warranty-claims"].post({ allocationId: unit.id, reference, issue: issue.trim() }); if (error) throw new Error(String(error.value?.message || "Could not open warranty claim")); }, onSuccess: () => { setIssue(""); setReference(crypto.randomUUID()); onRefresh(); } });
+  return <div className="space-y-2 rounded border p-2 text-sm"><p>Unit: {unit.serial ?? unit.imei} · {days} warranty days from delivery</p>{unit.claims.map(c => <p key={c.id}>Claim {c.state}: {c.issue}{c.resolution ? ` · ${c.resolution}` : ""}</p>)}{delivered && days > 0 && unit.state === "shipped" && !unit.claims.some(c => c.state === "open") ? <><label>Describe the problem<Input maxLength={2000} value={issue} onChange={e => setIssue(e.target.value)} /></label><Button disabled={!issue.trim() || claim.isPending} onClick={() => claim.mutate()}>{claim.isPending ? "Submitting..." : "Request warranty review"}</Button></> : null}{claim.isError ? <p role="alert" className="text-destructive">{claim.error.message}</p> : null}</div>;
 }

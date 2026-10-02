@@ -48,6 +48,8 @@ export type ShopVariant = {
 };
 
 export type ShopProduct = {
+  fulfillmentKind?: "standard" | "packaged_food" | "fresh_food" | "gadget" | "clothing";
+  warrantyDays?: number;
   id: string;
   name: string;
   slug: string;
@@ -165,6 +167,7 @@ export type CheckoutResult = {
 };
 
 export type ShopOrder = {
+  foodBooking?: { state: string; slot: { label: string; startsAt: string; endsAt: string } } | null;
   id: string;
   orderNumber: string;
   customerName: string;
@@ -198,6 +201,8 @@ export type ShopOrder = {
     variantName?: string | null;
     sku?: string | null;
     imageUrl?: string | null;
+    warrantyDays?: number;
+    unitAllocations?: { id: string; serial: string | null; imei: string | null; state: string; claims: { id: string; state: string; issue: string; resolution: string | null }[] }[];
     quantity: number;
     unitPrice: string;
     totalAmount: string;

@@ -22,7 +22,7 @@ describe("courier tracking persistence", () => {
     const consignment: any = { id: "consignment-1", orderId: "order-1", connectionId: "connection-1", state: "submitted", order: { deliveryStatus: "preparing" } };
     let storedPayload: any;
     const db: any = {
-      courierConsignment: { findFirst: mock(async () => consignment), update: mock(async () => {}) },
+      courierConsignment: { findFirst: mock(async () => consignment), findUnique: mock(async () => consignment), update: mock(async () => {}) },
       courierEvent: { create: mock(async ({ data }: any) => { storedPayload = data.payload; }) },
       courierException: { findFirst: mock(async () => null), create: mock(async () => {}) },
       order: { update: mock(async () => {}) },
@@ -39,7 +39,7 @@ describe("courier tracking persistence", () => {
     const exceptions: any[] = [];
     const db: any = {
       courierConsignment: {
-        findFirst: mock(async () => consignment),
+        findFirst: mock(async () => consignment), findUnique: mock(async () => consignment),
         update: mock(async ({ data }: any) => Object.assign(consignment, data)),
       },
       courierEvent: { create: mock(async ({ data }: any) => { if (events.some((item) => item.eventKey === data.eventKey)) throw Object.assign(new Error("duplicate"), { code: "P2002" }); events.push(data); }) },
@@ -57,7 +57,7 @@ describe("courier tracking persistence", () => {
     const duplicate = await service.record(input);
     expect(first.normalizedState).toBe("exception");
     expect(duplicate.duplicate).toBe(true);
-    expect(consignment.state).toBe("exception");
+    expect(consignment.state).toBe("delivered");
     expect(db.order.update).not.toHaveBeenCalled();
     expect(exceptions[0].kind).toBe("conflicting_terminal_event");
   });
@@ -66,11 +66,29 @@ describe("courier tracking persistence", () => {
     const consignment: any = { id: "consignment-1", orderId: "order-1", connectionId: "connection-1", state: "in_transit", order: { deliveryStatus: "out_for_delivery" } };
     const create = mock(async () => ({}));
     const update = mock(async () => ({}));
-    const db: any = { courierConsignment: { findFirst: mock(async () => consignment), update }, courierEvent: { create } };
+    const db: any = { courierConsignment: { findFirst: mock(async () => consignment), findUnique: mock(async () => consignment), update }, courierEvent: { create } };
     const result = await new CourierTrackingService({ db }).record({ connectionId: "connection-1", source: "webhook", eventKey: "tracking-1", eventType: "tracking_update", externalId: "external-1", providerState: "tracking_update", payload: { tracking_message: "At sorting center" } });
     expect(result).toMatchObject({ processed: true, normalizedState: null });
     expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ eventType: "tracking_update", normalizedState: null }) });
     expect(update).not.toHaveBeenCalled();
     expect(consignment.state).toBe("in_transit");
   });
+});
+
+it("delivery decisions reread persisted state and preserve terminal facts across a stale scan", async () => {
+  const scanned = { id: "c", orderId: "o", state: "submitted", externalId: "external", order: { deliveryStatus: "preparing" } };
+  const current = { ...scanned, state: "delivered", order: { deliveryStatus: "delivered" } };
+  const update = mock(async () => ({})); const exceptions: any[] = [];
+  const db: any = { courierConsignment: { findFirst: async () => scanned, findUnique: async () => current, update }, courierEvent: { create: async () => ({}) }, courierException: { findFirst: async () => null, create: async ({ data }: any) => exceptions.push(data) }, order: { update } };
+  db.$transaction = mock(async (callback: any) => callback(db));
+  const result = await new CourierTrackingService({ db }).record({ connectionId: "connection", source: "polling", eventKey: "stale", eventType: "delivery_status", externalId: "external", providerState: "pending", payload: {} });
+  expect(result.normalizedState).toBe("exception"); expect(update).not.toHaveBeenCalled(); expect(current.state).toBe("delivered"); expect(exceptions[0].kind).toBe("conflicting_terminal_event");
+  expect(db.$transaction.mock.calls[0]?.[1]).toEqual({ isolationLevel: "Serializable" });
+});
+it("contradictory invoice and booking IDs cannot update order custody", async () => {
+  const c = { id: "c", orderId: "o", state: "in_transit", invoice: "invoice-A", externalId: "external-A", order: { deliveryStatus: "out_for_delivery" } };
+  const update = mock(async () => ({})); const exceptions: any[] = [];
+  const db: any = { courierConsignment: { findFirst: async () => c, findUnique: async () => c, update }, courierEvent: { create: async () => ({}) }, courierException: { findFirst: async () => null, create: async ({ data }: any) => exceptions.push(data) }, order: { update } }; db.$transaction = async (callback: any) => callback(db);
+  await new CourierTrackingService({ db }).record({ connectionId: "connection", source: "webhook", eventKey: "conflict", eventType: "delivery_status", invoice: "invoice-A", externalId: "external-B", providerState: "delivered", payload: {} });
+  expect(update).not.toHaveBeenCalled(); expect(exceptions[0].kind).toBe("conflicting_consignment_identity");
 });

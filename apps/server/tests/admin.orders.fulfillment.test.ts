@@ -11,7 +11,14 @@ const statusEventCreateMock = mock(async (args: any) => ({
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
 const prismaMock = {
+  foodOrderBooking: { findUnique: mock(async () => null), updateMany: mock(async () => ({ count: 0 })) },
+  orderLineItem: { findMany: mock(async () => []) },
+  unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+  inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
   $transaction: transactionMock,
+  courierShipmentClaim: { findUnique: mock(async () => null) },
+  courierConsignment: { findFirst: mock(async () => null) },
+  stockReservation: { findFirst: mock(async () => null) },
   order: {
     findUnique: orderFindUniqueMock,
     update: orderUpdateMock,
@@ -291,4 +298,11 @@ describe("order fulfillment service", () => {
       orderFulfillmentService.markDelivered("order-1", {}, { userId: "admin-1" }),
     ).rejects.toThrow("Only a shipped order can be marked delivered");
   });
+});
+
+it("manual fulfillment cannot override a courier-managed shipment", async () => {
+  const { orderFulfillmentService } = await import("../src/modules/admin/orders/fulfillment.service");
+  prismaMock.courierShipmentClaim.findUnique.mockResolvedValueOnce({ dispatchId: "dispatch" });
+  await expect(orderFulfillmentService.markShipped("order-1", { carrier: "Local", trackingNumber: "Record" }, { userId: "actor" })).rejects.toThrow("Courier-managed");
+  expect(orderUpdateMock).not.toHaveBeenCalled(); expect(statusEventCreateMock).not.toHaveBeenCalled();
 });

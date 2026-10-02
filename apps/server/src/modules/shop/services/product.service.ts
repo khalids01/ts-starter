@@ -1,3 +1,4 @@
+import { eligibleStockWhere } from "@/modules/ecommerce/inventory/stock-policy";
 import prisma from "@db/server";
 import type {
   ListShopFiltersQuery,
@@ -45,10 +46,12 @@ export const productService = {
             where: { isActive: true },
             include: {
               inventoryStocks: {
-                where: { location: { isActive: true } },
+                where: eligibleStockWhere(),
                 select: {
                   quantityOnHand: true,
                   quantityReserved: true,
+            batchId: true,
+            batch: { select: { expiryDate: true, disposition: true } },
                 },
               },
               attributeValues: {

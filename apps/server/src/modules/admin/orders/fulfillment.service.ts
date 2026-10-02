@@ -1,3 +1,6 @@
+import { assertNicheShipmentReady } from "../../ecommerce/niche/fulfillment";
+import { markOrderUnits } from "../../ecommerce/niche/gadgets";
+import { orderHasUnsafeCommittedStock } from "../../ecommerce/inventory/stock-policy";
 import prisma from "@db/server";
 import type {
   MarkOrderDeliveredInput,
@@ -48,6 +51,9 @@ export const orderFulfillmentService = {
         throw new AdminOrdersServiceError("Order is not eligible to be shipped", 409);
       }
 
+      if (await orderHasUnsafeCommittedStock(tx, id)) throw new AdminOrdersServiceError("Inventory expired or is unavailable; review before shipping", 409);
+      if (await tx.courierShipmentClaim.findUnique({ where: { orderId: id } }) || await tx.courierConsignment.findFirst({ where: { orderId: id, state: { not: "cancelled_before_submission" } } })) throw new AdminOrdersServiceError("Courier-managed fulfillment must be reconciled through courier tracking", 409);
+      await assertNicheShipmentReady(tx, id);
       const carrier = requiredText(input.carrier, "Carrier");
       const trackingNumber = requiredText(input.trackingNumber, "Tracking number");
       const note = text(input.note);
@@ -73,6 +79,7 @@ export const orderFulfillmentService = {
           metadata: { action: "mark_shipped", carrier, trackingNumber },
         },
       });
+      await markOrderUnits(tx, id, "shipped");
       return fulfillmentResult(updated);
     }, { isolationLevel: "Serializable" });
   },
@@ -84,6 +91,7 @@ export const orderFulfillmentService = {
     return prisma.$transaction(async (tx) => {
       const current = await tx.order.findUnique({ where: { id } });
       if (!current) throw new AdminOrdersServiceError("Order not found", 404);
+      if (await tx.courierConsignment.findFirst({ where: { orderId: id, state: { not: "cancelled_before_submission" } } })) throw new AdminOrdersServiceError("Use courier tracking for this shipment", 409);
       if (!current.shippedAt) {
         throw new AdminOrdersServiceError("Tracking can only be updated after shipment", 409);
       }
@@ -121,11 +129,13 @@ export const orderFulfillmentService = {
     return prisma.$transaction(async (tx) => {
       const current = await tx.order.findUnique({ where: { id } });
       if (!current) throw new AdminOrdersServiceError("Order not found", 404);
+      if (current.orderStatus === "cancelled" || await tx.courierConsignment.findFirst({ where: { orderId: id, state: { not: "cancelled_before_submission" } } })) throw new AdminOrdersServiceError("Cancelled or courier-managed orders require reconciliation", 409);
       if (!["shipped", "out_for_delivery"].includes(current.deliveryStatus)) {
         throw new AdminOrdersServiceError("Only a shipped order can be marked delivered", 409);
       }
       const note = text(input.note);
       const deliveredAt = new Date();
+      await tx.foodOrderBooking.updateMany({ where: { orderId: id, state: "ready" }, data: { state: "completed" } });
       const updated = await tx.order.update({
         where: { id },
         data: { deliveryStatus: "delivered", deliveredAt },

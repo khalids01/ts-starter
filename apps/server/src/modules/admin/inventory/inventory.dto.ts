@@ -111,3 +111,7 @@ export type BatchAttributeAssignmentInput =
   typeof BatchAttributeAssignmentDto.static;
 export type ReceiveStockInput = typeof ReceiveStockDto.static;
 export type AdjustStockInput = typeof AdjustStockDto.static;
+
+export const UpdateBatchDispositionDto = t.Object({ disposition: t.Union([t.Literal("sellable"), t.Literal("quarantined"), t.Literal("unsafe")]), reason: t.String({ minLength: 1, maxLength: 500 }) });
+
+export const RegisterUnitDto = t.Object({ variantId: t.String({ minLength: 1, maxLength: 128 }), locationId: t.String({ minLength: 1, maxLength: 128 }), batchId: t.Optional(t.Union([t.String({ minLength: 1, maxLength: 128 }), t.Null()])), serial: t.Optional(t.Union([t.String({ maxLength: 128 }), t.Null()])), imei: t.Optional(t.Union([t.String({ maxLength: 15 }), t.Null()])) });

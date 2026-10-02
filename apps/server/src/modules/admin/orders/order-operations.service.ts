@@ -1,3 +1,5 @@
+import { cancelFoodBooking } from "../../ecommerce/niche/food";
+import { orderHasUnsafeCommittedStock } from "../../ecommerce/inventory/stock-policy";
 import { orderMoney, moneyStatus, minorUnitsString } from "../../ecommerce/orders/payment-accounting";
 import { invalidatePaymentDispatches } from "../../ecommerce/orders/payment-dispatch";
 import type {
@@ -67,10 +69,9 @@ export const orderOperationsService = {
       }
 
       const courier = await stopUnsubmittedDispatches(tx, id, actor.userId);
-      const physicalRecoveryRequired = await orderNeedsPhysicalRecovery(tx, current, courier.recoveryRequired);
-      const expiredInventory = current.inventoryStatus === "committed" && Boolean(await tx.stockReservation.findFirst({
-        where: { referenceType: "order", referenceId: id, status: "committed", batch: { expiryDate: { lte: new Date() } } },
-      }));
+      const preparedFood = await cancelFoodBooking(tx, id);
+      const physicalRecoveryRequired = preparedFood || await orderNeedsPhysicalRecovery(tx, current, courier.recoveryRequired);
+      const expiredInventory = current.inventoryStatus === "committed" && await orderHasUnsafeCommittedStock(tx, id);
       const recoveryRequired = physicalRecoveryRequired || expiredInventory || (current.inventoryStatus === "committed" && !actor.canRestock);
 
       let inventorySideEffect = "none";

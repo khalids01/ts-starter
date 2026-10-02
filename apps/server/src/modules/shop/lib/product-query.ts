@@ -1,3 +1,4 @@
+import { eligibleStockWhere } from "@/modules/ecommerce/inventory/stock-policy";
 import prisma, { type Prisma } from "@db/server";
 import { getEffectiveCategoryAttributes } from "@/modules/catalog/category-template";
 import type { ListShopProductsQuery } from "../dto/product.dto";
@@ -269,7 +270,7 @@ export async function buildProductWhere(query: ListShopProductsQuery = {}) {
       variants: {
         some: {
           isActive: true,
-          inventoryStocks: { some: { quantityOnHand: { gt: 0 } } },
+          inventoryStocks: { some: { ...eligibleStockWhere(), quantityOnHand: { gt: prisma.inventoryStock.fields.quantityReserved } } },
         },
       },
     };

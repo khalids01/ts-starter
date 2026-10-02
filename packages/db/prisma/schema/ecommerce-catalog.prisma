@@ -1,3 +1,18 @@
+enum ProductFulfillmentKind {
+  standard
+  packaged_food
+  fresh_food
+  gadget
+  clothing
+}
+
+enum SerialTrackingMode {
+  none
+  serial
+  imei
+  serial_and_imei
+}
+
 enum ProductStatus {
   draft
   active
@@ -52,6 +67,9 @@ model Category {
   children       Category[]          @relation("CategoryChildren")
   imageUrl       String?
   iconUrl        String?
+  fulfillmentKind ProductFulfillmentKind @default(standard)
+  serialTracking SerialTrackingMode @default(none)
+  warrantyDays   Int @default(0)
   brandPolicy    CategoryBrandPolicy @default(optional)
   showStoreBrand Boolean             @default(false)
   isActive       Boolean             @default(true)
@@ -151,6 +169,8 @@ model ProductVariant {
   movements        InventoryMovement[]
   reservations     StockReservation[]
   orderLineItems   OrderLineItem[]
+
+  inventoryUnits InventoryUnit[]
 
   @@index([productId])
   @@index([isActive])

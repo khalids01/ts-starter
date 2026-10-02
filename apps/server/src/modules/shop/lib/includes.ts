@@ -1,3 +1,4 @@
+import { eligibleStockWhere } from "@/modules/ecommerce/inventory/stock-policy";
 import type { Prisma } from "@db/server";
 
 export function productInclude() {
@@ -8,6 +9,8 @@ export function productInclude() {
         name: true,
         slug: true,
         isActive: true,
+        fulfillmentKind: true,
+        warrantyDays: true,
       },
     },
     brand: {
@@ -23,10 +26,12 @@ export function productInclude() {
       where: { isActive: true },
       include: {
         inventoryStocks: {
-          where: { location: { isActive: true } },
+          where: eligibleStockWhere(),
           select: {
             quantityOnHand: true,
             quantityReserved: true,
+            batchId: true,
+            batch: { select: { expiryDate: true, disposition: true } },
           },
         },
         attributeValues: {
@@ -66,8 +71,11 @@ export function orderInclude() {
     addresses: {
       orderBy: { type: "desc" },
     },
+    foodBooking: { include: { slot: true } },
     lineItems: {
       include: {
+        units: true,
+        unitAllocations: { include: { unit: true, claims: true } },
         product: {
           select: {
             id: true,
@@ -96,10 +104,12 @@ export function orderInclude() {
 export function checkoutVariantInclude() {
   return {
     inventoryStocks: {
-      where: { location: { isActive: true } },
+      where: eligibleStockWhere(),
       select: {
         quantityOnHand: true,
         quantityReserved: true,
+            batchId: true,
+            batch: { select: { expiryDate: true, disposition: true } },
       },
     },
     product: {
@@ -116,6 +126,9 @@ export function checkoutVariantInclude() {
             name: true,
             slug: true,
             isActive: true,
+            fulfillmentKind: true,
+            serialTracking: true,
+            warrantyDays: true,
           },
         },
         brand: {

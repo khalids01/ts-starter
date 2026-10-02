@@ -77,6 +77,9 @@ export const ecommerceApi = {
       unwrap(api.admin.products({ id }).validate.post(), "Failed to validate product"),
   },
   inventory: {
+    units: (variantId: string) => unwrap(api.admin.inventory.units.get({ query: { variantId } }), "Failed to load units"),
+    registerUnit: (body: { variantId: string; locationId: string; batchId?: string | null; serial?: string | null; imei?: string | null }) => unwrap(api.admin.inventory.units.post(body), "Failed to register unit"),
+    batchDisposition: (id: string, body: { disposition: "sellable" | "quarantined" | "unsafe"; reason: string }) => unwrap(api.admin.inventory.batches({ id }).disposition.patch(body), "Failed to record inspection"),
     suppliers: (query?: Record<string, unknown>) =>
       unwrap(api.admin.inventory.suppliers.get({ query }), "Failed to load suppliers"),
     createSupplier: (body: Record<string, unknown>) =>
@@ -117,6 +120,8 @@ export const ecommerceApi = {
       unwrap(api.admin.shipping.rates({ id }).delete(), "Failed to delete shipping method"),
   },
   delivery: {
+    reconcileBooking: (id: string, body: { invoice: string; externalId: string; trackingCode?: string | null; providerState: string; note: string }) => unwrap(api.admin.delivery.consignments({ id })["reconcile-booking"].post(body), "Failed to reconcile booking evidence"),
+    retryHold: (id: string, note: string) => unwrap(api.admin.delivery.consignments({ id })["retry-hold"].post({ note }), "Failed to retry reviewed hold"),
     providers: () =>
       unwrap(api.admin.delivery.providers.get(), "Failed to load courier providers"),
     connections: (query?: Record<string, unknown>) =>
@@ -212,6 +217,14 @@ export const ecommerceApi = {
       unwrap(api.admin.customers({ id }).patch(body), "Failed to update customer"),
   },
   orders: {
+    unassignUnit: (id: string, unitId: string) => unwrap(api.admin.orders({ id }).units({ unitId }).delete(), "Failed to unassign unit"),
+    foodSlots: () => unwrap(api.admin.orders["food-slots"].get(), "Failed to load slots"),
+    createFoodSlot: (body: { label: string; postalCodes: string[]; startsAt: string; endsAt: string; cutoffAt: string; capacityUnits: number }) => unwrap(api.admin.orders["food-slots"].post(body), "Failed to create slot"),
+    disableFoodSlot: (id: string) => unwrap(api.admin.orders["food-slots"]({ id }).delete(), "Failed to close slot"),
+    preparation: (id: string, state: "preparing" | "ready", note: string) => unwrap(api.admin.orders({ id }).preparation.post({ state, note }), "Failed to record preparation"),
+    assignUnit: (id: string, lineItemId: string, unitId: string) => unwrap(api.admin.orders({ id }).units.post({ lineItemId, unitId }), "Failed to assign unit"),
+    openWarranty: (id: string, allocationId: string, reference: string, issue: string) => unwrap(api.admin.orders({ id })["warranty-claims"].post({ allocationId, reference, issue }), "Failed to open claim"),
+    resolveWarranty: (id: string, claimId: string, state: "approved" | "rejected", resolution: string) => unwrap(api.admin.orders({ id })["warranty-claims"]({ claimId }).patch({ state, resolution }), "Failed to resolve claim"),
     list: (query?: Record<string, unknown>) =>
       unwrap(api.admin.orders.get({ query }), "Failed to load orders"),
     detail: (id: string) =>

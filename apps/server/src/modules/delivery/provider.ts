@@ -1,3 +1,18 @@
+export class CourierProviderRequestError extends Error {
+  constructor(
+    message: string,
+    readonly details: Readonly<{
+      code: "authentication" | "rate_limited" | "validation" | "provider" | "network" | "invalid_response";
+      retryable: boolean;
+      httpStatus?: number;
+      retryAfterSeconds?: number;
+    }>,
+  ) {
+    super(message);
+  }
+}
+
+
 export type CourierCapability =
   | "createConsignment"
   | "getConsignmentStatus"
@@ -118,13 +133,18 @@ export type CourierPayoutSummary = Readonly<{
   raw: Record<string, unknown>;
 }>;
 
+export type CourierRecoveryResult =
+  | Readonly<{ kind: "found"; consignment: ConsignmentResult }>
+  | Readonly<{ kind: "uncertain"; providerState?: string }>;
+
 export interface CourierProviderAdapter {
   readonly code: string;
   readonly capabilities: ReadonlySet<CourierCapability>;
   healthCheck(credentials: CourierCredentials): Promise<{ available: boolean }>;
-  createConsignment(credentials: CourierCredentials, request: CreateConsignmentRequest): Promise<ConsignmentResult>;
-  getConsignmentStatus(credentials: CourierCredentials, externalId: string): Promise<{ providerState: string }>;
-  getConsignmentStatusWithReturn?(credentials: CourierCredentials, externalId: string): Promise<{ providerState: string }>;
+  createConsignment(credentials: CourierCredentials, request: CreateConsignmentRequest, options?: { signal: AbortSignal }): Promise<ConsignmentResult>;
+  recoverConsignment?(credentials: CourierCredentials, invoice: string, options?: { signal: AbortSignal }): Promise<CourierRecoveryResult>;
+  getConsignmentStatus(credentials: CourierCredentials, externalId: string, options?: { signal: AbortSignal }): Promise<{ providerState: string }>;
+  getConsignmentStatusWithReturn?(credentials: CourierCredentials, externalId: string, options?: { signal: AbortSignal }): Promise<{ providerState: string }>;
   getTrackingHistory?(credentials: CourierCredentials, invoice: string): Promise<readonly CourierTrackingEntry[]>;
   requestPickup?(credentials: CourierCredentials, request: CourierPickupRequest): Promise<CourierPickupResult>;
   createReturn?(credentials: CourierCredentials, request: CourierReturnRequest): Promise<CourierReturnResult>;

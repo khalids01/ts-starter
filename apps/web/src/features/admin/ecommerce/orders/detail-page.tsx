@@ -1,3 +1,4 @@
+import { NicheFulfillmentCard } from "./niche-fulfillment";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
@@ -127,7 +128,7 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
     canRefundOrders,
   } = ecommercePermissions(session);
   const canDispatchCourier = hasAdminPermission(session, Permissions.AdminDeliveryDispatch);
-  const canReadCourier = hasAdminPermission(session, Permissions.AdminDeliveryRead) || canDispatchCourier;
+  const canReadCourier = hasAdminPermission(session, Permissions.AdminDeliveryRead);
   const canRestockOrders = canFulfillOrders && hasAdminPermission(session, Permissions.AdminInventoryManage);
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -387,9 +388,10 @@ export function AdminOrderDetailPage(props: { orderId: string }) {
           />
           <OrderPaymentsCard order={order} canRecord={hasAdminPermission(session, Permissions.AdminOrdersPayments)} />
           <OrderRecoveryCard order={order} canReceive={canFulfillOrders} canRestock={canRestockOrders} />
+          <NicheFulfillmentCard order={order} canFulfill={canFulfillOrders} canAssign={canRestockOrders && hasAdminPermission(session, Permissions.AdminInventoryRead)} />
           <FulfillmentCard order={order} canFulfill={canFulfillOrders} />
           <CourierRoutingCard orderId={order.id} canDispatch={canDispatchCourier} />
-          <CourierTrackingCard orderId={order.id} canRead={canReadCourier} />
+          <CourierTrackingCard orderId={order.id} canRead={canReadCourier} canDispatch={canDispatchCourier} canReconcile={hasAdminPermission(session, Permissions.AdminDeliveryReconcile)} />
           <OperationalCard order={order} />
         </div>
       </section>

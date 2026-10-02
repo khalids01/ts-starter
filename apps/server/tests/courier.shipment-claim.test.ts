@@ -14,6 +14,9 @@ let events: any[];
 let exceptions: any[];
 let returns: any[];
 const db: any = {
+    orderLineItem: { findMany: mock(async () => []) },
+    unitAllocation: { updateMany: mock(async () => ({ count: 0 })) },
+    inventoryUnit: { updateMany: mock(async () => ({ count: 0 })) },
   order: { findUnique: mock(async () => order) },
   orderStatusEvent: { create: mock(async ({ data }: any) => { events.push(data); return data; }) },
   courierConnection: { findMany: mock(async () => [1, 2].map((n) => ({ id: `connection-${n}`, displayName: `Connection ${n}`, enabled: true, healthState: "healthy", priority: n }))) },

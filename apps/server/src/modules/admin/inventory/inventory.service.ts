@@ -1,3 +1,6 @@
+import { registerUnit } from "../../ecommerce/niche/gadgets";
+import { NichePolicyError } from "../../ecommerce/niche/policy";
+import { availableStockQuantity } from "../../ecommerce/inventory/stock-policy";
 import prisma, { type Prisma } from "@db/server";
 import type {
   AdjustStockInput,
@@ -167,6 +170,7 @@ function mapBatch(row: any) {
     supplier: row.supplier ? mapSupplier(row.supplier) : null,
     batchNumber: row.batchNumber,
     expiryDate: toIso(row.expiryDate),
+    disposition: row.disposition ?? "sellable",
     receivedAt: toIso(row.receivedAt),
     unitCost: decimalToString(row.unitCost),
     notes: row.notes,
@@ -194,7 +198,7 @@ function mapStock(row: any) {
     batch: mapBatch(row.batch),
     quantityOnHand: row.quantityOnHand,
     quantityReserved: row.quantityReserved,
-    availableQuantity: row.quantityOnHand - row.quantityReserved,
+    availableQuantity: availableStockQuantity([row]),
     reorderLevel: row.reorderLevel,
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
@@ -317,6 +321,29 @@ function assignmentHasValue(assignment: BatchAttributeAssignmentInput) {
 }
 
 export class AdminInventoryService {
+  async listUnits(variantId: string) { return prisma.inventoryUnit.findMany({ where: { variantId, state: "available" }, orderBy: { createdAt: "asc" }, take: 100 }); }
+  async registerUnit(input: { variantId: string; locationId: string; batchId?: string | null; serial?: string | null; imei?: string | null }, actor: string) {
+    try { return await prisma.$transaction(tx => registerUnit(tx, input, actor), { isolationLevel: "Serializable" }); }
+    catch (e) {
+      if (e instanceof NichePolicyError) throw new AdminInventoryServiceError(e.message, e.status);
+      if (["P2002", "P2034"].includes(String((e as { code?: string }).code))) throw new AdminInventoryServiceError("Serial/IMEI already exists or inventory changed; reload", 409);
+      throw e;
+    }
+  }
+
+  async updateBatchDisposition(id: string, input: { disposition: "sellable" | "quarantined" | "unsafe"; reason: string }, actorUserId: string) {
+    const reason = input.reason.trim();
+    if (!reason) throw new AdminInventoryServiceError("Inspection reason is required");
+    return prisma.$transaction(async tx => {
+      const batch = await tx.inventoryBatch.findUnique({ where: { id }, include: { stocks: true } });
+      if (!batch) throw new AdminInventoryServiceError("Batch not found", 404);
+      if (input.disposition === "sellable" && batch.expiryDate && batch.expiryDate <= new Date()) throw new AdminInventoryServiceError("Expired batches cannot be made sellable", 409);
+      const updated = await tx.inventoryBatch.update({ where: { id }, data: { disposition: input.disposition } });
+      for (const stock of batch.stocks) await tx.inventoryMovement.create({ data: { variantId: stock.variantId, locationId: stock.locationId, batchId: id, type: "adjustment", delta: 0, reason: `${batch.disposition} -> ${input.disposition}: ${reason}`, actorUserId, referenceType: "batch_inspection", referenceId: id } });
+      return mapBatch(updated);
+    }, { isolationLevel: "Serializable" });
+  }
+
   async listSuppliers(query: ListInventoryQuery = {}) {
     const { requestedPage, limit } = normalizePagination(query.page, query.limit);
     const where: Prisma.SupplierWhereInput = {};

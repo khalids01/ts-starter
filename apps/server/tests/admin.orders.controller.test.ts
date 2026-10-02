@@ -198,3 +198,19 @@ describe("payment action permissions", () => {
     expect(response.status).toBe(403);
   });
 });
+
+it.each([
+  ["POST", "/admin/orders/order-1/preparation", { state: "preparing", note: "Evidence" }],
+  ["POST", "/admin/orders/order-1/units", { lineItemId: "line", unitId: "unit" }],
+  ["DELETE", "/admin/orders/order-1/units/unit", undefined],
+  ["POST", "/admin/orders/order-1/warranty-claims", { allocationId: "allocation", reference: "ref", issue: "Fault" }],
+  ["PATCH", "/admin/orders/order-1/warranty-claims/claim", { state: "approved", resolution: "Evidence" }],
+  ["POST", "/admin/orders/food-slots", { label: "Slot", postalCodes: ["1207"], startsAt: "2099-01-01T10:00:00Z", endsAt: "2099-01-01T11:00:00Z", cutoffAt: "2099-01-01T09:00:00Z", capacityUnits: 1 }],
+  ["DELETE", "/admin/orders/food-slots/slot", undefined],
+] as const)("niche mutation requires action permission: %s %s", async (method, path, body) => {
+  getAuthSessionMock.mockResolvedValueOnce({ user: { id: "admin-1", role: "ADMIN", banned: false, archived: false }, permissions: [Permissions.AdminAccess, Permissions.AdminOrdersRead] });
+  const { adminOrdersController } = await import("../src/modules/admin/orders/orders.controller");
+  const app = new Elysia().use(adminOrdersController);
+  const response = await app.handle(new Request(`http://localhost${path}`, { method, ...(body ? { headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {}) }));
+  expect(response.status).toBe(403);
+});

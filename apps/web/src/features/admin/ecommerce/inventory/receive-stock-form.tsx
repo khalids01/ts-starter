@@ -56,7 +56,7 @@ export function ReceiveStockForm(props: {
         quantity: Number(form.quantity),
         supplierId: form.supplierId === "none" ? null : form.supplierId,
         batchNumber: form.batchNumber || null,
-        expiryDate: form.expiryDate || null,
+        expiryDate: form.expiryDate ? new Date(form.expiryDate).toISOString() : null,
         unitCost: form.unitCost || null,
         reorderLevel: form.reorderLevel ? Number(form.reorderLevel) : null,
         batchAttributes: (templateQuery.data?.fields.batch ?? []).map((field) => {
@@ -123,7 +123,7 @@ export function ReceiveStockForm(props: {
           ]}
         />
         <TextField label="Batch number" value={form.batchNumber} onChange={(batchNumber) => setForm((current) => ({ ...current, batchNumber }))} />
-        <TextField label="Expiry" type="date" value={form.expiryDate} onChange={(expiryDate) => setForm((current) => ({ ...current, expiryDate }))} />
+        <TextField label="Unavailable from (local date and time)" type="datetime-local" value={form.expiryDate} onChange={(expiryDate) => setForm((current) => ({ ...current, expiryDate }))} />
         <TextField label="Unit cost" type="number" value={form.unitCost} onChange={(unitCost) => setForm((current) => ({ ...current, unitCost }))} />
         <TextField label="Reorder level" type="number" value={form.reorderLevel} onChange={(reorderLevel) => setForm((current) => ({ ...current, reorderLevel }))} />
       </div>

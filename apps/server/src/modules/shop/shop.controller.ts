@@ -1,3 +1,7 @@
+import prisma from "@db/server";
+import { NichePolicyError } from "../ecommerce/niche/policy";
+import { openWarrantyClaim } from "../ecommerce/niche/gadgets";
+import { OpenWarrantyClaimDto } from "../admin/orders/orders.dto";
 import { Elysia, t } from "elysia";
 import { authGuard } from "@/guards/auth.guard";
 import {
@@ -22,14 +26,13 @@ import {
 import { storeSettingsService } from "@/modules/ecommerce/store-settings/store-settings.service";
 
 function handleShopError(error: unknown, set: { status?: number | string }) {
-  if (error instanceof ShopServiceError) {
+  if (error instanceof ShopServiceError || error instanceof NichePolicyError) {
     set.status = error.status;
     return { message: error.message, status: error.status };
   }
 
-  const message = error instanceof Error ? error.message : "Shop operation failed";
-  set.status = 400;
-  return { message, status: 400 };
+  set.status = 500;
+  return { message: "Shop operation failed", status: 500 };
 }
 
 function requireUserId(userId: string | undefined) {
@@ -46,6 +49,15 @@ export const shopController = new Elysia({
   },
 })
   .use(authGuard)
+  .get("/food-slots", async ({ query }) => {
+    const now = new Date();
+    const slots = await prisma.foodDeliverySlot.findMany({ where: { isActive: true, cutoffAt: { gt: now }, endsAt: { gt: now }, ...(query.postalCode ? { postalCodes: { has: query.postalCode.trim().toUpperCase() } } : {}) }, orderBy: { startsAt: "asc" }, take: 100 });
+    return slots.map(slot => ({ id: slot.id, label: slot.label, postalCodes: slot.postalCodes, startsAt: slot.startsAt.toISOString(), endsAt: slot.endsAt.toISOString(), cutoffAt: slot.cutoffAt.toISOString(), availableUnits: Math.max(0, slot.capacityUnits - slot.reservedUnits) }));
+  }, { query: t.Object({ postalCode: t.Optional(t.String({ maxLength: 32 })) }) })
+  .post("/warranty-claims", async ({ body, userId, set }) => {
+    try { const actor = requireUserId(userId); return await prisma.$transaction(tx => openWarrantyClaim(tx, body, actor, actor), { isolationLevel: "Serializable" }); }
+    catch (e) { if (["P2002", "P2034"].includes(String((e as { code?: string }).code))) { set.status = 409; return { message: "Claim changed; reload", status: 409 }; } return handleShopError(e, set); }
+  }, { body: OpenWarrantyClaimDto })
   .get("/settings", async () => {
     const settings = await storeSettingsService.get();
     return storeSettingsService.publicSettings(settings);
