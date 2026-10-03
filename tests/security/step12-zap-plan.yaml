@@ -1,0 +1,65 @@
+# Anonymous, bounded, local-only scan. Requires explicit active-scan approval.
+# Start only after the test-target guard and Step 12 HTTP checks pass.
+env:
+  contexts:
+    - name: isolated-ecommerce-step12
+      urls:
+        - http://localhost:3000
+        - http://localhost:3001
+      includePaths:
+        - 'http://localhost:3000/shop/(products|categories|filters|settings|shipping-rates|food-slots)(/[^?]*)?(\?.*)?'
+        - 'http://localhost:3001/(shop|saved|track-order)(/[^?]*)?(\?.*)?'
+      excludePaths:
+        - '.*(/api/auth/|/admin/|/courier/|/checkout|/payment|/logout).*'
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+jobs:
+  - type: requestor
+    requests:
+      - url: http://localhost:3000/shop/products?search=fictional&limit=1
+        method: GET
+      - url: http://localhost:3000/shop/categories
+        method: GET
+      - url: http://localhost:3000/shop/filters
+        method: GET
+      - url: http://localhost:3000/shop/settings
+        method: GET
+      - url: http://localhost:3001/shop?search=fictional
+        method: GET
+      - url: http://localhost:3001/saved
+        method: GET
+      - url: http://localhost:3001/track-order
+        method: GET
+  - type: spider
+    parameters:
+      context: isolated-ecommerce-step12
+      maxDuration: 2
+      maxDepth: 2
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+  - type: activeScan
+    parameters:
+      context: isolated-ecommerce-step12
+      defaultStrength: Low
+      defaultThreshold: Medium
+      maxScanDurationInMins: 5
+      maxRuleDurationInMins: 1
+      threadPerHost: 2
+      delayInMs: 100
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: step12-zap.html
+      reportTitle: Isolated ecommerce Step 12 anonymous scan
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: step12-zap.json

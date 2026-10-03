@@ -18,7 +18,7 @@
   "dependencies": {
     "@env": "workspace:*",
     "@react-email/components": "^1.0.12",
-    "nodemailer": "^9.1.0",
+    "nodemailer": "^10.0.6",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

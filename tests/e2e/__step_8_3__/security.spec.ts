@@ -24,6 +24,7 @@ test("security headers and cross-origin policy are enforced", async ({ request }
 test("anonymous callers cannot reach protected admin reads or mutations", async () => {
   const anonymous = await playwrightRequest.newContext({
     baseURL: e2eRuntimeConfig.serverUrl,
+    storageState: { cookies: [], origins: [] },
     extraHTTPHeaders: { cookie: "" },
   });
   try {
@@ -58,4 +59,22 @@ test("oversized bodies and hostile public input fail without server errors", asy
 
   const hostile = await request.get(`${e2eRuntimeConfig.serverUrl}/shop/products/${encodeURIComponent("' OR 1=1 --")}`);
   expect(hostile.status()).toBeLessThan(500);
+});
+
+test("cross-origin sign-out and forged session cookies fail without revoking the owner session", async ({ request }) => {
+  const denied = await request.post(`${e2eRuntimeConfig.serverUrl}/api/auth/sign-out`, {
+    headers: { origin: "https://attacker.example.test" }, data: {},
+  });
+  expect(denied.status()).toBe(403);
+  const session = await request.get(`${e2eRuntimeConfig.serverUrl}/api/auth/get-session`);
+  expect(session.status()).toBe(200);
+  expect((await session.json())?.user?.id).toBeTruthy();
+  const forged = await playwrightRequest.newContext({
+    baseURL: e2eRuntimeConfig.serverUrl, storageState: { cookies: [], origins: [] },
+    extraHTTPHeaders: { cookie: "better-auth.session_token=fictional-forged-session.invalid-signature" },
+  });
+  try {
+    expect([401, 403]).toContain((await forged.get("/admin/orders")).status());
+    expect(await (await forged.get("/api/auth/get-session")).json()).toBeNull();
+  } finally { await forged.dispose(); }
 });

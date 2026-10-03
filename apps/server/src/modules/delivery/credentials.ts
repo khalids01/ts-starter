@@ -42,9 +42,12 @@ function validCredentials(credentials: CourierCredentials): CourierCredentials {
       "Courier credential configuration contains an invalid base URL",
     );
   }
-  if (baseUrl.protocol !== "https:" && baseUrl.hostname !== "localhost") {
+  if (baseUrl.username || baseUrl.password || baseUrl.search || baseUrl.hash ||
+      (baseUrl.protocol !== "https:" &&
+       !(baseUrl.protocol === "http:" && baseUrl.hostname === "localhost" &&
+         process.env.NODE_ENV === "test" && process.env.E2E_MODE === "true"))) {
     throw new CourierCredentialConfigurationError(
-      "Courier credential base URL must use HTTPS",
+      "Courier credential base URL must use HTTPS without userinfo, query or fragment",
     );
   }
   const values = Object.fromEntries(

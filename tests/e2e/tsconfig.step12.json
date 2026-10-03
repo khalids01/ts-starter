@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.step11.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": true,
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ]
+  },
+  "include": [
+    "./fixtures/v3.ts",
+    "./fixtures/courier-http.ts",
+    "./__step_8_3__/v3-*.spec.ts",
+    "./setup/auth.setup.ts",
+    "../setup/provision-users.ts",
+    "../../playwright.step11.config.ts",
+    "./__step_8_3__/admin.spec.ts",
+    "./__step_8_3__/responsive.spec.ts",
+    "./__step_8_3__/persona.spec.ts",
+    "./__step_8_3__/critical.critical.spec.ts",
+    "./__step_8_3__/security.spec.ts",
+    "../../playwright.step12.config.ts",
+    "../security/run-step12-zap.ts"
+  ]
+}

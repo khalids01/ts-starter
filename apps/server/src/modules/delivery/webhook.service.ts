@@ -93,11 +93,12 @@ export class CourierWebhookService {
       if (!existing) return false;
       const stale = existing.status === "processing" && existing.updatedAt.getTime() < Date.now() - PROCESSING_TIMEOUT_MS;
       if (existing.status !== "failed" && !stale) return false;
-      await this.dependencies.db.webhookEvent.update({
-        where: { provider_eventId: { provider, eventId } },
+      // Only one retry can acquire the previously observed failed/stale event.
+      const reclaimed = await this.dependencies.db.webhookEvent.updateMany({
+        where: { provider, eventId, status: existing.status, updatedAt: existing.updatedAt },
         data: { eventType, status: "processing", errorMessage: null, attemptCount: { increment: 1 } },
       });
-      return true;
+      return reclaimed.count === 1;
     }
   }
 }

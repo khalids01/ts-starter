@@ -149,3 +149,10 @@ describe("courier credential resolution", () => {
     ).rejects.toThrow("cannot contain encrypted credentials");
   });
 });
+
+it("rejects URL userinfo, query secrets and non-HTTP protocols during credential storage", () => {
+  const keyring = parseCourierCredentialKeyring({ activeVersion: 1, serializedKeys: serializedKey(1) });
+  for (const baseUrl of ["ftp://localhost/api", "file://localhost/api", "https://user:secret@provider.example/api", "https://provider.example/api?secret=value", "https://provider.example/api#secret"]) {
+    expect(() => encryptCourierCredentials({ ...credentials, baseUrl }, "fictional-context", keyring)).toThrow();
+  }
+});

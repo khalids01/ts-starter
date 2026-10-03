@@ -108,6 +108,8 @@ export const authOptions = {
     },
   },
   advanced: {
+    disableOriginCheck: false,
+    disableCSRFCheck: false,
     cookies: {
       session_token: {
         name: env.AUTH_SESSION_COOKIE_NAME,

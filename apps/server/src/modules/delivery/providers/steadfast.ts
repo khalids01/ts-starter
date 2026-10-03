@@ -1,7 +1,7 @@
 import { CourierProviderRequestError } from "../provider";
 export { CourierProviderRequestError } from "../provider";
 import { z } from "zod";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type {
   ConsignmentResult,
   CourierCredentials,
@@ -152,7 +152,19 @@ export type SteadfastSubmissionResult =
 
 
 function normalizedBaseUrl(baseUrl: string) {
-  return baseUrl.replace(/\/+$/, "");
+  let url: URL;
+  try { url = new URL(baseUrl); } catch {
+    throw new CourierProviderRequestError("Steadfast base URL is invalid", { code: "validation", retryable: false });
+  }
+  const normalized = url.toString().replace(/\/+$/, "");
+  const localFixture = process.env.NODE_ENV === "test" && process.env.E2E_MODE === "true" &&
+    ["http://localhost:3903", "http://localhost:9099"].includes(normalized) &&
+    process.env.STEAD_FAST_BASE_URL?.replace(/\/+$/, "") === normalized;
+  if (url.username || url.password || url.search || url.hash ||
+      (normalized !== "https://portal.packzy.com/api/v1" && !localFixture)) {
+    throw new CourierProviderRequestError("Steadfast base URL is not an approved provider destination", { code: "validation", retryable: false });
+  }
+  return normalized;
 }
 
 function requiredCredential(credentials: CourierCredentials, key: string) {
@@ -250,6 +262,7 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
     path: string,
     init: RequestInit = {},
   ) {
+    const baseUrl = normalizedBaseUrl(credentials.baseUrl);
     const headers = new Headers(init.headers);
     headers.set("Api-Key", requiredCredential(credentials, "apiKey"));
     headers.set("Secret-Key", requiredCredential(credentials, "secretKey"));
@@ -258,9 +271,10 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
     let response: Response;
     try {
       response = await this.fetchImplementation(
-        `${normalizedBaseUrl(credentials.baseUrl)}${path}`,
+        `${baseUrl}${path}`,
         {
           ...init,
+          redirect: "error",
           headers,
           signal: init.signal ?? AbortSignal.timeout(this.timeoutMs),
         },
@@ -464,7 +478,7 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
   ): Promise<CourierWebhookEvent> {
     const token = requiredCredential(credentials, "webhookToken");
     const bearer = input.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
-    if (!bearer || !safeEqual(bearer, token) || !input.signature || !input.idempotencyKey?.trim()) {
+    if (!bearer || !safeEqual(bearer, token) || !input.signature || !input.idempotencyKey?.trim() || input.idempotencyKey.length > 200) {
       throw new CourierProviderRequestError("Steadfast webhook authentication is invalid", { code: "authentication", retryable: false });
     }
     const expected = createHmac("sha256", token).update(input.body).digest("hex");
@@ -477,13 +491,18 @@ export class SteadfastCourierAdapter implements CourierProviderAdapter {
     const parsed = webhookSchema.safeParse(raw);
     if (!parsed.success) throw new CourierProviderRequestError("Steadfast webhook payload is unsupported or invalid", { code: "validation", retryable: false });
     const event = parsed.data;
+    const occurredAt = parsedDate(event.updated_at);
+    if (!occurredAt || event.invoice.length > 200 || String(event.consignment_id).length > 200) {
+      throw new CourierProviderRequestError("Steadfast webhook identity or timestamp is invalid", { code: "validation", retryable: false });
+    }
     return {
-      eventId: input.idempotencyKey.trim(),
+      // The HMAC authenticates the body, not the caller-controlled header.
+      eventId: `sha256:${createHash("sha256").update(input.body).digest("hex")}`,
       eventType: event.notification_type,
       externalId: String(event.consignment_id),
       invoice: event.invoice,
       providerState: event.notification_type === "delivery_status" ? normalizedStatus(event.status) : "tracking_update",
-      occurredAt: parsedDate(event.updated_at),
+      occurredAt,
       payload: event,
     };
   }

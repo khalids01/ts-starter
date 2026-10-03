@@ -76,7 +76,7 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | 9 | Complete focused regression and contract coverage | Regression assertions pass; coverage and runtime gates open | 7 |
 | 10 | Verify real persistence and concurrency with user-run tests | Isolated database checks passed; browser workflows exercised; human review pending | 6 |
 | 11 | Verify full browser workflows and permissions | Automated scenarios verified after targeted corrections; user review pending (section 21) | 5 |
-| 12 | Complete security verification and fixes | Not started | 4 |
+| 12 | Complete security verification and fixes | Focused remediation/tests passed; active scan, residual risk disposition and review pending | 4 |
 | 13 | Verify runtime, capacity, and operational recovery | Not started | 3 |
 | 14 | Complete controlled live courier acceptance | Not started | 2 |
 | 15 | Build and verify automated tutorials | Not started | 1 |
@@ -1224,3 +1224,74 @@ The isolated frontend/API/courier fixture and PostgreSQL/Redis containers remain
 - Security verification, production operations/load evidence, controlled live merchant acceptance, tutorials and independent review remain Steps 12–16.
 - **Next: Step 12 — security verification and remediation, after user authorization/review. Five numbered implementation steps remain (12–16).** Acceptance gates still require their recorded review; do not turn this implementation count into a claim that only five acceptance gates remain. No Step 12 scan or Step 15 recording has been started.
 - **Git: previous work committed as `da3da63`; Step 11 changes are uncommitted.**
+
+
+## 22. Step 12/16 — Security remediation and focused verification (2026-10-03)
+
+**Status: code remediation and focused checks verified; acceptance remains OPEN.** User authorized “ok do commits and do step 12.” Step 11 was committed first as `6872adb` (`test(ecommerce): verify V3 browser workflows and isolate SSR query caches`). Step 12 changes remain uncommitted. Existing authorization covers the retained local fictional Postgres/Redis/app environment and focused tests; section 12's separate active-scan target authorization still applies. A concrete anonymous ZAP plan and guarded runner are prepared; the explicit approval question is pending and **no active ZAP scan has run**.
+
+### 22.1 What changed and why
+
+| Finding / boundary | Severity / scope | Remediation and evidence |
+| --- | --- | --- |
+| Courier credential destinations | High: a user able to configure a connection could direct credential-bearing requests to arbitrary HTTPS/internal destinations. `localhost` also previously permitted non-HTTP schemes. | Generic encrypted credential validation rejects userinfo/query/fragment and unsafe protocols. Steadfast's own adapter allows only the repository's established `https://portal.packzy.com/api/v1` destination; it validates before constructing/sending credential headers. Redirects are disabled. Arbitrary private IPs, lookalike domains, ports and paths are rejected with no fetch calls. |
+| Local simulator exception | Configuration boundary | HTTP is allowed only for test/E2E mode. Steadfast additionally restricts the exact origin to the current `localhost:3903` fictional fixture or planned `localhost:9099` simulator, and requires it to match `STEAD_FAST_BASE_URL`. This preserves the separate simulator plan without admitting arbitrary development hosts into production. Generic provider code stays provider-neutral. |
+| Concurrent failed/stale webhook retries | Medium: two retries could both reclaim the same previously observed event. | Reclamation uses a conditional `updateMany` matching provider/event ID, status and observed timestamp; only a one-row result owns processing. Regression uses independent database-read snapshots and parallel retries, and asserts one tracking call. |
+| Signed webhook replay identity | Medium: the idempotency header is not covered by the body HMAC and could change across identical callbacks. | Deduplication identity is now `sha256:<raw authenticated body hash>` within the existing connection/provider namespace. The required header remains validated and bounded to 200 characters. Changing the header on identical signed bytes returns duplicate and creates only one tracking event. Different connections never acquire another connection's consignment. |
+| Malformed webhook identity/timestamp | Input validation | Invalid dates and oversized invoice/consignment identities fail before claiming an event; malformed/unknown payloads, wrong Bearer/HMAC and altered raw bytes fail closed. The existing server-wide one-MiB body limit rejects oversized raw callbacks. Unknown connection returns 404; a valid callback delivered to a different known connection returns a generic processing failure and leaves the original order/events unchanged. |
+| E2E mode enabled in production | High-impact deployment misconfiguration: E2E disables verification and request limiters. | Env loading now rejects `E2E_MODE=true` with `NODE_ENV=production` before creating app configuration. A separate-process regression proves fail-fast behavior. |
+| Cookie-authenticated custom admin mutations | High: production cookies use SameSite=None, and CORS did not reject authenticated cross-origin form requests before custom route execution. | A real fictional payment form POST returned 200 before remediation. The new request-origin plugin rejects foreign/null origins (and cross-site Fetch Metadata without Origin) on cookie-bearing mutations before nested controllers run. Trusted storefront/API origins and server-to-server callbacks remain supported. The final regression checks 403 plus unchanged payment count/full order row. |
+| Origin/CSRF security under test | Test evidence gap, not a demonstrated production bypass | Better Auth defaults origin checks off under `NODE_ENV=test`; the initial hostile-origin sign-out consequently revoked the fictional owner session. Both origin and CSRF checks are now explicitly enabled in auth options. Fictional sessions were restored using existing setup. The final hostile-origin sign-out returns 403 and preserves the owner session; forged cookies cannot authenticate. |
+| New package advisories | High Elysia/Nodemailer; critical Next preview tooling | Targeted versions: Elysia 1.4.30, Nodemailer 10.0.13, Next 16.3.6 override for React Email UI's exact pin. Installation hooks were skipped. See `tests/security/dependency-audit.md` for primary advisory links, final audit counts and the pending residual disposition. |
+| Anonymous test identity | Evidence integrity | Explicit empty storage state prevents owner cookies being inherited by anonymous security requests. A guarded Step 12 config and focused TS config keep repeat runs reproducible. |
+
+No schema/generation/migration/seed command was needed for these changes. Fictional account/RBAC refresh and fixture database operations occurred only in the already-authorized isolated environment. No development database, production target, SMTP recipient, live courier or tutorial flow was used.
+
+### 22.2 Verification actually performed
+
+Retained target: PostgreSQL 17 on `127.0.0.1:5433`, database `e2e_v3_step10_20261003_03043274`; Redis on `127.0.0.1:6380` with the Step 10 E2E-only prefix. API `localhost:3000`, production frontend preview `localhost:3001`, fictional courier HTTP fixture `localhost:3903`. Runtime env/auth states remain ignored and must never be printed or committed.
+
+| Check | Result | Ignored local evidence |
+| --- | --- | --- |
+| Credential encryption/resolution, provider adapter security/webhooks, production E2E guard | 28 tests passed | `tests/artifacts/step12/courier-tests.txt` |
+| Webhook authentication/deduplication and parallel failed-event retry | 3 tests passed | `webhook-tests.txt` |
+| Auth guard/session headers and API security headers | 6 tests passed | `auth-tests.txt` |
+| Rate limiter/config unit tests | 10 tests passed | `limits-tests.txt` |
+| Cookie mutation-origin guard, including nested controllers and preflight | 3 tests passed | `origin-tests.txt` |
+| Elysia request routing with mocked limiter/Redis | 1 test passed | `rate-limit-tests.txt` |
+| Auth configuration after explicit origin/CSRF policy | 2 tests passed | `auth-config-tests.txt` |
+| Application reset-email rendering and Nodemailer stream/MIME composition | 1 test passed; no SMTP connection | `email-tests.txt` |
+| Email preview after Next patch | React Email preview started on local port 3904; HTTP 200; stopped after smoke check | `email-preview.txt`, `email-preview-response.html` |
+| HTTP/browser security/RBAC/ownership/webhooks | 8 Chromium scenarios passed, including 87 denied mutation requests across three identities | `browser.txt`, `results.json`, `test-results/` |
+| Fictional persona session restoration | 1 setup scenario passed for all five personas | `auth-setup.txt` |
+| Server TypeScript and focused Step 12 TypeScript | Passed | `server-types.txt`, `typecheck.txt` |
+| API production build | Passed after final auth/config changes | `server-build.txt` |
+| High-confidence source secret scan | Passed; matched values are not printed | `secrets.txt` |
+| Dependency audit | 33 advisories: 12 high, zero critical; still exits nonzero | `dependency-audit-final.json` |
+| Scanner approval guard | Refuses before Docker execution when approval flag absent | `zap-guard.txt` |
+| Active ZAP scan | NOT RUN; explicit target approval pending | No scan report exists |
+
+The first session-abuse run uncovered Better Auth's test default and invalidated only the fictional owner session; subsequent persona failures were dependent on that session loss. After enabling origin checks and restoring sessions, the final full eight-case run passed. A separate test assertion initially required 401 for a forged-cookie admin request; this API correctly returns 403, and the regression now accepts either denial while requiring a null auth session. Do not present failed intermediate attempts as final unresolved product failures or conceal the initial evidence gap.
+
+The hostile-origin form reproduction is retained in `tests/artifacts/step12/csrf-before.txt`: it created only fictional payment evidence before remediation. The final full run requires denial and unchanged financial data. One intermediate first request raced API startup; subsequent runs used the already-ready retained services. The final HTTP cases assert customer ownership even when another account supplies matching contact details; rejected reads do not disclose the email or mutate the order. Webhook tests cover malformed signed JSON, unknown type, body alteration, incorrect Bearer/signature, unknown/other connection, body-size rejection, and identical-body replay with a changed header. Tracking-update callbacks leave the full order row unchanged and produce exactly one courier event.
+
+### 22.3 Limits and mandatory unfinished acceptance work
+
+1. **Run the prepared anonymous active scan only after explicit approval** of `tests/security/step12-zap-plan.yaml` against the recorded local target. The runner and plan have not yet been executed/validated inside ZAP. Inspect reports, reproduce findings, fix narrowly and rerun affected tests. Record container digest, exact scope and dispositions. Auth/admin/checkout/payment/courier-action routes are deliberately outside this anonymous scan; passing it will not establish full authenticated coverage.
+2. **Obtain explicit user disposition or remediate remaining high development-tool advisories.** The earlier audit snapshot's “accepted” language is superseded. Current source/lockfile tracing points to Prisma/scaffolding/React Email/jsdom/build tools, but does not replace deployed artifact-closure inspection. Do not quietly mark them accepted or report a clean dependency tree.
+3. **Production rate-limit acceptance remains open.** E2E mode bypasses both app and Better Auth runtime limiters. The mocked tests cover fixed windows, thresholds, cache invalidation and Redis-unavailable failure behavior; they do not prove production Redis TTL/auth limiter behavior or proxy/IP attribution. Validate these on an explicitly approved production-like local/staging configuration in Step 13 before release.
+4. **Earlier correctness/coverage/human-review gates still apply.** This bounded security work is not an exhaustive independent penetration test. Follow recorded Step 10/11 evidence and outstanding Step 8/9 acceptance requirements, including operator review.
+5. **Merchant callback contract remains separate.** These callbacks use the application's Bearer/HMAC test contract; no real Steadfast endpoint was called and official merchant webhook support was not newly verified. Confirm the actual merchant setup before launch. Provider URL policy follows the existing repository contract; it intentionally rejects alternate hosts/redirects until explicitly reviewed.
+6. **Replay identity upgrade:** previously persisted header-based webhook IDs are not automatically backfilled into body hashes. This is intended for the pre-launch workflow. If an existing deployed installation has old event rows, review its upgrade/replay history before rollout; do not perform an unapproved database backfill.
+7. Step 12 code is **uncommitted**. Do not stage/commit it until the user asks again. Do not start Step 13, load tests, restore exercises or tutorial generation automatically.
+
+### 22.4 How to test after running the app
+
+1. Use only the recorded ignored local runtime env, existing fictional identities and dedicated DB/Redis. Re-run the test-environment guard before any fixture/setup command; never use root `build`/`start` wrappers that inject `tests/env/.env` implicitly. No new migration is required.
+2. API: `bun --env-file=tests/artifacts/step11/runtime.env apps/server/src/index.ts`. Start the existing built frontend preview with explicitly inherited local env and the fictional `tests/e2e/fixtures/courier-http.ts` helper as recorded in section 21. API root `/` returns OK; do not substitute the nonexistent `/health` route.
+3. Run `bun --env-file=tests/artifacts/step11/runtime.env ./node_modules/.bin/playwright test --config=playwright.step12.config.ts --no-deps`. Expected result is eight passed scenarios. Inspect `tests/artifacts/step12/results.json` and terminal output, not only a process exit. If persona sessions are stale, use the existing guarded setup on this same fictional target; never reuse real accounts.
+4. Manually verify ordinary/read-only accounts cannot record/reverse payments, alter custody, create returns or modify inventory; owner connection responses never reveal credential values/ciphertext. Another customer's order number plus matching email/phone must still fail lookup.
+5. Confirm an invalid callback returns a stable generic denial and changes no order/money/history. Identical signed raw bytes with a different idempotency header must return duplicate. Use fixture helpers/automated scenarios; do not copy real credentials into curl commands or docs.
+6. Review `tests/security/dependency-audit.md`; review the active plan and pending approval question. Only after target approval, follow the scanner command in `tests/security/README.md`, inspect its output and record actual findings here.
+
+**Next:** finish Step 12's active-scan/risk-disposition/review gates. The next numbered implementation phase is **Step 13 — runtime, capacity and operations**, after authorization. **Four subsequent numbered steps remain (13–16); Step 12 acceptance and earlier acceptance gates are still open.** Security scan success alone does not authorize automated tutorial recording.

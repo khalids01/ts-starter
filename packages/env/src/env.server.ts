@@ -3,6 +3,10 @@ import { createEnv } from "@t3-oss/env-core";
 import { getE2eServerEnvDefaults } from "@config";
 import { z } from "zod";
 
+if (process.env.E2E_MODE === "true" && process.env.NODE_ENV === "production") {
+  throw new Error("E2E_MODE cannot be enabled in production");
+}
+
 const e2eDefaults =
   process.env.E2E_MODE === "true" ? getE2eServerEnvDefaults() : {};
 

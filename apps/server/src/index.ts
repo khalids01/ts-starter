@@ -8,6 +8,7 @@ import { openapi } from "@elysiajs/openapi";
 import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
 import { securityHeadersPlugin } from "./plugins/security-headers";
+import { cookieRequestOriginPlugin } from "./plugins/cookie-request-origin";
 import { e2eRuntimeConfig } from "@config";
 import { startCourierDispatchWorker } from "./modules/delivery/dispatch-worker";
 import { startCourierTrackingWorker } from "./modules/delivery/tracking-worker";
@@ -39,6 +40,7 @@ startCourierTrackingWorker();
 
 const server = new Elysia()
   .use(securityHeadersPlugin({ production: env.NODE_ENV === "production" }))
+  .use(cookieRequestOriginPlugin([env.CORS_ORIGIN, env.BETTER_AUTH_URL]))
   .use(
     cors({
       origin: env.CORS_ORIGIN,

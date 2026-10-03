@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createHmac } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import {
   CourierProviderRequestError,
   SteadfastCourierAdapter,
@@ -258,7 +258,7 @@ describe("Steadfast courier adapter", () => {
     expect(requested).toBe(false);
   });
 
-  it("verifies signed webhook delivery events and preserves the idempotency key", async () => {
+  it("verifies signed webhook delivery events and binds replay identity to the authenticated body", async () => {
     const token = "webhook-secret";
     const body = JSON.stringify({ notification_type: "delivery_status", consignment_id: 1424107, invoice: "ORD-10231", status: "delivered", tracking_message: "Delivered", updated_at: "2026-09-25 13:30:00" });
     const adapter = new SteadfastCourierAdapter();
@@ -267,7 +267,7 @@ describe("Steadfast courier adapter", () => {
       signature: createHmac("sha256", token).update(body).digest("hex"),
       idempotencyKey: "steadfast-event-1",
       body,
-    })).resolves.toMatchObject({ eventId: "steadfast-event-1", eventType: "delivery_status", externalId: "1424107", providerState: "delivered" });
+    })).resolves.toMatchObject({ eventId: `sha256:${createHash("sha256").update(body).digest("hex")}`, eventType: "delivery_status", externalId: "1424107", providerState: "delivered" });
   });
 
   it("rejects unsigned or incorrectly signed webhooks", async () => {
@@ -286,4 +286,55 @@ it("missing recovery status cannot authorize a second create", async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const adapter = new SteadfastCourierAdapter(queuedFetch([jsonResponse({}, { status: 404 })], calls));
   await expect(adapter.recoverConsignment(credentials, request.invoice)).rejects.toThrow(); expect(calls).toHaveLength(1); expect(calls[0]?.url).not.toContain("create_order");
+});
+
+describe("Steadfast destination security", () => {
+  it("rejects hostile destinations before sending credential headers", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const adapter = new SteadfastCourierAdapter(queuedFetch([], calls));
+    for (const baseUrl of [
+      "https://127.0.0.1/api/v1", "https://169.254.169.254/api/v1",
+      "https://portal.packzy.com.evil.example/api/v1",
+      "https://user:password@portal.packzy.com/api/v1",
+      "https://portal.packzy.com:444/api/v1", "https://portal.packzy.com/api/v1?target=x",
+      "ftp://localhost/api/v1", "http://localhost:3000", "https://portal.packzy.com/other",
+    ]) {
+      await expect(adapter.healthCheck({ ...credentials, baseUrl })).rejects.toThrow();
+    }
+    expect(calls).toHaveLength(0);
+  });
+
+  it("disables redirects on authenticated provider requests", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const adapter = new SteadfastCourierAdapter(
+      queuedFetch([jsonResponse({ status: 200, current_balance: 100 })], calls),
+    );
+    await adapter.healthCheck(credentials);
+    expect(calls[0]?.init?.redirect).toBe("error");
+  });
+});
+
+
+it("rejects signed webhooks with invalid timestamps or oversized event identities", async () => {
+  const adapter = new SteadfastCourierAdapter();
+  const token = "fictional-webhook-token";
+  const webhookCredentials = { ...credentials, values: { ...credentials.values, webhookToken: token } };
+  for (const [updated_at, idempotencyKey] of [["invalid-date", "event-1"], ["2026-10-03T00:00:00Z", "x".repeat(201)]]) {
+    const body = JSON.stringify({ notification_type: "delivery_status", consignment_id: 1, invoice: "fictional-invoice", status: "delivered", updated_at });
+    await expect(adapter.verifyAndParseWebhook(webhookCredentials, {
+      authorization: `Bearer ${token}`, signature: createHmac("sha256", token).update(body).digest("hex"), idempotencyKey, body,
+    })).rejects.toThrow();
+  }
+});
+
+
+it("changing an unsigned idempotency header cannot bypass webhook replay identity", async () => {
+  const adapter = new SteadfastCourierAdapter();
+  const token = "fictional-token";
+  const body = JSON.stringify({ notification_type: "tracking_update", consignment_id: 1, invoice: "fictional-invoice", tracking_message: "Fictional update", updated_at: "2026-10-03T00:00:00Z" });
+  const input = { authorization: `Bearer ${token}`, signature: createHmac("sha256", token).update(body).digest("hex"), body };
+  const secrets = { ...credentials, values: { ...credentials.values, webhookToken: token } };
+  const first = await adapter.verifyAndParseWebhook(secrets, { ...input, idempotencyKey: "first" });
+  const replay = await adapter.verifyAndParseWebhook(secrets, { ...input, idempotencyKey: "changed" });
+  expect(replay.eventId).toBe(first.eventId);
 });
