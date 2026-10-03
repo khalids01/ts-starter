@@ -28,6 +28,7 @@ function arrival(exec, rate, timeUnit, preAllocatedVUs, maxVUs) {
   return { executor: "constant-arrival-rate", exec, rate, timeUnit, duration: profile.duration, preAllocatedVUs, maxVUs };
 }
 export const options = {
+  summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
   scenarios: profile.journey ? { journey: { executor: "shared-iterations", exec: "journey", vus: 1, iterations: 1, maxDuration: "2m" } } :
     profile.volume ? { volume: { executor: "shared-iterations", exec: "volume", vus: 1, iterations: 20, maxDuration: "5m" } } : {
       public: arrival("browse", profile.publicRate, "1s", 50, 200),

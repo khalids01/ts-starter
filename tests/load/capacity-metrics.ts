@@ -8,7 +8,7 @@ export async function startCapacityMetrics(db: PrismaClient, pid: number, output
   const redis = new Redis(process.env.REDIS_URL!, { connectTimeout: 2000, commandTimeout: 2000, maxRetriesPerRequest: 1 });
   // Errors are recorded as sampling failures, without potentially sensitive error details.
   redis.on("error", () => {});
-  const hardware = { platform: platform(), architecture: arch(), availableCPUs: availableParallelism(), cpuModel: cpus()[0]?.model, hostMemoryBytes: totalmem(), cpuMax: await optionalFile("/sys/fs/cgroup/cpu.max"), memoryMax: await optionalFile("/sys/fs/cgroup/memory.max"), sharedLocalRedis: true };
+  const hardware = { platform: platform(), architecture: arch(), availableCPUs: availableParallelism(), cpuModel: cpus()[0]?.model, hostMemoryBytes: totalmem(), cpuMax: await optionalFile("/sys/fs/cgroup/cpu.max"), memoryMax: await optionalFile("/sys/fs/cgroup/memory.max"), redisInstancePort: new URL(process.env.REDIS_URL!).port || "6379", redisResourceScope: "entire configured test instance", sharedLocalHost: true };
   const samples: unknown[] = [], errors: { at: string; reason: string }[] = [];
   let current: Promise<void> | undefined;
   async function sample() {
@@ -33,6 +33,9 @@ export async function startCapacityMetrics(db: PrismaClient, pid: number, output
       const cpu = stat?.slice(stat.lastIndexOf(")") + 2).split(" ");
       samples.push({ at: new Date().toISOString(), api: { rssBytes: Number(status?.match(/VmRSS:\s+(\d+)/)?.[1] ?? 0) * 1024, openFDs: descriptors.length, cpuUserTicks: Number(cpu?.[11]), cpuSystemTicks: Number(cpu?.[12]) }, database: database[0], redis: redisValues, queue, oldestQueueAgeMs: oldest ? Math.max(0, Date.now() - oldest.createdAt.getTime()) : 0, expiredLeases });
     } catch { errors.push({ at: new Date().toISOString(), reason: "Resource sampling failed; results need investigation" }); }
+    try {
+      await writeFile(`${output}.live.json`, JSON.stringify({ at: new Date().toISOString(), samples: samples.length, errors: errors.length, latest: samples.at(-1) }, (_, value) => typeof value === "bigint" ? value.toString() : value, 2), { mode: 0o600 });
+    } catch { errors.push({ at: new Date().toISOString(), reason: "Live resource report write failed" }); }
   }
   await sample();
   const timer = setInterval(() => {

@@ -105,3 +105,8 @@ The prepared k6 script uses at most 200 public, 20 admin and 40 checkout VUs; pr
 8. Pre/post-load checks reconcile receipts/refunds/status, checkout uniqueness/counts, stock movements/reservations, food bookings/capacity, discounts/limits, active provider identities and preserved order/operation IDs. Sampling errors, count/counter mismatch, lost rows or new expired leases reject acceptance. Courier workers remain paused: no provider-side booking, backlog-drain or compatibility claim follows.
 9. Review bounded memory/connections and DB/Redis/backlog trends during soak. HTTP summaries and configuration inspection alone do not meet this gate. Compare slow tagged endpoints and resource usage before making any optimization.
 10. Finish separately approved staging HTTPS/browser/worker/simulator/restore checks and user review. Local smoke/pure fixture preparation is not a staging or 10,000-customer capacity claim.
+
+
+## Local capacity evidence update (2026-10-04)
+
+The approved separate capacity target executed all five local workloads. Smoke, volume, 15-minute expected and 60-minute soak passed; the two-minute peak failed latency/check/drop thresholds. Final read-only invariants and successful-checkout reconciliation passed, original limiter settings were restored and owned processes stopped. Detailed results and limitations are in `docs/ecommerce-step13-capacity-results.md` and V3 section 25. This does not close staging, restore, proxy/auth/rate policy, worker/simulator, monitoring or security acceptance.

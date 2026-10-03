@@ -77,7 +77,7 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | 10 | Verify real persistence and concurrency with user-run tests | Isolated database checks passed; browser workflows exercised; human review pending | 6 |
 | 11 | Verify full browser workflows and permissions | Automated scenarios verified after targeted corrections; user review pending (section 21) | 5 |
 | 12 | Complete security verification and fixes | Focused remediation/tests passed; active scan, residual risk disposition and review pending | 4 |
-| 13 | Verify runtime, capacity, and operational recovery | Local production runtime/recovery verified; capacity, staging and restore acceptance pending | 3 |
+| 13 | Verify runtime, capacity, and operational recovery | Local runtime verified; smoke/volume/expected/soak passed, peak failed; staging/restore pending | 3 |
 | 14 | Complete controlled live courier acceptance | Not started | 2 |
 | 15 | Build and verify automated tutorials | Not started | 1 |
 | 16 | Independent final review and release readiness decision | Not started | 0 |
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 12 was committed as `932f5b5` under the user's explicit request. Step 13 runtime fixes are committed as `1b7da9f`; capacity preparation, tests and handoffs are committed alongside section 24 under the user's explicit commit request. Local production-runtime evidence is recorded in section 23. **Next: obtain exact local capacity execution approval using section 24 and the capacity execution handoff; then run and record capacity/staging/restore evidence and finish unresolved Step 12 security gates.** Three subsequent numbered steps remain (14–16). Step 14 real courier actions require separate explicit approval; automated tutorial recording remains gated on final acceptance. Earlier historical handoffs describe their state at the time and do not override this section.
+Step 12 was committed as `932f5b5` under the user's explicit request. Step 13 runtime fixes are committed as `1b7da9f`; capacity preparation, tests and handoffs are committed alongside section 24 under the user's explicit commit request. Local production-runtime evidence is recorded in section 23. **Current: the user explicitly approved the section 24 local capacity scope on 2026-10-03; setup/population and all five local profiles have executed. Smoke/volume/expected/soak passed; peak failed and remains unresolved. See `docs/ecommerce-step13-capacity-results.md`. Next, inspect actual local results and finish separately approved staging/restore and unresolved Step 12 security gates.** Three subsequent numbered steps remain (14–16). Step 14 real courier actions require separate explicit approval; automated tutorial recording remains gated on final acceptance. Earlier historical handoffs describe their state at the time and do not override this section.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -1362,3 +1362,33 @@ Ignored local evidence is under `tests/artifacts/step13/`; environment files and
 **Next:** review `docs/ecommerce-step13-capacity-execution.md`; it specifies the proposed separate local DB **`e2e_v3_step13_capacity_20261003_a`** on port 5433, a new local Redis test instance on port 6381, fictional auth/RBAC and bounded data population, enabled temporary headroom limits in only that capacity DB, and smoke/volume/15-minute expected/2-minute peak/60-minute soak execution. Obtain explicit approval for that full scope, then execute sequentially and investigate any failure before advancing. User-operated staging HTTPS/proxy/auth limits, simulator/worker recovery, monitoring and credential/backup restore acceptance remain open.
 
 **Steps left:** three subsequent numbered steps (14–16), plus Step 13 execution/staging/restore and earlier security/review gates. The user subsequently authorized committing Step 13. Runtime fixes are committed as `1b7da9f`; capacity preparation and this handoff are committed together. Resolve that commit from `git log`; do not infer authorization for capacity execution or additional commits. Tutorial recording remains gated.
+
+
+## 25. Step 13/16 — Approved local capacity execution (2026-10-03–04)
+
+### Authorization and target
+
+The user explicitly approved section 24 after commits `1b7da9f` and `be448a9`. Created only the approved new local database `e2e_v3_step13_capacity_20261003_a` on fictional PostgreSQL port 5433 and dedicated Redis container `ts-starter-step13-capacity-redis` on loopback port 6381. Applied 36 existing migrations, provisioned fictional verified auth/RBAC accounts, populated the reviewed 10k-customer/25k-order/1k-product/3k-variant dataset and verified initial invariants. No new schema changes, merchant data operations, resets, external courier/mail/payment calls, staging actions, restore exercises, active scans or additional commits are authorized by this execution. The default no-DB boundary remains outside this exact approved scope.
+
+### What changed
+
+1. Moved visitor-list pagination before the lateral latest-session lookup. Seven actual PostgreSQL checks verify grouped people, latest metadata, page bounds and segments.
+2. Narrowed facet selections and added parameterized PostgreSQL aggregation for price/availability/brand counts when no attribute facets exist. Attribute-bearing and mixed-currency paths preserve the mapper. Three paired facet responses and seven additional summary/fallback checks match original behavior. No stock-result cache or schema/index change. Warmed alternating comparison measured median 307.00ms original versus 76.38ms aggregated.
+3. Added private live resource progress, local-only k6 diagnostics and explicit p99 summaries. Future runs retain API logs per execution instead of overwriting a shared log; the completed soak predates that log-retention change.
+4. Retained failed smoke/initial expected reports. Final-build smoke and volume passed, and the full expected 15-minute profile passed: 25,203 requests, 901 successful persisted checkouts, zero failures/drops; p95 public 89ms/admin 281ms/checkout 116ms. Post-run counters/money/order reconciliation passed.
+5. Full two-minute peak failed: public p95 4.40s, checkout p95 5.49s, 3,338 dropped iterations and one failed checkout response. Its 581 successful checkouts reconciled and invariants passed. API samples suggest CPU saturation on this shared host; no sampled DB lock waits/deadlocks. This remains a failed acceptance profile. The lower-rate full 60-minute soak passed separately: 36,721 requests, 721 successful persisted checkouts, zero failures/drops, p95 public 78ms/checkout 160ms, with reconciled invariants. It does not clear peak.
+
+See `docs/ecommerce-step13-capacity-results.md` for current measurements, limits and exact retained evidence. Focused checks passed: 15 tests/56 assertions and runtime TypeScript. Execution changes remain uncommitted.
+
+### How to test after running the app
+
+1. Review the isolated capacity env/manifest under ignored `tests/artifacts/step13/`; never copy cookies or credential URLs into documentation. The new DB is already populated. **Do not rerun dataset `--apply`, recreate/reset resources or apply migrations again.**
+2. Rebuild the capacity executable when API source changes using the reviewed production-local env; do not use root build/start wrappers that inject an unrelated env. Preserve binary/source fingerprints.
+3. Use the guarded runner with this exact env and a reviewed profile. It owns API 3013, enforces fictional auth, temporarily applies the approved headroom limits, restores settings, records resource/summary/invariant files and stops its API/k6 processes. Run profiles sequentially; do not reuse a separately running API or run another profile while any capacity workload is active.
+4. Inspect the final summary thresholds, dropped iterations, business invariants, persisted checkout delta and sampling errors. An HTTP 200 or process launch alone is not acceptance. Failed peak must stay failed until diagnosis and a passing repeat on a reviewed topology.
+5. Regression scripts under `tests/runtime/` guard the exact approved target and clean only their own fixtures. The paired facet script requires freshly matching baseline/fixture capture; do not reuse a prior baseline after its temporary fixtures were removed. Run DB regressions only while capacity sampling is idle.
+6. Safe checks without application/DB execution: `bun test tests/load apps/server/tests/background-worker.test.ts apps/server/tests/web.static-server.test.ts`, and `bun ./node_modules/typescript/bin/tsc --noEmit --project tests/runtime/tsconfig.step13.json`. These are focused checks, not a clean whole-repository or browser/security acceptance claim.
+
+### Next and steps remaining
+
+All approved profiles have executed and final cleanup was verified: API/k6 ports stopped, original default limits restored, regression fixtures gone, 27,503 retained orders and counters reconciled. The capacity DB/Redis remain retained. Investigate peak performance and the failed checkout response on the intended deployment topology before declaring capacity accepted. Remaining Step 13 staging/proxy/rate policy, worker/simulator, monitoring and backup/restore gates need their separately scoped approval/evidence. Unresolved Step 12 active security scan and dependency risk dispositions also remain. Do not begin automated tutorial recording. **Three subsequent numbered steps remain (14–16), with Step 13 acceptance still open.** No additional commits until the user asks.

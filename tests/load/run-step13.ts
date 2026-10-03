@@ -33,7 +33,8 @@ try {
   const headroom = { enabled: true, publicEnabled: true, publicWindowSeconds: 60, publicMaxRequests: 10000, adminEnabled: true, adminWindowSeconds: 60, adminMaxRequests: 1000, specialEnabled: true, specialWindowSeconds: 60, specialMaxRequests: 1000, protectedEnabled: true, protectedWindowSeconds: 60, protectedMaxRequests: 1000 };
   await db.rateLimitSettings.upsert({ where: { id: "default" }, create: { id: "default", ...headroom }, update: headroom });
   limitsChanged = true;
-  const log = resolve("tests/artifacts/step13/capacity-runtime.txt");
+  const executionId = crypto.randomUUID();
+  const log = resolve(`tests/artifacts/step13/runtime-${fixture.runId}-${profile}-${executionId}.txt`);
   await Bun.write(log, "");
   runtime = Bun.spawn([resolve("tests/artifacts/step13/api")], {
     env: step13ProductionEnv(resolve("tests/artifacts/step13")), stdout: Bun.file(log), stderr: Bun.file(log),
@@ -48,13 +49,12 @@ try {
   const auth = await fetch("http://localhost:3013/api/auth/get-session", { headers: { cookie: fixture.adminSessionCookie }, redirect: "manual", signal: AbortSignal.timeout(5000) });
   const session = auth.ok ? await auth.json() : null;
   if (session?.user?.email !== fixture.adminEmail || !session?.user?.emailVerified) throw new Error("Manifest must authenticate the verified fictional admin in this capacity DB");
-  const executionId = crypto.randomUUID();
   await Bun.write(resolve(`tests/artifacts/step13/metadata-${fixture.runId}-${profile}-${executionId}.json`), JSON.stringify({ datasetVersion: fixture.datasetVersion, fixtureRunId: fixture.runId, fixtureBaseTime: fixture.baseTime, database: target.databaseTarget, apiSha256: apiHash, k6ScriptSha256: scriptHash, profile, executionId, limitPolicy: "isolated-headroom" }, null, 2));
   const summaryPath = resolve(`tests/artifacts/step13/capacity-${fixture.runId}-${profile}-${executionId}.json`);
   const config = resolve("tests/artifacts/step13/k6-local-config.json");
   await Bun.write(config, "{}");
   metrics = await startCapacityMetrics(db, runtime.pid, resolve(`tests/artifacts/step13/resources-${fixture.runId}-${profile}-${executionId}.json`));
-  const result = Bun.spawn([process.env.STEP13_K6_BINARY ?? "k6", "run", "--config", config, "tests/load/step13-k6.js"], {
+  const result = Bun.spawn([process.env.STEP13_K6_BINARY ?? "k6", "run", "--address", "127.0.0.1:6565", "--config", config, "tests/load/step13-k6.js"], {
     env: { PATH: process.env.PATH!, K6_NO_USAGE_REPORT: "true", STEP13_LOAD_APPROVED: "true", STEP13_LOAD_TARGET: "http://localhost:3013", STEP13_LOAD_PROFILE: profile!, STEP13_LOAD_FIXTURES: resolve(path), STEP13_LOAD_SUMMARY: summaryPath, STEP13_LOAD_EXECUTION_ID: executionId }, stdout: "inherit", stderr: "inherit",
   });
   process.exitCode = await result.exited;

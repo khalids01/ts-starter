@@ -1,10 +1,10 @@
 # Step 13 capacity execution handoff
 
-Status: preparation implemented and locally checked; database population and load execution are **not authorized or performed**. This supplements the V3 guide and operations guide. It does not close staging, restore, simulator or security gates.
+Status: preparation implemented and locally checked; the user explicitly approved this local scope on 2026-10-03 and all five local profiles have now executed. Smoke, volume, expected and soak passed; peak failed and acceptance remains open. See `docs/ecommerce-step13-capacity-results.md` for actual results. This supplements the V3 guide and operations guide. It does not close staging, restore, simulator or security gates.
 
 ## 1. Concrete approval scope
 
-Proposed local target: **`e2e_v3_step13_capacity_20261003_a`**, a new database on the existing fictional PostgreSQL 17 test container at `127.0.0.1:5433`. Use a **new Redis 7 test container on `127.0.0.1:6381`**, with a capacity-specific `ts-starter:e2e:` prefix. The capacity API owns `127.0.0.1:3013` and uses production mode, fictional auth configuration, paused courier workers and blank external credentials. Neither merchant data nor the retained Step 10 correctness DB is a target.
+Approved local target: **`e2e_v3_step13_capacity_20261003_a`**, a new database on the existing fictional PostgreSQL 17 test container at `127.0.0.1:5433`. Use a **new Redis 7 test container on `127.0.0.1:6381`**, with a capacity-specific `ts-starter:e2e:` prefix. The capacity API owns `127.0.0.1:3013` and uses production mode, fictional auth configuration, paused courier workers and blank external credentials. Neither merchant data nor the retained Step 10 correctness DB is a target.
 
 Approval must explicitly cover:
 
