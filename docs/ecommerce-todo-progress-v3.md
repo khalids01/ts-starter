@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Step 9 regression checks implemented; coverage gates remain open. Steps 10–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Step 9 regression checks implemented; coverage gates remain open. Step 10 persistence suite is prepared and statically checked; database execution is pending. Steps 11–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -74,7 +74,7 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | 7 | Enforce food expiry and safe batch allocation | Implementation checked; awaiting schema/runtime acceptance | 9 |
 | 8 | Complete selected niche behavior and operator UI | Implementation checked; awaiting schema/runtime acceptance | 8 |
 | 9 | Complete focused regression and contract coverage | Regression assertions pass; coverage and runtime gates open | 7 |
-| 10 | Verify real persistence and concurrency with user-run tests | Not started | 6 |
+| 10 | Verify real persistence and concurrency with user-run tests | Prepared; safe checks pass, awaiting isolated user-run evidence | 6 |
 | 11 | Verify full browser workflows and permissions | Not started | 5 |
 | 12 | Complete security verification and fixes | Not started | 4 |
 | 13 | Verify runtime, capacity, and operational recovery | Not started | 3 |
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Steps 6–9 were authorized together and implementation/evidence are recorded in sections 14–17. Steps 2–8 still require schema application, permission prerequisites and runtime acceptance; Step 9 additionally has open coverage gates. **Next numbered step: Step 10. Seven implementation steps remain (10–16); 15 numbered acceptance gates remain unfinished (2–16).** No further implementation, database setup, app startup or commits are authorized by this batch. Steps 4–5 and the simulator plan were committed previously; this batch remains uncommitted. The simulator has its own 12-step ledger and has not been implemented; it is a prerequisite for applicable simulated courier E2E evidence, not proof of live Steadfast compatibility.
+Step 10 test preparation and safe checks are complete; section 19 is the current handoff. **Immediate next action: user prepares the isolated test-only target and runs the 16 persistence scenarios, or explicitly authorizes the agent to do that.** Default Step 10 does not authorize DB execution. The development migration and RBAC refresh succeeded in section 18 and Steps 6–9 were committed as `e7db4d2`. Step 10 changes are uncommitted. Steps 2–10 still require outstanding acceptance evidence; Step 9 coverage gates remain open. **Six implementation steps remain (11–16); 15 numbered acceptance gates remain unfinished (2–16).** No Step 11 browser startup/E2E or Step 12 scans are authorized. The separate simulator has a 12-step ledger and is not implemented; these persistence tests use a fake adapter and do not certify Steadfast compatibility.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -1052,3 +1052,61 @@ The user explicitly authorized running Prisma migration in `packages/db`, seedin
 - After starting the app, verify the updated permissions in a refreshed admin session, then run the step-specific operator checklists. Recheck explicitly configured category policies, inventory batch disposition and future food slots; legacy records retain conservative defaults.
 
 **Next: Step 10. Seven implementation steps remain (10–16); the previous 15 unfinished numbered acceptance gates remain open until runtime/review evidence is recorded.** No app startup, real courier call, active scan or E2E execution was authorized or performed in this follow-up. Use this section as the latest database/commit authorization evidence; older sections describe the state before this follow-up.
+
+## 19. Step 10/16 — Isolated persistence/concurrency suite preparation (2026-10-03)
+
+**Status: preparation complete; awaiting user-run real PostgreSQL evidence.** User requested Step 10. Its explicit default boundary permits test/checklist preparation and safe static checks, not database commands or DB-backed execution. The prior migration/RBAC authorization in section 18 covered the local development database migration and seed; it did not provision or approve an isolated integration test target. No new database access, migrations, seeds, reset, service startup, E2E execution or commit occurred in Step 10.
+
+### What changed
+
+1. Expanded `tests/integration/ecommerce.real-db.test.ts` from six to **16 prepared database scenarios**. The existing checkout/discount/customer rollback races remain, with V3 checks added for shipment claims, physical recovery, money, expiry, worker crash/cancellation coordination and niche constraints.
+2. Moved target validation before dynamic DB/env/service imports and before hook registration. Teardown therefore cannot run against an unvalidated target after guard failure. Cleanup scopes fictional users, variants, slots and courier connection to a per-run UUID; includes restrictive payment/recovery/courier dependencies and restores store settings when successfully loaded. Partial setup retains its ownership IDs for cleanup. Cleanup is test-data deletion, not a database reset.
+3. Strengthened known-development/production target comparison by host/port/database identity; changing credentials, `postgres` versus `postgresql`, query parameters or localhost alias no longer bypasses it. Existing remote E2E support is retained in the shared guard, but this persistence suite and worker fixture reject remote targets.
+4. Added an independent Prisma-client factory and a test-only courier worker process fixture in `tests/integration/fixtures/courier-worker.ts`. Discovery is scoped to this run's fictional connection; actual worker leases/transactions/writes use real Prisma. Fake provider methods return locally generated identities and make no HTTP requests. The executable fixture rejects non-fictional connection/provider records and requires the suite's IPC launch.
+5. The two-process case waits for both initialized workers at an IPC barrier before releasing them together. It verifies exactly one fake provider call across both processes and uses a fresh client to inspect persisted operation, consignment and claim facts. Startup/work timeouts terminate child processes. A separate in-flight cancellation test blocks fake provider completion while cancellation runs through the real service.
+6. Added `tests/integration/tsconfig.json` for a separate, no-execution type check. No production dependency or application behavior changed in this step.
+
+### Prepared real database scenario map
+
+| Scenario | Expected persisted evidence |
+| --- | --- |
+| Normalized customer email contention | One success, one rejection, one row |
+| Explicit transaction failure | Customer write rolled back |
+| Last-unit checkouts | One winning reservation; on-hand/reserved remain coherent |
+| Duplicate checkout key | One order and same returned order identity |
+| Last discount redemption | One redemption; usage counter one |
+| Failing checkout | No customer/order/reservation side effects |
+| Claim writes through independent clients | One claim; losing unique constraint is P2002 |
+| Concurrent physical restock | One successful restock, one rejected replay, stock increases once, durable recovery stamp |
+| Duplicate deposit and competing refunds | One receipt; one refund wins, other cannot exceed received money; exact minor-unit balances, no refund-induced new COD or stock mutation |
+| Batch expiry/FEFO | Expired/unsafe stock excluded; earliest eligible batch reserved; expiring it rejects commitment without changing reservation, inventory or order status |
+| Cancellation before worker | Operation stopped; no fake provider call; claim released and safe stock recovered |
+| Cancellation during provider call | Cancellation keeps committed custody and claim; original response identity persists; no second create |
+| Crashed expired operation/connection lease | Recovery precedes create, found identity persists, attempt increments, dead token cannot complete |
+| Last food-slot unit | One booking; capacity one; repeated pre-preparation cancellation releases capacity once |
+| Serial/IMEI duplicate writes | Database rejects duplicate identifiers across independent clients |
+| Separate worker processes | Simultaneous launch barrier, one create, completed operation and original claim visible after client restart |
+
+The slot/unit tests deliberately exercise real capacity helpers and database uniqueness rather than claiming the full browser/catalog/warranty workflow. They do not prove warranty UI, actual merchant callbacks, PostgreSQL crash restoration, network partition safety, live provider idempotency, or all niche lifecycle races. The crash case simulates expired durable leases, not killing PostgreSQL. Provider behavior is a fictional adapter, not Steadfast compatibility certification. Those limitations remain explicit later acceptance gates.
+
+### Safe checks run by the agent
+
+- `bun test tests/setup/assert-test-environment.test.ts`: **10 passed, 0 failed, 10 assertions**; no database import or access.
+- `bunx tsc --project tests/integration/tsconfig.json --noEmit`: passed; includes real suite and child fixture without executing either.
+- Formatting of changed test files and `git diff --check`: passed.
+- The 16 persistence scenarios have **not run**. No runtime passing count, query evidence or real concurrency acceptance is claimed. The development migration previously applied does not satisfy the isolated target prerequisite.
+
+### Exact user preparation and execution sequence
+
+1. From the repository root, record `git rev-parse HEAD` and `git diff --stat`. The base revision for these prepared changes is `e7db4d2`; these Step 10 files are uncommitted. Save these identifiers with the eventual report. Do not assume an older integration result covers this diff.
+2. Prepare a disposable, dedicated **local PostgreSQL database** whose name begins `e2e_` or ends `_e2e`, and separate test Redis with prefix `ts-starter:e2e:`. Use a test-only DB role with no rights on development/production databases. Run only one suite against this target at a time; it temporarily updates the singleton store settings and restores them. Do not run an app or background worker on this test database during the suite.
+3. Copy `tests/env/e2e.env.example` to ignored `tests/env/.env` and configure the dedicated target locally. Keep `E2E_MODE=true`, `NODE_ENV=test`; explicitly set `REDIS_KEY_PREFIX=ts-starter:e2e:`. Set `DATABASE_URL_DEVELOPMENT`/`DATABASE_URL_PRODUCTION` locally if available so identity exclusion also applies. Never paste credentials into the report. The local development DB named `ecommerce` is intentionally rejected by this suite.
+4. Validate the environment before any provisioning command: `bun --env-file=tests/env/.env tests/setup/assert-test-environment.ts`. Expected output exposes only target host/path and prefix, no credentials. Stop on any guard failure. Check the target identity manually before the following migration; Prisma's migration command itself does not run this test guard.
+5. **User-only explicit schema preparation, separate from the test command:** from `packages/db`, run `bun --env-file=../../tests/env/.env x prisma migrate deploy`, then `bun run db:generate`. Inspect that Prisma names the dedicated test DB, not `ecommerce`. No reset is required or embedded. Do not create/alter migration SQL or run a demo seed for this suite; it creates its own fictional data. RBAC seeding is unnecessary for these direct service tests; Step 11 permission/browser preparation is separate.
+6. Return to the repository root. Optional safe type check: `bunx tsc --project tests/integration/tsconfig.json --noEmit`. Then **user-run DB-backed command:** `bun --env-file=tests/env/.env test --timeout 60000 tests/integration/ecommerce.real-db.test.ts`. The command performs fictional fixture inserts/updates and scoped cleanup, but embeds no migrations, resets, seeds, server startup or real courier request. Do not combine this file with mocked unit suites; Bun module mocks are global.
+7. Expect 16 database scenarios to pass and cleanup to finish. If a test, child fixture or cleanup fails, retain sanitized test name/error class/code, test target classification, date, revision/diff identifier and counts. Treat unexpected rejection causes, rollback/cleanup failures or leftover fictional records as failures; do not rerun blindly, weaken an assertion, reset the target, or mark the step complete.
+8. Share sanitized results. Until those results arrive, keep Step 10 awaiting verification. Manual application timeline/balance inspection requested by the numbered step remains pending; Step 11 later supplies browser workflow evidence. The agent may fix narrow test or production issues found by actual evidence within authorized scope, but must not infer new DB execution or reset authority.
+
+### What is next and how many steps remain
+
+**Immediate next action: user executes the isolated Step 10 prerequisites and prepared suite, then supplies sanitized results.** If the user wants the agent to provision/run it, explicitly authorize the isolated target and DB-backed execution; the default Step 10 boundary still applies. After actual passing persistence evidence and manual inspection are recorded, next numbered step is Step 11. **Six implementation steps remain after this preparation (11–16); 15 numbered acceptance gates remain unfinished (2–16), including Step 9 coverage and Step 10 real execution.** No commit was made for Step 10; the prior commit request was already fulfilled by `e7db4d2`.

@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { assertTestEnvironment, validateTestEnvironment } from "./assert-test-environment";
+import {
+  assertTestEnvironment,
+  validateTestEnvironment,
+} from "./assert-test-environment";
 
 const safeEnvironment = {
   NODE_ENV: "test",
@@ -32,32 +35,71 @@ describe("validateTestEnvironment", () => {
 
   test("rejects a development-shaped database name", () => {
     expect(() =>
-      validateTestEnvironment({ ...safeEnvironment, DATABASE_URL: "postgresql://e2e:secret@127.0.0.1:5433/saas" }),
+      validateTestEnvironment({
+        ...safeEnvironment,
+        DATABASE_URL: "postgresql://e2e:secret@127.0.0.1:5433/saas",
+      }),
     ).toThrow("start with e2e_ or end with _e2e");
   });
 
   test("accepts an E2E-prefixed database name", () => {
-    expect(validateTestEnvironment({
-      ...safeEnvironment,
-      DATABASE_URL: "postgresql://e2e:secret@127.0.0.1:5432/e2e_ecommerce",
-    }).databaseName).toBe("e2e_ecommerce");
+    expect(
+      validateTestEnvironment({
+        ...safeEnvironment,
+        DATABASE_URL: "postgresql://e2e:secret@127.0.0.1:5432/e2e_ecommerce",
+      }).databaseName,
+    ).toBe("e2e_ecommerce");
   });
 
   test("rejects a production-shaped database host", () => {
     expect(() =>
-      validateTestEnvironment({ ...safeEnvironment, DATABASE_URL: "postgresql://e2e:secret@production-db:5433/ts_starter_e2e" }),
+      validateTestEnvironment({
+        ...safeEnvironment,
+        DATABASE_URL:
+          "postgresql://e2e:secret@production-db:5433/ts_starter_e2e",
+      }),
     ).toThrow("local host");
   });
 
   test("rejects a development Redis namespace", () => {
     expect(() =>
-      validateTestEnvironment({ ...safeEnvironment, REDIS_KEY_PREFIX: "ts-starter:" }),
+      validateTestEnvironment({
+        ...safeEnvironment,
+        REDIS_KEY_PREFIX: "ts-starter:",
+      }),
     ).toThrow("REDIS_KEY_PREFIX must begin");
   });
 
   test("rejects a configured development database URL", () => {
     expect(() =>
-      validateTestEnvironment({ ...safeEnvironment, DATABASE_URL_DEVELOPMENT: safeEnvironment.DATABASE_URL }),
+      validateTestEnvironment({
+        ...safeEnvironment,
+        DATABASE_URL_DEVELOPMENT: safeEnvironment.DATABASE_URL,
+      }),
     ).toThrow("must not match DATABASE_URL_DEVELOPMENT");
   });
+});
+
+test("rejects the same development target with changed credentials, local alias and query", () => {
+  expect(() =>
+    validateTestEnvironment({
+      ...safeEnvironment,
+      DATABASE_URL_DEVELOPMENT:
+        "postgres://different:other@localhost:5433/ts_starter_e2e?schema=public",
+    }),
+  ).toThrow("must not match DATABASE_URL_DEVELOPMENT");
+});
+test("rejects production target identity even when raw URL credentials differ", () => {
+  expect(() =>
+    validateTestEnvironment({
+      ...safeEnvironment,
+      DATABASE_URL_PRODUCTION:
+        "postgresql://owner:other@localhost:5433/ts_starter_e2e",
+    }),
+  ).toThrow("must not match DATABASE_URL_PRODUCTION");
+});
+test("rejects missing test mode before permitting any mutation", () => {
+  expect(() =>
+    validateTestEnvironment({ ...safeEnvironment, NODE_ENV: "development" }),
+  ).toThrow("NODE_ENV must be exactly test");
 });

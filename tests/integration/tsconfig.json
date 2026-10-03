@@ -1,0 +1,13 @@
+{
+  "extends": "../../apps/server/tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": [
+    "./**/*.ts",
+    "../setup/assert-test-environment.ts",
+    "../users-config.ts"
+  ]
+}

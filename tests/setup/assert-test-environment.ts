@@ -23,9 +23,13 @@ export type ValidatedTestEnvironment = {
 const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
 const productionLike = /(?:prod(?:uction)?|live|primary|mainnet)/i;
 
-function required(input: TestEnvironmentInput, key: keyof TestEnvironmentInput) {
+function required(
+  input: TestEnvironmentInput,
+  key: keyof TestEnvironmentInput,
+) {
   const value = input[key];
-  if (!value) throw new Error(`Missing required E2E environment variable: ${key}`);
+  if (!value)
+    throw new Error(`Missing required E2E environment variable: ${key}`);
   return value;
 }
 
@@ -38,7 +42,16 @@ function parseUrl(value: string, key: string) {
 }
 
 function databaseName(url: URL) {
-  return decodeURIComponent(url.pathname).replace(/^\/+/, "").replace(/\/+$/, "");
+  return decodeURIComponent(url.pathname)
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+}
+
+function targetIdentity(url: URL) {
+  const host = localHosts.has(url.hostname)
+    ? "local"
+    : url.hostname.toLowerCase();
+  return `${host}:${url.port || "5432"}/${databaseName(url)}`;
 }
 
 function sanitizedUrl(url: URL) {
@@ -47,7 +60,9 @@ function sanitizedUrl(url: URL) {
 
 function assertLocalHost(url: URL, key: string) {
   if (!localHosts.has(url.hostname)) {
-    throw new Error(`${key} must target a local host for the local E2E workflow`);
+    throw new Error(
+      `${key} must target a local host for the local E2E workflow`,
+    );
   }
 }
 
@@ -71,7 +86,10 @@ export function validateTestEnvironment(
   const name = databaseName(databaseUrl);
   const isRemote = Boolean(input.E2E_REMOTE_TEST_URL);
 
-  if (databaseUrl.protocol !== "postgresql:" && databaseUrl.protocol !== "postgres:") {
+  if (
+    databaseUrl.protocol !== "postgresql:" &&
+    databaseUrl.protocol !== "postgres:"
+  ) {
     throw new Error("DATABASE_URL must use the PostgreSQL protocol");
   }
   if (redisUrl.protocol !== "redis:" && redisUrl.protocol !== "rediss:") {
@@ -101,7 +119,10 @@ export function validateTestEnvironment(
     ["DATABASE_URL_DEVELOPMENT", input.DATABASE_URL_DEVELOPMENT],
     ["DATABASE_URL_PRODUCTION", input.DATABASE_URL_PRODUCTION],
   ] as const) {
-    if (knownUrl && knownUrl === input.DATABASE_URL) {
+    if (
+      knownUrl &&
+      targetIdentity(parseUrl(knownUrl, label)) === targetIdentity(databaseUrl)
+    ) {
       throw new Error(`DATABASE_URL must not match ${label}`);
     }
   }
