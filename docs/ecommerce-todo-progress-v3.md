@@ -77,7 +77,7 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | 10 | Verify real persistence and concurrency with user-run tests | Isolated database checks passed; browser workflows exercised; human review pending | 6 |
 | 11 | Verify full browser workflows and permissions | Automated scenarios verified after targeted corrections; user review pending (section 21) | 5 |
 | 12 | Complete security verification and fixes | Focused remediation/tests passed; active scan, residual risk disposition and review pending | 4 |
-| 13 | Verify runtime, capacity, and operational recovery | Not started | 3 |
+| 13 | Verify runtime, capacity, and operational recovery | Local production runtime/recovery verified; capacity, staging and restore acceptance pending | 3 |
 | 14 | Complete controlled live courier acceptance | Not started | 2 |
 | 15 | Build and verify automated tutorials | Not started | 1 |
 | 16 | Independent final review and release readiness decision | Not started | 0 |
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 10's isolated database verification passed under explicit user authorization; section 20 is the latest handoff. Prepared tests were committed first as `10e0c29`; the execution-discovered JSONB comparison fix, fixture corrections, guarded migration runner and new evidence are uncommitted. **Next numbered work: Step 11 browser workflows and RBAC, after authorization.** The local development schema/RBAC prerequisites succeeded in section 18; the fresh isolated target separately received all 36 migrations. **Six implementation steps remain (11–16); 15 numbered acceptance gates remain open (2–16), including manual/browser acceptance and Step 9 coverage.** No app/browser startup, live courier call or security scan was performed. The separate simulator plan remains unimplemented; Step 10 fake-adapter persistence evidence does not certify Steadfast compatibility.
+Step 12 was committed as `932f5b5` under the user's explicit request. Step 13 runtime fixes are committed as `1b7da9f`; capacity preparation, tests and handoffs are committed alongside section 24 under the user's explicit commit request. Local production-runtime evidence is recorded in section 23. **Next: obtain exact local capacity execution approval using section 24 and the capacity execution handoff; then run and record capacity/staging/restore evidence and finish unresolved Step 12 security gates.** Three subsequent numbered steps remain (14–16). Step 14 real courier actions require separate explicit approval; automated tutorial recording remains gated on final acceptance. Earlier historical handoffs describe their state at the time and do not override this section.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -1295,3 +1295,70 @@ The hostile-origin form reproduction is retained in `tests/artifacts/step12/csrf
 6. Review `tests/security/dependency-audit.md`; review the active plan and pending approval question. Only after target approval, follow the scanner command in `tests/security/README.md`, inspect its output and record actual findings here.
 
 **Next:** finish Step 12's active-scan/risk-disposition/review gates. The next numbered implementation phase is **Step 13 — runtime, capacity and operations**, after authorization. **Four subsequent numbered steps remain (13–16); Step 12 acceptance and earlier acceptance gates are still open.** Security scan success alone does not authorize automated tutorial recording.
+
+
+## 23. Step 13/16 — Production runtime and operational preparation (2026-10-03)
+
+### Authorization and scope
+
+The user requested committing Step 12 and then doing Step 13. Step 12 is committed as **`932f5b5`** (`fix(ecommerce): harden courier and cookie mutation security for V3 step 12`). The user authorized Step 13 commits on 2026-10-03. Runtime changes are committed as `1b7da9f`; capacity preparation and this handoff are committed together separately. Independent deployments per shop remain the architecture; no schema changes or DB CLI migration/generation/seed/reset commands were needed or run.
+
+Local runtime/database evidence used the already authorized fictional database **`e2e_v3_step10_20261003_03043274`**, PostgreSQL on `127.0.0.1:5433`, Redis on `127.0.0.1:6380`. Production-mode checks owned separate API/web ports **3013/3014**, used fictional credentials, set `E2E_MODE=false`, and paused courier workers with `COURIER_WORKERS_ENABLED=false`. No live courier, mail, payment-provider or production/staging actions were performed. The smoke test temporarily changed fictional public rate-limit settings and restored them during cleanup; it did not operate on a merchant DB.
+
+### What changed
+
+1. Fixed the compiled API build by removing `--bytecode`; the installed Bun bytecode build rejected valid top-level await. The normal compiled executable now builds and starts.
+2. Replaced the web production `start` path with a Bun HTTP entry serving built client assets and the actual TanStack SSR handler, including native Response normalization. Static serving handles HEAD, MIME/cache headers, root SSR fallback and encoded traversal rejection. Build output still needs matching runtime dependencies; it is not a standalone pruned deployment image. Root wrappers inject test environment, so production deployments must use the inspected app scripts and explicit shop environment.
+3. Added a shared non-overlapping background worker lifecycle. Dispatch/tracking stop before claiming the next item, drain current work, and cancel delayed starts; visitor flushing also drains active work. API shutdown drains HTTP/workers, closes Prisma/Redis and has a 30-second hard deadline. Added `/health/live` as process liveness only and explicit HOST binding. Database/Redis readiness must be checked separately.
+4. Added a courier-worker pause switch, default enabled, for controlled recovery/restore and isolated runtime checks. Moving the shadcn scaffold CLI to development dependencies changes only its workspace lockfile declaration; resolved package versions were preserved.
+5. Added guarded production smoke, client secret-canary and Redis namespace checks; focused worker/static-server tests; prepared k6 workload profiles, a separate-capacity-DB runner and a read-only pre/post-load invariant checker. **Capacity preparation is now implemented and checked in section 24; database population and HTTP load have not run.**
+6. Added `docs/ecommerce-runtime-operations-v3.md` with per-shop configuration, deployment dependencies, proxy/rate-limit cautions, worker recovery, key rotation, monitoring, backup ownership, restore procedure and capacity execution gates.
+
+### Verified evidence and practical limits
+
+Ignored local evidence is under `tests/artifacts/step13/`; environment files and authenticated artifacts must not be committed or copied into documentation.
+
+| Check | Actual result | Limit |
+| --- | --- | --- |
+| Compiled API + production SSR smoke | 15 check entries passed, including API startup, public and authenticated SSR, root page, static cache headers, secure/HttpOnly/SameSite cookies, authenticated API read, Redis-backed public limit/window, clean SIGTERM and persisted session after API restart | Local HTTP production mode; no HTTPS browser/proxy acceptance, auth-limit saturation, or live worker restart |
+| Real isolated DB persistence/recovery | 16 tests passed, 69 assertions | Fictional correctness fixtures; includes expired leases and two-process fake-worker concurrency, not capacity or Steadfast compatibility |
+| Dispatch recovery | 27 tests passed, 61 assertions | Mocked provider failures/deadlines/auth |
+| Tracking recovery | 5 tests passed, 13 assertions | Mocked provider polling/leases/auth |
+| Visitor handling | 6 tests passed, 25 assertions | Mocked buffering/privacy |
+| Credential rotation and trusted proxy IP | 10 tests passed, 21 assertions | Unit evidence; no deployed credential rewrite/rotation |
+| New worker/static/capacity tests | 15 tests passed, 56 assertions (section 24) | Focused behavior checks, not full relational load proof |
+| Browser bundle secret canaries | 166 client artifacts checked against six configured private values; no matches | Checks configured values only; not a universal secret scanner |
+| Redis isolation | Unique local prefixes retained different values/TTL, own keys cleaned up | Shared local test Redis; actual shops still require separate Redis deployments |
+| Static verification | Server and focused runtime TypeScript checks, web client boundary check and diff whitespace check passed | Does not certify a complete production deployment or all repository tests |
+| Prepared capacity scripts | Full pure dataset dry run, focused tests/types, approval guards, k6 v2.3.0 inspection of five profiles | No database population, HTTP load, throughput/latency/soak result or capacity claim |
+
+### How to test after running the app
+
+1. Read the operations guide first. Use an isolated fictional environment; never point these scripts at a shop DB or reuse production credentials. Retained local smoke scripts intentionally reject any database other than the named correctness target.
+2. Re-run the scoped production build/smoke with `bun --env-file=tests/artifacts/step11/runtime.env tests/runtime/step13-production-smoke.ts`. It builds its own artifacts, starts ports 3013/3014, checks public/authenticated SSR and API/Redis behavior, restarts its API, and stops its processes. Inspect `smoke.json`, build logs and clean shutdown logs. It does not replace or restart existing development services on 3000/3001.
+3. With the ignored production-local environment generated by that script, run `bun --env-file=tests/artifacts/step13/production-local.env tests/runtime/check-client-secrets.ts`; run the guarded Redis isolation script with the retained test environment. Never print the generated environment or session cookie.
+4. Re-run the focused worker/static/capacity tests and runtime TypeScript project. For DB recovery, use the existing explicitly guarded persistence suite against the retained fictional target; review its own fixture cleanup and report. Do not substitute a merchant environment.
+5. On separately approved staging, follow the guide in order: explicit environment/build selection, HTTPS browser/auth/SSR, proxy attribution and auth-limit checks, worker restart during fake-provider submission, outage/backlog recovery, observability/alerts, credential rotation and restore into a new isolated target. Record actual evidence; unit tests do not satisfy these staging checks.
+6. Full capacity execution needs the prepared generator reviewed, a newly approved separate fictional `e2e_v3_step13_capacity_*` DB, the agreed dataset/distribution, k6 installation/runtime validation and approved expected/peak/soak profiles. The runner must own its API process and reject an existing service, validate dataset counts and fictional addresses, then run pre/post-load checks. Collect hardware/CPU/memory/DB/Redis/backlog evidence and complete missing relational checks before interpreting latency thresholds. Existing correctness fixtures must not be inflated or reset for this purpose.
+
+### Remaining acceptance gates and exact next work
+
+- **Step 13 remains incomplete:** approved database population and actual measured smoke/volume/expected/peak/soak workloads, staging HTTPS/proxy/auth-limit and live worker-restart evidence, deployed monitoring, credential rotation/restore drill, and agreed backup ownership/RPO/RTO remain open. No claim that 10,000 customers/month is supported follows from these smoke tests.
+- Point 4 of the Step 13 instructions requires **“user execution or explicit expanded authorization”** for load work. Obtain target, dataset and workload approval before provisioning/populating the new capacity DB or running k6. Backup/restore remains user-controlled.
+- Step 12 active scan authorization, development-tool vulnerability risk disposition and final security review remain open. The production public-limiter smoke closes only the narrow local Redis/window question; it does not close all rate-limit or security acceptance.
+- The courier simulator plan is still unimplemented. Fake-adapter recovery evidence does not establish Steadfast compatibility; never treat a production merchant booking as an ordinary E2E fixture.
+- **Next agent task:** follow the section 24 capacity execution handoff: obtain explicit approval for its exact separate target, fixture population, temporary limiter policy and five workloads; then execute, inspect and record results, and finish user-operated staging/restore gates. Re-check current source and artifact freshness before relying on this handoff.
+- **Steps left:** three subsequent numbered steps (**14–16**), plus the remaining Step 13 acceptance work and earlier unresolved gates. Step 14 is controlled live courier acceptance; do not start real actions automatically. Do not make additional commits without a new user request. Automated tutorial generation stays behind final acceptance.
+
+
+## 24. Step 13 continuation — Capacity preparation completed (2026-10-03)
+
+**What changed:** implemented a pure deterministic dataset builder and separately guarded empty-target/batched writer; extended k6 to smoke and data-volume profiles, catalog/search/detail/facets and ten admin reads; fresh-food checkouts carry slots and every execution has new checkout keys. Added stock movement/reservation, food booking, discount counter and durable row preservation checks. The load runner authenticates its fictional admin, reconciles successful checkouts against new orders, records build/source fingerprints, owns/stops its API, requires an explicitly approved isolated limiter headroom policy and restores settings. It uses an empty local k6 configuration and whitelisted environment; five-second read-only resource/queue sampling records errors and prevents a clean acceptance when collection fails. No production application code changed during this continuation.
+
+**Evidence:** `tests/artifacts/step13/dataset-dry-run.json` records the full 10,000-customer/25,000-order/1,000-product/3,000-variant plan with related histories. All **15 focused tests passed, 56 assertions**, including accounting/counter reconciliation, write batch bounds, fail-fast guards, fresh-food payloads, malformed HTTP responses and missing admin thresholds. The focused runtime TypeScript check passed. Checksum-verified k6 **v2.3.0** configuration inspection passed for **smoke, volume, expected, peak and soak**; `inspect` runs no HTTP iterations. Earlier actual production smoke/recovery evidence remains in section 23. **No database was populated, migrated or seeded; no load profile or restore exercise ran during this continuation.**
+
+**How to test locally:** run `bun tests/load/generate-step13.ts` for a full pure dry run, `bun test tests/load apps/server/tests/background-worker.test.ts apps/server/tests/web.static-server.test.ts`, the focused runtime TypeScript project, and `bun tests/runtime/step13-inspect-load.ts` with the ignored reviewed k6 binary. These preparation checks require no database/application startup. Do not run the generator's `--apply` branch or load runner before approval.
+
+**Next:** review `docs/ecommerce-step13-capacity-execution.md`; it specifies the proposed separate local DB **`e2e_v3_step13_capacity_20261003_a`** on port 5433, a new local Redis test instance on port 6381, fictional auth/RBAC and bounded data population, enabled temporary headroom limits in only that capacity DB, and smoke/volume/15-minute expected/2-minute peak/60-minute soak execution. Obtain explicit approval for that full scope, then execute sequentially and investigate any failure before advancing. User-operated staging HTTPS/proxy/auth limits, simulator/worker recovery, monitoring and credential/backup restore acceptance remain open.
+
+**Steps left:** three subsequent numbered steps (14–16), plus Step 13 execution/staging/restore and earlier security/review gates. The user subsequently authorized committing Step 13. Runtime fixes are committed as `1b7da9f`; capacity preparation and this handoff are committed together. Resolve that commit from `git log`; do not infer authorization for capacity execution or additional commits. Tutorial recording remains gated.

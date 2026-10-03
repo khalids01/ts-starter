@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/server/tsconfig.json",
+  "compilerOptions": { "composite": false, "incremental": false, "noEmit": true, "lib": ["ESNext", "DOM", "DOM.Iterable"] },
+  "include": ["./*.ts", "../load/*.ts", "../../apps/web/scripts/production-server.ts", "../../apps/web/scripts/serve-built-client.ts", "../../apps/server/tests/background-worker.test.ts", "../../apps/server/tests/web.static-server.test.ts"]
+}

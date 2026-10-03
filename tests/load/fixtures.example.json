@@ -1,0 +1,17 @@
+{
+  "datasetVersion": 1,
+  "databaseName": "e2e_v3_step13_capacity_approved_run",
+  "target": "http://localhost:3013",
+  "runId": "approved-run",
+  "baseTime": "2026-10-03T00:00:00.000Z",
+  "adminEmail": "capacity-owner@northstar.example.test",
+  "adminSessionCookie": "REPLACE_IN_IGNORED_GENERATED_MANIFEST_ONLY",
+  "shopperEmails": ["capacity-buyer@northstar.example.test"],
+  "variantIds": ["GENERATED_VARIANT_ID"],
+  "checkoutVariants": [{ "id": "GENERATED_VARIANT_ID", "foodSlotId": "ONLY_FOR_FRESH_FOOD_VARIANTS" }],
+  "shippingRateId": "GENERATED_SHIPPING_RATE_ID",
+  "customerIds": ["GENERATED_CUSTOMER_ID"],
+  "orderIds": ["GENERATED_ORDER_ID"],
+  "productIds": ["GENERATED_PRODUCT_ID"],
+  "productSlugs": ["GENERATED_ACTIVE_PRODUCT_SLUG"]
+}
