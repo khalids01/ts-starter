@@ -23,7 +23,9 @@ export function courierRequestSnapshot(order: any, invoice?: string) {
 
 export function assertReviewedCourierRequest(order: any, reviewed: any) {
   const current = courierRequestSnapshot(order, reviewed?.invoice);
-  if (!reviewed || reviewed.schemaVersion !== 2 || JSON.stringify(current) !== JSON.stringify(reviewed)) {
+  // PostgreSQL JSONB does not preserve object key order. Compare the exact scalar contract, not serialized bytes.
+  if (!reviewed || reviewed.schemaVersion !== 2 || Object.keys(reviewed).length !== Object.keys(current).length
+    || Object.entries(current).some(([key, value]) => !Object.hasOwn(reviewed, key) || reviewed[key] !== value)) {
     throw new Error("Order money or shipping details changed; review the courier route again");
   }
   return current;

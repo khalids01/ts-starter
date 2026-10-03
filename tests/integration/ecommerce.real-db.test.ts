@@ -175,25 +175,25 @@ describe("ecommerce real PostgreSQL invariants", () => {
     await prisma.inventoryStock.createMany({
       data: [
         {
-          stockKey: `${variantIds.lastItem}:${locationId}:none`,
+          stockKey: `${variantIds.lastItem}:${locationId}:no_batch`,
           variantId: variantIds.lastItem,
           locationId,
           quantityOnHand: 1,
         },
         {
-          stockKey: `${variantIds.idempotency}:${locationId}:none`,
+          stockKey: `${variantIds.idempotency}:${locationId}:no_batch`,
           variantId: variantIds.idempotency,
           locationId,
           quantityOnHand: 4,
         },
         {
-          stockKey: `${variantIds.discount}:${locationId}:none`,
+          stockKey: `${variantIds.discount}:${locationId}:no_batch`,
           variantId: variantIds.discount,
           locationId,
           quantityOnHand: 4,
         },
         {
-          stockKey: `${variantIds.rollback}:${locationId}:none`,
+          stockKey: `${variantIds.rollback}:${locationId}:no_batch`,
           variantId: variantIds.rollback,
           locationId,
           quantityOnHand: 1,
@@ -210,7 +210,7 @@ describe("ecommerce real PostgreSQL invariants", () => {
         "inflight",
         "crash",
       ].map((key) => ({
-        stockKey: `${variantIds[key as keyof typeof variantIds]}:${locationId}:none`,
+        stockKey: `${variantIds[key as keyof typeof variantIds]}:${locationId}:no_batch`,
         variantId: variantIds[key as keyof typeof variantIds],
         locationId,
         quantityOnHand: 2,
@@ -832,8 +832,13 @@ describe("ecommerce real PostgreSQL invariants", () => {
       try {
         await Promise.race([
           started,
-          running.then(() => {
-            throw new Error("Worker did not enter provider");
+          running.then(async () => {
+            const op = await prisma.courierOperation.findFirstOrThrow({
+              where: { consignmentId: q.consignment.id },
+            });
+            throw new Error(
+              `Worker did not enter provider: ${op.lastErrorCode}`,
+            );
           }),
           new Promise<never>((_, reject) => {
             timer = setTimeout(
