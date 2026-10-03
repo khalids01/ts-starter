@@ -15,9 +15,7 @@ import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AcceptInvitationRouteImport } from './routes/accept-invitation'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as SavedRouteImport } from './routes/saved'
 import { Route as SetupRouteImport } from './routes/setup'
-import { Route as TrackOrderRouteImport } from './routes/track-order'
 import { Route as AuthAuthCompleteRouteImport } from './routes/_auth/auth-complete'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -31,7 +29,9 @@ import { Route as ProtectedSettingsRouteImport } from './routes/_protected/setti
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicCartRouteImport } from './routes/_public/cart'
 import { Route as PublicCheckoutRouteImport } from './routes/_public/checkout'
+import { Route as PublicSavedRouteImport } from './routes/_public/saved'
 import { Route as PublicShopRouteImport } from './routes/_public/shop'
+import { Route as PublicTrackOrderRouteImport } from './routes/_public/track-order'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
@@ -99,19 +99,9 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SavedRoute = SavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TrackOrderRoute = TrackOrderRouteImport.update({
-  id: '/track-order',
-  path: '/track-order',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthAuthCompleteRoute = AuthAuthCompleteRouteImport.update({
@@ -179,9 +169,19 @@ const PublicCheckoutRoute = PublicCheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicSavedRoute = PublicSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicShopRoute = PublicShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicTrackOrderRoute = PublicTrackOrderRouteImport.update({
+  id: '/track-order',
+  path: '/track-order',
   getParentRoute: () => PublicRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -390,9 +390,7 @@ export interface FileRoutesByFullPath {
   '/accept-invitation': typeof AcceptInvitationRoute
   '/admin': typeof AdminRouteWithChildren
   '/onboarding': typeof OnboardingRoute
-  '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
-  '/track-order': typeof TrackOrderRoute
   '/auth-complete': typeof AuthAuthCompleteRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -405,7 +403,9 @@ export interface FileRoutesByFullPath {
   '/settings': typeof ProtectedSettingsRoute
   '/cart': typeof PublicCartRoute
   '/checkout': typeof PublicCheckoutRouteWithChildren
+  '/saved': typeof PublicSavedRoute
   '/shop': typeof PublicShopRouteWithChildren
+  '/track-order': typeof PublicTrackOrderRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/couriers': typeof AdminCouriersRouteWithChildren
@@ -450,9 +450,7 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
   '/onboarding': typeof OnboardingRoute
-  '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
-  '/track-order': typeof TrackOrderRoute
   '/auth-complete': typeof AuthAuthCompleteRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -464,6 +462,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof ProtectedDashboardRoute
   '/settings': typeof ProtectedSettingsRoute
   '/cart': typeof PublicCartRoute
+  '/saved': typeof PublicSavedRoute
+  '/track-order': typeof PublicTrackOrderRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/discounts': typeof AdminDiscountsRoute
@@ -508,9 +508,7 @@ export interface FileRoutesById {
   '/accept-invitation': typeof AcceptInvitationRoute
   '/admin': typeof AdminRouteWithChildren
   '/onboarding': typeof OnboardingRoute
-  '/saved': typeof SavedRoute
   '/setup': typeof SetupRoute
-  '/track-order': typeof TrackOrderRoute
   '/_auth/auth-complete': typeof AuthAuthCompleteRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -523,7 +521,9 @@ export interface FileRoutesById {
   '/_protected/settings': typeof ProtectedSettingsRoute
   '/_public/cart': typeof PublicCartRoute
   '/_public/checkout': typeof PublicCheckoutRouteWithChildren
+  '/_public/saved': typeof PublicSavedRoute
   '/_public/shop': typeof PublicShopRouteWithChildren
+  '/_public/track-order': typeof PublicTrackOrderRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
   '/admin/couriers': typeof AdminCouriersRouteWithChildren
@@ -572,9 +572,7 @@ export interface FileRouteTypes {
     | '/accept-invitation'
     | '/admin'
     | '/onboarding'
-    | '/saved'
     | '/setup'
-    | '/track-order'
     | '/auth-complete'
     | '/forgot-password'
     | '/login'
@@ -587,7 +585,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/cart'
     | '/checkout'
+    | '/saved'
     | '/shop'
+    | '/track-order'
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/couriers'
@@ -632,9 +632,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invitation'
     | '/onboarding'
-    | '/saved'
     | '/setup'
-    | '/track-order'
     | '/auth-complete'
     | '/forgot-password'
     | '/login'
@@ -646,6 +644,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/cart'
+    | '/saved'
+    | '/track-order'
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/discounts'
@@ -689,9 +689,7 @@ export interface FileRouteTypes {
     | '/accept-invitation'
     | '/admin'
     | '/onboarding'
-    | '/saved'
     | '/setup'
-    | '/track-order'
     | '/_auth/auth-complete'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -704,7 +702,9 @@ export interface FileRouteTypes {
     | '/_protected/settings'
     | '/_public/cart'
     | '/_public/checkout'
+    | '/_public/saved'
     | '/_public/shop'
+    | '/_public/track-order'
     | '/admin/activity'
     | '/admin/catalog'
     | '/admin/couriers'
@@ -754,9 +754,7 @@ export interface RootRouteChildren {
   AcceptInvitationRoute: typeof AcceptInvitationRoute
   AdminRoute: typeof AdminRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
-  SavedRoute: typeof SavedRoute
   SetupRoute: typeof SetupRoute
-  TrackOrderRoute: typeof TrackOrderRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
 }
 
@@ -804,25 +802,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/saved': {
-      id: '/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof SavedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/setup': {
       id: '/setup'
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/track-order': {
-      id: '/track-order'
-      path: '/track-order'
-      fullPath: '/track-order'
-      preLoaderRoute: typeof TrackOrderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/auth-complete': {
@@ -916,11 +900,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicCheckoutRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/saved': {
+      id: '/_public/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof PublicSavedRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/shop': {
       id: '/_public/shop'
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof PublicShopRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/track-order': {
+      id: '/_public/track-order'
+      path: '/track-order'
+      fullPath: '/track-order'
+      preLoaderRoute: typeof PublicTrackOrderRouteImport
       parentRoute: typeof PublicRoute
     }
     '/admin/': {
@@ -1268,14 +1266,18 @@ const PublicShopRouteWithChildren = PublicShopRoute._addFileChildren(
 interface PublicRouteChildren {
   PublicCartRoute: typeof PublicCartRoute
   PublicCheckoutRoute: typeof PublicCheckoutRouteWithChildren
+  PublicSavedRoute: typeof PublicSavedRoute
   PublicShopRoute: typeof PublicShopRouteWithChildren
+  PublicTrackOrderRoute: typeof PublicTrackOrderRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicCartRoute: PublicCartRoute,
   PublicCheckoutRoute: PublicCheckoutRouteWithChildren,
+  PublicSavedRoute: PublicSavedRoute,
   PublicShopRoute: PublicShopRouteWithChildren,
+  PublicTrackOrderRoute: PublicTrackOrderRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
@@ -1415,9 +1417,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInvitationRoute: AcceptInvitationRoute,
   AdminRoute: AdminRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
-  SavedRoute: SavedRoute,
   SetupRoute: SetupRoute,
-  TrackOrderRoute: TrackOrderRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
 }
 export const routeTree = rootRouteImport

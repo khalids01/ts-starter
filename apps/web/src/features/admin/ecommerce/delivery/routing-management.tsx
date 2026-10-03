@@ -840,13 +840,13 @@ export function RoutingManagement({
           <p className="text-muted-foreground text-sm">This sends a real pickup request to the selected courier connection. Use the address and police-station IDs from your courier merchant account.</p>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Pickup address ID"><Input type="number" min={1} value={pickupForm.addressId} onChange={(event) => setPickupForm({ ...pickupForm, addressId: event.target.value })} /></Field>
-              <Field label="Police station ID"><Input type="number" min={1} value={pickupForm.policeStationId} onChange={(event) => setPickupForm({ ...pickupForm, policeStationId: event.target.value })} /></Field>
+              <Field label="Pickup address ID"><Input aria-label="Pickup address ID" type="number" min={1} value={pickupForm.addressId} onChange={(event) => setPickupForm({ ...pickupForm, addressId: event.target.value })} /></Field>
+              <Field label="Police station ID"><Input aria-label="Police station ID" type="number" min={1} value={pickupForm.policeStationId} onChange={(event) => setPickupForm({ ...pickupForm, policeStationId: event.target.value })} /></Field>
             </div>
-            <Field label="Pickup address"><Input value={pickupForm.address} onChange={(event) => setPickupForm({ ...pickupForm, address: event.target.value })} /></Field>
-            <Field label="Contact number" hint="11-digit Bangladesh mobile number beginning 013-019."><Input value={pickupForm.contactNumber} onChange={(event) => setPickupForm({ ...pickupForm, contactNumber: event.target.value })} /></Field>
-            <Field label="Estimated parcel quantity"><Input type="number" min={1} value={pickupForm.estimatedQuantity} onChange={(event) => setPickupForm({ ...pickupForm, estimatedQuantity: event.target.value })} /></Field>
-            <Field label="Pickup note"><Input value={pickupForm.note} onChange={(event) => setPickupForm({ ...pickupForm, note: event.target.value })} /></Field>
+            <Field label="Pickup address"><Input aria-label="Pickup address" value={pickupForm.address} onChange={(event) => setPickupForm({ ...pickupForm, address: event.target.value })} /></Field>
+            <Field label="Contact number" hint="11-digit Bangladesh mobile number beginning 013-019."><Input aria-label="Contact number" value={pickupForm.contactNumber} onChange={(event) => setPickupForm({ ...pickupForm, contactNumber: event.target.value })} /></Field>
+            <Field label="Estimated parcel quantity"><Input aria-label="Estimated parcel quantity" type="number" min={1} value={pickupForm.estimatedQuantity} onChange={(event) => setPickupForm({ ...pickupForm, estimatedQuantity: event.target.value })} /></Field>
+            <Field label="Pickup note"><Input aria-label="Pickup note" value={pickupForm.note} onChange={(event) => setPickupForm({ ...pickupForm, note: event.target.value })} /></Field>
           </div>
           <DialogFooter>
             <Button disabled={!pickupForm.consignmentId || Number(pickupForm.addressId) < 1 || Number(pickupForm.policeStationId) < 1 || !pickupForm.address.trim() || !/^01[3-9]\d{8}$/.test(pickupForm.contactNumber) || requestPickup.isPending} onClick={() => requestPickup.mutate()}>

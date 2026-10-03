@@ -12,6 +12,7 @@ const ECOMMERCE_MANAGER_PERMISSIONS = [
   "admin.shipping.read", "admin.shipping.manage", "admin.discounts.read", "admin.discounts.manage",
   "admin.store_settings.read", "admin.store_settings.manage", "admin.customers.read",
   "admin.customers.manage", "admin.images.read", "admin.images.manage",
+  "admin.delivery.read", "admin.delivery.settings", "admin.delivery.dispatch", "admin.delivery.returns", "admin.delivery.reconcile",
 ];
 
 const ECOMMERCE_VIEWER_PERMISSIONS = [

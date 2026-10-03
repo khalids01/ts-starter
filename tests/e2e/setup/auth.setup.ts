@@ -3,22 +3,13 @@ import { mkdir } from "node:fs/promises";
 import { e2eRuntimeConfig } from "../../../packages/config/src/e2e.config";
 import { provisionE2eUsers } from "../../setup/provision-users";
 import { TEST_USERS, type TestUser } from "../../users-config";
-const managerPermissions = [
-  "admin.access", "admin.catalog.read", "admin.catalog.manage", "admin.products.read",
-  "admin.products.manage", "admin.inventory.read", "admin.inventory.manage", "admin.orders.read",
-  "admin.orders.manage", "admin.orders.fulfill", "admin.orders.cancel", "admin.orders.refund", "admin.orders.payments",
-  "admin.shipping.read", "admin.shipping.manage", "admin.discounts.read", "admin.discounts.manage",
-  "admin.store_settings.read", "admin.store_settings.manage", "admin.customers.read",
-  "admin.customers.manage", "admin.images.read", "admin.images.manage",
-].sort();
-const viewerPermissions = [
-  "admin.access", "admin.catalog.read", "admin.products.read", "admin.inventory.read",
-  "admin.orders.read", "admin.shipping.read", "admin.discounts.read", "admin.store_settings.read",
-  "admin.customers.read", "admin.images.read",
-].sort();
+import { ECOMMERCE_MANAGER_PERMISSIONS, ECOMMERCE_VIEWER_PERMISSIONS } from "../../setup/provision-users";
+const managerPermissions = [...ECOMMERCE_MANAGER_PERMISSIONS].sort();
+const viewerPermissions = [...ECOMMERCE_VIEWER_PERMISSIONS].sort();
 
 async function signup(page: import("@playwright/test").Page, user: TestUser) {
   await page.goto("/signup");
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Name").fill(user.name);
   await page.getByLabel("Email").fill(user.email);
   await page.getByLabel("Password", { exact: true }).fill(user.password);
@@ -64,6 +55,7 @@ test("@auth provisions verified roles, signs in, and saves each persona state", 
     const context = await browser.newContext();
     const loginPage = await context.newPage();
     await loginPage.goto("/login");
+    await loginPage.waitForLoadState("networkidle");
     await loginPage.getByLabel("Email").fill(user.email);
     await loginPage.getByLabel("Password").fill(user.password);
     const loginResponse = loginPage.waitForResponse((response) =>

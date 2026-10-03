@@ -29,7 +29,7 @@ test("owner can load every ecommerce admin route without console or request fail
 
   for (const route of routes) {
     await test.step(route, async () => {
-      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await page.goto(route, { waitUntil: "networkidle" });
       await expect(page).toHaveURL(new RegExp(`${route.replaceAll("/", "\\/")}$`));
       await expect(page.locator("body")).toBeVisible();
     });
@@ -39,7 +39,7 @@ test("owner can load every ecommerce admin route without console or request fail
 });
 
 test("grouped admin navigation works when expanded and collapsed", async ({ page }) => {
-  await page.goto("/admin/overview");
+  await page.goto("/admin/overview", { waitUntil: "networkidle" });
 
   await page.getByRole("button", { name: "Shop" }).click();
   await page.getByRole("link", { name: "Products", exact: true }).click();
@@ -60,9 +60,21 @@ test("courier configuration and shipping methods switch between current and arch
   ]) {
     await test.step(route, async () => {
       await page.goto(route);
+      await page.waitForLoadState("networkidle");
       await expect(page.getByRole("tab", { name: "Current" })).toHaveAttribute("data-active");
       await page.getByRole("tab", { name: "Archived" }).click();
       await expect(page.getByRole("tab", { name: "Archived" })).toHaveAttribute("data-active");
     });
   }
+});
+
+
+test("courier connection failures show a usable retry action", async ({ page }) => {
+  await page.route("**/admin/delivery/connections*", route => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ message: "Fictional temporary outage" }) }));
+  await page.goto("/admin/couriers/connections", { waitUntil: "networkidle" });
+  await expect(page.getByText("Could not load courier management", { exact: true })).toBeVisible({ timeout: 15000 });
+  await page.unroute("**/admin/delivery/connections*");
+  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  await expect(page.getByText("Could not load courier management", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Add connection", exact: true })).toBeVisible();
 });

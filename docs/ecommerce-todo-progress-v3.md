@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented with safe checks; awaiting user schema/permission prerequisites and runtime acceptance. Step 9 regression checks implemented; coverage gates remain open. Step 10 isolated database checks passed after explicit execution authorization; manual/browser acceptance remains pending. Steps 11–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented; schema/RBAC prerequisites applied and covered database/browser checks passed; remaining review gates are open. Step 9 regression checks implemented; coverage gates remain open. Step 10 isolated database checks passed after explicit execution authorization; human review remains pending. Step 11 browser/RBAC checks and targeted corrections are verified; awaiting user review (section 21). Steps 12–16 are not started.
 
 ## 1. Purpose and deployment model
 
@@ -66,16 +66,16 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | Step | Outcome | Status | Remaining after completion |
 | --- | --- | --- | --- |
 | 1 | Confirm launch scope and inspect current invariants | Complete: inspection and user launch-scope confirmation recorded | 15 |
-| 2 | Define shared lifecycle/custody/money rules and required schema | Foundation implemented; awaiting schema prerequisite/review | 14 |
-| 3 | Make cancellation and physical restocking safe | Implementation checked; awaiting schema/runtime acceptance | 13 |
-| 4 | Correct COD accounting and settlement boundaries | Implementation checked; awaiting schema/runtime acceptance | 12 |
-| 5 | Enforce one active shipment under concurrency | Implementation checked; awaiting schema/runtime acceptance | 11 |
-| 6 | Recheck queued dispatches and harden worker recovery | Implementation checked; awaiting schema/runtime acceptance | 10 |
-| 7 | Enforce food expiry and safe batch allocation | Implementation checked; awaiting schema/runtime acceptance | 9 |
-| 8 | Complete selected niche behavior and operator UI | Implementation checked; awaiting schema/runtime acceptance | 8 |
+| 2 | Define shared lifecycle/custody/money rules and required schema | Foundation implemented; schema/RBAC applied; review pending | 14 |
+| 3 | Make cancellation and physical restocking safe | Implementation checked; schema/RBAC applied; covered runtime checks passed; review pending | 13 |
+| 4 | Correct COD accounting and settlement boundaries | Implementation checked; schema/RBAC applied; covered runtime checks passed; review pending | 12 |
+| 5 | Enforce one active shipment under concurrency | Implementation checked; schema/RBAC applied; covered runtime checks passed; review pending | 11 |
+| 6 | Recheck queued dispatches and harden worker recovery | Implementation checked; schema/RBAC applied; covered runtime checks passed; review pending | 10 |
+| 7 | Enforce food expiry and safe batch allocation | Implementation checked; schema/RBAC applied; covered runtime checks passed; review pending | 9 |
+| 8 | Complete selected niche behavior and operator UI | Implementation checked; schema/RBAC applied; covered runtime checks passed; review pending | 8 |
 | 9 | Complete focused regression and contract coverage | Regression assertions pass; coverage and runtime gates open | 7 |
-| 10 | Verify real persistence and concurrency with user-run tests | Isolated database checks passed; manual app inspection pending | 6 |
-| 11 | Verify full browser workflows and permissions | Not started | 5 |
+| 10 | Verify real persistence and concurrency with user-run tests | Isolated database checks passed; browser workflows exercised; human review pending | 6 |
+| 11 | Verify full browser workflows and permissions | Automated scenarios verified after targeted corrections; user review pending (section 21) | 5 |
 | 12 | Complete security verification and fixes | Not started | 4 |
 | 13 | Verify runtime, capacity, and operational recovery | Not started | 3 |
 | 14 | Complete controlled live courier acceptance | Not started | 2 |
@@ -1140,3 +1140,87 @@ User explicitly requested: “first commit then Set up the isolated local test e
 3. The JSONB fix and execution evidence are currently uncommitted; review the diff before any requested commit. The prepared test commit already exists as `10e0c29`.
 
 **Next: Step 11, browser workflows and RBAC, after authorization. Six implementation steps remain (11–16). Fifteen numbered acceptance gates remain unfinished (2–16), because manual/browser acceptance and earlier coverage/review gates are still open; Step 10's real database subgate has passed.** No active security test or automated tutorial generation should be inferred from this authorization.
+
+
+## 21. Step 11/16 — Browser workflows and RBAC (2026-10-03)
+
+**Status: automated scenarios verified; awaiting user review.** User requested “ok make commit and do step 11.” The existing isolated local test environment authorization carries forward for this named browser step, including fictional account/RBAC provisioning, app startup and DB-backed browser assertions. No development database reset, live courier action, active security scan, load test, tutorial recording or Step 12 execution is authorized by this work.
+
+### What changed
+
+1. Committed the previous Step 10 snapshot comparison fix and execution evidence first as **`da3da63`** (`fix(ecommerce): compare persisted courier snapshots without JSON key ordering`). All Step 11 changes remain uncommitted; this request does not authorize another commit after the step.
+2. Moved the existing `/track-order` and `/saved` routes under the existing pathless `_public` layout. Their public URLs stay unchanged; the shared public loader/provider now supplies its header/footer. Actual browser checkout exposed `usePublicData must be used inside PublicDataProvider` on this page. The saved-products route had the same layout omission. Keep the generated route tree consistent with these moves; do not introduce a second provider or swallow the error. WebKit then exposed a catalog hydration mismatch: a module-global React Query client reused earlier requests' catalog data during SSR. `TanstackQueryProvider` now creates its stable client with component state, so server requests do not share that cache. This finding is fixed rather than filtering the hydration error out of the browser assertions.
+3. Added accessible labels to the pickup form's address IDs, address, contact, parcel quantity and note fields. No courier URL policy or production permission was weakened.
+4. Reused the existing five fictional test personas, provisioner and auth storage. The ecommerce manager's explicit test role now includes the five delivery permissions required by its launch duties; production role defaults are unchanged. Auth setup derives expectations from the provisioner's exported lists and waits for page hydration before filling inputs.
+5. Added `playwright.step11.config.ts`, isolated V3 browser fixtures and lifecycle/niche/RBAC tests. Tests run serially because store settings and defaults are shared within this single-shop test database. The config explicitly excludes legacy V2 lifecycle tests that assume direct paid/status edits and manual shipping can bypass the V3 ledger/courier rules. This exclusion is not evidence that those historical scenarios pass; the V3 replacements exercise the supported contract.
+6. Added a guarded local HTTP response fixture on `127.0.0.1:3903` for fictional health/balance, pickup and provider-return requests. It requires the public fictional headers and never forwards requests. Actual create operations use the production dispatch worker with the existing scoped fake adapter and real PostgreSQL writes. Actual tracking uses signed raw-body HTTP callbacks with Bearer plus HMAC. This is **not** the complete simulator specified in `docs/steadfast-courier-simulation-plan.md` and is not merchant acceptance.
+7. Browser assertions check persisted inventory, shipment claims, operation outcomes, payment/refund totals, recovery evidence, food bookings and warranty state. The final direct API matrix includes 29 custody/money/niche mutation routes for each of read-only, ordinary and anonymous identities (87 expected permission denials), including queue/handoff, receipt reversal, unit release, claim resolution and food-slot changes. Browser selectors distinguish order numbers from provider invoices. Existing admin route/navigation/archive tests now wait for hydration. Responsive tests include shop/cart/checkout/tracking and detect page errors; an additional Chromium/Firefox/WebKit case checks saved/tracking layout and footer at all three viewport sizes; a temporary courier-list failure checks the visible Retry action.
+
+### Environment and safe rerun instructions
+
+Read first: this section, `playwright.step11.config.ts`, `tests/e2e/fixtures/v3.ts`, `tests/e2e/fixtures/courier-http.ts`, `tests/e2e/setup/auth.setup.ts`, `tests/setup/assert-test-environment.ts` and the four `v3-*.spec.ts` files. Do not invoke the old root build/start or reset wrappers blindly.
+
+1. Use only the dedicated Step 10 target `e2e_v3_step10_20261003_03043274`, PostgreSQL at loopback port 5433 and Redis at loopback port 6380 with its dedicated prefix. Schema was already applied in Step 10. Do not migrate/reset development data or reapply migrations merely to repeat browser tests.
+2. The ignored mode-0600 runtime file is `tests/artifacts/step11/runtime.env`. Keep it private and inspect targets locally without printing credentials. Its database and Redis values select the above target. Required browser values include `E2E_MODE=true`, `NODE_ENV=test`, `BETTER_AUTH_URL=http://localhost:3000`, `CORS_ORIGIN=http://localhost:3001`, `VITE_SERVER_URL=http://localhost:3000`, and the disabled Polar/owner-setup switches. Courier base URL must be exactly `http://localhost:3903`, with fictional Step 11 headers/token. `localhost` satisfies the existing plain-HTTP development URL policy; do not replace it with a live courier URL. Fixtures reject remote targets before DB import.
+3. Start the narrow local response fixture with `bun --env-file=tests/artifacts/step11/runtime.env tests/e2e/fixtures/courier-http.ts`. Start the isolated API directly with `bun --env-file=tests/artifacts/step11/runtime.env apps/server/src/index.ts`. E2E mode disables automatic dispatch/tracking workers; the tests invoke scoped fictional workers themselves. It also disables request rate limiting and email-verification delivery, so these passes do not verify production rate limits, verification emails or authentication-abuse defenses. Existing development services are not stopped.
+4. Build the frontend with explicit environment inheritance, then serve its production preview. The exact build command used was:
+
+   ```sh
+   bun --env-file=tests/artifacts/step11/runtime.env -e 'const p=Bun.spawn(["node",process.cwd()+"/apps/web/node_modules/vite/bin/vite.js","build"],{cwd:process.cwd()+"/apps/web",env:{...process.env},stdout:"inherit",stderr:"inherit"});process.exit(await p.exited);'
+   ```
+
+   For preview, use the same command with `"preview"` in place of `"build"`. Verify frontend port 3001 and API port 3000. Rebuild/restart this isolated preview after a frontend change; do not test stale production assets. The first development-server attempt lost filled signup fields during HMR; the production preview avoids that fixture instability. `bun --env-file … x` and repository wrappers can lose or replace the intended environment, so do not substitute them without inspecting inherited targets.
+5. On a newly authorized empty isolated target, seed only required RBAC using the guarded target environment, then run the auth setup. This run seeded RBAC once and passed both signup/login setup tests for all five identities. Existing `.auth` state files and all runtime logs/reports are ignored. No reset or demo seed is included. On this prepared target, reuse the state with `--no-deps`; a fresh target requires setup and explicit environment authorization first.
+6. The single-command rerun below covers all 83 configured browser cases. The recorded final execution split it into a serial 21-case Chromium/Firefox/WebKit lifecycle run and a 62-case layout/persona run with two workers (read-only and expected-denial actions). Both used the same rebuilt assets and isolated API; only the lifecycle run changed domain data. The lifecycle/layout blob reports and targeted refund/RBAC rerun blobs are merged into the final report. The 29-route permission expansion also passed its own focused rerun after the lifecycle runner had collected the earlier 18-route version. Do not count these repeated checks as additional unique matrix cases. Run the complete selected browser matrix with:
+
+   ```sh
+   bun --env-file=tests/artifacts/step11/runtime.env ./node_modules/.bin/playwright test --config playwright.step11.config.ts --no-deps --project=chromium --project=firefox --project=webkit --project=mobile --project=tablet --project=desktop-responsive --project=persona-owner --project=persona-admin --project=persona-commerceManager --project=persona-commerceViewer --project=persona-user
+   ```
+
+7. Run the focused TypeScript check with `bun ./node_modules/typescript/bin/tsc --project tests/e2e/tsconfig.step11.json --noEmit`; run the web boundary checker from `apps/web`. Do not represent this focused test typecheck as a clean whole-repository typecheck. Review `git diff --check` and the actual diff. No schema changes or Prisma generation are required by Step 11.
+8. Keep the fictional records in the isolated target for review. Tests use unique fixture markers and scoped workers so reruns do not require a blanket cleanup/reset. Close only processes started for this isolated run when finished; this step does not authorize deleting shared services/data.
+
+### Required review matrix and results
+
+The final matrix executed **83 unique configured cases**: 62 layout/persona cases passed and the 21-case lifecycle/browser run had 20 passes plus one WebKit refund-entry failure. That failed case had empty fields after synthetic filling and a correctly disabled submit button. The test now waits for the dialog's amount autofocus, enters the amount/reason with normal keyboard events and asserts both values before submitting. Its updated sequence passed targeted reruns in WebKit, Chromium and Firefox. No production refund rule was bypassed and no forced click or API substitution completed the refund. Retain this failed attempt in the merged history and identify the targeted final result explicitly; do not present the original matrix as a clean 83-pass run.
+
+| Project / scenario | Unique cases | Viewport / scope | Latest result |
+| --- | --- | --- | --- |
+| Chromium | 11 | Desktop 1280×720; admin navigation/archive/retry, three lifecycle cases, gadget, food, public layout, RBAC | Covered scenarios passed; updated refund entry also passed targeted rerun |
+| Firefox | 5 | Desktop 1280×720; critical shell, three lifecycle cases, public layout | Covered scenarios passed; updated refund entry also passed targeted rerun |
+| WebKit | 5 | Desktop 1280×720; same critical/lifecycle/public scope | Four passed in matrix; corrected refund-entry case passed targeted rerun |
+| Mobile | 19 | WebKit/iPhone 13, 390×664; 4 public and 15 admin routes | 19 passed |
+| Tablet | 19 | WebKit/iPad gen 7, 810×1080; same 19 routes | 19 passed |
+| Desktop responsive | 19 | Chromium, 1440×900; same 19 routes | 19 passed |
+| Five personas | 5 | Owner, restricted admin, commerce manager, commerce viewer, ordinary user | 5 passed |
+
+The additional public-layout case checks saved/tracking pages at 390×664, 810×1080 and 1440×900 in each desktop browser engine. This is layout/runtime coverage; mobile/tablet did not execute the complete transactional lifecycle. Auth setup separately passed **2 tests** creating/verifying/login-testing all five fictional accounts. The expanded 29-route RBAC check separately passed with 87 denied API attempts; the main lifecycle run had collected its earlier 18-route version before that expansion.
+
+Static evidence: frontend production build passed; focused Step 11 TypeScript check passed; web client boundary check passed; `git diff --check` passed. There was no schema edit, Prisma generation, production deployment, active security scan, live courier action or tutorial recording in Step 11.
+
+Authoritative final artifacts are under the ignored `tests/artifacts/step11/` directory: `final-core.txt`, `final-layout-personas.txt`, `refund-final.txt`, `refund-other-final.txt`, `rbac-final.txt`, `build.txt`, `typecheck.txt`, merged `results.json`, `latest-verification.json` and `report/index.html`. The early `final-browser.txt` run was interrupted after discovering SSR cache leakage; it is failure history, not final acceptance. The merged report contains **87 entries: 86 passing entries and one retained historical failure**. Its original failure is not an unresolved production finding: the updated test passed the targeted reruns described above. `latest-verification.json` groups entries by file/title/project and records **83 unique scenarios, all with a passing latest result**. No full 83-case rerun occurred after the test-only refund-entry correction; the affected case was rerun in all three engines. Do not relabel the main matrix as an uninterrupted clean pass or erase the historical attempt.
+
+
+Report reproduction: the recorded lifecycle command selected `--project=chromium --project=firefox --project=webkit`; the layout/persona command selected the remaining eight projects with `--workers=2`. Both used the same guarded env-file and `--no-deps --reporter=list,blob`, with separate `--output` directories and `PLAYWRIGHT_BLOB_OUTPUT_FILE` targets. The focused refund reruns used `test v3-lifecycle --grep 'cancellation and return'`; the expanded permission rerun used `test v3-rbac --project=chromium`. All had `retries: 0`; these were explicit fixes and reruns, not a retry loop hiding failures. Copy the five final blob files from `core-blob`, `blob-report`, `refund-blob`, `refund-other-blob` and `rbac-blob` into `merged-blob`, then merge without starting services or touching DB data:
+
+```sh
+PLAYWRIGHT_HTML_OUTPUT_DIR=tests/artifacts/step11/report PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_JSON_OUTPUT_FILE=tests/artifacts/step11/results.json bun ./node_modules/.bin/playwright merge-reports --reporter=html,json tests/artifacts/step11/merged-blob
+```
+
+The isolated frontend/API/courier fixture and PostgreSQL/Redis containers remain running for user review at ports 3001/3000/3903/5433/6380. Account definitions are in `tests/users-config.ts`; do not publish auth state or the ignored runtime file. All schema/RBAC changes for this target were already applied; Step 11 creates no new migration prerequisite.
+
+### How to test after running the isolated app
+
+1. As the fictional ordinary customer, browse the fixture product, add one item to cart and check out. As owner, confirm the order, record a BDT 30 deposit, review the route and queue it. The fictional worker books BDT 80 COD against a BDT 110 total. Request pickup, explicitly hand over, apply the signed delivered callback, record the BDT 80 payout and complete the order. Verify two payment records, no active claim and an audited history. Customer tracking must load and omit private notes.
+2. Before provider submission, cancel a queued order and verify stock/claim release. After handoff, record/submit a return to the local fixture and complete the courier return; verify stock remains committed. Cancel the failed delivery, record every item physically received, inspect all items sellable, explicitly restock and refund the deposit. Verify one restock record, original on-hand quantity restored and zero reserved units. A refund or courier-return status alone must not restore stock.
+3. Repeat route confirmation and expect conflict with one shipment claim. Change payment after queue and expect cancellation before submission plus claim release. Attempt confirmation against the deliberately expired fictional batch and expect a visible rejection without commitment; its storefront Add to cart button must be disabled.
+4. Register a gadget serial and IMEI against received stock without increasing quantity, assign it to the customer order, deliver via the signed fixture, request warranty review as its purchaser and approve with owner evidence. For fresh food, reject warranty configuration, start preparation, reject parcel routing and cancel; the prepared booking capacity/committed stock remain retained and generic restocking is disabled.
+5. Verify the owner, restricted admin, commerce manager, commerce viewer and ordinary-user sessions match their roles. Test read-only/user/anonymous direct calls to the sensitive custody/money endpoints and require 401/403. Inspect connection response redaction. Temporarily fail courier-list loading, restore it and use Retry. Check keyboard focus in the payment dialog and disabled confirmation before required evidence is entered.
+6. Review mobile/tablet/desktop pages for overflow and runtime errors, then Chromium/Firefox/WebKit lifecycle results. The report is automated evidence; final human review is still required. Do not use real customer data or live merchant credentials for these checks.
+
+### Open gates and next step
+
+- Earlier Step 9 coverage/review gates remain open. Passing this selected browser matrix does not close every historical acceptance checklist, establish production capacity, or prove live courier compatibility.
+- Security verification, production operations/load evidence, controlled live merchant acceptance, tutorials and independent review remain Steps 12–16.
+- **Next: Step 12 — security verification and remediation, after user authorization/review. Five numbered implementation steps remain (12–16).** Acceptance gates still require their recorded review; do not turn this implementation count into a claim that only five acceptance gates remain. No Step 12 scan or Step 15 recording has been started.
+- **Git: previous work committed as `da3da63`; Step 11 changes are uncommitted.**
