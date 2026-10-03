@@ -1,5 +1,5 @@
 import { eligibleStockWhere } from "@/modules/ecommerce/inventory/stock-policy";
-import prisma from "@db/server";
+import prisma, { type Prisma } from "@db/server";
 import type {
   ListShopFiltersQuery,
   ListShopProductsQuery,
@@ -19,6 +19,7 @@ import {
   publicFilterableAttributes,
   selectedCategoryIds,
 } from "../lib/product-query";
+import { summarizeProductsWithoutAttributes } from "../lib/filter-summary";
 import { listPublicCategories } from "./category.service";
 
 export const productService = {
@@ -28,47 +29,56 @@ export const productService = {
     const productWhere = await buildProductWhere({
       categoryIds: selectedCategories.join(","),
     });
-    const [categories, products, attributes] = await Promise.all([
-      listPublicCategories(),
-      prisma.product.findMany({
-        where: productWhere,
-        include: {
-          brand: {
+    const attributes = await publicFilterableAttributes(singleSelectedCategoryId);
+    if (!attributes.length) {
+      const summary = await summarizeProductsWithoutAttributes(productWhere);
+      if (summary) return { categories: await listPublicCategories(), ...summary, attributes: [] };
+    }
+    const productAttributeIds = attributes.filter((row) => row.scope !== "variant").map((row) => row.attributeId);
+    const variantAttributeIds = attributes.filter((row) => row.scope === "variant").map((row) => row.attributeId);
+    // Facets need counts/prices/stock, not each product's complete detail graph.
+    const select = {
+      id: true,
+      brand: { select: { id: true, name: true, slug: true, logoUrl: true, isActive: true } },
+      variants: {
+        where: { isActive: true },
+        select: {
+          price: true,
+          currency: true,
+          inventoryStocks: {
+            where: eligibleStockWhere(),
             select: {
-              id: true,
-              name: true,
-              slug: true,
-              logoUrl: true,
-              isActive: true,
+              quantityOnHand: true,
+              quantityReserved: true,
+              batchId: true,
+              batch: { select: { expiryDate: true, disposition: true } },
             },
           },
-          variants: {
-            where: { isActive: true },
-            include: {
-              inventoryStocks: {
-                where: eligibleStockWhere(),
-                select: {
-                  quantityOnHand: true,
-                  quantityReserved: true,
-            batchId: true,
-            batch: { select: { expiryDate: true, disposition: true } },
-                },
-              },
-              attributeValues: {
-                include: { attributeValue: true },
-              },
+          ...(variantAttributeIds.length ? {
+            attributeValues: {
+              where: { attributeValue: { attributeId: { in: variantAttributeIds } } },
+              select: { attributeValueId: true, attributeValue: { select: { attributeId: true } } },
             },
-            orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
-          },
-          attributeAssignments: {
-            include: {
-              attributeValue: true,
-              values: { include: { attributeValue: true } },
-            },
+          } : {}),
+        },
+        orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      },
+      ...(productAttributeIds.length ? {
+        attributeAssignments: {
+          where: { attributeId: { in: productAttributeIds } },
+          select: {
+            attributeId: true,
+            attributeValueId: true,
+            rawNumber: true,
+            rawBoolean: true,
+            values: { select: { attributeValueId: true } },
           },
         },
-      }),
-      publicFilterableAttributes(singleSelectedCategoryId),
+      } : {}),
+    } satisfies Prisma.ProductSelect;
+    const [categories, products] = await Promise.all([
+      listPublicCategories(),
+      prisma.product.findMany({ where: productWhere, select }),
     ]);
 
     const brandCounts = new Map<string, { brand: any; productCount: number }>();

@@ -438,6 +438,13 @@ export class AdminVisitorsService {
         SELECT r.*
         FROM rollup r
         ${personTypeWhere(normalized, "r")}
+      ),
+      paged_rollup AS MATERIALIZED (
+        SELECT r.*
+        FROM typed_rollup r
+        ORDER BY r."lastSeenInRange" DESC
+        LIMIT ${limit}
+        OFFSET ${boundedSkip}
       )
       SELECT
         r."visitorId",
@@ -452,7 +459,7 @@ export class AdminVisitorsService {
         latest."deviceType",
         latest."country",
         latest."isBot"
-      FROM typed_rollup r
+      FROM paged_rollup r
       LEFT JOIN LATERAL (
         SELECT
           f."lastPath",
@@ -468,8 +475,6 @@ export class AdminVisitorsService {
         LIMIT 1
       ) latest ON true
       ORDER BY r."lastSeenInRange" DESC
-      LIMIT ${limit}
-      OFFSET ${boundedSkip}
     `);
 
     return {
