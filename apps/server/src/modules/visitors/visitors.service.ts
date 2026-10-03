@@ -1,3 +1,4 @@
+import { createBackgroundWorker } from "../../lib/background-worker";
 import prisma from "@db/server";
 import { connectRedis } from "@redis/server";
 import { auth } from "@/modules/auth/auth.service";
@@ -22,7 +23,7 @@ const VISITOR_BUFFER_KEY_PREFIX = "visitors:buffer:visit:";
 
 let lastCleanupAt = 0;
 let cleanupPromise: Promise<void> | null = null;
-let flushInterval: ReturnType<typeof setInterval> | null = null;
+let flushWorker: ReturnType<typeof createBackgroundWorker> | null = null;
 
 type BufferedVisit = {
   visitorId: string;
@@ -593,24 +594,19 @@ export class VisitorsService {
 export const visitorsService = new VisitorsService();
 
 export function startVisitorFlushWorker(intervalMs = FLUSH_INTERVAL_MS) {
-  if (flushInterval) {
-    return;
-  }
-
-  flushInterval = setInterval(() => {
-    void visitorsService.flushBufferedVisits().catch((error) => {
-      console.error("Visitor buffer worker failed", error);
-    });
-  }, intervalMs);
-
-  flushInterval.unref?.();
+  if (flushWorker) return;
+  flushWorker = createBackgroundWorker({
+    run: () => visitorsService.flushBufferedVisits(),
+    intervalMs,
+    initialDelayMs: intervalMs,
+    onError: () => console.error("Visitor buffer worker failed"),
+  });
+  flushWorker.start();
 }
 
-export function stopVisitorFlushWorker() {
-  if (!flushInterval) {
-    return;
-  }
-
-  clearInterval(flushInterval);
-  flushInterval = null;
+export async function stopVisitorFlushWorker() {
+  const worker = flushWorker;
+  if (!worker) return;
+  await worker.stop();
+  flushWorker = null;
 }

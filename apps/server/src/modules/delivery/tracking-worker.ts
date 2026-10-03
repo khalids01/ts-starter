@@ -1,3 +1,5 @@
+import { env } from "@env/server";
+import { createBackgroundWorker } from "../../lib/background-worker";
 import {
   COURIER_LEASE_MS,
   withCourierDeadline,
@@ -15,6 +17,7 @@ import {
 } from "./tracking.service";
 
 type Dependencies = Readonly<{
+  shouldStop?: () => boolean;
   db: any;
   resolver: CourierCredentialResolver;
   registry: CourierProviderRegistry;
@@ -60,6 +63,7 @@ export class CourierTrackingWorker {
     );
     let processed = 0;
     for (const consignment of consignments) {
+      if (this.dependencies.shouldStop?.()) break;
       const now = this.dependencies.now?.() ?? new Date();
       const token = crypto.randomUUID();
       const leased = await this.dependencies.db.courierConnection.updateMany({
@@ -174,17 +178,24 @@ export class CourierTrackingWorker {
 }
 
 export const courierTrackingWorker = new CourierTrackingWorker({
+  shouldStop: () => backgroundWorker.stopped,
   db: prisma,
   resolver: createConfiguredCourierCredentialResolver(),
   registry: createCourierProviderRegistry(),
   tracking: courierTrackingService,
 });
 
-let timer: ReturnType<typeof setInterval> | undefined;
+const backgroundWorker = createBackgroundWorker({
+  run: () => courierTrackingWorker.runOnce(),
+  intervalMs: 60000,
+  initialDelayMs: 5000,
+});
+
 export function startCourierTrackingWorker() {
-  if (timer || process.env.E2E_MODE === "true") return;
-  const tick = () => void courierTrackingWorker.runOnce().catch(() => {});
-  timer = setInterval(tick, 60_000);
-  timer.unref?.();
-  setTimeout(tick, 5_000).unref?.();
+  if (env.E2E_MODE || !env.COURIER_WORKERS_ENABLED) return;
+  backgroundWorker.start();
+}
+
+export function stopCourierTrackingWorker() {
+  return backgroundWorker.stop();
 }

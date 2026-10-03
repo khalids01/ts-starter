@@ -1,17 +1,18 @@
+import prisma from "@db/server";
 import { cors } from "@elysiajs/cors";
 import { handleAuthRequest } from "@auth/server";
 import { env } from "@env/server";
-import { connectRedis } from "@redis/server";
+import { connectRedis, disconnectRedis } from "@redis/server";
 import { Elysia } from "elysia";
 import { app } from "./modules/app";
 import { openapi } from "@elysiajs/openapi";
 import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
-import { startVisitorFlushWorker } from "./modules/visitors/visitors.service";
+import { startVisitorFlushWorker, stopVisitorFlushWorker } from "./modules/visitors/visitors.service";
 import { securityHeadersPlugin } from "./plugins/security-headers";
 import { cookieRequestOriginPlugin } from "./plugins/cookie-request-origin";
 import { e2eRuntimeConfig } from "@config";
-import { startCourierDispatchWorker } from "./modules/delivery/dispatch-worker";
-import { startCourierTrackingWorker } from "./modules/delivery/tracking-worker";
+import { startCourierDispatchWorker, stopCourierDispatchWorker } from "./modules/delivery/dispatch-worker";
+import { startCourierTrackingWorker, stopCourierTrackingWorker } from "./modules/delivery/tracking-worker";
 
 const shouldLogRequests = env.NODE_ENV === "development";
 const port = Number.parseInt(
@@ -59,7 +60,7 @@ const server = new Elysia()
     console.log(`[Server] ${request.method} ${pathname}`);
   })
   .onBeforeHandle((context) => {
-    if (env.E2E_MODE) {
+    if (env.E2E_MODE || new URL(context.request.url).pathname === "/health/live") {
       return;
     }
     return enforceRateLimit(context as any);
@@ -74,9 +75,34 @@ const server = new Elysia()
     parse: "none",
   })
   .use(app)
+  .get("/health/live", () => ({ status: "ok" }))
   .get("/", () => "OK")
-  .listen({ port, maxRequestBodySize: 1_048_576 }, () => {
+  .listen({ port, hostname: process.env.HOST ?? "0.0.0.0", maxRequestBodySize: 1_048_576 }, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
 
 export type App = typeof server;
+
+let shuttingDown = false;
+async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  const deadline = setTimeout(() => process.exit(1), 30_000);
+  deadline.unref();
+  try {
+    await Promise.all([
+      server.server?.stop(false),
+      stopCourierDispatchWorker(), stopCourierTrackingWorker(), stopVisitorFlushWorker(),
+    ]);
+    await prisma.$disconnect();
+    await disconnectRedis();
+    clearTimeout(deadline);
+    console.log("Server shutdown complete");
+    process.exit(0);
+  } catch {
+    console.error("Server shutdown failed");
+    process.exit(1);
+  }
+}
+process.once("SIGTERM", () => void shutdown());
+process.once("SIGINT", () => void shutdown());

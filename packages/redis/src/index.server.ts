@@ -62,3 +62,11 @@ export async function deleteCache(key: string) {
 
   await redis.del(key);
 }
+
+export async function disconnectRedis() {
+  const redis = redisClient;
+  redisClient = null;
+  if (!redis) return;
+  if (redis.status === "ready") await redis.quit();
+  else redis.disconnect();
+}

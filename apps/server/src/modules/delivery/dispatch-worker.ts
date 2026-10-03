@@ -1,3 +1,5 @@
+import { env } from "@env/server";
+import { createBackgroundWorker } from "../../lib/background-worker";
 import {
   COURIER_LEASE_MS,
   withCourierDeadline,
@@ -26,6 +28,7 @@ const RETRY_DELAYS_MS = [
 const LEASE_MS = COURIER_LEASE_MS;
 
 type Dependencies = Readonly<{
+  shouldStop?: () => boolean;
   db: any;
   resolver: CourierCredentialResolver;
   registry: CourierProviderRegistry;
@@ -79,6 +82,7 @@ export class CourierDispatchWorker {
     });
     let processed = 0;
     for (const row of rows) {
+      if (this.dependencies.shouldStop?.()) break;
       const token = crypto.randomUUID();
       const connectionId = row.consignment.connectionId;
       const leased = await this.dependencies.db.$transaction(
@@ -434,20 +438,23 @@ export class CourierDispatchWorker {
 }
 
 export const courierDispatchWorker = new CourierDispatchWorker({
+  shouldStop: () => backgroundWorker.stopped,
   db: prisma,
   resolver: createConfiguredCourierCredentialResolver(),
   registry: createCourierProviderRegistry(),
 });
 
-let timer: ReturnType<typeof setInterval> | undefined;
+const backgroundWorker = createBackgroundWorker({
+  run: () => courierDispatchWorker.runOnce(),
+  intervalMs: 15000,
+  initialDelayMs: 0,
+});
 
 export function startCourierDispatchWorker() {
-  if (timer || process.env.E2E_MODE === "true") return;
-  const tick = () =>
-    void courierDispatchWorker.runOnce().catch(() => {
-      // Operational details remain in the durable operation record; avoid leaking payloads.
-    });
-  timer = setInterval(tick, 15_000);
-  timer.unref?.();
-  tick();
+  if (env.E2E_MODE || !env.COURIER_WORKERS_ENABLED) return;
+  backgroundWorker.start();
+}
+
+export function stopCourierDispatchWorker() {
+  return backgroundWorker.stop();
 }
