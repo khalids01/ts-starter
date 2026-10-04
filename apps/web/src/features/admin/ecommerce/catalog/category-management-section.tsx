@@ -66,13 +66,15 @@ export function CategoryManagementSection() {
     onError: (error) => toast.error(readError(error, "Failed to save category")),
   });
 
-  const disableCategory = useMutation({
-    mutationFn: (id: string) => ecommerceApi.catalog.disableCategory(id),
-    onSuccess: () => {
-      toast.success("Category disabled");
+  const toggleCategory = useMutation({
+    mutationFn: (category: Category) => category.isActive
+      ? ecommerceApi.catalog.disableCategory(category.id)
+      : ecommerceApi.catalog.updateCategory(category.id, { isActive: true }),
+    onSuccess: (_data, category) => {
+      toast.success(category.isActive ? "Category disabled" : "Category enabled");
       invalidateCatalog();
     },
-    onError: (error) => toast.error(readError(error, "Failed to disable category")),
+    onError: (error) => toast.error(readError(error, "Failed to update category status")),
   });
 
   return (
@@ -90,7 +92,7 @@ export function CategoryManagementSection() {
         loading={categoriesQuery.isLoading}
         canManage={canManageCatalog}
         onEdit={(category) => setCategoryDialog(categoryDraft(category))}
-        onDisable={(id) => disableCategory.mutate(id)}
+        onToggleActive={(category) => toggleCategory.mutate(category)}
         onOpenTemplate={setTemplateCategoryId}
       />
       <CategoryDialog

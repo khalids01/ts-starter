@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Settings2, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Settings2, Power } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,7 @@ export function CategoriesTable(props: {
   loading: boolean;
   canManage: boolean;
   onEdit: (category: Category) => void;
-  onDisable: (id: string) => void;
+  onToggleActive: (category: Category) => void;
   onOpenTemplate: (id: string) => void;
 }) {
   return (
@@ -68,7 +68,7 @@ export function CategoriesTable(props: {
                     category={category}
                     canManage={props.canManage}
                     onEdit={props.onEdit}
-                    onDisable={props.onDisable}
+                    onToggleActive={props.onToggleActive}
                     onOpenTemplate={props.onOpenTemplate}
                   />
                 </TableCell>
@@ -85,7 +85,7 @@ function CategoryActionsMenu(props: {
   category: Category;
   canManage: boolean;
   onEdit: (category: Category) => void;
-  onDisable: (id: string) => void;
+  onToggleActive: (category: Category) => void;
   onOpenTemplate: (id: string) => void;
 }) {
   return (
@@ -116,11 +116,11 @@ function CategoryActionsMenu(props: {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-destructive"
-              onClick={() => props.onDisable(props.category.id)}
+              className={props.category.isActive ? "text-destructive" : undefined}
+              onClick={() => props.onToggleActive(props.category)}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Disable
+              <Power className="mr-2 h-4 w-4" />
+              {props.category.isActive ? "Disable" : "Enable"}
             </DropdownMenuItem>
           </>
         ) : null}
