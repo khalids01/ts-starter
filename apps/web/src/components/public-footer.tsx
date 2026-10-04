@@ -27,6 +27,8 @@ export function PublicShopFooter() {
         <FooterList title="Shop">
           <Link to="/shop">All products</Link>
           <Link to="/about">About us</Link>
+          <Link to="/contact">Contact</Link>
+          <Link to="/shipping">Delivery information</Link>
           <Link to="/saved">Saved items</Link>
           <Link to="/track-order">Track order</Link>
         </FooterList>
@@ -69,10 +71,13 @@ export function PublicShopFooter() {
             © {new Date().getFullYear()} {brandConfig.name}. All rights
             reserved.
           </p>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap gap-5">
             <Link to="/track-order">Orders</Link>
             <Link to="/cart">Cart</Link>
             <Link to="/account">Account</Link>
+            {brandConfig.policies?.terms ? <Link to="/terms">Terms</Link> : null}
+            {brandConfig.policies?.privacy ? <Link to="/privacy">Privacy</Link> : null}
+            {brandConfig.policies?.returns ? <Link to="/returns">Returns</Link> : null}
           </div>
         </div>
       </div>

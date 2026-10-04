@@ -41,23 +41,24 @@ export function TrackOrderPage() {
 
   return (
     <PublicShopShell footer={<PublicShopFooter />}>
-      <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 md:px-6">
+      <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-8 md:px-6 md:py-12">
         <section className="grid gap-2">
           <Badge variant="secondary" className="w-fit">
             Track order
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
             Check your delivery status
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
             Sign in with the account that placed the order, then enter its order number.
           </p>
+          <Link to="/orders" className="w-fit text-sm underline underline-offset-4">Open my orders</Link>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
           <form
             onSubmit={submit}
-            className="h-fit space-y-4 rounded-md border bg-card p-4"
+            className="h-fit space-y-4 rounded-2xl border bg-card p-4"
           >
             <div className="space-y-1.5">
               <Label htmlFor="order-number">Order number</Label>
@@ -80,17 +81,17 @@ export function TrackOrderPage() {
             </Button>
           </form>
 
-          <div className="rounded-md border bg-card p-4">
+          <div className="rounded-2xl border bg-card p-4">
             {lookup.isIdle ? (
               <EmptyTrackState />
             ) : lookup.isError ? (
-              <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
                 Order not found. Check the order number and sign in with the purchasing account.
               </div>
             ) : lookup.data ? (
               <OrderDetails order={lookup.data} onRefresh={() => lookup.mutate()} />
             ) : (
-              <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
                 Loading order...
               </div>
             )}
@@ -103,7 +104,7 @@ export function TrackOrderPage() {
 
 function EmptyTrackState() {
   return (
-    <div className="rounded-md border border-dashed p-8 text-center">
+    <div className="rounded-2xl border border-dashed p-8 text-center">
       <PackageSearch className="mx-auto size-10 text-muted-foreground" />
       <h2 className="mt-4 font-medium">Find an order</h2>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -119,7 +120,7 @@ function EmptyTrackState() {
   );
 }
 
-function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
+export function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
   return (
     <div className="grid gap-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
@@ -138,7 +139,7 @@ function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
       </div>
 
       {props.order.carrier || props.order.trackingNumber ? (
-        <div className="grid gap-2 rounded-md border bg-background p-4 text-sm">
+        <div className="grid gap-2 rounded-2xl border bg-background p-4 text-sm">
           <p className="font-medium">Delivery tracking</p>
           <TrackingRow label="Carrier" value={props.order.carrier ?? "—"} />
           <TrackingRow
@@ -156,20 +157,22 @@ function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
         </div>
       ) : null}
 
+      {props.order.foodBooking ? <div className="rounded-2xl bg-muted/40 p-4 text-sm"><p className="font-medium">Fresh-food delivery window</p><p className="mt-2">{props.order.foodBooking.slot.label} · {formatDate(props.order.foodBooking.slot.startsAt)} – {formatDate(props.order.foodBooking.slot.endsAt)}</p></div> : null}
+      {props.order.shippingAddress ? <section className="rounded-2xl border p-4"><h3 className="font-medium">Delivery address</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted-foreground">{[props.order.shippingAddress.fullName, props.order.shippingAddress.line1, props.order.shippingAddress.line2, [props.order.shippingAddress.city, props.order.shippingAddress.postalCode].filter(Boolean).join(" "), props.order.shippingAddress.country].filter(Boolean).join("\n")}</p></section> : null}
       <Separator />
 
       <div className="grid gap-3">
         {props.order.lineItems.map((item) => (
           <article
             key={item.id}
-            className="grid grid-cols-[64px_1fr_auto] gap-3 rounded-md border p-3"
+            className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 rounded-2xl border p-3 sm:grid-cols-[64px_minmax(0,1fr)_auto]"
           >
-            <div className="aspect-square overflow-hidden rounded-md bg-muted">
+            <div className="aspect-square overflow-hidden rounded-2xl bg-muted">
               {item.imageUrl ? (
                 <Img
                   src={item.imageUrl}
                   alt=""
-                  className="h-full w-full object-cover"
+                  className="h-full w-full"
                 />
               ) : (
                 <div className="grid h-full place-items-center text-xs text-muted-foreground">
@@ -183,15 +186,16 @@ function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
                 {item.variantName ?? item.sku ?? "Product"} x {item.quantity}
               </p>
             </div>
-            <div className="col-span-full">{(item.unitAllocations ?? []).map(unit => <CustomerWarranty key={unit.id} unit={unit} days={item.warrantyDays ?? 0} delivered={Boolean(props.order.deliveredAt)} onRefresh={props.onRefresh} />)}</div>
-            <p className="text-sm font-semibold">
+            <p className="col-start-2 text-sm font-semibold sm:col-start-auto">
               {formatMoney(item.totalAmount, props.order.currency)}
             </p>
+            <div className="col-span-full">{(item.unitAllocations ?? []).map(unit => <CustomerWarranty key={unit.id} unit={unit} days={item.warrantyDays ?? 0} delivered={Boolean(props.order.deliveredAt)} onRefresh={props.onRefresh} />)}</div>
           </article>
         ))}
       </div>
 
-      <div className="ml-auto grid w-full gap-2 rounded-md border bg-background p-4 text-sm sm:max-w-sm">
+      {props.order.statusEvents?.length ? <section><h3 className="mb-4 font-medium">Order history</h3><ol className="space-y-4 border-l pl-5">{[...props.order.statusEvents].reverse().map((event) => <li key={event.id}><p className="text-sm capitalize">{event.type.replace(/_/g, " ")}: {event.newValue.replace(/_/g, " ")}</p><p className="mt-1 text-xs text-muted-foreground">{formatDate(event.createdAt)}</p></li>)}</ol></section> : null}
+      <div className="ml-auto grid w-full gap-2 rounded-2xl border bg-background p-4 text-sm sm:max-w-sm">
         <SummaryRow
           label="Subtotal"
           value={props.order.subtotalAmount}
@@ -207,6 +211,7 @@ function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
           value={props.order.taxAmount}
           currency={props.order.currency}
         />
+        {Number(props.order.discountAmount) > 0 ? <SummaryRow label="Discount" value={`-${props.order.discountAmount}`} currency={props.order.currency} /> : null}
         <Separator />
         <SummaryRow
           label="Total"
@@ -214,6 +219,7 @@ function OrderDetails(props: { order: ShopOrder; onRefresh: () => void }) {
           currency={props.order.currency}
           strong
         />
+        {props.order.money && !props.order.money.error ? <><SummaryRow label="Received" value={props.order.money.received!} currency={props.order.currency} /><SummaryRow label="Refunded" value={props.order.money.refunded!} currency={props.order.currency} /><SummaryRow label="Remaining to pay" value={props.order.money.outstanding!} currency={props.order.currency} /></> : <p className="mt-2 text-xs leading-5 text-muted-foreground">Payment information needs store review. A remaining balance cannot be confirmed yet.</p>}
       </div>
     </div>
   );

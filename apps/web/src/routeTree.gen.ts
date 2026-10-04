@@ -32,8 +32,13 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicAboutRouteImport } from './routes/_public/about'
 import { Route as PublicCartRouteImport } from './routes/_public/cart'
 import { Route as PublicCheckoutRouteImport } from './routes/_public/checkout'
+import { Route as PublicContactRouteImport } from './routes/_public/contact'
+import { Route as PublicPrivacyRouteImport } from './routes/_public/privacy'
+import { Route as PublicReturnsRouteImport } from './routes/_public/returns'
 import { Route as PublicSavedRouteImport } from './routes/_public/saved'
+import { Route as PublicShippingRouteImport } from './routes/_public/shipping'
 import { Route as PublicShopRouteImport } from './routes/_public/shop'
+import { Route as PublicTermsRouteImport } from './routes/_public/terms'
 import { Route as PublicTrackOrderRouteImport } from './routes/_public/track-order'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
@@ -55,6 +60,8 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminVisitorsRouteImport } from './routes/admin/visitors'
 import { Route as AdminWebhooksRouteImport } from './routes/admin/webhooks'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
+import { Route as ProtectedOrdersIndexRouteImport } from './routes/_protected/orders/index'
+import { Route as ProtectedOrdersOrderNumberRouteImport } from './routes/_protected/orders/$orderNumber'
 import { Route as PublicCheckoutIndexRouteImport } from './routes/_public/checkout/index'
 import { Route as PublicShopIndexRouteImport } from './routes/_public/shop/index'
 import { Route as AdminCouriersIndexRouteImport } from './routes/admin/couriers/index'
@@ -187,14 +194,39 @@ const PublicCheckoutRoute = PublicCheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicContactRoute = PublicContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicReturnsRoute = PublicReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicSavedRoute = PublicSavedRouteImport.update({
   id: '/saved',
   path: '/saved',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicShippingRoute = PublicShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicShopRoute = PublicShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => PublicRoute,
 } as any)
 const PublicTrackOrderRoute = PublicTrackOrderRouteImport.update({
@@ -302,6 +334,17 @@ const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
   path: '/payment/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedOrdersIndexRoute = ProtectedOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedOrdersOrderNumberRoute =
+  ProtectedOrdersOrderNumberRouteImport.update({
+    id: '/orders/$orderNumber',
+    path: '/orders/$orderNumber',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const PublicCheckoutIndexRoute = PublicCheckoutIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -424,8 +467,13 @@ export interface FileRoutesByFullPath {
   '/about': typeof PublicAboutRoute
   '/cart': typeof PublicCartRoute
   '/checkout': typeof PublicCheckoutRouteWithChildren
+  '/contact': typeof PublicContactRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/returns': typeof PublicReturnsRoute
   '/saved': typeof PublicSavedRoute
+  '/shipping': typeof PublicShippingRoute
   '/shop': typeof PublicShopRouteWithChildren
+  '/terms': typeof PublicTermsRoute
   '/track-order': typeof PublicTrackOrderRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
@@ -447,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin/': typeof AdminIndexRoute
+  '/orders/$orderNumber': typeof ProtectedOrdersOrderNumberRoute
   '/admin/couriers/assignment-rules': typeof AdminCouriersAssignmentRulesRoute
   '/admin/couriers/cod-payouts': typeof AdminCouriersCodPayoutsRoute
   '/admin/couriers/connections': typeof AdminCouriersConnectionsRoute
@@ -458,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
+  '/orders/': typeof ProtectedOrdersIndexRoute
   '/checkout/': typeof PublicCheckoutIndexRoute
   '/shop/': typeof PublicShopIndexRoute
   '/admin/couriers/': typeof AdminCouriersIndexRoute
@@ -486,7 +536,12 @@ export interface FileRoutesByTo {
   '/settings': typeof ProtectedSettingsRoute
   '/about': typeof PublicAboutRoute
   '/cart': typeof PublicCartRoute
+  '/contact': typeof PublicContactRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/returns': typeof PublicReturnsRoute
   '/saved': typeof PublicSavedRoute
+  '/shipping': typeof PublicShippingRoute
+  '/terms': typeof PublicTermsRoute
   '/track-order': typeof PublicTrackOrderRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
@@ -504,6 +559,7 @@ export interface FileRoutesByTo {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/admin': typeof AdminIndexRoute
+  '/orders/$orderNumber': typeof ProtectedOrdersOrderNumberRoute
   '/admin/couriers/assignment-rules': typeof AdminCouriersAssignmentRulesRoute
   '/admin/couriers/cod-payouts': typeof AdminCouriersCodPayoutsRoute
   '/admin/couriers/connections': typeof AdminCouriersConnectionsRoute
@@ -515,6 +571,7 @@ export interface FileRoutesByTo {
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
+  '/orders': typeof ProtectedOrdersIndexRoute
   '/checkout': typeof PublicCheckoutIndexRoute
   '/shop': typeof PublicShopIndexRoute
   '/admin/couriers': typeof AdminCouriersIndexRoute
@@ -548,8 +605,13 @@ export interface FileRoutesById {
   '/_public/about': typeof PublicAboutRoute
   '/_public/cart': typeof PublicCartRoute
   '/_public/checkout': typeof PublicCheckoutRouteWithChildren
+  '/_public/contact': typeof PublicContactRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
+  '/_public/returns': typeof PublicReturnsRoute
   '/_public/saved': typeof PublicSavedRoute
+  '/_public/shipping': typeof PublicShippingRoute
   '/_public/shop': typeof PublicShopRouteWithChildren
+  '/_public/terms': typeof PublicTermsRoute
   '/_public/track-order': typeof PublicTrackOrderRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/catalog': typeof AdminCatalogRoute
@@ -572,6 +634,7 @@ export interface FileRoutesById {
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/_protected/orders/$orderNumber': typeof ProtectedOrdersOrderNumberRoute
   '/admin/couriers/assignment-rules': typeof AdminCouriersAssignmentRulesRoute
   '/admin/couriers/cod-payouts': typeof AdminCouriersCodPayoutsRoute
   '/admin/couriers/connections': typeof AdminCouriersConnectionsRoute
@@ -583,6 +646,7 @@ export interface FileRoutesById {
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/roles/$roleId': typeof AdminRolesRoleIdRoute
+  '/_protected/orders/': typeof ProtectedOrdersIndexRoute
   '/_public/checkout/': typeof PublicCheckoutIndexRoute
   '/_public/shop/': typeof PublicShopIndexRoute
   '/admin/couriers/': typeof AdminCouriersIndexRoute
@@ -615,8 +679,13 @@ export interface FileRouteTypes {
     | '/about'
     | '/cart'
     | '/checkout'
+    | '/contact'
+    | '/privacy'
+    | '/returns'
     | '/saved'
+    | '/shipping'
     | '/shop'
+    | '/terms'
     | '/track-order'
     | '/admin/activity'
     | '/admin/catalog'
@@ -638,6 +707,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/payment/success'
     | '/admin/'
+    | '/orders/$orderNumber'
     | '/admin/couriers/assignment-rules'
     | '/admin/couriers/cod-payouts'
     | '/admin/couriers/connections'
@@ -649,6 +719,7 @@ export interface FileRouteTypes {
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
+    | '/orders/'
     | '/checkout/'
     | '/shop/'
     | '/admin/couriers/'
@@ -677,7 +748,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/about'
     | '/cart'
+    | '/contact'
+    | '/privacy'
+    | '/returns'
     | '/saved'
+    | '/shipping'
+    | '/terms'
     | '/track-order'
     | '/admin/activity'
     | '/admin/catalog'
@@ -695,6 +771,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/payment/success'
     | '/admin'
+    | '/orders/$orderNumber'
     | '/admin/couriers/assignment-rules'
     | '/admin/couriers/cod-payouts'
     | '/admin/couriers/connections'
@@ -706,6 +783,7 @@ export interface FileRouteTypes {
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
+    | '/orders'
     | '/checkout'
     | '/shop'
     | '/admin/couriers'
@@ -738,8 +816,13 @@ export interface FileRouteTypes {
     | '/_public/about'
     | '/_public/cart'
     | '/_public/checkout'
+    | '/_public/contact'
+    | '/_public/privacy'
+    | '/_public/returns'
     | '/_public/saved'
+    | '/_public/shipping'
     | '/_public/shop'
+    | '/_public/terms'
     | '/_public/track-order'
     | '/admin/activity'
     | '/admin/catalog'
@@ -762,6 +845,7 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/_public/'
     | '/admin/'
+    | '/_protected/orders/$orderNumber'
     | '/admin/couriers/assignment-rules'
     | '/admin/couriers/cod-payouts'
     | '/admin/couriers/connections'
@@ -773,6 +857,7 @@ export interface FileRouteTypes {
     | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/roles/$roleId'
+    | '/_protected/orders/'
     | '/_public/checkout/'
     | '/_public/shop/'
     | '/admin/couriers/'
@@ -959,6 +1044,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicCheckoutRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/contact': {
+      id: '/_public/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicContactRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/returns': {
+      id: '/_public/returns'
+      path: '/returns'
+      fullPath: '/returns'
+      preLoaderRoute: typeof PublicReturnsRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/saved': {
       id: '/_public/saved'
       path: '/saved'
@@ -966,11 +1072,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicSavedRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/shipping': {
+      id: '/_public/shipping'
+      path: '/shipping'
+      fullPath: '/shipping'
+      preLoaderRoute: typeof PublicShippingRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/shop': {
       id: '/_public/shop'
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof PublicShopRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/terms': {
+      id: '/_public/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof PublicTermsRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_public/track-order': {
@@ -1119,6 +1239,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/payment/success'
       preLoaderRoute: typeof PaymentSuccessRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_protected/orders/': {
+      id: '/_protected/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof ProtectedOrdersIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/orders/$orderNumber': {
+      id: '/_protected/orders/$orderNumber'
+      path: '/orders/$orderNumber'
+      fullPath: '/orders/$orderNumber'
+      preLoaderRoute: typeof ProtectedOrdersOrderNumberRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/_public/checkout/': {
       id: '/_public/checkout/'
@@ -1281,6 +1415,8 @@ interface ProtectedRouteChildren {
   ProtectedBillingRoute: typeof ProtectedBillingRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedSettingsRoute: typeof ProtectedSettingsRoute
+  ProtectedOrdersOrderNumberRoute: typeof ProtectedOrdersOrderNumberRoute
+  ProtectedOrdersIndexRoute: typeof ProtectedOrdersIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
@@ -1288,6 +1424,8 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedBillingRoute: ProtectedBillingRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
   ProtectedSettingsRoute: ProtectedSettingsRoute,
+  ProtectedOrdersOrderNumberRoute: ProtectedOrdersOrderNumberRoute,
+  ProtectedOrdersIndexRoute: ProtectedOrdersIndexRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
@@ -1326,8 +1464,13 @@ interface PublicRouteChildren {
   PublicAboutRoute: typeof PublicAboutRoute
   PublicCartRoute: typeof PublicCartRoute
   PublicCheckoutRoute: typeof PublicCheckoutRouteWithChildren
+  PublicContactRoute: typeof PublicContactRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
+  PublicReturnsRoute: typeof PublicReturnsRoute
   PublicSavedRoute: typeof PublicSavedRoute
+  PublicShippingRoute: typeof PublicShippingRoute
   PublicShopRoute: typeof PublicShopRouteWithChildren
+  PublicTermsRoute: typeof PublicTermsRoute
   PublicTrackOrderRoute: typeof PublicTrackOrderRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
@@ -1336,8 +1479,13 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicAboutRoute: PublicAboutRoute,
   PublicCartRoute: PublicCartRoute,
   PublicCheckoutRoute: PublicCheckoutRouteWithChildren,
+  PublicContactRoute: PublicContactRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
+  PublicReturnsRoute: PublicReturnsRoute,
   PublicSavedRoute: PublicSavedRoute,
+  PublicShippingRoute: PublicShippingRoute,
   PublicShopRoute: PublicShopRouteWithChildren,
+  PublicTermsRoute: PublicTermsRoute,
   PublicTrackOrderRoute: PublicTrackOrderRoute,
   PublicIndexRoute: PublicIndexRoute,
 }

@@ -1,3 +1,4 @@
+import { safeReturnPath } from "./safe-return-path";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ import {
 import { SocialAuthButtons } from "./social-auth-buttons";
 
 type SignInFormProps = {
+  returnTo?: string;
   error?: string;
   errorDescription?: string;
   verified?: boolean;
@@ -45,6 +47,7 @@ const methodLabels: Record<string, string> = {
 };
 
 export default function SignInForm({
+  returnTo,
   error,
   errorDescription,
   verified,
@@ -86,7 +89,7 @@ export default function SignInForm({
       await authClient.signIn.email({
         email: parsedEmail.data,
         password,
-        callbackURL: "/dashboard",
+        callbackURL: safeReturnPath(returnTo),
       });
     if (!signInError) {
       rememberAuthMethod("password");
@@ -97,7 +100,7 @@ export default function SignInForm({
       ) {
         return;
       }
-      window.location.assign("/dashboard");
+      window.location.assign(safeReturnPath(returnTo));
       return;
     }
 
@@ -133,7 +136,7 @@ export default function SignInForm({
     setIsMagicPending(true);
     const { error: magicError } = await client.auth["magic-link"].login.post({
       email: parsedEmail.data,
-      callbackURL: `${window.location.origin}/auth-complete?method=magic-link`,
+      callbackURL: `${window.location.origin}/auth-complete?method=magic-link&next=${encodeURIComponent(safeReturnPath(returnTo))}`,
     });
     setIsMagicPending(false);
     if (magicError)
@@ -150,7 +153,7 @@ export default function SignInForm({
     settings.discordSignInEnabled;
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md space-y-6 p-6">
+    <div className="mx-auto my-10 w-full max-w-md space-y-6 rounded-3xl border bg-card p-6 md:my-16 md:p-8">
       <h1 className="text-center text-3xl font-bold">Welcome Back</h1>
       {verified ? (
         <div
@@ -224,7 +227,7 @@ export default function SignInForm({
                 <Label htmlFor="password">Password</Label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-indigo-600 hover:text-indigo-800"
+                  className="text-xs text-primary underline-offset-4 hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -307,7 +310,7 @@ export default function SignInForm({
       <div className="text-center">
         <Link
           to="/signup"
-          className="text-sm text-indigo-600 hover:text-indigo-800"
+          className="text-sm text-primary underline-offset-4 hover:underline"
         >
           Need an account? Sign Up
         </Link>

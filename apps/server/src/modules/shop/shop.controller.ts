@@ -13,6 +13,7 @@ import {
   SlugParamDto,
 } from "./dto/product.dto";
 import {
+  CustomerOrdersQueryDto,
   CheckoutDto,
   OrderLookupQueryDto,
   OrderNumberParamDto,
@@ -116,15 +117,16 @@ export const shopController = new Elysia({
   )
   .get(
     "/orders",
-    async ({ userId, set }) => {
+    async ({ userId, query, set }) => {
       try {
-        const result = await orderService.listCustomerOrders(requireUserId(userId));
+        const result = await orderService.listCustomerOrders(requireUserId(userId), query);
         return result;
       } catch (error) {
         return handleShopError(error, set);
       }
     },
     {
+      query: CustomerOrdersQueryDto,
       detail: { summary: "List current customer orders" },
     },
   )

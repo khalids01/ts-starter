@@ -98,9 +98,9 @@ export function CartSheet() {
           <SheetFooter className="border-t">
             <div className="grid gap-2 text-sm">
               <SummaryRow label="Subtotal" value={cart.subtotalAmount} currency={cart.currency} />
-              <SummaryRow label="Shipping" value={cart.shippingAmount} currency={cart.currency} />
+              <p className="text-xs text-muted-foreground">Delivery fees and stock are confirmed at checkout.</p>
               <Separator />
-              <SummaryRow label="Total" value={cart.totalAmount} currency={cart.currency} strong />
+              <SummaryRow label="Item subtotal" value={cart.subtotalAmount} currency={cart.currency} strong />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Link
@@ -131,15 +131,15 @@ function CartSheetItem(props: {
   const imageUrl = props.item.variant.imageUrls?.[0] || props.item.product.coverImageUrl;
 
   return (
-    <article className="grid grid-cols-[72px_1fr] gap-3 rounded-md border bg-card p-3">
+    <article className="grid grid-cols-[72px_1fr] gap-3 rounded-2xl border bg-card p-3">
       <Link
         to="/shop/products/$slug"
         params={{ slug: props.item.product.slug }}
-        className="aspect-square overflow-hidden rounded-md bg-muted"
+        className="aspect-square overflow-hidden rounded-2xl bg-muted"
         onClick={props.onNavigate}
       >
         {imageUrl ? (
-          <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <Img src={imageUrl} alt={props.item.product.name} objectFit="contain" className="h-full w-full" />
         ) : (
           <div className="grid h-full place-items-center text-xs text-muted-foreground">
             No image
@@ -206,7 +206,7 @@ function CartSheetItem(props: {
 
 function CartState(props: { children: ReactNode }) {
   return (
-    <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+    <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
       {props.children}
     </div>
   );

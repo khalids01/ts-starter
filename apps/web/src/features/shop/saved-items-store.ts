@@ -25,7 +25,7 @@ type SavedItemsState = {
 };
 
 export function savedProductFromProduct(product: ShopProduct): SavedProduct {
-  const variant = product.variants[0];
+  const variant = product.variants.find((item) => item.isActive && item.isDefault) ?? product.variants.find((item) => item.isActive);
   return {
     id: product.id,
     slug: product.slug,

@@ -52,3 +52,5 @@ export const CheckoutDto = t.Object({
 
 export type CheckoutInput = typeof CheckoutDto.static;
 export type OrderLookupQuery = typeof OrderLookupQueryDto.static;
+
+export const CustomerOrdersQueryDto = t.Object({ page: t.Optional(t.Integer({ minimum: 1, maximum: 100000 })), limit: t.Optional(t.Integer({ minimum: 1, maximum: 50 })) });

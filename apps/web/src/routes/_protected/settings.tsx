@@ -1,3 +1,5 @@
+import { useTheme } from "next-themes";
+import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
@@ -63,8 +65,9 @@ function formatDate(value: string | Date) {
 
 function SettingsPage() {
   const queryClient = useQueryClient();
+  const { theme, setTheme } = useTheme();
 
-  const { data: devices, isLoading: devicesLoading } = useQuery({
+  const { data: devices, isLoading: devicesLoading, isError: devicesError } = useQuery({
     queryKey: queryKeys.session.devices(),
     queryFn: async () => {
       const { data, error } = await client.session.devices.get();
@@ -140,6 +143,8 @@ function SettingsPage() {
         </p>
       </div>
 
+      <Card><CardHeader><CardTitle>Appearance</CardTitle><CardDescription>Choose how the store looks on this device.</CardDescription></CardHeader><CardContent className="flex flex-wrap gap-3">{["light", "dark", "system"].map((value) => <Button key={value} variant={theme === value ? "default" : "outline"} aria-pressed={theme === value} className="capitalize" onClick={() => setTheme(value)}>{value}</Button>)}</CardContent></Card>
+      <Card><CardHeader><CardTitle>Sign-in & security</CardTitle><CardDescription>Manage your password, connected accounts and two-factor authentication from your profile.</CardDescription></CardHeader><CardContent><Link to="/account" className="underline underline-offset-4">Open profile security</Link></CardContent></Card>
       <Card>
         <CardHeader>
           <CardTitle>Logged-in Devices</CardTitle>
@@ -150,7 +155,7 @@ function SettingsPage() {
             <div className="py-6 text-sm text-muted-foreground">
               Loading devices...
             </div>
-          ) : devices?.length === 0 ? (
+          ) : devicesError ? <p role="alert" className="text-sm text-destructive">Could not load your devices. Please reload and try again.</p> : devices?.length === 0 ? (
             <div className="py-6 text-sm text-muted-foreground">
               No active devices found.
             </div>
@@ -213,7 +218,7 @@ function SettingsPage() {
         <CardHeader>
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
           <CardDescription>
-            Permanently delete your account and all of your content.
+            Permanently delete your sign-in account. Review this action before continuing.
           </CardDescription>
         </CardHeader>
         <CardContent>

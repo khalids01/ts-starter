@@ -465,21 +465,15 @@ export const orderService = {
     };
   },
 
-  async listCustomerOrders(userId: string) {
-    const items = await prisma.order.findMany({
-      where: { userId: userId },
-      include: orderInclude(),
-      orderBy: [{ placedAt: "desc" }, { createdAt: "desc" }],
-      take: 20,
-    });
-
-    return {
-      items: items.map(mapOrder),
-      total: items.length,
-      pages: 1,
-      page: 1,
-      limit: 20,
-    };
+  async listCustomerOrders(userId: string, query: { page?: number; limit?: number } = {}) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const where = { userId };
+    const [items, total] = await prisma.$transaction([
+      prisma.order.findMany({ where, include: orderInclude(), orderBy: [{ placedAt: "desc" }, { createdAt: "desc" }, { id: "desc" }], skip: (page - 1) * limit, take: limit }),
+      prisma.order.count({ where }),
+    ]);
+    return { items: items.map(mapOrder), total, pages: Math.max(1, Math.ceil(total / limit)), page, limit };
   },
 
   async getCustomerOrder(

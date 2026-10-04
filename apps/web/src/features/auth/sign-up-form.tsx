@@ -126,7 +126,7 @@ export default function SignUpForm({
     settings.discordSignUpEnabled;
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md space-y-6 p-6">
+    <div className="mx-auto my-10 w-full max-w-md space-y-6 rounded-3xl border bg-card p-6 md:my-16 md:p-8">
       <h1 className="text-center text-3xl font-bold">Create Account</h1>
       {error ? (
         <div
@@ -308,7 +308,7 @@ export default function SignUpForm({
       <div className="text-center">
         <Link
           to="/login"
-          className="text-sm text-indigo-600 hover:text-indigo-800"
+          className="text-sm text-primary underline-offset-4 hover:underline"
         >
           Already have an account? Sign In
         </Link>

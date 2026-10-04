@@ -126,7 +126,7 @@ export type ShopCartItem = {
   unitPrice: string;
   lineTotal: string;
   variant: ShopVariant;
-  product: Pick<ShopProduct, "id" | "name" | "slug" | "coverImageUrl" | "category" | "brand">;
+  product: Pick<ShopProduct, "id" | "name" | "slug" | "coverImageUrl" | "category" | "brand" | "fulfillmentKind">;
 };
 
 export type ShopCart = {
@@ -169,6 +169,9 @@ export type CheckoutResult = {
 };
 
 export type ShopOrder = {
+  money?: { received: string | null; refunded: string | null; outstanding: string | null; netReceived: string | null; error: string | null };
+  shippingAddress?: { fullName?: string; line1: string; line2?: string | null; city?: string | null; state?: string | null; postalCode?: string | null; country?: string | null } | null;
+  statusEvents?: { id: string; type: string; newValue: string; createdAt: string }[];
   foodBooking?: { state: string; slot: { label: string; startsAt: string; endsAt: string } } | null;
   id: string;
   orderNumber: string;

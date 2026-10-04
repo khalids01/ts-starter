@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 
 mock.restore();
 
@@ -31,6 +32,7 @@ const orderCreateMock = mock(async () => ({
 }));
 const orderFindUniqueMock = mock(async () => null as any);
 const orderFindManyMock = mock(async () => []);
+const orderCountMock = mock(async () => 23);
 const shippingRateFindFirstMock = mock(async () => shippingRateRow());
 const shippingRateFindManyMock = mock(async () => [shippingRateRow()]);
 const inventoryStockFindManyMock = mock(async () => [stockRow()]);
@@ -45,9 +47,10 @@ const storeSettingsFindUniqueMock = mock(async () => null as any);
 const ecommerceCustomerFindUniqueMock = mock(async () => null as any);
 const ecommerceCustomerCreateMock = mock(async (args: any) => ({ id: "customer-1", userId: args.data.userId, ...args.data }));
 const ecommerceCustomerUpdateMock = mock(async (args: any) => ({ id: args.where.id, ...args.data }));
-const transactionMock = mock(async (callback: any) => callback(prismaMock));
+const transactionMock = mock(async (operation: any) => Array.isArray(operation) ? Promise.all(operation) : operation(prismaMock));
 
 const prismaMock = {
+  $queryRaw: mock(async () => []),
   $transaction: transactionMock,
   product: {
     count: productCountMock,
@@ -67,6 +70,7 @@ const prismaMock = {
   order: {
     findUnique: orderFindUniqueMock,
     findMany: orderFindManyMock,
+    count: orderCountMock,
     create: orderCreateMock,
   },
   shippingRate: {
@@ -104,6 +108,7 @@ const prismaMock = {
 
 mock.module("@db/server", () => ({
   default: prismaMock,
+  Prisma,
 }));
 
 function productRow(overrides: Record<string, any> = {}) {
@@ -302,7 +307,7 @@ beforeEach(() => {
   discountCodeFindUniqueMock.mockResolvedValue(null);
   discountCodeUpdateManyMock.mockResolvedValue({ count: 1 });
   discountRedemptionCountMock.mockResolvedValue(0);
-  transactionMock.mockImplementation(async (callback: any) => callback(prismaMock));
+  transactionMock.mockImplementation(async (operation: any) => Array.isArray(operation) ? Promise.all(operation) : operation(prismaMock));
 });
 
 afterEach(() => {
@@ -389,6 +394,7 @@ describe("shop service", () => {
 
   it("lists common public filters without category attributes by default", async () => {
     const { productService } = await import("../src/modules/shop/services/product.service.ts");
+    prismaMock.$queryRaw.mockResolvedValueOnce([{ min: "100", max: "100", currency: "BDT", currencies: 1, inStock: 1, outOfStock: 0, brands: [{ id: "brand-1", name: "Acme", slug: "acme", logoUrl: null, productCount: 1 }] }] as any);
 
     productFindManyMock.mockResolvedValueOnce([
       productRow({
@@ -757,4 +763,13 @@ it("fresh checkout requires a slot and snapshots policy onto its order item", as
   await expect(orderService.checkout("user-1", { items: [{ variantId: "variant-1", quantity: 1 }], customerName: "Customer", customerEmail: "customer@example.test", shippingAddress: { line1: "House 1", postalCode: "1207" } })).rejects.toThrow("Choose a delivery slot");
   expect(stockReservationCreateMock).not.toHaveBeenCalled();
   expect(orderCreateMock.mock.calls[0]?.[0].data.lineItems.create[0]).toMatchObject({ fulfillmentKind: "fresh_food", serialTracking: "none", warrantyDays: 0 });
+});
+
+
+it("paginates customer orders and counts only the same owner's records", async () => {
+  const { orderService } = await import("../src/modules/shop/services/order.service.ts");
+  const result = await orderService.listCustomerOrders("customer-owned", { page: 2, limit: 10 });
+  expect(orderFindManyMock).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "customer-owned" }, skip: 10, take: 10, orderBy: [{ placedAt: "desc" }, { createdAt: "desc" }, { id: "desc" }] }));
+  expect(orderCountMock).toHaveBeenCalledWith({ where: { userId: "customer-owned" } });
+  expect(result).toMatchObject({ total: 23, pages: 3, page: 2, limit: 10 });
 });

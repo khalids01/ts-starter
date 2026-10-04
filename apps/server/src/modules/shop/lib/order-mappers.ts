@@ -1,3 +1,4 @@
+import { paymentSummary } from "../../ecommerce/orders/payment-accounting";
 import { decimalToString, toIso } from "./format";
 
 export function mapShippingRate(row: any) {
@@ -37,7 +38,9 @@ function mapOrderAddress(row: any) {
 
 export function mapOrder(row: any) {
   const addresses = (row.addresses ?? []).map(mapOrderAddress);
+  const summary = paymentSummary(row);
   return {
+    money: { ...summary, error: summary.error ? "Payment information needs store review" : null },
     id: row.id,
     orderNumber: row.orderNumber,
     userId: row.userId,
@@ -73,7 +76,7 @@ export function mapOrder(row: any) {
     shippedAt: toIso(row.shippedAt),
     deliveredAt: toIso(row.deliveredAt),
     customerNotes: row.customerNotes,
-    foodBooking: row.foodBooking ?? null,
+    foodBooking: row.foodBooking ? { state: row.foodBooking.state, slot: { label: row.foodBooking.slot.label, startsAt: toIso(row.foodBooking.slot.startsAt), endsAt: toIso(row.foodBooking.slot.endsAt) } } : null,
     placedAt: toIso(row.placedAt),
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
@@ -99,6 +102,6 @@ export function mapOrder(row: any) {
       subtotalAmount: decimalToString(item.subtotalAmount),
       totalAmount: decimalToString(item.totalAmount),
     })),
-    statusEvents: row.statusEvents ?? [],
+    statusEvents: (row.statusEvents ?? []).map((event: any) => ({ id: event.id, type: event.type, newValue: event.newValue, createdAt: toIso(event.createdAt) })),
   };
 }

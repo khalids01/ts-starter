@@ -16,17 +16,17 @@ export function SavedPage() {
 
   return (
     <PublicShopShell footer={<PublicShopFooter />}>
-      <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
+      <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 md:px-6 md:py-12">
         <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <Badge variant="secondary" className="mb-3 w-fit">
               Saved items
             </Badge>
-            <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">
+            <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
               Products you saved
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-              Keep product options and other favorites ready for later.
+              Your favourite finds, saved on this device. Open a product for its current price and availability.
             </p>
           </div>
           <Link to="/shop" className={buttonVariants({ variant: "outline" })}>
@@ -35,7 +35,7 @@ export function SavedPage() {
         </section>
 
         {items.length === 0 ? (
-          <div className="rounded-md border border-dashed p-10 text-center">
+          <div className="rounded-2xl border border-dashed p-10 text-center">
             <Heart className="mx-auto size-10 text-muted-foreground" />
             <h2 className="mt-4 font-medium">No saved products yet</h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -59,11 +59,11 @@ export function SavedPage() {
 
 function SavedCard(props: { item: SavedProduct; onRemove: () => void }) {
   return (
-    <article className="overflow-hidden rounded-md border bg-card">
+    <article className="overflow-hidden rounded-2xl border bg-card">
       <Link to="/shop/products/$slug" params={{ slug: props.item.slug }} className="block">
         <div className="aspect-[4/3] bg-muted">
           {props.item.imageUrl ? (
-            <Img src={props.item.imageUrl} alt="" className="h-full w-full object-cover" />
+            <Img src={props.item.imageUrl} objectFit="contain" alt={props.item.name} className="h-full w-full" />
           ) : (
             <div className="grid h-full place-items-center text-sm text-muted-foreground">No image</div>
           )}

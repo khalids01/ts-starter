@@ -43,16 +43,16 @@ function ForgotPasswordPage() {
   };
   if (!settings.passwordSignInEnabled)
     return (
-      <div className="mx-auto mt-20 max-w-md p-6 text-center">
+      <div className="mx-auto mt-20 max-w-md rounded-3xl border bg-card p-6 text-center">
         <h1 className="text-2xl font-bold">Password sign-in is disabled</h1>
-        <Link to="/login" className="mt-6 inline-block text-sm text-indigo-600">
+        <Link to="/login" className="mt-6 inline-block text-sm text-primary">
           Back to sign in
         </Link>
       </div>
     );
 
   return (
-    <div className="mx-auto mt-20 w-full max-w-md p-6">
+    <div className="mx-auto mt-20 w-full max-w-md rounded-3xl border bg-card p-6">
       <h1 className="text-3xl font-bold">Reset password</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Password reset is available only if you previously created a password
@@ -78,7 +78,7 @@ function ForgotPasswordPage() {
         </Button>
       </form>
       <div className="mt-4 text-center">
-        <Link to="/login" className="text-sm text-indigo-600">
+        <Link to="/login" className="text-sm text-primary">
           Back to sign in
         </Link>
       </div>

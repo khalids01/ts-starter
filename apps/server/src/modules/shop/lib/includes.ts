@@ -68,6 +68,8 @@ export function productInclude() {
 
 export function orderInclude() {
   return {
+    payments: { select: { id: true, entryType: true, amount: true, currency: true, reversesId: true } },
+    refunds: { select: { amount: true, currency: true } },
     addresses: {
       orderBy: { type: "desc" },
     },

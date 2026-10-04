@@ -178,15 +178,16 @@ function AccountPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-6">
-      <div><h1 className="text-3xl font-bold tracking-tight">Account</h1><p className="mt-2 text-muted-foreground">Manage your profile, sign-in methods, password, and security.</p></div>
+      <div><h1 className="text-3xl font-bold tracking-tight">Your profile</h1><p className="mt-2 text-muted-foreground">Manage your profile, sign-in methods, password, and security.</p></div>
       {error ? <div role="alert" className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-950">{error_description || "The account could not be connected. Make sure the provider uses the same verified email."}</div> : null}
 
       <Card>
-        <CardHeader><CardTitle>Public Profile</CardTitle><CardDescription>This is how others will see you on the site.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Profile details</CardTitle><CardDescription>Your account identity. Changing it does not change delivery details saved on existing orders.</CardDescription></CardHeader>
         <CardContent><form id="profile-form" onSubmit={updateProfile} className="space-y-5"><div className="flex items-center gap-4"><UserAvatar className="size-16" fallbackClassName="text-lg" image={image} name={name} alt={name || "User avatar"} /><div><p className="font-medium">Profile picture</p><p className="text-sm text-muted-foreground">OAuth images are used automatically, or enter your own URL below.</p></div></div><div className="space-y-2"><Label htmlFor="avatar-url">Avatar URL</Label><Input id="avatar-url" type="url" value={image} onChange={(event) => setImage(event.target.value)} placeholder="https://example.com/avatar.jpg" /></div><div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={session?.user?.email || ""} disabled /></div><div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" value={name} onChange={(event) => setName(event.target.value)} /></div></form></CardContent>
         <CardFooter><Button type="submit" form="profile-form" disabled={busy === "profile"}>{busy === "profile" ? "Saving..." : "Save changes"}</Button></CardFooter>
       </Card>
 
+      <details className="rounded-2xl border p-5"><summary className="cursor-pointer font-semibold">Sign-in & security</summary><div className="mt-5 space-y-6">
       <Card>
         <CardHeader><CardTitle>Connected accounts</CardTitle><CardDescription>Verified providers with the same email can be connected to this account.</CardDescription></CardHeader>
         <CardContent className="divide-y rounded-lg border">
@@ -210,6 +211,7 @@ function AccountPage() {
         </CardContent>
         {hasPassword ? <CardFooter>{session?.user.twoFactorEnabled ? <Button type="submit" variant="destructive" form="disable-2fa-form" disabled={busy === "disable-2fa"}>{busy === "disable-2fa" ? "Disabling..." : "Disable 2FA"}</Button> : awaitingOtp ? <Button type="submit" form="enable-2fa-form" disabled={busy === "verify-2fa" || otp.length !== 6}>{busy === "verify-2fa" ? "Verifying..." : "Verify and enable"}</Button> : <Button type="button" onClick={sendEnableCode} disabled={busy === "enable-2fa"}>{busy === "enable-2fa" ? "Sending..." : "Enable email 2FA"}</Button>}</CardFooter> : null}
       </Card>
+      </div></details>
     </div>
   );
 }

@@ -42,7 +42,7 @@ export function MobileBottomNav() {
           className="h-14 w-full flex-col gap-1 rounded-xl px-1 text-[10px] font-medium text-muted-foreground [&_svg]:size-5"
         />
         <Link
-          to={session ? "/account" : "/login"}
+          to={session ? "/dashboard" : "/login"}
           activeProps={activeProps}
           className={linkClass}
         >

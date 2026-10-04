@@ -6,7 +6,7 @@ import { absoluteSeoUrl, sitemapXml } from "@/features/seo/metadata";
 export const Route = createFileRoute("/sitemap.xml")({
   server: { handlers: { GET: async () => {
     if (!absoluteSeoUrl("/", brandConfig.publicOrigin)) return new Response("Configure this brand’s public origin before generating a sitemap.", { status: 503 });
-    const urls = ["/", "/about", "/shop"].map((path) => absoluteSeoUrl(path, brandConfig.publicOrigin)!);
+    const urls = ["/", "/about", "/shop", "/contact", "/shipping", ...(["terms", "privacy", "returns"] as const).filter((page) => brandConfig.policies?.[page]?.sections.length).map((page) => `/${page}`)].map((path) => absoluteSeoUrl(path, brandConfig.publicOrigin)!);
     let cursor: string | undefined;
     do {
       const { data, error } = await client.shop["seo-products"].get({ query: { cursor } });

@@ -26,9 +26,9 @@ export function CartPage() {
 
   return (
     <PublicShopShell footer={<PublicShopFooter />}>
-      <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
+      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:px-6 md:py-12">
         <div>
-          <h1 className="text-3xl font-semibold tracking-normal">Cart</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Your shopping bag</h1>
           <p className="text-sm text-muted-foreground">Review your items before checkout.</p>
         </div>
 
@@ -40,7 +40,7 @@ export function CartPage() {
         ) : (
           <section className="grid gap-6 lg:grid-cols-[1fr_340px]">
             <div className="grid gap-4">
-              <div className="hidden rounded-md border bg-card md:block">
+              <div className="hidden rounded-2xl border bg-card md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -96,9 +96,9 @@ function CartItemTableRow(props: {
     <TableRow>
       <TableCell>
         <div className="flex items-center gap-3">
-          <div className="size-16 overflow-hidden rounded-md bg-muted">
+          <div className="size-16 overflow-hidden rounded-2xl bg-muted">
             {imageUrl ? (
-              <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
+              <Img src={imageUrl} alt={props.item.product.name} objectFit="contain" className="h-full w-full" />
             ) : (
               <div className="grid h-full place-items-center text-xs text-muted-foreground">No image</div>
             )}
@@ -142,10 +142,10 @@ function CartItemMobileCard(props: {
 }) {
   const imageUrl = props.item.variant.imageUrls?.[0] || props.item.product.coverImageUrl;
   return (
-    <article className="overflow-hidden rounded-md border bg-card">
-      <div className="aspect-[4/3] bg-muted">
+    <article className="overflow-hidden rounded-2xl border bg-card">
+      <div className="aspect-[2/1] bg-muted/30">
         {imageUrl ? (
-          <Img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <Img src={imageUrl} alt={props.item.product.name} objectFit="contain" className="h-full w-full" />
         ) : (
           <div className="grid h-full place-items-center text-sm text-muted-foreground">No image</div>
         )}
@@ -181,7 +181,8 @@ function QuantityControl(props: {
     <div className="flex items-center justify-center gap-1">
       <Button
         type="button"
-        size="icon-sm"
+        aria-label="Decrease quantity"
+        size="icon"
         variant="outline"
         disabled={props.quantity <= 1}
         onClick={() => props.onQuantity(props.quantity - 1)}
@@ -193,7 +194,8 @@ function QuantityControl(props: {
       </Badge>
       <Button
         type="button"
-        size="icon-sm"
+        aria-label="Increase quantity"
+        size="icon"
         variant="outline"
         onClick={() => props.onQuantity(props.quantity + 1)}
       >
@@ -205,15 +207,14 @@ function QuantityControl(props: {
 
 function CartSummary(props: { cart: ShopCart }) {
   return (
-    <aside className="h-fit space-y-4 rounded-md border bg-card p-4 lg:sticky lg:top-24">
+    <aside className="h-fit space-y-4 rounded-2xl border bg-card p-4 lg:sticky lg:top-28">
       <h2 className="font-medium">Summary</h2>
       <SummaryRow label="Subtotal" value={props.cart.subtotalAmount} currency={props.cart.currency} />
-      <SummaryRow label="Tax" value={props.cart.taxAmount} currency={props.cart.currency} />
-      <SummaryRow label="Shipping" value={props.cart.shippingAmount} currency={props.cart.currency} />
+      <p className="text-sm leading-6 text-muted-foreground">Delivery fees, discounts and stock availability are confirmed at checkout.</p>
       <div className="border-t pt-3">
-        <SummaryRow label="Total" value={props.cart.totalAmount} currency={props.cart.currency} strong />
+        <SummaryRow label="Item subtotal" value={props.cart.subtotalAmount} currency={props.cart.currency} strong />
       </div>
-      <Link to="/checkout" className={buttonVariants({ className: "w-full" })}>
+      <Link to="/checkout" className={buttonVariants({ className: "min-h-12 w-full rounded-full" })}>
         Checkout
       </Link>
     </aside>
@@ -233,7 +234,7 @@ function SummaryRow(props: { label: string; value: string; currency: string; str
 
 function StateCard(props: { children: ReactNode }) {
   return (
-    <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+    <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
       {props.children}
     </div>
   );

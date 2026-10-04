@@ -1,3 +1,4 @@
+import { safeReturnPath } from "@/features/auth/safe-return-path";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { z } from "zod";
@@ -17,7 +18,7 @@ function AuthCompletePage() {
 
   useEffect(() => {
     rememberAuthMethod(method);
-    window.location.replace(next?.startsWith("/") ? next : "/dashboard");
+    window.location.replace(safeReturnPath(next));
   }, [method, next]);
 
   return <div className="p-10 text-center text-sm text-muted-foreground">Completing sign-in...</div>;

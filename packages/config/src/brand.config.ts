@@ -7,6 +7,7 @@ export type BrandConfig = {
   textLogo: string;
   niche: "food" | "electronics" | "fashion";
   publicOrigin?: string;
+  policies?: Partial<Record<"terms" | "privacy" | "returns", { title: string; effectiveDate: string; sections: { heading: string; paragraphs: string[] }[] }>>;
   logoUrl?: string;
   iconUrl: string;
   contact: {

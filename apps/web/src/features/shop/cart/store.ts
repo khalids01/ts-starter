@@ -95,6 +95,7 @@ function createCartItem(input: AddCartItemInput & { quantity: number }): ShopCar
         coverImageUrl: input.product.coverImageUrl,
         category: input.product.category,
         brand: input.product.brand,
+        fulfillmentKind: input.product.fulfillmentKind,
       },
     },
     input.quantity,
