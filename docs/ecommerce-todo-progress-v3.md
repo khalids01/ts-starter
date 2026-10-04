@@ -2,7 +2,7 @@
 
 Created: 2026-09-26
 
-Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented; schema/RBAC prerequisites applied and covered database/browser checks passed; remaining review gates are open. Step 9 regression checks implemented; coverage gates remain open. Step 10 isolated database checks passed after explicit execution authorization; human review remains pending. Step 11 browser/RBAC checks and targeted corrections are verified; awaiting user review (section 21). Steps 12–16 are not started.
+Status: Step 1 inspection and launch-scope confirmation complete on 2026-09-27. Steps 2–8 implemented; schema/RBAC prerequisites applied and covered database/browser checks passed; remaining review gates are open. Step 9 regression checks implemented; coverage gates remain open. Step 10 isolated database checks passed after explicit execution authorization; human review remains pending. Step 11 browser/RBAC checks and targeted corrections are verified; awaiting user review (section 21). Step 12 security acceptance remains open. Step 13 local workloads passed except unresolved peak; staging/recovery remain open. Step 14 selected simulator-backed app integration is verified (section 27); real merchant acceptance is open. Steps 15–16 have not executed; tutorials require an explicit user request.
 
 ## 1. Purpose and deployment model
 
@@ -78,8 +78,8 @@ There are **16 numbered steps**. Count unfinished numbered steps, including bloc
 | 11 | Verify full browser workflows and permissions | Automated scenarios verified after targeted corrections; user review pending (section 21) | 5 |
 | 12 | Complete security verification and fixes | Focused remediation/tests passed; active scan, residual risk disposition and review pending | 4 |
 | 13 | Verify runtime, capacity, and operational recovery | Local runtime verified; smoke/volume/expected/soak passed, peak failed; staging/restore pending | 3 |
-| 14 | Complete controlled live courier acceptance | Not started | 2 |
-| 15 | Build and verify automated tutorials | Not started | 1 |
+| 14 | Complete controlled live courier acceptance | Selected simulator-backed app integration verified (section 27); real merchant acceptance open | 2 |
+| 15 | Build and verify automated tutorials | Not started; explicit user request required | 1 |
 | 16 | Independent final review and release readiness decision | Not started | 0 |
 
 Do not mark a step complete merely because code exists. Record implementation, safe automated checks, user-run runtime evidence, review status, and outstanding blockers separately. A step whose required database/runtime evidence is missing stays `Awaiting user verification`.
@@ -408,7 +408,7 @@ Unfinished numbered steps:
 
 ## 8. Current next action
 
-Step 12 was committed as `932f5b5` under the user's explicit request. Step 13 runtime fixes are committed as `1b7da9f`; capacity preparation, tests and handoffs are committed alongside section 24 under the user's explicit commit request. Local production-runtime evidence is recorded in section 23. **Current: the user explicitly approved the section 24 local capacity scope on 2026-10-03; setup/population and all five local profiles have executed. Smoke/volume/expected/soak passed; peak failed and remains unresolved. See `docs/ecommerce-step13-capacity-results.md`. Next, inspect actual local results and finish separately approved staging/restore and unresolved Step 12 security gates.** Three subsequent numbered steps remain (14–16). Step 14 real courier actions require separate explicit approval; automated tutorial recording remains gated on final acceptance. Earlier historical handoffs describe their state at the time and do not override this section.
+Step 12 was committed as `932f5b5` under the user's explicit request. Step 13 runtime fixes are committed as `1b7da9f`; capacity preparation, tests and handoffs are committed alongside section 24 under the user's explicit commit request. Local production-runtime evidence is recorded in section 23. **Current: the user explicitly approved the section 24 local capacity scope on 2026-10-03; setup/population and all five local profiles have executed. Smoke/volume/expected/soak passed; peak failed and remains unresolved. See `docs/ecommerce-step13-capacity-results.md`. Step 13 execution changes were committed as `aa5056b` and `846ed77`. The standalone courier simulator is implemented (section 26). The user subsequently authorized integration with the existing isolated app/worker/browser harness: selected local integration checks now pass (section 27), including actual persistence and independent worker processes. Changes remain uncommitted. Next: review this integration handoff; retain unresolved peak, security, staging, recovery and real merchant acceptance gates. No tutorials may be created, recorded or generated without a new explicit user request.** Three subsequent numbered steps remain (14–16). Step 14 real courier actions require separate explicit approval; automated tutorial recording remains gated on final acceptance. Earlier historical handoffs describe their state at the time and do not override this section.
 
 
 ## 9. Step 1 inspection and handoff — 2026-09-27
@@ -1392,3 +1392,56 @@ See `docs/ecommerce-step13-capacity-results.md` for current measurements, limits
 ### Next and steps remaining
 
 All approved profiles have executed and final cleanup was verified: API/k6 ports stopped, original default limits restored, regression fixtures gone, 27,503 retained orders and counters reconciled. The capacity DB/Redis remain retained. Investigate peak performance and the failed checkout response on the intended deployment topology before declaring capacity accepted. Remaining Step 13 staging/proxy/rate policy, worker/simulator, monitoring and backup/restore gates need their separately scoped approval/evidence. Unresolved Step 12 active security scan and dependency risk dispositions also remain. Do not begin automated tutorial recording. **Three subsequent numbered steps remain (14–16), with Step 13 acceptance still open.** No additional commits until the user asks.
+
+
+## 26. Step 14 — Standalone courier simulator only (2026-10-04)
+
+User requested only the local courier simulator and deferred the remaining work until tomorrow. Implemented `tests/courier-simulator/steadfast/` and verified the unchanged production Steadfast adapter over actual local HTTP. Six unit tests/25 assertions, focused TypeScript and 16 HTTP contract groups passed, including all 18 mapped states, exact fictional COD/auth/payload, independent parcels, duplicate replay, faults, uncertain lost-response recovery, callback parser/signatures and scoped cleanup. Pinned WireMock engine was started for these checks and stopped afterwards. No app/DB/Redis setup, browser E2E, live courier requests, production changes or commits.
+
+**Test after starting:** follow `tests/courier-simulator/steadfast/README.md` for Docker start, readiness, engine-only HTTP checks and stop. The local adapter base URL is `http://localhost:9099` without `/api/v1`; normal production allowlists remain unchanged. Callback sending to the app is separately gated and was not exercised today.
+
+**Next:** integrate the existing isolated app harness and complete Step 14 lifecycle/worker/persistence/browser acceptance later, under the relevant authorization. Optional simulator capabilities and real merchant acceptance remain open. Step 13 peak/staging/recovery and Step 12 security gates remain unchanged. **Three numbered V3 steps remain (14–16); Step 14 is only partially done.** Simulator-plan acceptance remains open in 7 steps; standalone tooling is ready. No tutorial recording or further work today. Execution changes remain uncommitted.
+
+
+## 27. Step 14 — Authorized simulator-backed isolated app integration (2026-10-04)
+
+### Authorization and exact targets
+
+The user explicitly authorized simulator startup, isolated local app/worker/browser tests, and narrowly scoped fictional fixture writes/cleanup after guard/target verification. Reused **existing** database `e2e_v3_step10_20261003_03043274` on `127.0.0.1:5433`, Redis on `127.0.0.1:6380`, and prefix `ts-starter:e2e:step10:e2e_v3_step10_20261003_03043274:`. The capacity database/Redis were not targeted. Read-only preflight verified existing schema tables, verified personas and permission catalog; existing persona sessions were refreshed through real password login, without signup/provisioning. No migrations, seeds, resets, new database, schema edits or generation were needed or executed.
+
+Private mode-0600 runtime: `tests/artifacts/step14/runtime.env`, copied from the reviewed Step 11 runtime with fictional simulator credentials and `STEAD_FAST_BASE_URL=http://localhost:9099` (no `/api/v1`). API/web retain localhost 3000/3001. `NODE_ENV=test`, `E2E_MODE=true`, automatic workers disabled; mail/payment/storage configuration blank. No real courier/payment/mail call, staging/production action, scan, load workload, recovery exercise, commit/push, or tutorial creation/recording/generation is authorized by this slice.
+
+### What changed
+
+- Reused existing Playwright config, V3 catalog/order/browser helpers, existing personas/session paths and independent Prisma client helper. Added a focused Step 14 config/spec, owned fixture cleanup, fail-closed app guard/preflight/session refresh, and read-only cleanup audit. The old mocked `submit()` helper rejects simulator mode.
+- Test-process workers call the real `CourierDispatchWorker` / `CourierTrackingWorker`, configured resolver, production registry and unchanged Steadfast adapter. Only candidate discovery is restricted to the owned connection; actual transactions, leases, writes, provider HTTP and tracking persistence execute normally. Two independent Bun processes use an IPC start barrier. No production test bypass, scheduler change or public worker-trigger route.
+- Simulator preserves application-generated attempt invoices within its own scenario namespace and now implements the exact return-aware status lookup used by the actual tracking worker. Optional pickup/return-submission/history/payout/service-area endpoints remain deliberately unsupported.
+- Fixed a runtime-discovered booking policy defect: cancelling an attempted retry moves it to `order_recovery_required`, which previously disabled booking identity reconciliation. This reason now permits authenticated explicit identity evidence only for an attempted, unleased review with no existing identity. Reconciliation preserves the open custody exception, cancelled order, committed inventory and shipment claim; blind retry remains forbidden. Production adapter and destination policy are unchanged.
+
+### Tests and results
+
+Selected application matrix: **16 Chromium checks passed** on the final suite. Coverage includes real storefront checkout/reservation; browser confirmation/commit/deposit/routing/queue/handoff/gross settlement/completion; actual HTTP booking and exact journal payload/count; polling approval-pending; concurrent signed callbacks plus replay under a different header key; invalid bytes/auth/JSON/payload with unchanged history; return/partial-delivery exceptions; explicit full receipt/sellable inspection/one-time restock/refund; unsafe inspection refusing restock; unpaid/deposit/prepaid COD; early collection and delayed delivery after partial refund; mismatched amount/currency; competing authorized account routing/queue; two independent worker-process claims; connection-wide cooldown; disabled connection/stale snapshot holds; pre-attempt cancellation/payment invalidation/new attempt invoice; all seven fault classes; lost-response status-only uncertainty; cancellation after lost acceptance plus explicit identity reconciliation; and actual-resource viewer/customer/anonymous permission denials.
+
+Retry scheduling and expired-lease eligibility use the existing injectable worker clock to avoid waiting minutes; HTTP and request aborts are real. This proves durable policy behavior at those clock instants, not a wall-clock crash/soak test. Missing invoice lookup currently becomes a `validation` review on HTTP 404; found status without identity becomes `uncertain_submission`. Neither sends a second create. Concurrent Serializable queue conflict is an explicit 409 followed by operator replay returning the existing row. Duplicate restock is a 409 with unchanged stock. Delivery retains ownership until money is reconciled.
+
+Focused no-network worker/hold/policy checks: **44 tests / 113 assertions**. Simulator/control/app-guard checks: **7 tests / 36 assertions**. Focused Step 14 and standalone simulator TypeScript passed; server package TypeScript passed. Failed early harness expectations are retained privately in `run-1.txt`, `run-2.txt`, and `run-4.txt`; intermediate passing suites are `run-3.txt`, `run-5.txt`, `run-6.txt`. Final suite/repetition, contract rerun and cleanup evidence are recorded in the completion subsection below.
+
+### How to test after app startup
+
+1. Use the reviewed retained Step 14 private runtime, not root build/start wrappers or `tests/env/.env`. Inspect exact targets via the existing guard plus `app-preflight.ts`. Start only the existing test PostgreSQL/Redis resources and pinned local simulator. No migration/seed/reset/provision command is part of reproduction.
+2. Start the API with that runtime; build and preview the web with explicitly inherited runtime as recorded in the simulator README. Keep automatic workers disabled and no other test suite/workload running on this DB.
+3. Refresh the existing persona sessions using `app-auth.ts`, then run the existing Playwright framework through `playwright.step14.config.ts`. Test helpers own only fresh `v3-browser-sim-<run>` catalog/shipping/connection/order fixtures and scoped simulator mappings/journal entries.
+4. Read persisted assertions and private reports, then run `app-audit.ts`. Verify zero owned fixture residue, restored store settings/default shipping and unchanged retained order count. Test failures use `finally` cleanup; a forcibly killed test process may leave fixtures requiring separately reviewed owned-run cleanup. Never substitute a global DB/simulator reset.
+
+### Next, remaining steps and unfinished gates
+
+The requested selected local simulator/app integration is complete; review the final diff and evidence before expanding scope. **Three numbered V3 steps remain (14–16)** because real merchant acceptance is still open and Steps 15–16 have not executed. No next-scope implementation, commit or push is authorized. Step 13 peak remains failed and unresolved; security/dependency review, staging HTTPS/proxy/auth/rate policy/monitoring, backup/restore recovery and real merchant courier contracts/operations remain explicit gates. Legacy ambiguous-record breadth, forced process-interruption/crash cleanup, other browser engines and optional provider APIs are not newly certified by this suite. **Do not create, record or generate tutorials unless the user explicitly asks**, even after other gates pass.
+
+
+### Completion evidence and shutdown
+
+Final **16-check suite passed twice**: private `tests/artifacts/step14/run-7.txt` (36.2s) and `run-8.txt` (36.4s), zero retries. Final standalone adapter HTTP rerun passed **16 contract groups** (`contract-http.txt`). Focused worker/policy and simulator/guard unit suites total **51 tests / 149 assertions**; Step 14, standalone simulator and server package typechecks passed, and `git diff --check` passed.
+
+Independent read-only audits (`audit-before.json`, `audit-after-7.json`, `audit-after-8.json`, `audit-final.json`) matched exactly: zero owned product/category/location/shipping/connection/customer/order/webhook fixture residue, identical restored shared settings/default shipping with preserved timestamps, **69 pre-existing retained orders**, and only **four static simulator mappings**. Application audit/login/visitor telemetry remains in the isolated test DB; no broad telemetry/session cleanup ran. Existing test database/Redis data volumes are retained.
+
+Owned API/preview/simulator and the existing test PostgreSQL/Redis services started by this task were stopped after final verification. Local ports 3000/3001/9099/5433/6380 are no longer listening. Capacity Redis/database were untouched. Baseline commit is `846ed77`; all new integration/simulator/test/documentation changes remain uncommitted on `ecommerce`. No tutorial was created, recorded or generated.

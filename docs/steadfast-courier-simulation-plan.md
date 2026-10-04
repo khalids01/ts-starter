@@ -1,6 +1,6 @@
 # Steadfast courier simulation plan
 
-Date: 2026-10-03. Status: plan only. No simulator built, installed, started, or verified. No E2E database setup performed.
+Date: 2026-10-03. Status: standalone simulator and selected isolated app/DB/browser/worker integration verified on 2026-10-04; see V3 section 27 for current authorization/evidence/gates. See `tests/courier-simulator/steadfast/README.md`. No E2E database setup performed.
 
 This is the execution guide for building a local Steadfast-shaped HTTP simulator later. It expands `docs/courier-simulator-e2e.md`, which retains the research findings and primary WireMock links. This simulator has **12 implementation steps**, separate from the 16-step ecommerce V3 ledger. Its persistence and browser runtime evidence supports V3 Steps 10–11; security review remains Step 12 and tutorials remain Step 15. Build the simulator before those runtime checks, subject to the setup authorization below.
 
@@ -193,6 +193,34 @@ Acceptance: another agent can reproduce the authorized isolated suite from the r
 
 | Step | Status | Evidence |
 | --- | --- | --- |
-| 1–12 | Not started | Plan authored; runtime/DB gates not authorized by this document |
+| 1–4 | Standalone scope complete | Adapter contract inventory, pinned engine, exact per-invoice mappings and stable identity; real HTTP checks passed |
+| 5–6 | Selected app acceptance verified | Signed callback persistence/replay/authentication, real polling, all fault classes and retained uncertain custody |
+| 7 | Selected money/stock flows verified; optional APIs deferred | Deposits/prepaid/unpaid COD, early/gross/mismatched collection, refunds, receipt/inspection and safe/unsafe restock |
+| 8 | Complete for selected standalone capabilities | 16 production-adapter HTTP contract groups passed; no app/DB imports |
+| 9–10 | Selected isolated integration verified | Existing framework/personas/DB; 16 persisted Chromium checks, competing accounts and two actual worker processes |
+| 11 | Ordinary failure/success cleanup verified; forced interruption gate open | Independent read-only fixture/shared-setting audit; no global reset; killed-process residue requires owned-run review |
+| 12 | Selected app handoff complete | Operational reproduction in README and V3 section 27; real courier/tutorial/release gates remain open |
 
 For each future completed slice append: date; user authorization; chosen contract semantics; files changed; commands/results; user runtime checklist; unverified DB/provider facts; next step/count; and commit/revision. Preserve previous evidence and mark superseded results explicitly.
+
+
+## 2026-10-04 — Simulator-only handoff
+
+**Authorization:** user requested only the local courier simulator; all other work is deferred until tomorrow. This authorizes its local engine verification, not app startup, DB/Redis changes, browser E2E, real courier actions or commits. Standing boundaries above remain outside this explicitly authorized slice.
+
+**What changed:** added the standalone WireMock profile and Bun controls under `tests/courier-simulator/steadfast/`, with pinned image digest, loopback launch, exact fictional booking fixtures, independent parcel states, fault controls, status-only uncertain recovery, callback signing and scoped journal/mapping cleanup. No production code/schema/package dependencies changed. The correct local base URL is `http://localhost:9099` **without `/api/v1`**, as required by the current adapter allowlist. Pickup/return/payment/history/service-area APIs deliberately fail until selected for a later reviewed suite.
+
+**Checks:** 6 no-network unit tests/25 assertions, focused TypeScript and 16 actual WireMock HTTP contract groups passed. All 18 supported status strings were checked. Accepted-but-lost response remains uncertain; duplicate booking returns synthetic 409 without a new identity. Callback parsing uses the production adapter; app callback/persistence was not exercised. Cleanup preserves another run. First runtime attempt found that internal-only Docker networking prevented loopback publication; switched only this project to a normal bridge, documenting that it is not an egress firewall. Final owned engine is stopped after verification; pinned image remains installed. No DB operation, app service or live-provider request ran.
+
+**How to test after startup:** follow the exact README start/readiness command, explicit engine-only HTTP command, then stop command. Unit/type commands require no startup. Do not configure a merchant connection or invoke app workers during this slice.
+
+**Next:** separately authorize/integrate the existing isolated app harness (Step 9), then complete lifecycle/worker/browser/persistence acceptance. Full acceptance remains open in **7 simulator-plan steps (5–7 and 9–12)** despite standalone implementation being ready. Optional capabilities remain deliberately unimplemented. V3 Step 14 and tutorials are not complete. Files changed: simulator directory plus this plan, research status doc and V3 handoff. **Uncommitted; no commits authorized.**
+
+
+## 2026-10-04 — Authorized isolated app integration handoff
+
+The user's subsequent authorization supersedes the simulator-only deferral for isolated local app/worker/browser integration and fictional fixture writes/cleanup only. Exact retained Step 10/11 targets, the 16-check persistence/browser/concurrency matrix, runtime-discovered cancellation reconciliation correction, commands/results, private artifacts and unfinished gates are in V3 section 27 and the simulator README. No schema/provisioning operation was needed. No migration/seed/reset/new database, real courier/payment/mail, production/staging, active scan, backup/restore, tutorial or commit/push occurred.
+
+Step 9 integration is complete using the existing framework. Selected Step 10 lifecycle/concurrency and Steps 5–7 money/state/fault acceptance are verified. Step 11 ordinary failure/success cleanup is verified; forced process interruption/crash cleanup and broader legacy-record coverage remain unverified, so **one simulator-plan acceptance step (11) remains partially open**. Optional provider APIs remain intentionally deferred. This is not an unresolved blocker to the requested selected local integration, nor a claim of complete real merchant acceptance. **Three numbered V3 steps remain (14–16)** and peak/security/staging/recovery gaps remain. Next: review this handoff; obtain a separately scoped task before further acceptance work. Tutorial creation/recording/generation requires an explicit user request. Everything remains uncommitted on `ecommerce`.
+
+Final selected application suite: 16 checks passed twice (`run-7.txt`, `run-8.txt`); standalone adapter HTTP rerun 16 groups; 51 no-network tests/149 assertions; focused app/simulator and server types passed. Independent audits match: zero owned fixture residue, 69 retained orders, identical shared settings/default shipping, four static simulator mappings. Owned processes/supporting services started for this task are stopped; data retained. Evidence remains private under `tests/artifacts/step14/`. Baseline `846ed77`; no commit/push.

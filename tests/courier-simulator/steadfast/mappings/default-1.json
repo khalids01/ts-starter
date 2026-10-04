@@ -1,0 +1,23 @@
+{
+  "priority": 100,
+  "request": {
+    "urlPathPattern": "/.*",
+    "headers": {
+      "Api-Key": {
+        "equalTo": "sim-fictional-key"
+      },
+      "Secret-Key": {
+        "equalTo": "sim-fictional-secret"
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "error": "Unregistered fictional request or unsupported endpoint"
+    }
+  }
+}

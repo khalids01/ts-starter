@@ -10,7 +10,12 @@ import { TEST_USERS } from "../../users-config";
 const target = assertTestEnvironment();
 if (target.isRemote)
   throw new Error("Step 11 requires an isolated local target");
-if (process.env.STEAD_FAST_BASE_URL !== "http://localhost:3903")
+const simulatorMode = process.env.COURIER_SIMULATOR_APP_APPROVED === "true";
+if (simulatorMode) {
+  const { assertSimulatorAppEnvironment } = await import("../../courier-simulator/steadfast/app-guard");
+  assertSimulatorAppEnvironment();
+}
+if (!simulatorMode && process.env.STEAD_FAST_BASE_URL !== "http://localhost:3903")
   throw new Error("Step 11 requires the local fictional courier HTTP target");
 export const { default: db } =
   await import("../../../packages/db/src/client.server");
@@ -33,8 +38,7 @@ export async function post<T = any>(
 ) {
   return body<T>(await api.post(serverUrl + path, { data }));
 }
-export async function fixture(api: APIRequestContext) {
-  const marker = `v3-browser-${crypto.randomUUID()}`;
+export async function fixture(api: APIRequestContext, marker = `v3-browser-${crypto.randomUUID()}`) {
   await body(
     await api.put(serverUrl + "/admin/store-settings", {
       data: {
@@ -269,6 +273,7 @@ export async function routeAndQueue(
   return { dispatch, card, order };
 }
 export async function submit(id: string, connectionId: string) {
+  if (simulatorMode) throw new Error("Simulator integration must use the real app-worker harness");
   await new CourierDispatchWorker(
     fakeWorkerDependencies(db, connectionId, async (request) => ({
       invoice: request.invoice,

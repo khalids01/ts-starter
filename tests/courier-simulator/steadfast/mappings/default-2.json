@@ -1,0 +1,15 @@
+{
+  "priority": 200,
+  "request": {
+    "urlPathPattern": "/.*"
+  },
+  "response": {
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "error": "Invalid fictional credentials"
+    }
+  }
+}

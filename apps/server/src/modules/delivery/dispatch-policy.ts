@@ -28,6 +28,8 @@ export function canRetryUnsubmittedHold(
 }
 
 const UNCERTAIN_BOOKING_REASONS = new Set([
+  // Cancellation stops an attempted retry; identity evidence still needs reconciliation.
+  "order_recovery_required",
   "uncertain_submission",
   "network",
   "provider",

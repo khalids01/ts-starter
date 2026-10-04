@@ -1,0 +1,25 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPath": "/get_balance",
+    "headers": {
+      "Api-Key": {
+        "equalTo": "sim-fictional-key"
+      },
+      "Secret-Key": {
+        "equalTo": "sim-fictional-secret"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": 200,
+      "current_balance": 0
+    }
+  }
+}

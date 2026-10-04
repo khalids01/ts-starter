@@ -1,6 +1,6 @@
 # Local Steadfast simulation for E2E
 
-Research date: 2026-10-02. No simulator installed or started; no E2E setup, database operation, or provider request executed.
+Research date: 2026-10-02. Historical research snapshot. A standalone simulator was implemented and engine-verified on 2026-10-04; see `tests/courier-simulator/steadfast/README.md`. Selected isolated app integration is now verified under subsequent explicit authorization (V3 section 27); no live-provider request executed. The research findings below remain historical, not current provider certification.
 
 ## Finding and choice
 
@@ -23,7 +23,7 @@ A local simulation demonstrates our HTTP integration and application behavior ag
 
 1. Read `apps/server/src/modules/delivery/providers/steadfast.ts`, credentials configuration, webhook handlers, and `apps/server/tests/steadfast.adapter.test.ts`.
 2. Reuse `apps/server/tests/fixtures/steadfast/{create-order.success,status.success}.json` for reviewed example response shapes. Do not treat fixture contents as independently verified provider behavior.
-3. The adapter uses credentials `baseUrl`; configure the isolated simulator connection with `http://localhost:9099/api/v1` and fictional keys. Existing credentials validation allows local HTTP for hostname `localhost`; do not weaken production HTTPS validation to accommodate a Docker service name.
+3. The adapter uses credentials `baseUrl`; configure the isolated simulator connection with `http://localhost:9099` and fictional keys. Existing credentials validation allows local HTTP for hostname `localhost`; do not weaken production HTTPS validation to accommodate a Docker service name.
 4. The app process must be able to reach its own `localhost:9099`. If it runs in a container, solve the network placement explicitly or use a properly configured HTTPS simulator. Browser localhost and app-server localhost may be different machines.
 5. `E2E_MODE=true` currently disables the dispatch timer. A future E2E harness must invoke `runOnce` through an isolated test process/helper. Do not expose a production worker-trigger endpoint or silently enable uncontrolled workers.
 6. Existing Prisma-based E2E fixtures require separately authorized DB provisioning/reset. Simulator research does not authorize those operations.
@@ -68,4 +68,4 @@ Do this after the preceding payment, shipment-claim, retry, tracking, and author
 - App stock, ledger, shipment claim, timeline, and permissions asserted—not merely fake response status.
 - Simulation limitations documented; live merchant acceptance remains separately tracked.
 
-Current status: research and integration plan ready; installable engine identified. Steadfast mappings, installation, and simulator-backed E2E are not implemented or verified yet.
+Current status (2026-10-04): standalone engine/mappings/control library and production-adapter HTTP contract checks passed. See the simulator README for exact verified commands and limits. App/DB/browser E2E and live merchant acceptance remain deferred. Earlier preparation paragraphs are historical proposals, not evidence of completed application acceptance.

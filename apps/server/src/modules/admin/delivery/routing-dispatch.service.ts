@@ -311,7 +311,7 @@ export class CourierRoutingDispatchService {
       const trackingCode = input.trackingCode?.trim() || null;
       await tx.courierConsignment.update({ where: { id: consignmentId }, data: { externalId, trackingCode, providerState, state: "submitted", submittedAt: new Date() } });
       await tx.courierDispatch.update({ where: { id: c.dispatchId }, data: { status: "submitted" } });
-      await tx.courierException.updateMany({ where: { consignmentId, kind: previousReason, state: "open" }, data: { state: "resolved", resolvedByUserId: actorUserId, resolvedAt: new Date() } });
+      if (previousReason !== "order_recovery_required") await tx.courierException.updateMany({ where: { consignmentId, kind: previousReason, state: "open" }, data: { state: "resolved", resolvedByUserId: actorUserId, resolvedAt: new Date() } });
       // Preserve cancellation/recovery and money exceptions. Identity evidence is not delivery, collection or physical receipt.
       if (!c.order.recovery) await markOrderUnits(tx, c.orderId, "shipped");
       await tx.orderStatusEvent.create({ data: { orderId: c.orderId, type: "delivery", previousValue: c.order.deliveryStatus, newValue: c.order.deliveryStatus, actorUserId, note, metadata: { action: "courier_booking_identity_reconciled", consignmentId, externalId, operationIdentity: operation.identity, previousReason } } });
