@@ -1,7 +1,7 @@
 # Ecommerce public pages, customer area and content plan
 
 Date: 2026-10-04
-Status: planning only; implementation has not been authorized.
+Status: landing-page and shared mobile-navigation implementation authorized and completed on 2026-10-04; broader customer/content/SEO phases remain planned.
 Project: `/home/khalid/Desktop/projects/saas/ts-starter`, branch `ecommerce`.
 
 ## 1. Objective and boundaries
@@ -167,8 +167,27 @@ After each completed implementation phase, update this plan and V3 progress with
 7. **Starter compatibility:** decide whether customer experience replaces SaaS navigation for this ecommerce deployment or uses an explicit ecommerce mode while retaining reusable starter billing features.
 8. **Themes and media:** light-only storefront versus existing theme support; supplied licensed images versus separately requested asset creation.
 
-## 10. Current next action and progress
+## 10. Initial planning checkpoint (superseded by section 11)
 
 Completed: read-only source assessment and this planning document. No product/code/schema change, runtime test, database operation, commit, push or tutorial in this planning turn.
 
 Next: settle section 9 and refine the visual/page/content proposal with the user. Implementation remains blocked by the user's explicit “do not start” instruction until they say to begin. After that authorization, start with the approved design contract and prerequisite assessment, retaining all existing data-operation boundaries.
+
+
+## 11. Landing page implementation — 2026-10-04
+
+The user authorized “first do commits then make” a polished responsive landing page with mobile bottom icon navigation. Previous courier recovery changes committed as `ccba53d`; planning document committed separately as `c076aee`. New landing changes remain uncommitted; no push.
+
+Completed: replace technical demo copy with shopper-focused sections, responsive editorial hero, real category tiles, real product cards with existing save controls and accurate active-variant prices, explicit loading/error/retry/empty states, shopping guide and collection banner. Refine shared header/search/footer and use a mobile bottom bar with Home/Shop/Saved/Cart/Account, active route indication, touch-sized controls and safe-area padding. The cart opens the existing sheet. Search submits once through the form, prevents browser reload and accepts trimmed short queries. Shared spacing reserves space for the fixed navigation. No checkout/payment/inventory/auth API contract or schema change.
+
+Built-in image-generation skill/tool created decorative unbranded shopping imagery at `apps/web/public/ecommerce/images/shopping-editorial.webp` (59 KB). It appears when no product image is available for the hero; actual catalog imagery takes precedence. Original PNG remains under the tool's generated-image directory. Final prompt: “Use case: ads-marketing. Asset type: generic ecommerce landing hero editorial illustration, portrait 4:5 composition. Create a polished studio still life of two unbranded shopping bags, one forest green and one warm ivory, with a folded cream textile and a small simple kraft parcel on a pale sage plinth. Background solid pale sage, soft daylight from upper left, beautiful realistic paper texture and restrained shadows. Clean premium retail art direction, lots of breathing room, centered composition that crops well to square on mobile. No text, no logos, no labels, no prices, no people, no neon, no shopping carts. This is decorative shopping imagery, not product photography.” Conversion to WebP used local ImageMagick without changing scene content.
+
+Validation: production web build and client boundary checker passed; `git diff --check` passed. Browser skill review of the actual retained isolated app verified light/dark layouts, no horizontal overflow at measured CSS widths 320, 390, 768 and desktop 1440/1600, Home's current-page indication, mobile cart opening/closing, and Enter search navigation to `/shop?search=tea`. Desktop/mobile previews are private under `tests/artifacts/landing/`. Full web TypeScript remains failing in server alias resolution and other existing files; no diagnostics reference the changed landing/navigation/header/footer/shell files. This is not a clean whole-project typecheck or a rerun of payment/courier persistence acceptance. Existing isolated catalog rows mostly have test names and no images; no fictional marketing catalog was written for screenshots. Generic brand/contact configuration still needs merchant-provided production facts.
+
+How to review after startup: use the already reviewed `tests/artifacts/step14/runtime.env` guards/targets, retained test PostgreSQL/Redis, API and an explicitly inherited web build/preview. No migrations/seeds/resets. The courier simulator and workers are unnecessary for this page review. Open `/`, check both themes at phone/tablet/desktop sizes, enter a search with Enter, open the bottom cart and follow category/product links. Rebuild and restart preview after changes; preview caches its server modules. Do not use root start/build wrappers that can perform data setup.
+
+Next: user visual review/refinement, then select the customer dashboard/orders/profile/settings phase or the content/persistence/SEO prerequisite work. Remaining page scope: broader shop/product/cart/checkout styling, dashboard/orders, profile/settings/auth consistency, about/contact/policies and admin content/SEO. Existing failed peak/security/staging/backup-restore/real merchant gates remain open. No tutorials.
+
+Runtime at handoff: isolated API `localhost:3000`, web preview `localhost:3001` and the existing test PostgreSQL/Redis remain running for visual review. Courier simulator remains stopped; automatic workers disabled. Test data volumes retained. No production/staging service was started.
+
+Runtime correction — 2026-10-04: user reported `EADDRINUSE` on port 3001 when starting their own build. Stopped the task-owned preview/API and test PostgreSQL/Redis containers; verified ports 3000/3001/9099/5433/6380 are free. Data volumes retained. Standing user instruction: never leave task-owned servers running after work finishes. Earlier running-preview handoff is superseded.

@@ -18,7 +18,9 @@ export function PublicShopShell(props: {
       )}
     >
       <PublicHeader />
-      <div className="pb-20 md:pb-0">{props.children}</div>
+      <div className="pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        {props.children}
+      </div>
       {props.footer}
       <MobileBottomNav />
       <CartSheet />

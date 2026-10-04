@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import Logo from "./core/logo";
 import { Link } from "@tanstack/react-router";
 
 import { brandConfig } from "@config/brand";
@@ -8,14 +10,13 @@ export function PublicShopFooter() {
   const { categories } = usePublicData();
 
   return (
-    <footer className="border-t bg-background">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr_1fr] md:px-6">
+    <footer className="border-t bg-muted/30">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-12 md:grid-cols-[1.2fr_0.8fr_0.8fr_1fr] md:px-6">
         <div>
-          <Link to="/" className="text-xl font-semibold">
-            {brandConfig.name}
-          </Link>
+          <Logo />
           <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-            {brandConfig.description}
+            Everyday essentials and unexpected finds. Explore the collection and
+            find something you’ll love.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
             {brandConfig.location.city ?? "Dhaka"},{" "}
@@ -34,6 +35,7 @@ export function PublicShopFooter() {
             <Link
               key={category.id}
               to="/shop"
+              className="truncate"
               search={{ categoryId: category.id }}
             >
               {category.name}
@@ -69,7 +71,7 @@ export function PublicShopFooter() {
           <div className="flex gap-5">
             <Link to="/track-order">Orders</Link>
             <Link to="/cart">Cart</Link>
-            <Link to="/checkout">Checkout</Link>
+            <Link to="/account">Account</Link>
           </div>
         </div>
       </div>
@@ -77,7 +79,7 @@ export function PublicShopFooter() {
   );
 }
 
-function FooterList(props: { title: string; children: any }) {
+function FooterList(props: { title: string; children: ReactNode }) {
   return (
     <div>
       <h3 className="font-medium">{props.title}</h3>
