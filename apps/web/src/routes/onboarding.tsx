@@ -1,3 +1,4 @@
+import { noIndexHead } from "@/features/seo/metadata";
 import {
   createFileRoute,
   redirect,
@@ -37,6 +38,7 @@ import {
 } from "@/features/onboarding/lib/get-onboarding-plans";
 
 export const Route = createFileRoute("/onboarding")({
+  head: noIndexHead,
   beforeLoad: async ({ context }) => {
     const [session, plans] = await Promise.all([
       Promise.resolve(context.session ?? getRootSession()),

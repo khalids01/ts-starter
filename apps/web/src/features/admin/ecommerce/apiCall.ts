@@ -203,6 +203,11 @@ export const ecommerceApi = {
     disable: (id: string) =>
       unwrap(api.admin.discounts({ id }).delete(), "Failed to disable discount"),
   },
+  pageSeo: {
+    get: (page: "home" | "about") => unwrap(api.admin["store-settings"].seo({ page }).get(), "Failed to load SEO"),
+    save: (page: "home" | "about", body: { revision: number; title: string | null; description: string | null; imageUrl: string | null }) => unwrap(api.admin["store-settings"].seo({ page }).put(body), "Failed to save SEO draft"),
+    publish: (page: "home" | "about", revision: number) => unwrap(api.admin["store-settings"].seo({ page }).publish.post({ revision }), "Failed to publish SEO"),
+  },
   storeSettings: {
     get: () => unwrap(api.admin["store-settings"].get(), "Failed to load store settings"),
     update: (body: Record<string, unknown>) =>

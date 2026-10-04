@@ -177,3 +177,6 @@ Operational configuration/recheck:
 3. After explicitly guarded isolated API/web startup, inspect `/health/live` and `/`, phone/desktop navigation and the matching hero. Use the existing production server script to check the build/runtime manifest. Stop every task-owned service after review. Do not replace local API/auth targets with merchant domains merely because BRAND changes.
 
 Next: agree and implement the three niche datasets using the registry asset paths, explicit idempotency/merchant-edit policy and exact authorized DB targets. No seed execution is authorized by this branding task. FoodShop's exact full domain remains unconfirmed and unset. Actual merchant logos/contact/policies can be supplied later. Public/customer dashboard/pages/admin SEO and failed peak/security/staging/backup-restore/real merchant acceptance remain open. No tutorials.
+
+
+Commit checkpoint — 2026-10-04: branding/assets committed as `a5e58ec` under the user’s “do commits and then do the seo from admin” instruction. Shop/product polish committed separately as `c37fed1`. No push. New SEO work is recorded in V3 section 32 and remains uncommitted; brand seed/image expansion is deferred. All verification services are stopped.

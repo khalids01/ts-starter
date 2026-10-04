@@ -1,3 +1,4 @@
+import { noIndexHead } from "@/features/seo/metadata";
 import {
   createFileRoute,
   Outlet,
@@ -81,6 +82,7 @@ import { useSession } from "@/providers/session-provider";
 import type { ClientSession } from "@auth/client";
 
 export const Route = createFileRoute("/admin")({
+  head: noIndexHead,
   server: {
     middleware: [adminMiddleware],
   },

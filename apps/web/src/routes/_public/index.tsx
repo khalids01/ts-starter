@@ -1,3 +1,5 @@
+import { getPageSeo } from "@/features/seo/api";
+import { seoHead, pageSeoDefaults } from "@/features/seo/metadata";
 import { Home } from "@/features/landing/home";
 import { brandConfig } from "@config/brand";
 import { env } from "@env/public";
@@ -23,17 +25,9 @@ export const Route = createFileRoute("/_public/")({
     // UI decide whether to show setup entry points.
     return;
   },
-  head: () => ({
-    meta: [
-      { title: brandConfig.seo.title },
-      { name: "description", content: brandConfig.seo.description },
-      { property: "og:title", content: brandConfig.seo.title },
-      { property: "og:description", content: brandConfig.seo.description },
-      ...(brandConfig.seo.ogImage
-        ? [{ property: "og:image", content: brandConfig.seo.ogImage }]
-        : []),
-    ],
-  }),
+  loader: () => getPageSeo({ data: "home" }),
+  staleTime: 0,
+  head: ({ loaderData }) => seoHead(loaderData ?? pageSeoDefaults(brandConfig, "home"), "/", brandConfig),
   component: HomeComponent,
 });
 

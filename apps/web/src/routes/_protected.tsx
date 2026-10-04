@@ -1,3 +1,4 @@
+import { noIndexHead } from "@/features/seo/metadata";
 import {
   createFileRoute,
   Outlet,
@@ -37,6 +38,7 @@ import { getPayment } from "@/features/payment/lib/get-payment";
 import { useSession } from "@/providers/session-provider";
 
 export const Route = createFileRoute("/_protected")({
+  head: noIndexHead,
   component: ProtectedLayout,
   beforeLoad: async ({ context, cause }) => {
     const session =

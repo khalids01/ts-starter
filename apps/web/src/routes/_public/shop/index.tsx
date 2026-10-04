@@ -1,3 +1,5 @@
+import { brandConfig } from "@config/brand";
+import { seoHead } from "@/features/seo/metadata";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { ShopPage } from "@/features/shop";
@@ -18,6 +20,10 @@ const getShopInitialData = createServerFn({ method: "GET" }).handler(async (): P
 
 export const Route = createFileRoute("/_public/shop/")({
   loader: async () => await getShopInitialData(),
+  head: ({ match }) => {
+    const head = seoHead({ title: `Shop | ${brandConfig.name}`, description: brandConfig.homepage.collectionDescription, imageUrl: brandConfig.seo.ogImage }, "/shop", brandConfig);
+    return { ...head, meta: [...head.meta, ...(Object.keys(match.search).length ? [{ name: "robots", content: "noindex, follow" }] : [])] };
+  },
   component: ShopRoute,
 });
 

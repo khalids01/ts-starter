@@ -1,3 +1,4 @@
+import { PageSeoEditor } from "./seo-editor";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,7 +60,7 @@ export function AdminStoreSettingsPage() {
   if (query.isError) return <div className="rounded-md border p-8 text-center text-sm text-destructive">{readError(query.error, "Failed to load store settings")}</div>;
 
   const disabled = !canManageStoreSettings || save.isPending;
-  return <form className="space-y-6" onSubmit={form.handleSubmit((values) => save.mutate(values))}>
+  return <div className="space-y-6"><form className="space-y-6" onSubmit={form.handleSubmit((values) => save.mutate(values))}>
     <EcommerceHeader title="Store settings" description="Configure the core values used by checkout and new orders." action={canManageStoreSettings ? <Button type="submit" disabled={!form.formState.isValid || save.isPending}>{save.isPending ? "Saving..." : "Save settings"}</Button> : null} />
     <div className="grid gap-6 xl:grid-cols-2">
       <SettingsCard title="Store details" description="Customer-facing store and support information.">
@@ -79,7 +80,9 @@ export function AdminStoreSettingsPage() {
         <Field label="Checkout notice" hint="Shown on checkout and used as the server rejection message when checkout is disabled."><Textarea rows={4} maxLength={500} disabled={disabled} {...form.register("checkoutNotice")} /></Field>
       </SettingsCard>
     </div>
-  </form>;
+  </form>
+    <section aria-label="Website SEO" className="grid items-start gap-6 xl:grid-cols-2"><PageSeoEditor page="home" canManage={canManageStoreSettings} /><PageSeoEditor page="about" canManage={canManageStoreSettings} /></section>
+  </div>;
 }
 
 function SettingsCard(props: { title: string; description: string; children: React.ReactNode }) {

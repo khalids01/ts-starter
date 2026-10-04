@@ -48,6 +48,8 @@ export type ShopVariant = {
 };
 
 export type ShopProduct = {
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   fulfillmentKind?: "standard" | "packaged_food" | "fresh_food" | "gadget" | "clothing";
   warrantyDays?: number;
   id: string;

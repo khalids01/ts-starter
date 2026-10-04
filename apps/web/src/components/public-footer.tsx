@@ -26,6 +26,7 @@ export function PublicShopFooter() {
 
         <FooterList title="Shop">
           <Link to="/shop">All products</Link>
+          <Link to="/about">About us</Link>
           <Link to="/saved">Saved items</Link>
           <Link to="/track-order">Track order</Link>
         </FooterList>

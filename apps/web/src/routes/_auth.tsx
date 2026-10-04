@@ -1,9 +1,11 @@
+import { noIndexHead } from "@/features/seo/metadata";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 import { AuthSettingsProvider } from "@/features/auth/auth-methods";
 import { getPublicAuthSettings } from "@/features/auth/get-public-auth-settings";
 
 export const Route = createFileRoute("/_auth")({
+  head: noIndexHead,
   loader: () => getPublicAuthSettings(),
   component: AuthLayout,
 });

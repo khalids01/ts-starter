@@ -24,11 +24,12 @@ import {
   useSavedItemsStore,
 } from "./saved-items-store";
 
-export function ShopProductPage(props: { slug: string }) {
+export function ShopProductPage(props: { slug: string; initialData?: ShopProduct }) {
   const openCart = useCartSheetStore((state) => state.openCart);
   const addItem = useCartStore((state) => state.addItem);
   const productQuery = useQuery({
     queryKey: queryKeys.shop.product(props.slug),
+    initialData: props.initialData,
     queryFn: async () => {
       const { data, error } = await client.shop.products({ slug: props.slug }).get();
       if (error) {

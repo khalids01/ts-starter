@@ -1,3 +1,6 @@
+import { listSeoProducts } from "../ecommerce/page-seo/catalog-seo.service";
+import { SeoPageParams } from "../ecommerce/page-seo/page-seo.dto";
+import { pageSeoService } from "../ecommerce/page-seo/page-seo.service";
 import prisma from "@db/server";
 import { NichePolicyError } from "../ecommerce/niche/policy";
 import { openWarrantyClaim } from "../ecommerce/niche/gadgets";
@@ -49,6 +52,8 @@ export const shopController = new Elysia({
   },
 })
   .use(authGuard)
+  .get("/seo-products", ({ query }) => listSeoProducts(query.cursor), { query: t.Object({ cursor: t.Optional(t.String({ minLength: 1, maxLength: 160 })) }) })
+  .get("/page-seo/:page", async ({ params }) => ({ seo: await pageSeoService.public(params.page) }), { params: SeoPageParams })
   .get("/food-slots", async ({ query }) => {
     const now = new Date();
     const slots = await prisma.foodDeliverySlot.findMany({ where: { isActive: true, cutoffAt: { gt: now }, endsAt: { gt: now }, ...(query.postalCode ? { postalCodes: { has: query.postalCode.trim().toUpperCase() } } : {}) }, orderBy: { startsAt: "asc" }, take: 100 });

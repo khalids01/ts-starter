@@ -13,3 +13,25 @@ model StoreSettings {
 
   @@map("store_settings")
 }
+
+// Independent deployment website metadata. Drafts never appear in public reads.
+enum StoreSeoPage {
+  home
+  about
+}
+
+model StorePageSeo {
+  page                 StoreSeoPage @id
+  revision             Int          @default(1)
+  title                String?      @db.VarChar(120)
+  description          String?      @db.VarChar(320)
+  imageUrl             String?      @db.VarChar(2048)
+  publishedTitle       String?      @db.VarChar(120)
+  publishedDescription String?      @db.VarChar(320)
+  publishedImageUrl    String?      @db.VarChar(2048)
+  publishedAt          DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@map("store_page_seo")
+}

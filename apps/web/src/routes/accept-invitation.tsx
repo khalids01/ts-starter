@@ -1,3 +1,4 @@
+import { noIndexHead } from "@/features/seo/metadata";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -27,6 +28,7 @@ type ApiError = {
 };
 
 export const Route = createFileRoute("/accept-invitation")({
+  head: noIndexHead,
   component: AcceptInvitationPage,
   validateSearch: (search) => ({
     id: typeof search.id === "string" ? search.id : "",

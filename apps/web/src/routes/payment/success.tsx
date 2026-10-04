@@ -1,9 +1,11 @@
+import { noIndexHead } from "@/features/seo/metadata";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 
 import { redirect } from "@tanstack/react-router";
 import { getRootSession } from "@/features/user/lib/get-root-session";
 
 export const Route = createFileRoute("/payment/success")({
+  head: noIndexHead,
   beforeLoad: async ({ context }) => {
     const session = context.session ?? (await getRootSession());
     if (!session) {

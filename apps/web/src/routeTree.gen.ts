@@ -15,7 +15,9 @@ import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AcceptInvitationRouteImport } from './routes/accept-invitation'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthAuthCompleteRouteImport } from './routes/_auth/auth-complete'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -27,6 +29,7 @@ import { Route as ProtectedBillingRouteImport } from './routes/_protected/billin
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicAboutRouteImport } from './routes/_public/about'
 import { Route as PublicCartRouteImport } from './routes/_public/cart'
 import { Route as PublicCheckoutRouteImport } from './routes/_public/checkout'
 import { Route as PublicSavedRouteImport } from './routes/_public/saved'
@@ -99,9 +102,19 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthAuthCompleteRoute = AuthAuthCompleteRouteImport.update({
@@ -157,6 +170,11 @@ const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicAboutRoute = PublicAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => PublicRoute,
 } as any)
 const PublicCartRoute = PublicCartRouteImport.update({
@@ -390,7 +408,9 @@ export interface FileRoutesByFullPath {
   '/accept-invitation': typeof AcceptInvitationRoute
   '/admin': typeof AdminRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/setup': typeof SetupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth-complete': typeof AuthAuthCompleteRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -401,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof ProtectedBillingRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/settings': typeof ProtectedSettingsRoute
+  '/about': typeof PublicAboutRoute
   '/cart': typeof PublicCartRoute
   '/checkout': typeof PublicCheckoutRouteWithChildren
   '/saved': typeof PublicSavedRoute
@@ -450,7 +471,9 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
   '/onboarding': typeof OnboardingRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/setup': typeof SetupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth-complete': typeof AuthAuthCompleteRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -461,6 +484,7 @@ export interface FileRoutesByTo {
   '/billing': typeof ProtectedBillingRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/settings': typeof ProtectedSettingsRoute
+  '/about': typeof PublicAboutRoute
   '/cart': typeof PublicCartRoute
   '/saved': typeof PublicSavedRoute
   '/track-order': typeof PublicTrackOrderRoute
@@ -508,7 +532,9 @@ export interface FileRoutesById {
   '/accept-invitation': typeof AcceptInvitationRoute
   '/admin': typeof AdminRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/setup': typeof SetupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_auth/auth-complete': typeof AuthAuthCompleteRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -519,6 +545,7 @@ export interface FileRoutesById {
   '/_protected/billing': typeof ProtectedBillingRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/_protected/settings': typeof ProtectedSettingsRoute
+  '/_public/about': typeof PublicAboutRoute
   '/_public/cart': typeof PublicCartRoute
   '/_public/checkout': typeof PublicCheckoutRouteWithChildren
   '/_public/saved': typeof PublicSavedRoute
@@ -572,7 +599,9 @@ export interface FileRouteTypes {
     | '/accept-invitation'
     | '/admin'
     | '/onboarding'
+    | '/robots.txt'
     | '/setup'
+    | '/sitemap.xml'
     | '/auth-complete'
     | '/forgot-password'
     | '/login'
@@ -583,6 +612,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/settings'
+    | '/about'
     | '/cart'
     | '/checkout'
     | '/saved'
@@ -632,7 +662,9 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invitation'
     | '/onboarding'
+    | '/robots.txt'
     | '/setup'
+    | '/sitemap.xml'
     | '/auth-complete'
     | '/forgot-password'
     | '/login'
@@ -643,6 +675,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/settings'
+    | '/about'
     | '/cart'
     | '/saved'
     | '/track-order'
@@ -689,7 +722,9 @@ export interface FileRouteTypes {
     | '/accept-invitation'
     | '/admin'
     | '/onboarding'
+    | '/robots.txt'
     | '/setup'
+    | '/sitemap.xml'
     | '/_auth/auth-complete'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -700,6 +735,7 @@ export interface FileRouteTypes {
     | '/_protected/billing'
     | '/_protected/dashboard'
     | '/_protected/settings'
+    | '/_public/about'
     | '/_public/cart'
     | '/_public/checkout'
     | '/_public/saved'
@@ -754,7 +790,9 @@ export interface RootRouteChildren {
   AcceptInvitationRoute: typeof AcceptInvitationRoute
   AdminRoute: typeof AdminRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SetupRoute: typeof SetupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
 }
 
@@ -802,11 +840,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/setup': {
       id: '/setup'
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/auth-complete': {
@@ -884,6 +936,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/about': {
+      id: '/_public/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof PublicAboutRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_public/cart': {
@@ -1264,6 +1323,7 @@ const PublicShopRouteWithChildren = PublicShopRoute._addFileChildren(
 )
 
 interface PublicRouteChildren {
+  PublicAboutRoute: typeof PublicAboutRoute
   PublicCartRoute: typeof PublicCartRoute
   PublicCheckoutRoute: typeof PublicCheckoutRouteWithChildren
   PublicSavedRoute: typeof PublicSavedRoute
@@ -1273,6 +1333,7 @@ interface PublicRouteChildren {
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicAboutRoute: PublicAboutRoute,
   PublicCartRoute: PublicCartRoute,
   PublicCheckoutRoute: PublicCheckoutRouteWithChildren,
   PublicSavedRoute: PublicSavedRoute,
@@ -1417,7 +1478,9 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInvitationRoute: AcceptInvitationRoute,
   AdminRoute: AdminRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SetupRoute: SetupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
 }
 export const routeTree = rootRouteImport
