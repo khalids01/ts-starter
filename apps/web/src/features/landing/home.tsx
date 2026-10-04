@@ -1,3 +1,4 @@
+import { brandConfig } from "@config/brand";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -67,7 +68,7 @@ export function Home() {
         Skip to content
       </a>
       <main id="main-content">
-        <Hero products={items} />
+        <Hero />
         <ShoppingGuide />
         {visibleCategories.length > 0 && (
           <Categories categories={visibleCategories} />
@@ -80,10 +81,10 @@ export function Home() {
             <div>
               <Eyebrow>THE EVERYDAY EDIT</Eyebrow>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Find your next favourite.
+                {brandConfig.homepage.collectionTitle}
               </h2>
               <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground sm:text-base">
-                A little inspiration for your basket. Explore what’s in store.
+                {brandConfig.homepage.collectionDescription}
               </p>
             </div>
             <Link
@@ -214,9 +215,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
   );
 }
 
-function Hero({ products }: { products: ShopProduct[] }) {
-  const heroProduct = products.find((product) => productImage(product));
-  const image = heroProduct ? productImage(heroProduct) : null;
+function Hero() {
   return (
     <section className={cn(container, "pt-4 sm:pt-6")}>
       <div className="relative isolate overflow-hidden rounded-[1.5rem] bg-[#f0f1e9] text-[#183c2e] sm:rounded-[2rem] dark:bg-[#172a23] dark:text-[#e8eee6]">
@@ -224,17 +223,16 @@ function Hero({ products }: { products: ShopProduct[] }) {
           <div className="relative z-10 px-6 pb-8 pt-9 sm:px-10 sm:py-12 lg:px-14 lg:py-16">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-current/15 px-3 py-1.5 text-[10px] font-medium tracking-[0.12em] sm:mb-8 sm:text-xs">
               <span className="size-1.5 rounded-full bg-emerald-700 dark:bg-emerald-400" />{" "}
-              YOUR EVERYDAY, REIMAGINED
+              {brandConfig.homepage.eyebrow}
             </div>
             <h1 className="max-w-xl text-[clamp(2.6rem,6vw,4.8rem)] font-semibold leading-[1.03] tracking-[-0.055em]">
-              Good finds.
+              {brandConfig.homepage.headline}
               <br />
-              Great everyday
+              {brandConfig.homepage.highlightedLine}
               <span className="text-emerald-700 dark:text-emerald-400">.</span>
             </h1>
             <p className="mt-5 max-w-sm text-sm leading-7 opacity-75 sm:mt-7 sm:text-base">
-              From daily essentials to something a little special. Find what
-              fits your life, all in one place.
+              {brandConfig.homepage.description}
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-5 sm:mt-9">
               <Link to="/shop" className={landingButton({ className: action })}>
@@ -253,47 +251,17 @@ function Hero({ products }: { products: ShopProduct[] }) {
             </p>
           </div>
           <div className="relative mx-5 mb-5 min-h-[260px] overflow-hidden rounded-2xl bg-[#e2e7da] sm:mx-8 sm:min-h-[340px] lg:mx-0 lg:mb-0 lg:rounded-none dark:bg-[#213a30]">
-            {image ? (
-              <Img
-                src={image}
-                alt={heroProduct!.name}
-                loading="eager"
-                fetchPriority="high"
-                showPlaceholder={false}
-                objectFit="contain"
-                className="absolute inset-0 h-full w-full p-10 sm:p-14"
-              />
-            ) : (
-              <img
-                src="/ecommerce/images/shopping-editorial.webp"
-                alt=""
-                fetchPriority="high"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
-            {heroProduct ? (
-              <Link
-                to="/shop/products/$slug"
-                params={{ slug: heroProduct.slug }}
-                className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-4 rounded-xl border border-white/30 bg-background/95 p-4 text-foreground shadow-sm backdrop-blur sm:inset-x-6 sm:bottom-6"
-              >
-                <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                    In the spotlight
-                  </p>
-                  <p className="mt-1 truncate text-sm font-medium">
-                    {heroProduct.name}
-                  </p>
-                </div>
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-emerald-800 text-white">
-                  <ArrowRight className="size-4" />
-                </span>
-              </Link>
-            ) : (
-              <span className="absolute bottom-5 left-5 rounded-full bg-background/95 px-4 py-2 text-xs font-medium text-foreground">
-                Small finds. Big possibilities.
-              </span>
-            )}
+            <Img
+              src={brandConfig.homepage.heroImage}
+              alt=""
+              loading="eager"
+              fetchPriority="high"
+              showPlaceholder={false}
+              className="absolute inset-0 h-full w-full"
+            />
+            <span className="absolute bottom-5 left-5 rounded-full bg-background/95 px-4 py-2 text-xs font-medium text-foreground">
+              {brandConfig.name}
+            </span>
           </div>
         </div>
       </div>
@@ -493,13 +461,10 @@ function EverydayBanner() {
               A BASKET FULL OF POSSIBILITIES
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Your everyday.
-              <br />A little more you.
+              {brandConfig.homepage.bannerTitle}
             </h2>
             <p className="mt-4 max-w-md text-sm leading-6 text-emerald-100/80">
-              The essentials you need. The discoveries you’ll love.
-              <br className="hidden sm:block" /> Take a look around and make
-              yourself at home.
+              {brandConfig.homepage.bannerDescription}
             </p>
           </div>
           <Link

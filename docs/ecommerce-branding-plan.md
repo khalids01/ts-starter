@@ -1,7 +1,7 @@
 # Ecommerce deployment branding plan
 
 Date: 2026-10-04
-Status: proposal only; no application/config/schema changes or seed execution authorized.
+Status: deployment branding and niche image assets implemented and verified; brand data seeding remains a separate task.
 Repository: `/home/khalid/Desktop/projects/saas/ts-starter`, branch `ecommerce`.
 
 ## 1. Goal
@@ -132,10 +132,48 @@ Merely configuring `seed.dataPath` must do nothing at build/start/import time. E
 
 Currency/contact/social/policy content must come from actual merchant facts; no need to invent them to finish registry wiring. Admin content/SEO work can continue later according to the public/customer content plan.
 
-## 10. Current next action and unfinished gates
+## 10. Initial planning checkpoint (superseded by section 11)
 
 Completed: read-only inspection of existing ecommerce branding/env consumers and the requested job-apps reference; this plan only. Application code, environment files, database, seeds, runtime and commits untouched. Existing landing work remains uncommitted and preserved.
 
 Next: user reviews the proposed registry/selection contract and confirms the key/domain/design decisions. Implement branding only after explicit instruction. Then plan and authorize niche-specific seed data separately.
 
 No task-owned servers may remain running after work finishes. No migrations/seeds/resets/new DB or tutorials under this planning scope. Public/customer dashboard/pages/admin SEO and failed peak/security/staging/backup-restore/real merchant acceptance remain unfinished; branding does not imply those gates have passed.
+
+
+## 11. Authorized implementation and verification — 2026-10-04
+
+User confirmed AirShop clothing/footwear, requested retaining its existing hero, generating separate food/gadget heroes and three reusable product images per niche, and explicitly requested committing previous changes first. Landing work committed as `176f5f7`; branding plan committed as `2e9d2bd`, no push. Branding follow-on remains uncommitted.
+
+Implemented:
+
+- Typed `brands` registry in `packages/config/src/brand.config.ts`: keys `foodshop`, `bestsky`, `airshop`, identity/niche, optional supplied public origin, logo override hook, monogram favicon, commerce defaults, SEO/homepage defaults and declared seed paths/product-image tuples. No invented merchant support details, city or FoodShop TLD; no organic certification claim. Full logos can replace monograms through existing `logoUrl`; layout/theme remains shared.
+- Pure resolver rejects missing/unknown/inherited keys. Selected exports live in `brand.ts`, keeping registry/resolver safe to import from Vite/build tests without loading the selected deployment or backend env. Existing `@config/brand` imports and TS aliases resolve to the selected wrapper. Server env requires BRAND. No config-to-server-env cycle or entire-env exposure.
+- Vite resolves BRAND from inherited env or its local env files and substitutes only the public selector in browser/SSR output. Build writes `dist/brand.json`; production web startup checks runtime BRAND before importing the artifact/listening. Turbo includes BRAND in global cache inputs. One web build per brand; rebuild when changing BRAND.
+- API liveness reports its non-secret selected brand. A root server loader validates the configured API's identity before loading any public/customer/admin route. Hostnames and customer input cannot select branding. Deployment identity does not rewrite existing StoreSettings or catalog data.
+- Header/logo, favicon, HTML language/brand marker, footer, home hero/copy/banner and brand SEO defaults use selected config. AirShop always retains `/ecommerce/images/shopping-editorial.webp`; seeded product photography no longer replaces the brand hero. Admin-managed home/about SEO is still a later phase.
+- Added `BRAND=airshop` to web/server env examples and the ignored reviewed local test env/runtime, preserving other values. No live domain/auth/CORS/API target substituted for localhost.
+
+Assets generated with the built-in image-generation tool and converted to WebP with local ImageMagick, preserving original tool PNGs. Exact final prompts and workspace paths are in `docs/ecommerce-brand-assets.json`; all new files are under `apps/web/public/brands/`. Two new heroes plus nine product images total approximately 650 KB including icons. Visual inspection covered both heroes and a nine-image contact sheet. Product images are illustrative fictional catalog assets for later seeding, not verified real stock/product specifications.
+
+| Brand | Hero | Reusable seed product assets |
+| --- | --- | --- |
+| FoodShop | `/brands/foodshop/hero.webp` | `mangoes.webp`, `honey.webp`, `dates.webp` under `/brands/foodshop/products/` |
+| BestSky | `/brands/bestsky/hero.webp` | `headphones.webp`, `smartwatch.webp`, `earbuds.webp` under `/brands/bestsky/products/` |
+| AirShop | Existing shopping-editorial WebP retained | `t-shirt.webp`, `sneakers.webp`, `hoodie.webp` under `/brands/airshop/products/` |
+
+Seed paths are declarations only. Dataset folders/runner changes/data writes were not created. BRAND selection/import/build/start never loads or executes a seed. No migration, reset, new DB, real courier/payment/mail, production/staging action or tutorial.
+
+Validation: five branding tests / 53 assertions passed, covering strict key selection, niche/seed namespaces, mismatch/invalid manifest refusal, missing facts and existence of every referenced local asset. All three production web builds passed. Server production build and server TypeScript passed; web client boundary check and `git diff --check` passed. Full web TypeScript remains failing in pre-existing alias/other-page diagnostics; no diagnostics reference changed branding files. No claim of clean whole-repo types or new courier/money persistence acceptance.
+
+Actual retained isolated-runtime verification: existing guards checked before startup; API/web used localhost 3000/3001, existing test DB/Redis and disabled workers. All three matched-brand pages returned server-rendered identity, favicon and matching hero. Wrong runtime for the web build failed before listening; FoodShop web against AirShop API returned HTTP 500 instead of mixed-brand content. FoodShop/BestSky actual phone CSS width 390 had no horizontal overflow; BestSky desktop reviewed. Final local artifact rebuilt/rechecked as AirShop, matching the local test env. Private evidence is under `tests/artifacts/branding/` (unit/types/boundaries, rendered HTML and asset contact sheet); build logs are local temporary files. Ordinary isolated visitor telemetry may remain; no broad data cleanup.
+
+All task-owned API/web/test PostgreSQL/Redis services were stopped afterwards. Ports 3000/3001/9099/5433/6380 were verified free. Data volumes retained; capacity resources untouched.
+
+Operational configuration/recheck:
+
+1. Set the same `BRAND=foodshop`, `BRAND=bestsky` or `BRAND=airshop` for API runtime, web build and web runtime. `BRAND` is required; there is no separately configured VITE_BRAND.
+2. With the reviewed local runtime, direct web build is `BRAND=airshop bun --env-file=tests/artifacts/step14/runtime.env run --cwd apps/web build`. Server build can use the corresponding direct package command. These commands do not provision/seed. Test resolver/assets with `bun test packages/config/src/brand.test.ts`; no app startup is needed for that test.
+3. After explicitly guarded isolated API/web startup, inspect `/health/live` and `/`, phone/desktop navigation and the matching hero. Use the existing production server script to check the build/runtime manifest. Stop every task-owned service after review. Do not replace local API/auth targets with merchant domains merely because BRAND changes.
+
+Next: agree and implement the three niche datasets using the registry asset paths, explicit idempotency/merchant-edit policy and exact authorized DB targets. No seed execution is authorized by this branding task. FoodShop's exact full domain remains unconfirmed and unset. Actual merchant logos/contact/policies can be supplied later. Public/customer dashboard/pages/admin SEO and failed peak/security/staging/backup-restore/real merchant acceptance remain open. No tutorials.

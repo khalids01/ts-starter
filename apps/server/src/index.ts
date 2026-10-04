@@ -10,7 +10,7 @@ import { enforceRateLimit } from "./modules/rate-limit/rate-limit.service";
 import { startVisitorFlushWorker, stopVisitorFlushWorker } from "./modules/visitors/visitors.service";
 import { securityHeadersPlugin } from "./plugins/security-headers";
 import { cookieRequestOriginPlugin } from "./plugins/cookie-request-origin";
-import { e2eRuntimeConfig } from "@config";
+import { e2eRuntimeConfig, brandKey } from "@config";
 import { startCourierDispatchWorker, stopCourierDispatchWorker } from "./modules/delivery/dispatch-worker";
 import { startCourierTrackingWorker, stopCourierTrackingWorker } from "./modules/delivery/tracking-worker";
 
@@ -75,7 +75,7 @@ const server = new Elysia()
     parse: "none",
   })
   .use(app)
-  .get("/health/live", () => ({ status: "ok" }))
+  .get("/health/live", () => ({ status: "ok", brand: brandKey }))
   .get("/", () => "OK")
   .listen({ port, hostname: process.env.HOST ?? "0.0.0.0", maxRequestBodySize: 1_048_576 }, () => {
     console.log(`Server is running on http://localhost:${port}`);

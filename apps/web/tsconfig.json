@@ -26,7 +26,7 @@
       "@auth/client": ["../../packages/auth/src/index.client.ts"],
       "@auth/shared": ["../../packages/auth/src/index.shared.ts"],
       "@config": ["../../packages/config/src/config.ts"],
-      "@config/brand": ["../../packages/config/src/brand.config.ts"],
+      "@config/brand": ["../../packages/config/src/brand.ts"],
       "@env/client": ["../../packages/env/src/env.client.ts"],
       "@env/public": ["../../packages/env/src/env.public.ts"],
       "@env/server": ["../../packages/env/src/env.server.ts"],

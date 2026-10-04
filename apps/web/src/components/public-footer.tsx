@@ -15,12 +15,12 @@ export function PublicShopFooter() {
         <div>
           <Logo />
           <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-            Everyday essentials and unexpected finds. Explore the collection and
-            find something you’ll love.
+            {brandConfig.description}
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            {brandConfig.location.city ?? "Dhaka"},{" "}
-            {brandConfig.location.country ?? "Bangladesh"}
+            {[brandConfig.location.city, brandConfig.location.country]
+              .filter(Boolean)
+              .join(", ")}
           </p>
         </div>
 

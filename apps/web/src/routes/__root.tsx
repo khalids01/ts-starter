@@ -4,6 +4,8 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
+import { getDeploymentBrand } from "@/features/branding/get-deployment-brand";
+import { brandConfig } from "@config/brand";
 import { Toaster } from "@/components/ui/sonner";
 import { TanstackQueryProvider } from "@/providers/tanstack-query";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -18,6 +20,10 @@ export interface RouterAppContext {
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   head: () => ({
+    links: [
+      { rel: "icon", href: brandConfig.iconUrl, type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: brandConfig.iconUrl },
+    ],
     meta: [
       {
         charSet: "utf-8",
@@ -27,11 +33,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Saas Starter",
+        title: brandConfig.name,
       },
     ],
   }),
   loader: async () => {
+    await getDeploymentBrand();
     const session = await getRootSession();
     return { session: session ?? null };
   },
@@ -44,7 +51,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootDocument() {
   const { session } = Route.useLoaderData();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={brandConfig.commerce.defaultLocale}
+      data-brand={brandConfig.key}
+      suppressHydrationWarning
+    >
       <head>
         <HeadContent />
       </head>
@@ -56,7 +67,7 @@ function RootDocument() {
             </TanstackQueryProvider>
           </SessionProvider>
           <VisitorTracker />
-          <Toaster richColors position="top-center"/>
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
         <Scripts />
       </body>

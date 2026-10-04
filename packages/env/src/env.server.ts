@@ -12,6 +12,7 @@ const e2eDefaults =
 
 export const env = createEnv({
   server: {
+    BRAND: z.string().trim().pipe(z.enum(["foodshop", "bestsky", "airshop"])),
     DATABASE_URL: z.string().min(1),
     REDIS_URL: z.string().url(),
     REDIS_KEY_PREFIX: z.string().default("ts-starter:"),

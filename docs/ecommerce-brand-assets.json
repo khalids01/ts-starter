@@ -1,0 +1,71 @@
+{
+  "generator": "Built-in image_gen; WebP conversion with ImageMagick. Fictional illustration assets for later curated seeds, not verified merchant product photography.",
+  "assets": [
+    {
+      "brand": "foodshop",
+      "name": "hero",
+      "prompt": "Use case: ads-marketing. Portrait 4:5 premium food ecommerce hero photograph: ripe yellow-green mangoes, one cut mango with golden flesh, a small clear unlabelled honey jar, a ceramic bowl of dates, natural green leaves on warm ivory and sage stone plinths. Calm soft daylight, clean editorial studio composition with breathing room. No text, no brand labels, no organic certification symbols, no people.",
+      "path": "apps/web/public/brands/foodshop/hero.webp"
+    },
+    {
+      "brand": "bestsky",
+      "name": "hero",
+      "prompt": "Use case: ads-marketing. Portrait 4:5 premium electronics ecommerce hero photograph: unbranded matte charcoal wireless headphones, simple smartwatch with blank dark display, open wireless earbud charging case on cool pale blue stone plinths. Restrained studio daylight, crisp material detail, minimal contemporary retail composition with breathing room. No text, no logos, no numbers, no people.",
+      "path": "apps/web/public/brands/bestsky/hero.webp"
+    },
+    {
+      "brand": "foodshop",
+      "name": "mangoes",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of three ripe yellow green mangoes and one cut mango showing golden flesh. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/foodshop/products/mangoes.webp"
+    },
+    {
+      "brand": "foodshop",
+      "name": "honey",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a clear glass jar of amber honey with plain lid, beside a wooden honey dipper. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/foodshop/products/honey.webp"
+    },
+    {
+      "brand": "foodshop",
+      "name": "dates",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a small ivory ceramic bowl of rich brown dates. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/foodshop/products/dates.webp"
+    },
+    {
+      "brand": "bestsky",
+      "name": "headphones",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a pair of matte charcoal wireless over-ear headphones. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/bestsky/products/headphones.webp"
+    },
+    {
+      "brand": "bestsky",
+      "name": "smartwatch",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of an unbranded black smartwatch with a blank black screen and simple silicone strap. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/bestsky/products/smartwatch.webp"
+    },
+    {
+      "brand": "bestsky",
+      "name": "earbuds",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a pair of white wireless earbuds with an open white charging case. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/bestsky/products/earbuds.webp"
+    },
+    {
+      "brand": "airshop",
+      "name": "t-shirt",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a neatly laid out unbranded ivory cotton short sleeve crewneck T-shirt. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/airshop/products/t-shirt.webp"
+    },
+    {
+      "brand": "airshop",
+      "name": "sneakers",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a pair of minimalist unbranded ivory and light beige everyday sneakers. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/airshop/products/sneakers.webp"
+    },
+    {
+      "brand": "airshop",
+      "name": "hoodie",
+      "prompt": "Use case: product-mockup. Square 1:1 high quality ecommerce catalog photograph of a neatly laid out unbranded sage green cotton hoodie. Single product or product set centered, entire subject visible with generous margin, seamless warm off-white background, soft natural studio light, subtle realistic contact shadow, faithful textures, clean professional retail styling. No text, no logos, no labels, no watermark, no people. This is fictional seed catalog imagery.",
+      "path": "apps/web/public/brands/airshop/products/hoodie.webp"
+    }
+  ]
+}

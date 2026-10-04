@@ -1,6 +1,7 @@
 {
   "$schema": "https://v2-9-7.turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": ["BRAND"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
