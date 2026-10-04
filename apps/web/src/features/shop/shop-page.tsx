@@ -1,3 +1,4 @@
+import { brandConfig } from "@config/brand";
 import {  useNavigate, useSearch } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -114,7 +115,7 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
       }
       return data as PageResult<ShopProduct>;
     },
-    initialData: props.initialData.products,
+    initialData: Object.keys(cleanShopSearch(routeSearch)).length === 0 ? props.initialData.products : undefined,
   });
 
   const products = productsQuery.data?.items ?? [];
@@ -158,9 +159,14 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
         onApply={updateFilters}
         onReset={resetFilters}
       >
-        <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-6">
-          <section className="grid gap-5  lg:grid-cols-[280px_1fr]">
-            <aside className="hidden lg:block">
+        <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:px-6 md:py-12">
+          <header className="border-b pb-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{brandConfig.name} / Shop</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">{brandConfig.homepage.collectionTitle}</h1>
+            <p className="mt-3 max-w-xl leading-7 text-muted-foreground">{brandConfig.homepage.collectionDescription}</p>
+          </header>
+          <section className="grid items-start gap-6 lg:grid-cols-[260px_1fr]">
+            <aside className="hidden lg:sticky lg:top-28 lg:block">
                 <FilterPanel />
             </aside>
 
@@ -173,7 +179,8 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
                   <div className="relative min-w-0 flex-1">
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      className="h-10 bg-accent pl-9"
+                      aria-label="Search products"
+                      className="h-12 rounded-full bg-background pl-9"
                       value={searchInput}
                       placeholder="Search products"
                       onChange={(event) => setSearchInput(event.target.value)}
@@ -218,7 +225,7 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
                       updateFilters({ sort: value ?? "newest" })
                     }
                   >
-                    <SelectTrigger className="w-[160px] bg-accent">
+                    <SelectTrigger className="min-h-11 w-[160px] rounded-full bg-background">
                       <span className="flex flex-1 text-left">
                         {sortLabel(routeSearch.sort)}
                       </span>
@@ -234,9 +241,12 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
                 </div>
               </div>
 
-              <div className="min-h-0 lg:overflow-y-auto lg:pr-2">
+              <p aria-live="polite" className="text-sm text-muted-foreground">{productsQuery.isFetching ? "Updating products…" : `${products.length} of ${productsQuery.data?.total ?? 0} products`}{routeSearch.search ? ` for “${routeSearch.search}”` : ""}</p>
+              <div className="min-h-0">
                 {productsQuery.isLoading ? (
                   <StateCard>Loading products...</StateCard>
+                ) : productsQuery.isError ? (
+                  <StateCard><p className="font-medium text-foreground">We couldn’t load your products.</p><p className="mt-2">Please try again in a moment.</p><Button variant="outline" className="mt-4" onClick={() => void productsQuery.refetch()}>Try again</Button></StateCard>
                 ) : products.length === 0 ? (
                   <StateCard>
                     <p>No products found.</p>
@@ -245,7 +255,7 @@ export function ShopPage(props: { initialData: ShopInitialData }) {
                     </Button>
                   </StateCard>
                 ) : (
-                  <section className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <section className="grid items-start gap-3 grid-cols-1 min-[380px]:grid-cols-2 md:gap-5 xl:grid-cols-3">
                     {products.map((product) => (
                       <StoreProductCard key={product.id} product={product} />
                     ))}

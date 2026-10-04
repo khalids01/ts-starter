@@ -17,18 +17,19 @@ import { formatMoney, productImage } from "../utils";
 
 export function StoreProductCard(props: { product: ShopProduct; className?: string }) {
   const imageUrl = productImage(props.product);
-  const defaultVariant = props.product.variants[0];
+  const defaultVariant = props.product.variants.find((variant) => variant.isActive && variant.isDefault)
+    ?? props.product.variants.find((variant) => variant.isActive);
   const toggleSaved = useSavedItemsStore((state) => state.toggle);
   const isSaved = useSavedItemsStore((state) => state.isSaved(props.product.id));
   const specs = productCardSpecs(props.product);
 
   return (
-    <article className={cn("overflow-hidden rounded-md border bg-card", props.className)}>
+    <article className={cn("group overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-md", props.className)}>
       <div className="relative">
         <Link to="/shop/products/$slug" params={{ slug: props.product.slug }} className="block">
-          <div className="aspect-[4/3] bg-muted">
+          <div className="aspect-square bg-muted/40">
             {imageUrl ? (
-              <Img src={imageUrl} alt="" className="h-full w-full object-contain p-3 transition group-hover:scale-[1.02]" />
+              <Img src={imageUrl} alt={props.product.name} objectFit="contain" className="h-full w-full transition-transform motion-safe:group-hover:scale-[1.02]" />
             ) : (
               <FallbackProductVisual />
             )}
@@ -38,14 +39,15 @@ export function StoreProductCard(props: { product: ShopProduct; className?: stri
           type="button"
           size="icon-sm"
           variant="secondary"
-          className="absolute right-3 top-3 bg-background/90"
+          aria-pressed={isSaved}
+          className="absolute right-3 top-3 rounded-full bg-background/90"
           onClick={() => toggleSaved(savedProductFromProduct(props.product))}
         >
           <Heart className={cn("size-4", isSaved ? "fill-rose-500 text-rose-500" : "")} />
           <span className="sr-only">{isSaved ? "Remove from saved" : "Save product"}</span>
         </Button>
       </div>
-      <div className="grid gap-2.5 p-3">
+      <div className="grid gap-3 p-4 md:p-5">
         <div className="flex flex-wrap gap-1.5">
           {props.product.badgeLabel ? <Badge>{props.product.badgeLabel}</Badge> : null}
           {props.product.isTrending ? <Badge variant="secondary">Trending</Badge> : null}
@@ -69,7 +71,7 @@ export function StoreProductCard(props: { product: ShopProduct; className?: stri
             </ul>
           ) : (
             <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-muted-foreground">
-              {props.product.description ?? "Product details and available variants are ready to review."}
+              {props.product.description ?? "Explore available options."}
             </p>
           )}
         </div>
@@ -77,7 +79,7 @@ export function StoreProductCard(props: { product: ShopProduct; className?: stri
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-base font-semibold">{formatMoney(defaultVariant?.price, defaultVariant?.currency)}</p>
-            {defaultVariant?.compareAtPrice ? (
+            {defaultVariant?.compareAtPrice && Number(defaultVariant.compareAtPrice) > Number(defaultVariant.price) ? (
               <p className="text-xs text-muted-foreground line-through">
                 {formatMoney(defaultVariant.compareAtPrice, defaultVariant.currency)}
               </p>
@@ -107,7 +109,7 @@ function ProductCardActions(props: { product: ShopProduct; variant?: ShopVariant
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       <Button
         type="button"
         variant="outline"
@@ -119,7 +121,7 @@ function ProductCardActions(props: { product: ShopProduct; variant?: ShopVariant
         }}
       >
         <ShoppingCart className="size-4" />
-        Cart
+        Add
       </Button>
       <Button
         type="button"
@@ -130,7 +132,7 @@ function ProductCardActions(props: { product: ShopProduct; variant?: ShopVariant
         }}
       >
         <Zap className="size-4" />
-        Buy
+        Buy now
       </Button>
     </div>
   );

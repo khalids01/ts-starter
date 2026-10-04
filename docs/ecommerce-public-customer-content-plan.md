@@ -191,3 +191,16 @@ Next: user visual review/refinement, then select the customer dashboard/orders/p
 Runtime at handoff: isolated API `localhost:3000`, web preview `localhost:3001` and the existing test PostgreSQL/Redis remain running for visual review. Courier simulator remains stopped; automatic workers disabled. Test data volumes retained. No production/staging service was started.
 
 Runtime correction — 2026-10-04: user reported `EADDRINUSE` on port 3001 when starting their own build. Stopped the task-owned preview/API and test PostgreSQL/Redis containers; verified ports 3000/3001/9099/5433/6380 are free. Data volumes retained. Standing user instruction: never leave task-owned servers running after work finishes. Earlier running-preview handoff is superseded.
+
+
+## 12. Shop and product presentation — 2026-10-04
+
+The user paused the additional 21 image/product request and authorized proceeding with product and other pages. No additional images were generated, and no brand products were seeded. Existing branding changes are preserved and remain uncommitted.
+
+Completed this bounded step: niche-aware catalog heading; responsive square-image cards, refined spacing and touch controls; clearer search/sort/results and retry states; product gallery with contained images, named thumbnail controls and selected-state accessibility; active default variant selection, refined purchase panel, genuine gadget/fresh-food guidance and structured product specifications. Crossed-out prices show only when higher than the selling price. Filtered URLs no longer receive unfiltered initial rows. Existing cart and server-authoritative checkout/payment/inventory contracts remain in place. No new content claims, schema or API changes.
+
+Validation: production web build and client boundary check passed; git diff whitespace check passed. Full web TypeScript still reports existing errors outside these three changed shop files; no diagnostics name product-page.tsx, shop-page.tsx or catalog/product-card.tsx. This step has no actual browser/mobile screenshot or persisted purchase evidence, so visual and interaction acceptance remains unfinished. No server/container was started; no DB writes, migrations, seeds or resets.
+
+How to review after the user's app startup: build with the same BRAND as the API; open /shop and a real product; check widths 320/390/768/1440, long names, absent images, unavailable variants, search/filter URLs, gallery controls, save state and existing cart opening. Inspect fresh-food delivery guidance and eligible gadget warranty text; food/clothing must have no gadget warranty text. Failed requests must offer retry rather than masquerading as an empty catalog. Existing pagination is still limited to the current first 100 results and needs a separate follow-up.
+
+Next bounded step: cart/checkout/confirmation/tracking visual polish, followed by customer dashboard/orders/profile/settings. About/contact/approved policies and admin-managed content/SEO remain unfinished. Brand seed datasets and the paused seven additional product images per brand remain pending. Retain failed peak, security, staging, recovery and real merchant acceptance gates. No tutorials; no new commit or push.
