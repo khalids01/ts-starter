@@ -10,10 +10,10 @@ export function assertBrandSeedTarget(env: Record<string, string | undefined>) {
     !["postgres:", "postgresql:"].includes(url.protocol) ||
     env.NODE_ENV === "production" ||
     env.E2E_MODE === "true" ||
-    env.BRAND_SEED_DATABASE !== decodeURIComponent(url.pathname.slice(1))
+    !decodeURIComponent(url.pathname.slice(1)).trim()
   )
     throw new Error(
-      "Brand demo seed requires a local non-production database and matching BRAND_SEED_DATABASE. It must not target the isolated E2E database.",
+      "Brand demo seed requires DATABASE_URL to identify a local non-production database. It must not target the isolated E2E database.",
     );
   if (/prod|live|staging|e2e/i.test(url.pathname))
     throw new Error("Refusing production/staging/E2E seed target");

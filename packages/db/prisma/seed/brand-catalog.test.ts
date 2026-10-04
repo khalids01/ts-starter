@@ -6,22 +6,23 @@ import { foodshopProducts } from "./data/brands/foodshop";
 const env = {
   BRAND: "foodshop",
   DATABASE_URL: "postgresql://localhost:5432/ecommerce",
-  BRAND_SEED_DATABASE: "ecommerce",
   NODE_ENV: "development",
 };
 describe("brand demo catalog safeguards", () => {
-  test("only the explicitly acknowledged local FoodShop target is accepted", () => {
+  test("DATABASE_URL identifies the local FoodShop target without an extra selector", () => {
     expect(assertBrandSeedTarget(env).target).toBe("localhost:5432/ecommerce");
+    expect(assertBrandSeedTarget({ ...env, DATABASE_URL: "postgresql://127.0.0.1:5432/foodshop_dev" }).target).toBe("127.0.0.1:5432/foodshop_dev");
     for (const override of [
       { DATABASE_URL: "postgresql://remote.test/ecommerce" },
       { NODE_ENV: "production" },
       { E2E_MODE: "true" },
-      { BRAND_SEED_DATABASE: "other" },
+      { DATABASE_URL: "" },
+      { DATABASE_URL: "postgresql://localhost/" },
+      { DATABASE_URL: "https://localhost/ecommerce" },
       { BRAND: "constructor" },
       { BRAND: "bestsky" },
       {
         DATABASE_URL: "postgresql://localhost/production",
-        BRAND_SEED_DATABASE: "production",
       },
     ])
       expect(() => assertBrandSeedTarget({ ...env, ...override })).toThrow();
