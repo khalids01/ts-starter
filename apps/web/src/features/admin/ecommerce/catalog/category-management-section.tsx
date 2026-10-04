@@ -1,3 +1,4 @@
+import { CatalogLifecycleView } from "./lifecycle";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -78,6 +79,7 @@ export function CategoryManagementSection() {
   });
 
   return (
+    <CatalogLifecycleView kind="category" canManage={canManageCatalog}>
     <div className="space-y-3">
       <div className="flex justify-end">
         {canManageCatalog ? (
@@ -113,5 +115,6 @@ export function CategoryManagementSection() {
         }}
       />
     </div>
+    </CatalogLifecycleView>
   );
 }

@@ -1,11 +1,12 @@
+import { CatalogLifecycleAction } from "../catalog/lifecycle";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Archive,
   CheckCircle2,
   Eye,
   ImageIcon,
+  Archive,
   MoreHorizontal,
   Pencil,
 } from "lucide-react";
@@ -26,7 +27,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -37,12 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ecommerceApi } from "../apiCall";
 import type { Product, ProductAttributeAssignment } from "../types";
 import { EmptyTableRow, StatusBadge, formatDate } from "../ui";
@@ -54,14 +49,12 @@ type ProductsViewProps = {
   canManage: boolean;
   viewMode: ProductViewMode;
   onValidate: (id: string) => void;
-  onArchive: (id: string) => void;
 };
 
 type ProductActionsProps = {
   product: Product;
   canManage: boolean;
   onValidate: (id: string) => void;
-  onArchive: (id: string) => void;
 };
 
 export function ProductsTable(props: ProductsViewProps) {
@@ -115,7 +108,6 @@ function ProductsList(props: ProductsViewProps) {
                       product={product}
                       canManage={props.canManage}
                       onValidate={props.onValidate}
-                      onArchive={props.onArchive}
                     />
                   </TableCell>
                 </TableRow>
@@ -137,7 +129,6 @@ function ProductsList(props: ProductsViewProps) {
               product={product}
               canManage={props.canManage}
               onValidate={props.onValidate}
-              onArchive={props.onArchive}
             />
           ))
         )}
@@ -163,7 +154,6 @@ function ProductsGrid(props: ProductsViewProps) {
           product={product}
           canManage={props.canManage}
           onValidate={props.onValidate}
-          onArchive={props.onArchive}
         />
       ))}
     </div>
@@ -197,8 +187,14 @@ function ProductCard(props: ProductActionsProps) {
         </div>
 
         <div className="grid gap-3 text-sm sm:grid-cols-2">
-          <InfoBlock label="Category" value={props.product.category?.name ?? "-"} />
-          <InfoBlock label="Brand" value={<ProductBrandValue product={props.product} />} />
+          <InfoBlock
+            label="Category"
+            value={props.product.category?.name ?? "-"}
+          />
+          <InfoBlock
+            label="Brand"
+            value={<ProductBrandValue product={props.product} />}
+          />
           <InfoBlock label="Variants" value={getVariantCount(props.product)} />
           <InfoBlock label="Specs" value={getSpecsCount(props.product)} />
         </div>
@@ -231,10 +227,19 @@ function ProductListItem(props: ProductActionsProps) {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-        <InfoBlock label="Category" value={props.product.category?.name ?? "-"} />
-        <InfoBlock label="Brand" value={<ProductBrandValue product={props.product} />} />
+        <InfoBlock
+          label="Category"
+          value={props.product.category?.name ?? "-"}
+        />
+        <InfoBlock
+          label="Brand"
+          value={<ProductBrandValue product={props.product} />}
+        />
         <InfoBlock label="Variants" value={getVariantCount(props.product)} />
-        <InfoBlock label="Updated" value={formatDate(props.product.updatedAt)} />
+        <InfoBlock
+          label="Updated"
+          value={formatDate(props.product.updatedAt)}
+        />
       </div>
     </article>
   );
@@ -246,54 +251,61 @@ function ProductActionsMenu(props: ProductActionsProps) {
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={(triggerProps) => (
-            <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
-              <span className="sr-only">Open product actions</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          )}
-        />
-        <DropdownMenuContent align="end" className="w-[180px]">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
-              <Eye className="mr-2 h-4 w-4" />
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                void navigate({
-                  to: "/admin/products/$productId",
-                  params: { productId: props.product.id },
-                })
-              }
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            {props.canManage ? (
-              <DropdownMenuItem onClick={() => props.onValidate(props.product.id)}>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Validate
-              </DropdownMenuItem>
-            ) : null}
-          </DropdownMenuGroup>
-          {props.canManage ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => props.onArchive(props.product.id)}
-              >
-                <Archive className="mr-2 h-4 w-4" />
-                Archive
-              </DropdownMenuItem>
-            </>
-          ) : null}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <CatalogLifecycleAction
+        kind="product"
+        id={props.product.id}
+        name={props.product.name}
+        renderTrigger={(openArchive) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={(triggerProps) => (
+                <Button
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  {...triggerProps}
+                >
+                  <span className="sr-only">Open product actions</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              )}
+            />
+            <DropdownMenuContent align="end" className="w-[180px]">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    void navigate({
+                      to: "/admin/products/$productId",
+                      params: { productId: props.product.id },
+                    })
+                  }
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                {props.canManage ? (
+                  <DropdownMenuItem
+                    onClick={() => props.onValidate(props.product.id)}
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Validate
+                  </DropdownMenuItem>
+                ) : null}
+                {props.canManage ? (
+                  <DropdownMenuItem onClick={openArchive}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archive
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      />
 
       <ProductDetailsDialog
         product={props.product}
@@ -312,7 +324,8 @@ function ProductDetailsDialog(props: {
   const productQuery = useQuery({
     queryKey: queryKeys.admin.ecommerce.products.detail(props.product.id),
     enabled: props.open,
-    queryFn: () => ecommerceApi.products.detail(props.product.id) as Promise<Product>,
+    queryFn: () =>
+      ecommerceApi.products.detail(props.product.id) as Promise<Product>,
   });
   const product = productQuery.data ?? props.product;
   const variants = product.variants ?? [];
@@ -329,9 +342,15 @@ function ProductDetailsDialog(props: {
           <ProductHero product={product} loading={productQuery.isLoading} />
 
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <InfoBlock label="Status" value={<StatusBadge status={product.status} />} />
+            <InfoBlock
+              label="Status"
+              value={<StatusBadge status={product.status} />}
+            />
             <InfoBlock label="Category" value={product.category?.name ?? "-"} />
-            <InfoBlock label="Brand" value={<ProductBrandValue product={product} />} />
+            <InfoBlock
+              label="Brand"
+              value={<ProductBrandValue product={product} />}
+            />
             <InfoBlock label="Updated" value={formatDate(product.updatedAt)} />
           </section>
 
@@ -339,20 +358,34 @@ function ProductDetailsDialog(props: {
             <h3 className="text-sm font-medium">Product Details</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               <InfoBlock label="Product ID" value={product.id} />
-              <InfoBlock label="Featured" value={product.isFeatured ? "Yes" : "No"} />
-              <InfoBlock label="Trending" value={product.isTrending ? "Yes" : "No"} />
+              <InfoBlock
+                label="Featured"
+                value={product.isFeatured ? "Yes" : "No"}
+              />
+              <InfoBlock
+                label="Trending"
+                value={product.isTrending ? "Yes" : "No"}
+              />
               <InfoBlock label="Badge" value={product.badgeLabel ?? "-"} />
               <InfoBlock label="SEO title" value={product.seoTitle ?? "-"} />
-              <InfoBlock label="SEO description" value={product.seoDescription ?? "-"} />
+              <InfoBlock
+                label="SEO description"
+                value={product.seoDescription ?? "-"}
+              />
             </div>
             {product.description ? (
               <div className="text-sm">
                 <div className="text-xs text-muted-foreground">Description</div>
-                <p className="mt-1 whitespace-pre-wrap">{product.description}</p>
+                <p className="mt-1 whitespace-pre-wrap">
+                  {product.description}
+                </p>
               </div>
             ) : null}
             {product.searchKeywords?.length ? (
-              <BadgeList label="Search keywords" values={product.searchKeywords} />
+              <BadgeList
+                label="Search keywords"
+                values={product.searchKeywords}
+              />
             ) : null}
           </section>
 
@@ -378,7 +411,10 @@ function ProductDetailsDialog(props: {
             {product.highlights?.length ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {product.highlights.map((highlight) => (
-                  <div key={highlight.id ?? highlight.title} className="rounded-md border p-3">
+                  <div
+                    key={highlight.id ?? highlight.title}
+                    className="rounded-md border p-3"
+                  >
                     <div className="font-medium">{highlight.title}</div>
                     {highlight.description ? (
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -389,18 +425,24 @@ function ProductDetailsDialog(props: {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No highlights saved.</p>
+              <p className="text-sm text-muted-foreground">
+                No highlights saved.
+              </p>
             )}
           </section>
 
           <section className="grid gap-3 rounded-md border p-4">
             <h3 className="text-sm font-medium">Variants</h3>
             {productQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading variants...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading variants...
+              </p>
             ) : variants.length ? (
               <VariantTabs variants={variants} />
             ) : (
-              <p className="text-sm text-muted-foreground">No variants saved.</p>
+              <p className="text-sm text-muted-foreground">
+                No variants saved.
+              </p>
             )}
           </section>
         </div>
@@ -416,14 +458,20 @@ function ProductHero(props: { product: Product; loading: boolean }) {
       <div className="grid gap-2 p-4">
         <div className="flex flex-wrap gap-2">
           <StatusBadge status={props.product.status} />
-          {props.product.isFeatured ? <Badge variant="secondary">Featured</Badge> : null}
-          {props.product.isTrending ? <Badge variant="secondary">Trending</Badge> : null}
+          {props.product.isFeatured ? (
+            <Badge variant="secondary">Featured</Badge>
+          ) : null}
+          {props.product.isTrending ? (
+            <Badge variant="secondary">Trending</Badge>
+          ) : null}
           {props.product.badgeLabel ? (
             <Badge variant="outline">{props.product.badgeLabel}</Badge>
           ) : null}
         </div>
         {props.loading ? (
-          <p className="text-sm text-muted-foreground">Loading full product details...</p>
+          <p className="text-sm text-muted-foreground">
+            Loading full product details...
+          </p>
         ) : null}
       </div>
     </section>
@@ -455,7 +503,10 @@ function VariantTabs(props: { variants: NonNullable<Product["variants"]> }) {
                 <InfoBlock label="Name" value={variant.name || "-"} />
                 <InfoBlock label="SKU" value={variant.sku || "-"} />
                 <InfoBlock label="Barcode" value={variant.barcode ?? "-"} />
-                <InfoBlock label="Price" value={formatMoney(variant.price, variant.currency)} />
+                <InfoBlock
+                  label="Price"
+                  value={formatMoney(variant.price, variant.currency)}
+                />
                 <InfoBlock
                   label="Compare at"
                   value={formatMoney(variant.compareAtPrice, variant.currency)}
@@ -475,11 +526,15 @@ function VariantTabs(props: { variants: NonNullable<Product["variants"]> }) {
               </div>
               {variant.attributeValues?.length ? (
                 <div className="grid gap-2">
-                  <div className="text-xs text-muted-foreground">Attributes</div>
+                  <div className="text-xs text-muted-foreground">
+                    Attributes
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {variant.attributeValues.map((value) => (
                       <Badge key={value.id} variant="outline">
-                        {value.attribute?.name ? `${value.attribute.name}: ` : ""}
+                        {value.attribute?.name
+                          ? `${value.attribute.name}: `
+                          : ""}
                         {value.label}
                       </Badge>
                     ))}
@@ -512,7 +567,9 @@ function ProductImage(props: { product: Product; className?: string }) {
   );
 }
 
-function VariantImage(props: { variant: NonNullable<Product["variants"]>[number] }) {
+function VariantImage(props: {
+  variant: NonNullable<Product["variants"]>[number];
+}) {
   const src = props.variant.imageUrls?.find(Boolean);
 
   if (!src) {
@@ -532,7 +589,9 @@ function VariantImage(props: { variant: NonNullable<Product["variants"]>[number]
 
 function ImagePlaceholder(props: { className: string }) {
   return (
-    <div className={`${props.className} grid place-items-center bg-muted text-muted-foreground`}>
+    <div
+      className={`${props.className} grid place-items-center bg-muted text-muted-foreground`}
+    >
       <div className="grid justify-items-center gap-2 text-xs">
         <ImageIcon className="h-8 w-8" />
         <span>No image</span>
@@ -568,11 +627,7 @@ function VariantNames(props: { product: Product }) {
   const variants = props.product.variants ?? [];
 
   if (variants.length === 0) {
-    return (
-      <div className="text-sm text-muted-foreground">
-        No variants
-      </div>
-    );
+    return <div className="text-sm text-muted-foreground">No variants</div>;
   }
 
   return (
@@ -629,13 +684,19 @@ function getVariantCount(product: Product) {
 }
 
 function getSpecsCount(product: Product) {
-  return product.counts?.attributeAssignments ?? product.attributeAssignments?.length ?? 0;
+  return (
+    product.counts?.attributeAssignments ??
+    product.attributeAssignments?.length ??
+    0
+  );
 }
 
 function getProductImage(product: Product) {
   return (
     product.coverImageUrl ||
-    product.variants?.flatMap((variant) => variant.imageUrls ?? []).find(Boolean) ||
+    product.variants
+      ?.flatMap((variant) => variant.imageUrls ?? [])
+      .find(Boolean) ||
     product.highlights?.map((highlight) => highlight.imageUrl).find(Boolean) ||
     null
   );

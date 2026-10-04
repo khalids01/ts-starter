@@ -1,3 +1,4 @@
+import { CatalogLifecycleView } from "./lifecycle";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -81,6 +82,7 @@ export function AdminCatalogPage() {
         </TabsContent>
 
         <TabsContent value="attributes" className="space-y-3">
+          <CatalogLifecycleView kind="attribute" canManage={canManageCatalog}>
           <div className="flex justify-end">
             {canManageCatalog ? (
               <Button onClick={() => setAttributeDialog(attributeDraft())}>
@@ -96,6 +98,7 @@ export function AdminCatalogPage() {
             onEdit={(attribute) => setAttributeDialog(attributeDraft(attribute))}
             onSaved={invalidateCatalog}
           />
+          </CatalogLifecycleView>
         </TabsContent>
 
         <TabsContent value="brands" className="space-y-3">

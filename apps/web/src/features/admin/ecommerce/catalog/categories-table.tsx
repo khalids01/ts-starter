@@ -1,4 +1,11 @@
-import { MoreHorizontal, Pencil, Settings2, Power } from "lucide-react";
+import { CatalogLifecycleAction } from "./lifecycle";
+import {
+  MoreHorizontal,
+  Pencil,
+  Settings2,
+  Power,
+  Archive,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +59,9 @@ export function CategoriesTable(props: {
               <TableRow key={category.id}>
                 <TableCell>
                   <div className="font-medium">{category.name}</div>
-                  <div className="text-xs text-muted-foreground">{category.slug}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {category.slug}
+                  </div>
                 </TableCell>
                 <TableCell>{category.parent?.name ?? "—"}</TableCell>
                 <TableCell>{category.brandPolicy}</TableCell>
@@ -60,7 +69,9 @@ export function CategoriesTable(props: {
                 <TableCell>
                   <div className="flex gap-1">
                     <StatusBadge active={category.isActive} />
-                    {category.isFeatured ? <Badge variant="secondary">Featured</Badge> : null}
+                    {category.isFeatured ? (
+                      <Badge variant="secondary">Featured</Badge>
+                    ) : null}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
@@ -89,42 +100,57 @@ function CategoryActionsMenu(props: {
   onOpenTemplate: (id: string) => void;
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={(triggerProps) => (
-          <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
-            <span className="sr-only">Open category actions</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        )}
-      />
-      <DropdownMenuContent align="end" className="w-[180px]">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => props.onOpenTemplate(props.category.id)}>
-            <Settings2 className="mr-2 h-4 w-4" />
-            Template
-          </DropdownMenuItem>
-          {props.canManage ? (
-            <DropdownMenuItem onClick={() => props.onEdit(props.category)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-          ) : null}
-        </DropdownMenuGroup>
-        {props.canManage ? (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className={props.category.isActive ? "text-destructive" : undefined}
-              onClick={() => props.onToggleActive(props.category)}
-            >
-              <Power className="mr-2 h-4 w-4" />
-              {props.category.isActive ? "Disable" : "Enable"}
-            </DropdownMenuItem>
-          </>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <CatalogLifecycleAction
+      kind="category"
+      id={props.category.id}
+      name={props.category.name}
+      renderTrigger={(openArchive) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={(triggerProps) => (
+              <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
+                <span className="sr-only">Open category actions</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            )}
+          />
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => props.onOpenTemplate(props.category.id)}
+              >
+                <Settings2 className="mr-2 h-4 w-4" />
+                Template
+              </DropdownMenuItem>
+              {props.canManage ? (
+                <DropdownMenuItem onClick={() => props.onEdit(props.category)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuGroup>
+            {props.canManage ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={openArchive}>
+                  <Archive className="mr-2 h-4 w-4" />
+                  Archive
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={
+                    props.category.isActive ? "text-destructive" : undefined
+                  }
+                  onClick={() => props.onToggleActive(props.category)}
+                >
+                  <Power className="mr-2 h-4 w-4" />
+                  {props.category.isActive ? "Disable" : "Enable"}
+                </DropdownMenuItem>
+              </>
+            ) : null}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    />
   );
 }

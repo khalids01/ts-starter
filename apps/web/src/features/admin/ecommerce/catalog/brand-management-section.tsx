@@ -1,3 +1,4 @@
+import { CatalogLifecycleView } from "./lifecycle";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -63,6 +64,7 @@ export function BrandManagementSection() {
   });
 
   return (
+    <CatalogLifecycleView kind="brand" canManage={canManageCatalog}>
     <div className="space-y-3">
       <div className="flex justify-end">
         {canManageCatalog ? (
@@ -86,5 +88,6 @@ export function BrandManagementSection() {
         onSubmit={(draft) => saveBrand.mutate(draft)}
       />
     </div>
+    </CatalogLifecycleView>
   );
 }

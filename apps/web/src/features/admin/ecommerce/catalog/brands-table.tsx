@@ -1,4 +1,5 @@
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { CatalogLifecycleAction } from "./lifecycle";
+import { MoreHorizontal, Pencil, Archive, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,16 +55,20 @@ export function BrandsTable(props: {
                 <TableCell>
                   <div className="flex gap-1">
                     <StatusBadge active={brand.isActive} />
-                    {brand.isFeatured ? <Badge variant="secondary">Featured</Badge> : null}
+                    {brand.isFeatured ? (
+                      <Badge variant="secondary">Featured</Badge>
+                    ) : null}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
                   {props.canManage ? (
-                    <BrandActionsMenu
-                      brand={brand}
-                      onEdit={props.onEdit}
-                      onDisable={props.onDisable}
-                    />
+                    <>
+                      <BrandActionsMenu
+                        brand={brand}
+                        onEdit={props.onEdit}
+                        onDisable={props.onDisable}
+                      />
+                    </>
                   ) : null}
                 </TableCell>
               </TableRow>
@@ -81,32 +86,43 @@ function BrandActionsMenu(props: {
   onDisable: (id: string) => void;
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={(triggerProps) => (
-          <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
-            <span className="sr-only">Open brand actions</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        )}
-      />
-      <DropdownMenuContent align="end" className="w-[180px]">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => props.onEdit(props.brand)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="text-destructive"
-          onClick={() => props.onDisable(props.brand.id)}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Disable
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <CatalogLifecycleAction
+      kind="brand"
+      id={props.brand.id}
+      name={props.brand.name}
+      renderTrigger={(openArchive) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={(triggerProps) => (
+              <Button variant="ghost" className="h-8 w-8 p-0" {...triggerProps}>
+                <span className="sr-only">Open brand actions</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            )}
+          />
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => props.onEdit(props.brand)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={openArchive}>
+              <Archive className="mr-2 h-4 w-4" />
+              Archive
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => props.onDisable(props.brand.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Disable
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    />
   );
 }
