@@ -1,6 +1,6 @@
 import { expect, test, request, type APIRequestContext } from '@playwright/test';
 import { db, checkout, confirm, payment, routeAndQueue, post, body, serverUrl } from '../fixtures/v3';
-import { simulatorFixture } from '../fixtures/simulator';
+import { simulatorFixture, queueSimulatorOrder as queued } from '../fixtures/simulator';
 import { runWorker } from '../../courier-simulator/steadfast/app-worker';
 import { callback, signCallback, sendCallback } from '../../courier-simulator/steadfast/webhooks';
 import { payload, type Parcel, type Fault } from '../../courier-simulator/steadfast/contract';
@@ -20,14 +20,6 @@ async function signed(f: Awaited<ReturnType<typeof simulatorFixture>>, parcel: P
 }
 async function receipt(api: APIRequestContext, id: string, amount: string, reference: string) {
   return post(api, `/admin/orders/${id}/payments`, { amount, currency: 'BDT', method: 'manual_bank', reference, note: 'Fictional confirmed evidence' });
-}
-async function queued(api: APIRequestContext, f: Awaited<ReturnType<typeof simulatorFixture>>, deposit?: string) {
-  const { orderId: id } = await checkout(api, f);
-  await body(await api.patch(`${serverUrl}/admin/orders/${id}/status`, { data: { orderStatus: 'confirmed' } }));
-  if (deposit) await receipt(api, id, deposit, `${id}-deposit`);
-  const dispatch = await post<{ id: string }>(api, `/admin/delivery/orders/${id}/confirm`, { connectionId: f.connection.id, serviceId: f.service.id, overrideReason: 'Fictional test route' });
-  await post(api, `/admin/delivery/dispatches/${dispatch.id}/queue`, {});
-  return id;
 }
 async function assertBooking(f: Awaited<ReturnType<typeof simulatorFixture>>, p: Parcel, id: string) {
   expect((await consignment(id)).externalId).toBe(String(p.externalId));

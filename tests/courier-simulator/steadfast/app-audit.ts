@@ -1,5 +1,7 @@
 import { assertSimulatorAppEnvironment } from './app-guard';
 assertSimulatorAppEnvironment();
+const { assertNoInterruptedSimulatorRun } = await import('../../e2e/fixtures/simulator-state');
+await assertNoInterruptedSimulatorRun();
 const { default: db } = await import('../../../packages/db/src/client.server');
 try {
   const prefix = 'v3-browser-sim-';

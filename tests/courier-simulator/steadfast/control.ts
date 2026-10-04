@@ -52,10 +52,20 @@ export class SimulatorControl {
     first.id = entry.mappingIds[0]!;
     await this.admin(`/mappings/${first.id}`, 'PUT', first);
   }
+  async state(parcel: Parcel): Promise<string> {
+    this.entry(parcel);
+    const value = await this.admin('/scenarios');
+    if (!value || typeof value !== 'object' || !('scenarios' in value) || !Array.isArray(value.scenarios)) throw new Error('Unexpected local scenarios response');
+    const scenario = value.scenarios.find(row => row.name === parcel.scenario);
+    if (!scenario || typeof scenario.state !== 'string') throw new Error('Owned scenario was not found');
+    return scenario.state;
+  }
   async journal(): Promise<JournalEntry[]> {
+    return this.journalFor(new Set([...this.owned.values()].flatMap(entry => entry.mappingIds)));
+  }
+  private async journalFor(ids: Set<string>): Promise<JournalEntry[]> {
     const value = await this.admin('/requests');
     if (!value || typeof value !== 'object' || !('requests' in value) || !Array.isArray(value.requests)) throw new Error('Unexpected local WireMock journal response');
-    const ids = new Set([...this.owned.values()].flatMap(entry => entry.mappingIds));
     return value.requests.filter((entry: unknown): entry is JournalEntry => {
       if (!entry || typeof entry !== 'object' || !('id' in entry) || typeof entry.id !== 'string' || !('request' in entry) || typeof entry.request !== 'object' || entry.request === null) throw new Error('Malformed journal entry');
       const row = entry as JournalEntry;
@@ -63,20 +73,37 @@ export class SimulatorControl {
       return !!row.stubMapping?.id && ids.has(row.stubMapping.id);
     });
   }
-  async cleanup() {
-    if (!this.owned.size) return;
-    // Never use global reset, journal deletion or app DB cleanup.
-    for (const event of await this.journal()) await this.admin(`/requests/${encodeURIComponent(event.id)}`, 'DELETE');
-    for (const [name, entry] of this.owned) {
-      if (entry.mappingIds.length) {
+  private async cleanupMappings(entries: Map<string, string[]>) {
+    const ids = new Set([...entries.values()].flat());
+    for (const event of await this.journalFor(ids)) await this.admin(`/requests/${encodeURIComponent(event.id)}`, 'DELETE');
+    for (const [name, mappingIds] of entries) {
+      if (mappingIds.length) {
         try { await this.admin(`/scenarios/${encodeURIComponent(name)}/state`, 'PUT', { state: 'Started' }); }
         catch (error) { if (!(error instanceof Error) || !error.message.includes('(404)')) throw error; }
       }
-      for (const id of entry.mappingIds) {
+      for (const id of mappingIds) {
         try { await this.admin(`/mappings/${id}`, 'DELETE'); }
         catch (error) { if (!(error instanceof Error) || !error.message.includes('(404)')) throw error; }
       }
-      this.owned.delete(name);
     }
+  }
+  async cleanup() {
+    if (!this.owned.size) return;
+    await this.cleanupMappings(new Map([...this.owned].map(([name, entry]) => [name, entry.mappingIds])));
+    this.owned.clear();
+  }
+  async cleanupInterruptedRun() {
+    await this.ready();
+    const value = await this.admin('/mappings');
+    if (!value || typeof value !== 'object' || !('mappings' in value) || !Array.isArray(value.mappings)) throw new Error('Unexpected local mappings response');
+    const entries = new Map<string, string[]>();
+    for (const mapping of value.mappings) {
+      if (mapping.metadata?.simulatorRun !== this.run) continue;
+      if (typeof mapping.scenarioName !== 'string' || !mapping.scenarioName.startsWith(`sim-${this.run}-`) || typeof mapping.id !== 'string' || !/^[a-f0-9-]{36}$/.test(mapping.id))
+        throw new Error('Interrupted mapping has conflicting run ownership');
+      entries.set(mapping.scenarioName, [...(entries.get(mapping.scenarioName) ?? []), mapping.id]);
+    }
+    // Recover ownership from exact run metadata only. Never reset all mappings, scenarios or the shared journal.
+    await this.cleanupMappings(entries);
   }
 }

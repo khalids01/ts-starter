@@ -3,6 +3,8 @@ import { SimulatorControl } from './control';
 import { TEST_USERS } from '../../users-config';
 const target = assertSimulatorAppEnvironment();
 await new SimulatorControl('preflight').ready();
+const { assertNoInterruptedSimulatorRun } = await import('../../e2e/fixtures/simulator-state');
+await assertNoInterruptedSimulatorRun();
 const { default: db } = await import('../../../packages/db/src/client.server');
 try {
   // Read-only schema/provisioning checks: never migrate, seed, provision or reset here.

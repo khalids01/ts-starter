@@ -1,4 +1,10 @@
 {
   "extends": "./tsconfig.step11.json",
-  "include": ["./fixtures/v3.ts", "./__step_8_3__/v3-simulator.spec.ts", "../courier-simulator/steadfast/app-*.ts", "../../playwright.step14.config.ts"]
+  "include": [
+    "./fixtures/v3.ts",
+    "./__step_8_3__/v3-simulator.spec.ts",
+    "../courier-simulator/steadfast/app-*.ts",
+    "../../playwright.step14.config.ts",
+    "./__step_8_3__/v3-simulator-recovery.spec.ts"
+  ]
 }
