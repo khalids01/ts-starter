@@ -345,7 +345,7 @@ describe("shop service", () => {
     const result = await categoryService.listCategories();
 
     expect(categoryFindManyMock).toHaveBeenCalledWith({
-      where: { isActive: true },
+      where: { isActive: true, archivedAt: null },
       select: {
         id: true,
         name: true,
@@ -360,7 +360,7 @@ describe("shop service", () => {
           select: {
             products: {
               where: {
-                status: "active",
+                status: "active", archivedAt: null,
                 isActive: true,
                 variants: { some: { isActive: true } },
               },

@@ -1,3 +1,4 @@
+import { assertCatalogMutable, changeCatalogLifecycle } from "../catalog-lifecycle/service";
 import { categoryPolicy, NichePolicyError } from "../../ecommerce/niche/policy";
 import prisma, { type Prisma } from "@db/server";
 import { brandConfig } from "@config/brand";
@@ -192,9 +193,9 @@ function mapBrand(row: any) {
 async function assertCategoryExists(id: string) {
   const category = await prisma.category.findUnique({
     where: { id },
-    select: { id: true },
+    select: { id: true, archivedAt: true },
   });
-  if (!category) {
+  if (!category || category.archivedAt) {
     throw new CatalogServiceError("Category not found", 404);
   }
 }
@@ -202,9 +203,9 @@ async function assertCategoryExists(id: string) {
 async function assertAttributeExists(id: string) {
   const attribute = await prisma.productAttribute.findUnique({
     where: { id },
-    select: { id: true },
+    select: { id: true, archivedAt: true },
   });
-  if (!attribute) {
+  if (!attribute || attribute.archivedAt) {
     throw new CatalogServiceError("Attribute not found", 404);
   }
 }
@@ -212,7 +213,7 @@ async function assertAttributeExists(id: string) {
 export class AdminCatalogService {
   async listCategories(query: ListCatalogQuery = {}) {
     const { requestedPage, limit } = normalizePagination(query.page, query.limit);
-    const where: Prisma.CategoryWhereInput = {};
+    const where: Prisma.CategoryWhereInput = { archivedAt: null };
 
     if (query.active !== undefined) {
       where.isActive = query.active;
@@ -286,7 +287,7 @@ export class AdminCatalogService {
       },
     });
 
-    if (!category) {
+    if (!category || category.archivedAt) {
       throw new CatalogServiceError("Category not found", 404);
     }
 
@@ -308,7 +309,7 @@ export class AdminCatalogService {
       },
     });
 
-    if (!category) {
+    if (!category || category.archivedAt) {
       throw new CatalogServiceError("Category not found", 404);
     }
 
@@ -378,6 +379,7 @@ export class AdminCatalogService {
   }
 
   async updateCategory(id: string, input: UpdateCategoryInput) {
+    await assertCatalogMutable("category", id);
     await assertCategoryExists(id);
 
     if (input.parentId && input.parentId === id) {
@@ -459,6 +461,7 @@ export class AdminCatalogService {
   }
 
   async disableCategory(id: string) {
+    await assertCatalogMutable("category", id);
     const category = await prisma.category.update({
       where: { id },
       data: { isActive: false },
@@ -468,7 +471,7 @@ export class AdminCatalogService {
 
   async listAttributes(query: ListCatalogQuery = {}) {
     const { requestedPage, limit } = normalizePagination(query.page, query.limit);
-    const where: Prisma.ProductAttributeWhereInput = {};
+    const where: Prisma.ProductAttributeWhereInput = { archivedAt: null };
 
     if (query.search?.trim()) {
       const search = query.search.trim();
@@ -520,6 +523,7 @@ export class AdminCatalogService {
   }
 
   async updateAttribute(id: string, input: UpdateAttributeInput) {
+    await assertCatalogMutable("attribute", id);
     await assertAttributeExists(id);
 
     const current =
@@ -608,7 +612,7 @@ export class AdminCatalogService {
   ) {
     if (categoryIds === undefined) return;
     const ids = [...new Set(categoryIds)];
-    const found = await tx.category.findMany({ where: { id: { in: ids } }, select: { id: true } });
+    const found = await tx.category.findMany({ where: { id: { in: ids }, archivedAt: null }, select: { id: true } });
     if (found.length !== ids.length) throw new CatalogServiceError("One or more categories were not found", 404);
     await tx.categoryAttribute.deleteMany({ where: { attributeId, categoryId: { notIn: ids } } });
     for (const categoryId of ids) {
@@ -635,15 +639,7 @@ export class AdminCatalogService {
   }
 
   async deleteAttribute(id: string) {
-    const [assignmentCount, batchCount, values] = await Promise.all([
-      prisma.productAttributeAssignment.count({ where: { attributeId: id } }),
-      prisma.inventoryBatchAttributeAssignment.count({ where: { attributeId: id } }),
-      prisma.productAttributeValue.findMany({ where: { attributeId: id }, select: { id: true } }),
-    ]);
-    if (assignmentCount + batchCount > 0) throw new CatalogServiceError("Cannot delete an attribute that is in use");
-    for (const value of values) await this.deleteAttributeValue(value.id);
-    await prisma.productAttribute.delete({ where: { id } });
-    return { message: "Attribute deleted", status: 200 };
+    return changeCatalogLifecycle("attribute", id, "delete");
   }
 
   async assignCategoryAttribute(
@@ -749,7 +745,7 @@ export class AdminCatalogService {
 
   async listBrands(query: ListCatalogQuery = {}) {
     const { requestedPage, limit } = normalizePagination(query.page, query.limit);
-    const where: Prisma.ProductBrandWhereInput = {};
+    const where: Prisma.ProductBrandWhereInput = { archivedAt: null };
 
     if (query.active !== undefined) {
       where.isActive = query.active;
@@ -801,6 +797,7 @@ export class AdminCatalogService {
   }
 
   async updateBrand(id: string, input: UpdateBrandInput) {
+    await assertCatalogMutable("brand", id);
     const current =
       input.slug === undefined && input.name === undefined
         ? null
@@ -837,6 +834,7 @@ export class AdminCatalogService {
   }
 
   async disableBrand(id: string) {
+    await assertCatalogMutable("brand", id);
     const brand = await prisma.productBrand.update({
       where: { id },
       data: { isActive: false },

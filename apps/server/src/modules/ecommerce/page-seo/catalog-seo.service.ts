@@ -2,7 +2,7 @@ import prisma from "@db/server";
 
 export async function listSeoProducts(cursor?: string) {
   const rows = await prisma.product.findMany({
-    where: { status: "active", isActive: true, category: { isActive: true }, OR: [{ brandId: null }, { brand: { isActive: true } }], variants: { some: { isActive: true } }, ...(cursor ? { id: { gt: cursor } } : {}) },
+    where: { status: "active", archivedAt: null, isActive: true, category: { isActive: true, archivedAt: null }, OR: [{ brandId: null }, { brand: { isActive: true, archivedAt: null } }], variants: { some: { isActive: true } }, ...(cursor ? { id: { gt: cursor } } : {}) },
     select: { id: true, slug: true }, orderBy: { id: "asc" }, take: 1001,
   });
   const items = rows.slice(0, 1000);

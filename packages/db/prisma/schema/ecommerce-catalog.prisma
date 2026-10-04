@@ -58,6 +58,7 @@ enum WeightUnit {
 }
 
 model Category {
+  archivedAt DateTime?
   id             String              @id @default(cuid())
   name           String
   slug           String              @unique
@@ -86,9 +87,11 @@ model Category {
   @@index([isFeatured])
   @@index([sortOrder])
   @@map("category")
+  @@index([archivedAt])
 }
 
 model ProductBrand {
+  archivedAt DateTime?
   id          String   @id @default(cuid())
   name        String
   slug        String   @unique
@@ -105,9 +108,11 @@ model ProductBrand {
   @@index([isActive])
   @@index([isFeatured])
   @@map("product_brand")
+  @@index([archivedAt])
 }
 
 model Product {
+  archivedAt DateTime?
   id              String        @id @default(cuid())
   name            String
   slug            String        @unique
@@ -141,6 +146,7 @@ model Product {
   @@index([isFeatured])
   @@index([isTrending])
   @@map("product")
+  @@index([archivedAt])
 }
 
 model ProductVariant {
@@ -196,6 +202,7 @@ model ProductHighlight {
 }
 
 model ProductAttribute {
+  archivedAt DateTime?
   id         String               @id @default(cuid())
   name       String
   slug       String               @unique
@@ -213,6 +220,7 @@ model ProductAttribute {
   @@index([filterable])
   @@index([sortOrder])
   @@map("product_attribute")
+  @@index([archivedAt])
 }
 
 model ProductAttributeValue {

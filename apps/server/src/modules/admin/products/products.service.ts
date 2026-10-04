@@ -1,3 +1,4 @@
+import { assertCatalogMutable, changeCatalogLifecycle } from "../catalog-lifecycle/service";
 import prisma, { type Prisma } from "@db/server";
 import { fieldsForScope, getEffectiveCategoryAttributes } from "@/modules/catalog/category-template";
 import type {
@@ -323,6 +324,7 @@ async function getCategoryForProduct(categoryId: string) {
       slug: true,
       brandPolicy: true,
       isActive: true,
+      archivedAt: true,
       attributes: {
         include: {
           attribute: {
@@ -337,7 +339,7 @@ async function getCategoryForProduct(categoryId: string) {
   if (!category) {
     throw new AdminProductServiceError("Category not found", 404);
   }
-  if (!category.isActive) {
+  if (!category.isActive || category.archivedAt) {
     throw new AdminProductServiceError("Category is inactive");
   }
 
@@ -348,13 +350,13 @@ async function getCategoryForProduct(categoryId: string) {
 async function assertActiveBrand(brandId: string) {
   const brand = await prisma.productBrand.findUnique({
     where: { id: brandId },
-    select: { id: true, isActive: true },
+    select: { id: true, isActive: true, archivedAt: true },
   });
 
   if (!brand) {
     throw new AdminProductServiceError("Product brand not found", 404);
   }
-  if (!brand.isActive) {
+  if (!brand.isActive || brand.archivedAt) {
     throw new AdminProductServiceError("Product brand is inactive");
   }
 }
@@ -446,7 +448,7 @@ function generateSku({
 export class AdminProductsService {
   async listProducts(query: ListProductsQuery = {}) {
     const { requestedPage, limit } = normalizePagination(query.page, query.limit);
-    const where: Prisma.ProductWhereInput = {};
+    const where: Prisma.ProductWhereInput = { archivedAt: null, status: { not: "archived" } };
 
     if (query.status) {
       where.status = query.status;
@@ -483,6 +485,7 @@ export class AdminProductsService {
             name: true,
             slug: true,
             brandPolicy: true,
+          archivedAt: true,
             showStoreBrand: true,
           },
         },
@@ -565,6 +568,8 @@ export class AdminProductsService {
   }
 
   async updateProduct(id: string, input: UpdateProductInput) {
+    await assertCatalogMutable("product", id);
+    if (input.status === "archived") throw new AdminProductServiceError("Use the archive action so dependencies can be checked", 409);
     const existing = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -572,6 +577,7 @@ export class AdminProductsService {
           select: {
             id: true,
             brandPolicy: true,
+          archivedAt: true,
             isActive: true,
             attributes: {
               include: {
@@ -606,7 +612,7 @@ export class AdminProductsService {
       nextCategoryId === existing.categoryId
         ? existing.category
         : await getCategoryForProduct(nextCategoryId);
-    if (!category.isActive) {
+    if (!category.isActive || category.archivedAt) {
       throw new AdminProductServiceError("Category is inactive");
     }
 
@@ -665,7 +671,7 @@ export class AdminProductsService {
         });
       }
       data.status = input.status;
-      data.isActive = input.status !== "archived";
+      data.isActive = true;
     }
 
     const product = await prisma.product.update({
@@ -678,13 +684,7 @@ export class AdminProductsService {
   }
 
   async archiveProduct(id: string) {
-    await this.assertProductExists(id);
-    const product = await prisma.product.update({
-      where: { id },
-      data: { status: "archived", isActive: false },
-      include: productInclude(),
-    });
-    return mapProduct(product);
+    return changeCatalogLifecycle("product", id, "archive");
   }
 
   async replaceProductAttributes(
@@ -1081,13 +1081,9 @@ export class AdminProductsService {
   }
 
   private async assertProductExists(id: string) {
-    const product = await prisma.product.findUnique({
-      where: { id },
-      select: { id: true },
-    });
-    if (!product) {
-      throw new AdminProductServiceError("Product not found", 404);
-    }
+    const product = await prisma.product.findUnique({ where: { id }, select: { id: true, archivedAt: true, status: true } });
+    if (!product) throw new AdminProductServiceError("Product not found", 404);
+    if (product.archivedAt || product.status === "archived") throw new AdminProductServiceError("Restore this item before editing it", 409);
   }
 
   private async getValuesById(valueIds: string[]) {
@@ -1096,7 +1092,7 @@ export class AdminProductsService {
     }
 
     const values = await prisma.productAttributeValue.findMany({
-      where: { id: { in: valueIds } },
+      where: { id: { in: valueIds }, attribute: { archivedAt: null } },
       include: {
         attribute: {
           select: { id: true, name: true, slug: true, type: true },
@@ -1156,6 +1152,7 @@ export class AdminProductsService {
           select: {
             id: true,
             brandPolicy: true,
+          archivedAt: true,
             attributes: {
               include: {
                 attribute: {
@@ -1166,7 +1163,7 @@ export class AdminProductsService {
           },
         },
         brand: {
-          select: { id: true, isActive: true },
+          select: { id: true, isActive: true, archivedAt: true },
         },
         attributeAssignments: {
           include: {
@@ -1219,7 +1216,7 @@ export class AdminProductsService {
           ? product.brand
           : await prisma.productBrand.findUnique({
               where: { id: brandId },
-              select: { id: true, isActive: true },
+              select: { id: true, isActive: true, archivedAt: true },
             });
       if (!brand || !brand.isActive) {
         issues.push({

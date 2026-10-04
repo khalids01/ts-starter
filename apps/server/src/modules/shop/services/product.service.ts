@@ -159,9 +159,10 @@ export const productService = {
       where: {
         slug,
         status: "active",
+              archivedAt: null,
         isActive: true,
-        category: { isActive: true },
-        OR: [{ brandId: null }, { brand: { isActive: true } }],
+        category: { isActive: true, archivedAt: null },
+        OR: [{ brandId: null }, { brand: { isActive: true, archivedAt: null } }],
         variants: { some: { isActive: true } },
       },
       include: productInclude(),

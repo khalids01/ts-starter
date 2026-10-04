@@ -1,3 +1,4 @@
+import { catalogLifecycleController } from "../catalog-lifecycle/controller";
 import { Elysia } from "elysia";
 import { Permissions } from "@rbac";
 import { authGuard } from "@/guards/auth.guard";
@@ -49,6 +50,7 @@ export const adminCatalogController = new Elysia({
   },
 })
   .use(authGuard)
+  .use(catalogLifecycleController)
   .get(
     "/categories",
     ({ query }) => adminCatalogService.listCategories(query),

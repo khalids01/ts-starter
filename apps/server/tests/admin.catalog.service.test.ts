@@ -1,3 +1,4 @@
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 const categoryCountMock = mock(async () => 0);
@@ -93,6 +94,7 @@ const productBrandUpdateMock = mock(async (args: any) => ({
 }));
 
 mock.module("@db/server", () => ({
+  Prisma,
   default: {
     category: {
       count: categoryCountMock,
@@ -350,6 +352,7 @@ describe("AdminCatalogService", () => {
     );
 
     await adminCatalogService.disableCategory("cat-1");
+    productBrandFindUniqueMock.mockResolvedValueOnce({ id: "brand-1", archivedAt: null });
     await adminCatalogService.disableBrand("brand-1");
 
     expect(categoryUpdateMock).toHaveBeenCalledWith({

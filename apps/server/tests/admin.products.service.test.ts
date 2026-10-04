@@ -1,3 +1,4 @@
+import { Prisma } from "../../../packages/db/prisma/generated/client";
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 const productCountMock = mock(async () => 0);
@@ -35,6 +36,9 @@ const productHighlightCreateManyMock = mock(async () => ({ count: 0 }));
 const transactionMock = mock(async (callback: any) => callback(prismaMock));
 
 const prismaMock = {
+  $queryRaw: mock(async () => []),
+  orderLineItem: { count: mock(async () => 0) },
+  stockReservation: { count: mock(async () => 0) },
   $transaction: transactionMock,
   product: {
     count: productCountMock,
@@ -73,6 +77,7 @@ const prismaMock = {
 };
 
 mock.module("@db/server", () => ({
+  Prisma,
   default: prismaMock,
 }));
 
@@ -535,7 +540,7 @@ describe("AdminProductsService", () => {
     expect(productUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: "product-1" },
-        data: { status: "archived", isActive: false },
+        data: { archivedAt: expect.any(Date) },
       }),
     );
   });

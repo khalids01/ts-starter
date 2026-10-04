@@ -5,6 +5,7 @@ export async function listPublicCategories() {
   const categories = await prisma.category.findMany({
     where: {
       isActive: true,
+      archivedAt: null,
     },
     select: {
       id: true,
@@ -21,6 +22,7 @@ export async function listPublicCategories() {
           products: {
             where: {
               status: "active",
+              archivedAt: null,
               isActive: true,
               variants: { some: { isActive: true } },
             },

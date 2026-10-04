@@ -230,9 +230,10 @@ function dynamicFilterWhere(
 export async function buildProductWhere(query: ListShopProductsQuery = {}) {
   const where: Prisma.ProductWhereInput = {
     status: "active",
+              archivedAt: null,
     isActive: true,
-    category: { isActive: true },
-    OR: [{ brandId: null }, { brand: { isActive: true } }],
+    category: { isActive: true, archivedAt: null },
+    OR: [{ brandId: null }, { brand: { isActive: true, archivedAt: null } }],
     variants: { some: { isActive: true } },
   };
 

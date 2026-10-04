@@ -120,6 +120,9 @@ export function isVariantSellable(variant: any) {
     variant?.isActive === true &&
     variant.product?.isActive === true &&
     variant.product?.status === "active" &&
+    !variant.product?.archivedAt &&
+    !variant.product?.category?.archivedAt &&
+    !variant.product?.brand?.archivedAt &&
     variant.product?.category?.isActive === true &&
     (!variant.product?.brand || variant.product.brand.isActive === true)
   );
