@@ -29,7 +29,7 @@ export function StoreProductCard(props: { product: ShopProduct; className?: stri
         <Link to="/shop/products/$slug" params={{ slug: props.product.slug }} className="block">
           <div className="aspect-square bg-muted/40">
             {imageUrl ? (
-              <Img src={imageUrl} alt={props.product.name} objectFit="contain" className="h-full w-full transition-transform motion-safe:group-hover:scale-[1.02]" />
+              <Img src={imageUrl} alt={props.product.name} objectFit="cover" className="h-full w-full transition-transform motion-safe:group-hover:scale-[1.02]" />
             ) : (
               <FallbackProductVisual />
             )}

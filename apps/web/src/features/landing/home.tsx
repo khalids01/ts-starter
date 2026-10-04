@@ -323,17 +323,17 @@ function Categories({ categories }: { categories: ShopCategory[] }) {
           <ArrowRight className="size-4" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="flex flex-wrap gap-3 ">
         {categories.map((category, index) => (
           <Link
             key={category.id}
             to="/shop"
             search={{ categoryId: category.id }}
-            className="group rounded-2xl bg-muted/40 p-4 transition-colors hover:bg-muted sm:p-5"
+            className="max-w-32 w-full group rounded-2xl bg-muted/40 p-3 text-center transition-colors hover:bg-muted"
           >
             <div
               className={cn(
-                "mb-4 grid aspect-[4/3] place-items-center overflow-hidden rounded-xl",
+                "mx-auto mb-3 grid size-20 place-items-center overflow-hidden rounded-xl sm:size-26",
                 index % 2
                   ? "bg-emerald-100/50 dark:bg-emerald-950/30"
                   : "bg-orange-100/50 dark:bg-orange-950/20",
@@ -344,7 +344,7 @@ function Categories({ categories }: { categories: ShopCategory[] }) {
                   src={(category.imageUrl || category.iconUrl)!}
                   alt=""
                   objectFit="contain"
-                  className="h-full w-full p-4 motion-safe:transition-transform motion-safe:group-hover:scale-105"
+                  className="h-full w-full motion-safe:transition-transform motion-safe:group-hover:scale-105"
                 />
               ) : (
                 <Package
@@ -354,9 +354,6 @@ function Categories({ categories }: { categories: ShopCategory[] }) {
               )}
             </div>
             <h3 className="truncate text-sm font-medium">{category.name}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Explore collection <span aria-hidden="true">↗</span>
-            </p>
           </Link>
         ))}
       </div>
@@ -379,14 +376,14 @@ function ProductCard({ product }: { product: ShopProduct }) {
           to="/shop/products/$slug"
           params={{ slug: product.slug }}
           aria-label={`View ${product.name}`}
-          className="block aspect-[4/5]"
+          className="block aspect-square"
         >
           {image ? (
             <Img
               src={image}
               alt={product.name}
-              objectFit="contain"
-              className="h-full w-full p-5 motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-105"
+              objectFit="cover"
+              className="h-full w-full motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-105"
             />
           ) : (
             <div className="grid h-full place-items-center">
