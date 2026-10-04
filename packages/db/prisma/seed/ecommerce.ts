@@ -1,3 +1,4 @@
+import { seedBrandCatalog } from "./brand-catalog";
 import prisma from "../../src/client.server";
 
 type AttributeSeed = {
@@ -1820,6 +1821,9 @@ async function seedOrders(variantBySku: Map<string, SeededVariant>) {
 }
 
 export async function seedEcommerce(requestedCatalog?: string) {
+  if (!requestedCatalog && !readOption("catalog") && !process.env.ECOMMERCE_SEED_CATALOG && process.env.BRAND) {
+    return seedBrandCatalog(prisma, process.env);
+  }
   const selection = ecommerceSeedSelection(
     requestedCatalog ??
       readOption("catalog") ??
