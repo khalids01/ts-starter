@@ -1,0 +1,38 @@
+Welcome. In this tutorial, we will take one product through the complete selling process: from entering its information, to receiving stock, accepting a customer order, and marking that order as completed.
+
+Before you begin, make sure your store has an active category and at least one inventory location. A supplier is optional. We will use a simple product with one selling option, or SKU. Products with sizes, colours, weights, or other options follow the same process; they simply have more SKUs.
+
+From the admin menu, open Products, then select Product. The product builder is divided into six clear steps.
+
+Start with Category. Choose the category that best matches the product. The category controls which product details, variant options, and inventory fields appear. The summary below the category also shows its brand policy and the number of configured fields.
+
+Next, open Basics. Enter a clear product name and a short description that helps customers understand what they are buying. The slug is the readable part of the product's web address. You may leave it blank when the store can create it automatically. Select a brand when the category allows or requires one, then choose a clean cover image.
+
+Featured and Trending are optional display choices. Search keywords can help customers find the product. The SEO title and description are also optional; when they are empty, the storefront uses the product information as a sensible fallback. Select Save basics. The product is now saved as a draft, so customers cannot see it yet.
+
+Open Specs. These fields come from the selected category. Complete the details that matter to customers, especially anything marked as required, then select Save specs.
+
+Open Highlights to add short selling points, such as origin, material, warranty, or storage guidance. Keep each highlight brief and factual. Select Save highlights when finished.
+
+Now open Variants. Every product needs at least one sellable variant. Enter a unique SKU, a customer-facing name, the selling price, and the currency. A compare-at price is optional and should only be used when it is higher than the selling price. Add the variant image, weight, and category-specific options when needed. Keep the variant active, and make one variant the default. Then select Save variants.
+
+The Inventory step links you to the inventory page. Open it, then choose Receive. Select the product, its SKU, and the location where the stock is stored. Enter the quantity received. You can also add a supplier, batch number, unit cost, reorder level, or unavailable-from date when they apply. For tracked gadgets, register each serial number or IMEI after receiving the stock. Select Receive stock.
+
+Return to the product and open Validate. Select Validate first. If the product is missing a required field, the admin panel tells you what needs attention. When validation succeeds, select Activate product. The product can now appear in the shop and can be purchased while stock is available.
+
+Next, we will follow a customer order. On the storefront, the customer opens the product, adds it to the cart, and completes checkout. The order is created with the customer's contact details, delivery address, item price, delivery charge, and payment choice. The requested quantity is reserved immediately, so it cannot be sold twice.
+
+Back in the admin panel, open Orders and select the new order. Begin by reviewing the customer, address, ordered items, totals, payment method, and timeline. If anything looks wrong, investigate before changing the order.
+
+Set the order status to Confirmed and select Update order. Confirmation commits the reserved stock. This means the item has been accepted for fulfilment and the inventory is no longer available for another customer.
+
+If money has already been received, use Record confirmed payment. Enter only the amount actually received, choose the real payment method, add the transaction or receipt reference, and write a short evidence note. This action records payment evidence inside the order; it does not transfer money. Partial payments can be recorded in more than one receipt until the outstanding balance reaches zero. For cash on delivery collected by a courier, use the courier settlement workflow instead of guessing a payment.
+
+Prepare the parcel and use the correct fulfilment controls for the product type. When the parcel leaves your control, select Mark shipped. Enter the carrier and tracking number, then save. If tracking details change, use Edit tracking so the correction remains in the order history.
+
+After delivery is confirmed, select Mark delivered. Check that the payment shows fully paid, the delivery status shows delivered, and the inventory status remains committed. Then change the order status to Completed and select Update order.
+
+Finally, review the timeline and totals. You should see the important events in order: checkout, confirmation, payment evidence, shipment, delivery, and completion. The inventory page should show the sold quantity removed from available stock.
+
+That is the complete everyday workflow: create the product, receive stock, validate and activate it, review the order, confirm payment, fulfil delivery, and complete the sale. Use cancellation, refund, return, and recovery actions only when those events actually happen, because each action changes the order history and may also change inventory.
+

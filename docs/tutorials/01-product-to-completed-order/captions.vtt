@@ -1,0 +1,145 @@
+WEBVTT
+
+NOTE Timed to audio_normalized.mp3.
+
+00:00:01.073 --> 00:00:08.245
+Welcome. In this tutorial, we will take one product through the complete selling process:
+
+00:00:08.610 --> 00:00:12.078
+from entering its information, to receiving stock, accepting a customer order, and marking that order as completed.
+
+00:00:12.951 --> 00:00:20.167
+Before you begin, make sure your store has an active category and at least one inventory location. A supplier is optional.
+
+00:00:21.107 --> 00:00:33.072
+We will use a simple product with one selling option, or SKU. Products with sizes, colours, weights, or other options follow the same process; they simply have more SKUs.
+
+00:00:33.974 --> 00:00:41.429
+From the admin menu, open Products, then select Product. The product builder is divided into six clear steps.
+
+00:00:42.045 --> 00:00:52.119
+Start with Category. Choose the category that best matches the product. The category controls which product details, variant options, and inventory fields appear.
+
+00:00:52.867 --> 00:00:58.074
+The summary below the category also shows its brand policy and the number of configured fields.
+
+00:00:58.962 --> 00:01:06.249
+Next, open Basics. Enter a clear product name and a short description that helps customers understand what they are buying.
+
+00:01:06.940 --> 00:01:13.149
+The slug is the readable part of the product's web address. You may leave it blank when the store can create it automatically.
+
+00:01:14.065 --> 00:01:19.425
+Select a brand when the category allows or requires one, then choose a clean cover image.
+
+00:01:20.007 --> 00:01:29.727
+Featured and Trending are optional display choices. Search keywords can help customers find the product.
+
+00:01:30.273 --> 00:01:37.220
+The SEO title and description are also optional; when they are empty, the storefront uses the product information as a sensible fallback.
+
+00:01:37.821 --> 00:01:43.475
+Select Save basics. The product is now saved as a draft, so customers cannot see it yet.
+
+00:01:44.111 --> 00:01:53.616
+Open Specs. These fields come from the selected category. Complete the details that matter to customers, especially anything marked as required, then select Save specs.
+
+00:01:54.558 --> 00:02:06.448
+Open Highlights to add short selling points, such as origin, material, warranty, or storage guidance. Keep each highlight brief and factual. Select Save highlights when finished.
+
+00:02:07.415 --> 00:02:12.070
+Now open Variants. Every product needs at least one sellable variant.
+
+00:02:12.656 --> 00:02:23.761
+Enter a unique SKU, a customer-facing name, the selling price, and the currency. A compare-at price is optional and should only be used when it is higher than the selling price.
+
+00:02:24.621 --> 00:02:32.552
+Add the variant image, weight, and category-specific options when needed. Keep the variant active, and make one variant the default. Then select Save variants.
+
+00:02:33.037 --> 00:02:38.600
+The Inventory step links you to the inventory page. Open it, then choose Receive.
+
+00:02:39.151 --> 00:02:46.155
+Select the product, its SKU, and the location where the stock is stored. Enter the quantity received.
+
+00:02:46.814 --> 00:02:55.443
+You can also add a supplier, batch number, unit cost, reorder level, or unavailable-from date when they apply.
+
+00:02:56.123 --> 00:03:01.454
+For tracked gadgets, register each serial number or IMEI after receiving the stock. Select Receive stock.
+
+00:03:02.005 --> 00:03:08.463
+Return to the product and open Validate. Select Validate first. If the product is missing a required field, the admin panel tells you what needs attention.
+
+00:03:09.053 --> 00:03:17.451
+When validation succeeds, select Activate product. The product can now appear in the shop and can be purchased while stock is available.
+
+00:03:17.886 --> 00:03:24.735
+Next, we will follow a customer order. On the storefront, the customer opens the product, adds it to the cart, and completes checkout.
+
+00:03:25.423 --> 00:03:38.582
+The order is created with the customer's contact details, delivery address, item price, delivery charge, and payment choice.
+
+00:03:39.280 --> 00:03:43.367
+The requested quantity is reserved immediately, so it cannot be sold twice.
+
+00:03:44.335 --> 00:03:47.914
+Back in the admin panel, open Orders and select the new order. Begin by reviewing the customer, address, ordered items, totals, payment method, and timeline.
+
+00:03:48.654 --> 00:03:55.208
+If anything looks wrong, investigate before changing the order.
+
+00:03:55.936 --> 00:04:03.538
+Set the order status to Confirmed and select Update order. Confirmation commits the reserved stock.
+
+00:04:04.210 --> 00:04:12.501
+This means the item has been accepted for fulfilment and the inventory is no longer available for another customer.
+
+00:04:13.502 --> 00:04:17.187
+If money has already been received, use Record confirmed payment. Enter only the amount actually received, choose the real payment method,
+
+00:04:17.887 --> 00:04:26.374
+add the transaction or receipt reference, and write a short evidence note.
+
+00:04:27.131 --> 00:04:29.970
+This action records payment evidence inside the order; it does not transfer money.
+
+00:04:30.400 --> 00:04:37.714
+Partial payments can be recorded in more than one receipt until the outstanding balance reaches zero.
+
+00:04:38.737 --> 00:04:44.548
+For cash on delivery collected by a courier, use the courier settlement workflow instead of guessing a payment.
+
+00:04:45.340 --> 00:04:49.078
+Prepare the parcel and use the correct fulfilment controls for the product type.
+
+00:04:49.757 --> 00:04:56.355
+When the parcel leaves your control, select Mark shipped. Enter the carrier and tracking number, then save.
+
+00:04:57.086 --> 00:05:02.194
+If tracking details change, use Edit tracking so the correction remains in the order history.
+
+00:05:03.182 --> 00:05:06.363
+After delivery is confirmed, select Mark delivered.
+
+00:05:07.104 --> 00:05:13.888
+Check that the payment shows fully paid, the delivery status shows delivered, and the inventory status remains committed.
+
+00:05:14.608 --> 00:05:18.589
+Then change the order status to Completed and select Update order.
+
+00:05:19.603 --> 00:05:25.499
+Finally, review the timeline and totals. You should see the important events in order:
+
+00:05:25.937 --> 00:05:29.074
+checkout, confirmation, payment evidence, shipment, delivery, and completion.
+
+00:05:29.441 --> 00:05:35.608
+The inventory page should show the sold quantity removed from available stock.
+
+00:05:36.141 --> 00:05:47.696
+That is the complete everyday workflow: create the product, receive stock, validate and activate it, review the order, confirm payment, fulfil delivery, and complete the sale.
+
+00:05:48.482 --> 00:05:59.310
+Use cancellation, refund, return, and recovery actions only when those events actually happen, because each action changes the order history and may also change inventory.
+
