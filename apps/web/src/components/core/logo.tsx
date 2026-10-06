@@ -10,10 +10,12 @@ export function Logo(props: { className?: string; compact?: boolean }) {
           <img
             src={brandConfig.logoUrl}
             alt=""
+            width={36}
+            height={36}
             className="size-9 object-contain"
           />
         ) : (
-          <img src={brandConfig.iconUrl} alt="" className="size-9" />
+          <img src={brandConfig.iconUrl} alt="" width={36} height={36} className="size-9" />
         )}
       </span>
       <span

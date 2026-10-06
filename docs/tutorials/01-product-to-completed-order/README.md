@@ -1,6 +1,6 @@
 # From Product Setup to a Completed Order
 
-Status: first review video complete with synchronized narration, burned-in subtitles, poster and verified isolated workflow evidence.
+Status: review video complete — a real browser capture with an overlaid cursor and synchronized narration, plus poster and verified isolated workflow evidence. Captions ship as a sidecar `captions.vtt` track and are not burned into the video.
 
 ## Audience and goal
 
@@ -36,13 +36,13 @@ After the tutorial, the viewer can:
 ## Files
 
 - `narration.txt` — exact text to generate as one voice track.
-- `captions.vtt` — WebVTT captions synchronized to the normalized narration.
+- `captions.vtt` — WebVTT captions synchronized to the normalized narration; sidecar only, not burned in.
 - `recording-plan.md` — shot list and screen actions matched to the narration.
 - `audio_v1.mp3` — user-generated source narration.
 - `audio_normalized.mp3` — mono 48 kHz, 192 kbps narration normalized for the final mix.
-- `frames/` — 18 deterministic screenshots from the verified workflow.
+- `frames/` — legacy screenshots from the earlier screenshot-stacked pipeline; no longer used.
 - `poster.webp` — tutorial cover image.
-- `tutorial-product-to-completed-order.mp4` — review video, H.264/AAC at 1440 × 900.
+- `tutorial-product-to-completed-order.mp4` — review video: real browser capture at 1440 × 900 with an overlaid cursor, H.264/AAC.
 - `../../../tests/tutorials/record-product-to-order.ts` — guarded fixture, capture, persistence assertion and cleanup workflow.
 
 ## Voice generation
@@ -56,6 +56,19 @@ The source audio is 5 minutes 59 seconds. Its integrated level was about -25 LUF
 The user authorized resetting the exact retained test database. The database was dropped and recreated, all 38 committed migrations were applied, and only the existing RBAC and courier-provider fixture setup was run. The established environment guard and five fictional Playwright personas were reused; no development, staging or production target was touched.
 
 The capture workflow created a fictional product and completed a real storefront checkout through the current app. It asserted persisted `completed`, `paid`, `delivered` and `committed` states, plus stock moving from 25 on hand to 24 with zero reserved. Exact marker-owned categories, brands, products, inventory locations, shipping rates, orders and customers were removed afterward. The final read-only residue check returned zero for every marker.
+
+## Regenerating this tutorial
+
+The video is produced by a real browser-session recording with an overlaid cursor,
+not by stacking screenshots. With the isolated runtime (Postgres, Redis, API on
+:3000, web on :3001) running:
+
+```sh
+bun run tutorial:record   # records the workflow to a raw WebM + manifest
+bun run tutorial:render   # muxes audio_normalized.mp3, burns captions.vtt, writes the MP4 + poster
+```
+
+See `../../../tests/tutorials/README.md` for pacing and capture tuning.
 
 ## Important behavior explained in the tutorial
 
