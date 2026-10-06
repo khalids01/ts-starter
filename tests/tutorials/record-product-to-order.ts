@@ -216,10 +216,19 @@ const video = page.video();
 const click = (target: Locator) => cursorClick(page, target);
 const fill = (target: Locator, value: string) => cursorFill(page, target, value);
 const pointAt = (target: Locator) => narrate(page, target);
-/** Walks the spotlight through fields, holding each until its narration cue ends. */
-const beats = async (items: Array<{ at: Locator; until: number }>) => {
+/**
+ * Walks the spotlight through fields, performs each beat's real action at the
+ * moment it is described, then holds until that narration cue ends.
+ */
+const beats = async (
+  items: Array<{ at: Locator; until: number; act?: () => Promise<void> }>,
+) => {
   for (const item of items) {
     await pointAt(item.at);
+    if (item.act) {
+      await item.act();
+      await pointAt(item.at);
+    }
     await pacer.holdUntil(item.until);
   }
 };
@@ -259,10 +268,22 @@ try {
   });
   created.shippingRateId = rate.id;
 
-  // 1. Land on the admin overview, then open Products from the sidebar.
+  // 1. Welcome on the overview, then show the existing category and location.
   await page.goto("/admin/overview");
   await page.waitForLoadState("networkidle");
-  await pacer.holdUntil(34);
+  await pacer.holdUntil(12.5);
+
+  await navTo(page, "Shop Management", "Catalog");
+  await page.waitForLoadState("networkidle");
+  await pointAt(page.getByText(categoryName).first());
+  await pacer.holdUntil(22);
+
+  await navTo(page, "Shop Management", "Inventory");
+  await page.waitForLoadState("networkidle");
+  await click(page.getByRole("tab", { name: "Locations" }));
+  await pointAt(page.getByText(locationName).first());
+  await pacer.holdUntil(33);
+
   await navTo(page, "Shop Management", "Products");
   await page
     .getByText("Create product drafts, manage specs, and build sellable variants.", {
@@ -276,43 +297,78 @@ try {
   await click(page.getByRole("link", { name: "Product", exact: true }));
   await page.getByRole("heading", { name: "New product" }).waitFor();
   await page.waitForLoadState("networkidle");
-  await pointAt(field(page, "Category").getByRole("combobox"));
   await click(field(page, "Category").getByRole("combobox"));
   await click(page.getByText(categoryName, { exact: true }).last());
-  await pacer.reach("02-category");
+  await beats([
+    { at: field(page, "Category").getByRole("combobox"), until: 52 },
+    { at: page.getByText(/Product fields:/), until: 58.1 },
+  ]);
 
   // 3. Basics.
   await click(page.getByRole("button", { name: /Basics/ }));
-  await pointAt(page.getByLabel("Name", { exact: true }));
-  await fill(page.getByLabel("Name", { exact: true }), productName);
-  await fill(page.getByLabel("Slug"), productSlug);
-  await click(page.getByText("No brand", { exact: true }));
-  await click(page.getByText(brandName, { exact: true }).last());
-  await fill(
-    field(page, "Cover image").locator("input"),
-    "http://localhost:3001/brands/foodshop/products/honey.webp",
-  );
-  await fill(
-    field(page, "Description").locator("textarea"),
-    "Raw wildflower honey harvested from the Sundarban mangrove forests.",
-  );
-  await fill(field(page, "Search keywords").locator("textarea"), "honey, wildflower, sundarban, raw");
-  await fill(page.getByLabel("SEO title"), "Sundarban Wildflower Honey | Khamar Foods");
-  await fill(
-    page.getByLabel("SEO description"),
-    "Raw wildflower honey from the Sundarban mangrove forests, packed in 500 g jars.",
-  );
   await beats([
-    { at: page.getByLabel("Name", { exact: true }), until: 62 },
-    { at: field(page, "Description").locator("textarea"), until: 66.2 },
-    { at: page.getByLabel("Slug"), until: 73.2 },
-    { at: field(page, "Brand").getByRole("combobox"), until: 77 },
-    { at: field(page, "Cover image"), until: 79.5 },
+    {
+      at: page.getByLabel("Name", { exact: true }),
+      until: 62,
+      act: () => fill(page.getByLabel("Name", { exact: true }), productName),
+    },
+    {
+      at: field(page, "Description").locator("textarea"),
+      until: 66.2,
+      act: () =>
+        fill(
+          field(page, "Description").locator("textarea"),
+          "Raw wildflower honey harvested from the Sundarban mangrove forests.",
+        ),
+    },
+    {
+      at: page.getByLabel("Slug"),
+      until: 73.2,
+      act: () => fill(page.getByLabel("Slug"), productSlug),
+    },
+    {
+      at: field(page, "Brand"),
+      until: 77,
+      act: async () => {
+        await click(page.getByText("No brand", { exact: true }));
+        await click(page.getByText(brandName, { exact: true }).last());
+      },
+    },
+    {
+      at: field(page, "Cover image"),
+      until: 79.5,
+      act: () =>
+        fill(
+          field(page, "Cover image").locator("input"),
+          "http://localhost:3001/brands/foodshop/products/honey.webp",
+        ),
+    },
     { at: field(page, "Featured"), until: 84.5 },
-    { at: field(page, "Search keywords").locator("textarea"), until: 89.8 },
-    { at: page.getByLabel("SEO title"), until: 94 },
-    { at: page.getByLabel("SEO description"), until: 97.3 },
-    { at: page.getByRole("button", { name: "Save basics" }), until: 103.5 },
+    { at: field(page, "Trending"), until: 87.5 },
+    {
+      at: field(page, "Search keywords").locator("textarea"),
+      until: 89.8,
+      act: () =>
+        fill(
+          field(page, "Search keywords").locator("textarea"),
+          "honey, wildflower, sundarban, raw",
+        ),
+    },
+    {
+      at: page.getByLabel("SEO title"),
+      until: 94,
+      act: () => fill(page.getByLabel("SEO title"), "Sundarban Wildflower Honey | Khamar Foods"),
+    },
+    {
+      at: page.getByLabel("SEO description"),
+      until: 96.5,
+      act: () =>
+        fill(
+          page.getByLabel("SEO description"),
+          "Raw wildflower honey from the Sundarban mangrove forests, packed in 500 g jars.",
+        ),
+    },
+    { at: page.getByRole("button", { name: "Save basics" }), until: 100 },
   ]);
   await click(page.getByRole("button", { name: "Save basics" }));
   await page.getByText("Product basics saved", { exact: true }).waitFor();
@@ -321,20 +377,30 @@ try {
 
   // 4. Specs.
   await click(page.getByRole("button", { name: /Specs/ }));
-  await pointAt(page.getByRole("button", { name: /Specs/ }));
-  await pacer.reach("04-product-specs");
+  await pointAt(page.getByText(/Specs/).first());
+  await pacer.holdUntil(110);
+  await pointAt(page.getByRole("button", { name: "Save specs" }));
+  await click(page.getByRole("button", { name: "Save specs" }));
+  await pacer.holdUntil(113.6);
 
   // 5. Highlights.
   await click(page.getByRole("button", { name: /Highlights/ }));
   await click(page.getByRole("button", { name: "Highlight", exact: true }));
-  await fill(page.getByLabel("Title"), "Single-origin harvest");
-  await fill(
-    field(page, "Description").locator("textarea"),
-    "Harvested once a year from Sundarban mangrove flowers.",
-  );
   await beats([
-    { at: page.getByLabel("Title"), until: 120 },
-    { at: field(page, "Description").locator("textarea"), until: 124 },
+    {
+      at: page.getByLabel("Title"),
+      until: 120,
+      act: () => fill(page.getByLabel("Title"), "Single-origin harvest"),
+    },
+    {
+      at: field(page, "Description").locator("textarea"),
+      until: 124,
+      act: () =>
+        fill(
+          field(page, "Description").locator("textarea"),
+          "Harvested once a year from Sundarban mangrove flowers.",
+        ),
+    },
     { at: page.getByRole("button", { name: "Save highlights" }), until: 126.4 },
   ]);
   await click(page.getByRole("button", { name: "Save highlights" }));
@@ -343,22 +409,43 @@ try {
   // 6. Variants.
   await click(page.getByRole("button", { name: /Variants/ }));
   await click(page.getByRole("button", { name: "Add variant", exact: true }));
-  await fill(page.getByLabel("SKU"), sku);
-  await fill(page.getByLabel("Name", { exact: true }), variantName);
-  await fill(page.getByLabel("Price", { exact: true }), "650");
-  await fill(page.getByLabel("Compare at price"), "700");
-  await fill(page.getByLabel("Cost price"), "420");
-  await fill(page.getByLabel("Weight", { exact: true }), "500");
-  await click(page.getByText("Not set", { exact: true }));
-  await click(page.getByText("g", { exact: true }).last());
-  await click(field(page, "Default variant").getByRole("switch"));
   await beats([
-    { at: page.getByLabel("SKU"), until: 135 },
-    { at: page.getByLabel("Name", { exact: true }), until: 138 },
-    { at: page.getByLabel("Price", { exact: true }), until: 141 },
-    { at: page.getByLabel("Compare at price"), until: 143.8 },
-    { at: page.getByLabel("Weight", { exact: true }), until: 148 },
-    { at: field(page, "Default variant"), until: 150.5 },
+    { at: page.getByLabel("SKU"), until: 135, act: () => fill(page.getByLabel("SKU"), sku) },
+    {
+      at: page.getByLabel("Name", { exact: true }),
+      until: 138,
+      act: () => fill(page.getByLabel("Name", { exact: true }), variantName),
+    },
+    {
+      at: page.getByLabel("Price", { exact: true }),
+      until: 140.5,
+      act: () => fill(page.getByLabel("Price", { exact: true }), "650"),
+    },
+    {
+      at: page.getByLabel("Currency"),
+      until: 142,
+      act: () => fill(page.getByLabel("Currency"), "BDT"),
+    },
+    {
+      at: page.getByLabel("Compare at price"),
+      until: 143.8,
+      act: () => fill(page.getByLabel("Compare at price"), "700"),
+    },
+    { at: field(page, "Variant images"), until: 146.5 },
+    {
+      at: page.getByLabel("Weight", { exact: true }),
+      until: 149,
+      act: async () => {
+        await fill(page.getByLabel("Weight", { exact: true }), "500");
+        await click(page.getByText("Not set", { exact: true }));
+        await click(page.getByText("g", { exact: true }).last());
+      },
+    },
+    {
+      at: field(page, "Default variant"),
+      until: 150.5,
+      act: () => click(field(page, "Default variant").getByRole("switch")),
+    },
     { at: page.getByRole("button", { name: "Save variants" }), until: 152.6 },
   ]);
   await click(page.getByRole("button", { name: "Save variants" }));
@@ -376,28 +463,52 @@ try {
   await page.getByRole("heading", { name: "Inventory" }).waitFor();
   await page.waitForLoadState("networkidle");
   await click(page.getByRole("tab", { name: "Receive" }));
-  await click(page.getByText("Select product", { exact: true }));
-  await click(page.getByText(productName, { exact: true }).last());
-  await click(page.getByText("Select SKU", { exact: true }));
-  await click(page.getByText(new RegExp(sku)).last());
-  await click(page.getByText("Select location", { exact: true }));
-  await click(page.getByText(locationName, { exact: true }).last());
-  await fill(page.getByLabel("Quantity"), "25");
-  await fill(page.getByLabel("Unit cost"), "420");
-  await fill(page.getByLabel("Reorder level"), "5");
   await beats([
-    { at: field(page, "Product"), until: 161 },
-    { at: field(page, "SKU"), until: 163.5 },
-    { at: field(page, "Location"), until: 166.2 },
-    { at: page.getByLabel("Quantity"), until: 170 },
-    { at: page.getByLabel("Unit cost"), until: 173 },
-    { at: page.getByLabel("Reorder level"), until: 175.5 },
+    {
+      at: field(page, "Product"),
+      until: 161,
+      act: async () => {
+        await click(page.getByText("Select product", { exact: true }));
+        await click(page.getByText(productName, { exact: true }).last());
+      },
+    },
+    {
+      at: field(page, "SKU"),
+      until: 163.5,
+      act: async () => {
+        await click(page.getByText("Select SKU", { exact: true }));
+        await click(page.getByText(new RegExp(sku)).last());
+      },
+    },
+    {
+      at: field(page, "Location"),
+      until: 166.2,
+      act: async () => {
+        await click(page.getByText("Select location", { exact: true }));
+        await click(page.getByText(locationName, { exact: true }).last());
+      },
+    },
+    {
+      at: page.getByLabel("Quantity"),
+      until: 170,
+      act: () => fill(page.getByLabel("Quantity"), "25"),
+    },
+    {
+      at: page.getByLabel("Unit cost"),
+      until: 173,
+      act: () => fill(page.getByLabel("Unit cost"), "420"),
+    },
+    {
+      at: page.getByLabel("Reorder level"),
+      until: 175.5,
+      act: () => fill(page.getByLabel("Reorder level"), "5"),
+    },
     { at: page.getByRole("button", { name: "Receive stock" }), until: 181.5 },
   ]);
   await click(page.getByRole("button", { name: "Receive stock" }));
   await page.getByText("Stock received", { exact: true }).waitFor();
   await click(page.getByRole("tab", { name: "Stock" }));
-  await pointAt(page.getByRole("tab", { name: "Stock" }));
+  await pointAt(page.getByText(productName).first());
   await pacer.reach("08-inventory-confirmed");
 
   // 8. Back to the product: Validate and activate.
@@ -428,18 +539,33 @@ try {
   // 10. Checkout: adding to cart opens the cart sheet, so continue from there.
   await page.getByRole("link", { name: "Checkout", exact: true }).waitFor();
   await click(page.getByRole("link", { name: "Checkout", exact: true }));
-  await fill(page.getByLabel("Name"), customerName);
-  await fill(page.getByLabel("Email"), customerEmail);
-  await fill(page.getByLabel("Phone"), customerPhone);
-  await fill(page.getByLabel("Address line 1"), customerAddress);
-  await fill(page.getByLabel("City"), customerCity);
-  await fill(page.getByLabel("Postal code"), customerPostal);
-  const delivery = page.getByText(shippingLabel, { exact: false });
-  if (await delivery.isVisible()) await click(delivery);
   await beats([
-    { at: page.getByLabel("Name"), until: 209 },
-    { at: page.getByLabel("Address line 1"), until: 213 },
-    { at: page.getByText(shippingLabel, { exact: false }), until: 216 },
+    {
+      at: page.getByLabel("Name"),
+      until: 210,
+      act: async () => {
+        await fill(page.getByLabel("Name"), customerName);
+        await fill(page.getByLabel("Email"), customerEmail);
+        await fill(page.getByLabel("Phone"), customerPhone);
+      },
+    },
+    {
+      at: page.getByLabel("Address line 1"),
+      until: 214,
+      act: async () => {
+        await fill(page.getByLabel("Address line 1"), customerAddress);
+        await fill(page.getByLabel("City"), customerCity);
+        await fill(page.getByLabel("Postal code"), customerPostal);
+      },
+    },
+    {
+      at: page.getByText(shippingLabel, { exact: false }),
+      until: 216.5,
+      act: async () => {
+        const delivery = page.getByText(shippingLabel, { exact: false });
+        if (await delivery.isVisible()) await click(delivery);
+      },
+    },
     { at: page.getByRole("button", { name: "Place order" }), until: 218.6 },
   ]);
   await click(page.getByRole("button", { name: "Place order" }));
@@ -462,8 +588,13 @@ try {
   await page.waitForLoadState("networkidle");
   await click(page.locator('a[href^="/admin/orders/"]').first());
   await waitForOrderDetail(page);
-  await pointAt(page.getByRole("heading", { name: "Fulfillment" }));
-  await pacer.reach("13-admin-order-review");
+  await beats([
+    { at: page.getByText("Customer", { exact: true }), until: 229 },
+    { at: page.getByText("Addresses", { exact: true }), until: 230.5 },
+    { at: page.getByText("Line items", { exact: true }), until: 232 },
+    { at: page.getByText("Totals", { exact: true }).first(), until: 233.5 },
+    { at: page.getByText("Timeline", { exact: true }).first(), until: 235.2 },
+  ]);
 
   // 12. Confirm the order.
   await selectStatus(page, "Pending", "Confirmed");
@@ -476,19 +607,34 @@ try {
   // 13. Record payment evidence.
   await click(page.getByRole("button", { name: "Record confirmed payment" }));
   const payment = page.getByRole("dialog", { name: "Record confirmed payment" });
-  await fill(payment.getByLabel("Amount (BDT)"), "730");
-  await click(payment.getByLabel("Method"));
-  await click(page.getByRole("option", { name: "Mobile collection" }));
-  await fill(payment.getByLabel("Collection reference"), "bKash-88213497");
-  await fill(
-    payment.getByLabel("Evidence / correction reason"),
-    "Mobile collection receipt confirmed by the customer.",
-  );
   await beats([
-    { at: payment.getByLabel("Amount (BDT)"), until: 258 },
-    { at: payment.getByLabel("Method"), until: 262 },
-    { at: payment.getByLabel("Collection reference"), until: 270 },
-    { at: payment.getByLabel("Evidence / correction reason"), until: 277 },
+    {
+      at: payment.getByLabel("Amount (BDT)"),
+      until: 258,
+      act: () => fill(payment.getByLabel("Amount (BDT)"), "730"),
+    },
+    {
+      at: payment.getByLabel("Method"),
+      until: 262,
+      act: async () => {
+        await click(payment.getByLabel("Method"));
+        await click(page.getByRole("option", { name: "Mobile collection" }));
+      },
+    },
+    {
+      at: payment.getByLabel("Collection reference"),
+      until: 270,
+      act: () => fill(payment.getByLabel("Collection reference"), "bKash-88213497"),
+    },
+    {
+      at: payment.getByLabel("Evidence / correction reason"),
+      until: 277,
+      act: () =>
+        fill(
+          payment.getByLabel("Evidence / correction reason"),
+          "Mobile collection receipt confirmed by the customer.",
+        ),
+    },
     { at: payment.getByRole("button", { name: "Record evidence" }), until: 284.5 },
   ]);
   await click(payment.getByRole("button", { name: "Record evidence" }));
@@ -530,11 +676,13 @@ try {
   await page.getByText("Order updated", { exact: true }).waitFor();
   await page.waitForTimeout(600);
   await pacer.reach("18-order-completed");
-  await pointAt(page.getByRole("heading", { name: "Fulfillment" }));
-  await pacer.holdUntil(346);
-  await page.mouse.wheel(0, 900);
-  await page.waitForTimeout(500);
-  await pointAt(page.getByText(/timeline/i).last());
+  await pointAt(page.getByText("Timeline", { exact: true }).first());
+  await pacer.holdUntil(324);
+  await pointAt(page.getByText("Totals", { exact: true }).first());
+  await pacer.holdUntil(335.6);
+  await navTo(page, "Shop Management", "Inventory");
+  await page.waitForLoadState("networkidle");
+  await pointAt(page.getByText(productName).first());
   await pacer.finish();
 
   const persisted = await json<{
