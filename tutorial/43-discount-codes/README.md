@@ -1,20 +1,30 @@
 # Create and manage discount codes
 
-Status: prepared script and recording plan; audio, fixture review, capture and publication pending.
-
-## Prerequisites
-
 - A fictional code and an eligible supervised checkout.
 
-## Recording
+## Generation files
 
-Mode: **walkthrough**. This plan presents the controls and explains the workflow. It does not submit state-changing actions. Do not describe its recording as persisted workflow acceptance. For a full action demonstration, review and extend the explicit actions and add owned fixture/outcome/cleanup evidence first.
+- `production.json`: sentence-aligned narration, exact screen setup, spotlight and evidence checks.
+- `production.md`: readable version of those sections, for reviewing before production.
+- `produce.ts`: shared synchronized producer, following the accepted tutorial 01 approach.
+- `tutorial.json`, `narration.txt`: canonical narration and scene grouping.
+- `fixtures.example.json`: fictional data contract; copy to ignored `fixtures.local.json` and supply isolated values/checks.
+- `record.ts`, `render.ts`: entry points for synchronized capture/render, also used by the root CLI.
 
-Copy `fixtures.example.json` to `fixtures.local.json`, prepare its isolated fictional records and fill every `REPLACE` value. Do not use real accounts or provider credentials. See [shared instructions](../README.md).
+## Commands (run later, separately authorized)
 
 ```bash
-bun run tutorial:record discount-codes
-bun run tutorial:render discount-codes
+# Offline plan inspection only; creates no audio or video:
+bun tutorial/43-discount-codes/produce.ts prepare
+
+# Future production, after reviewing the plan and prerequisites:
+TUTORIAL_AUDIO_APPROVED=true bun tutorial/43-discount-codes/produce.ts audio
+TUTORIAL_RECORD_APPROVED=true bun run tutorial:record discount-codes
+TUTORIAL_RENDER_APPROVED=true bun run tutorial:render discount-codes
 ```
 
-The shared recorder captures four independent real browser scenes. The renderer requires supplied audio and rejects action footage longer than its narration section. Review the draft video before publication.
+The capture command expects the existing production app, the correct `BRAND`, isolated environment variables, disabled integrations and the fictional owner session. It never builds, starts a server, provisions fixtures or installs tools. See [shared production instructions](../synchronized-production.readme.md).
+
+Mode: **walkthrough**. Business writes are blocked. Saving, refunding, booking, inviting or other state changes are explained through their controls and pre-existing fictional records. A walkthrough does not claim to prove an unsubmitted operation.
+
+Before production, review `production.md` and `recording-checklist.md`, prepare the required fictional state and check every target against the running app. After generation, watch the entire video with audio and review captions before marking its artifact approved. Source inspection cannot establish runtime accuracy.

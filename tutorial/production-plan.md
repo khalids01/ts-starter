@@ -1,11 +1,11 @@
 # Tutorial production checklist
 
-43 focused topics plus one retained full workflow. All new audio and captures remain pending.
+43 focused topics plus one retained full workflow. Tutorial 01 is accepted and uploaded. Tutorials 02–43 have synchronized generation plans prepared; their audio, capture, rendering and playback review remain pending. See [production instructions](./synchronized-production.readme.md).
 
-| Folder | Topic | Recording mode | Audio | Review |
+| Folder | Topic | Capture mode (prepared code) | Audio | Review |
 | --- | --- | --- | --- | --- |
 | `00-product-to-completed-order` | From product setup to a completed order | Legacy continuous | Existing | Pending |
-| `01-admin-overview` | Find your way around the admin panel | walkthrough | Pending | Pending |
+| `01-admin-overview` | Find your way around the admin panel | Accepted synchronized | Existing | Accepted |
 | `02-catalog-categories` | Create categories and configure handling | workflow | Pending | Pending |
 | `03-catalog-brands` | Create and manage product brands | workflow | Pending | Pending |
 | `04-catalog-attributes` | Configure product attributes and options | walkthrough | Pending | Pending |
