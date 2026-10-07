@@ -60,3 +60,25 @@ export async function youtubeCallback(userId: string, sessionId: string, state: 
 export async function youtubeDisconnect() {
   await (await connectRedis()).del(connectionKey);
 }
+
+/** Server/CLI only. Never expose this result in a controller response. */
+export async function getYoutubeUploadAccess() {
+  if (env.YOUTUBE_ENABLED !== "true") throw new Error("YouTube integration is disabled");
+  const value = await (await connectRedis()).get(connectionKey);
+  if (!value) throw new Error("Connect your channel through Admin → Guide → Connect YouTube first");
+  const connection = decrypt(value);
+  if (env.YOUTUBE_CHANNEL_ID && env.YOUTUBE_CHANNEL_ID !== connection.channelId) throw new Error("Connected channel does not match YOUTUBE_CHANNEL_ID; reconnect the intended channel");
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, grant_type: "refresh_token", refresh_token: connection.refreshToken }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) throw new Error(`YouTube token refresh failed (${response.status}); reconnect the channel`);
+  const token = await response.json() as { access_token?: string; scope?: string };
+  if (!token.access_token || (token.scope && !scopes.every(scope => token.scope!.split(" ").includes(scope)))) throw new Error("YouTube upload permissions are missing; reconnect the channel");
+  const channelResponse = await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", { headers: { Authorization: `Bearer ${token.access_token}` }, signal: AbortSignal.timeout(15000) });
+  if (!channelResponse.ok) throw new Error(`Could not verify upload channel (${channelResponse.status})`);
+  const channels = await channelResponse.json() as { items?: { id: string }[] };
+  if (channels.items?.length !== 1 || channels.items[0]?.id !== connection.channelId) throw new Error("Upload token channel differs from the stored connection");
+  return { accessToken: token.access_token, channelId: connection.channelId, channelTitle: connection.channelTitle };
+}

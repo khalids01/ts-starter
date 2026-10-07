@@ -1,6 +1,6 @@
 # Connect the tutorial YouTube channel
 
-This integration reuses `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, the existing API server, owner login, and Redis. It does not upload videos yet.
+This integration reuses `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, the existing API server, owner login, and Redis. Channel authorization and the separate local upload client share these credentials.
 
 ## Google setup
 
@@ -23,11 +23,11 @@ YOUTUBE_ENABLED=true
 YOUTUBE_CHANNEL_ID=UC_your_channel_id
 ```
 
-`YOUTUBE_CHANNEL_ID` is optional. Leave it unset for the first connection if you do not know the ID; the Tutorials page shows the connected ID. Set it and restart afterwards to pin future connections. Existing connections should be disconnected and reconnected when changing the intended channel.
+`YOUTUBE_CHANNEL_ID` is optional. Leave it unset for the first connection if you do not know the ID; the Guide page shows the connected ID. Set it and restart afterwards to pin future connections. Existing connections should be disconnected and reconnected when changing the intended channel.
 
 Use the existing `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CORS_ORIGIN`, `REDIS_URL`, and unique `REDIS_KEY_PREFIX`. No new port or client secret is required. Enable this on the deployment where you manage tutorial production.
 
-Restart the API after updating its environment. Sign in as the platform owner, open **Admin → Tutorials → Connect YouTube**, choose the channel account, and approve both permissions. You return to Tutorials with the connected channel name and ID.
+Restart the API after updating its environment. Sign in as the platform owner, open **Admin → Guide → Connect YouTube**, choose the channel account, and approve both permissions. You return to Guide with the connected channel name and ID.
 
 Stay signed in through the flow. The callback requires the same owner session that started authorization. Starting on one hostname and returning to a different API hostname can prevent the session cookie from reaching the callback.
 
@@ -50,8 +50,26 @@ Stay signed in through the flow. The callback requires the same owner session th
 
 ## Next stage: uploading and playback
 
-A separate uploader still needs to exchange the refresh token for access tokens, upload reviewed videos, and save their YouTube IDs in the tutorial catalog. The current player also needs YouTube iframe support. Connecting the channel does not publish a video or change existing tutorial media.
+The local uploader below can refresh the token and upload a rendered video. Saving YouTube IDs in the tutorial catalog and YouTube iframe support in the current player are still pending. Connecting the channel does not publish a video or change existing tutorial media.
 
 Google restricts uploads from unaudited API projects created after 28 July 2020 to private viewing until the API project passes its compliance audit. An unlisted tutorial workflow therefore depends on completing that audit where applicable.
 
 References: [YouTube server OAuth](https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps), [refresh token expiration](https://developers.google.com/identity/protocols/oauth2#expiration), [upload restrictions](https://developers.google.com/youtube/v3/docs/videos/insert).
+
+## Upload a rendered tutorial
+
+The upload client uses the existing API environment and encrypted channel connection. It defaults to preparation only:
+
+```bash
+bun tutorial/shared/youtube-upload.ts admin-overview --visibility=unlisted
+```
+
+After connecting the channel, upload the exact latest render:
+
+```bash
+bun --env-file=apps/server/.env tutorial/shared/youtube-upload.ts admin-overview --visibility=unlisted --upload
+```
+
+You may choose `private`, `unlisted`, or `public`; the default is `private` if omitted. The command validates the video against its render hash, refreshes the stored token, verifies the target channel, and uses Google's resumable upload protocol. Upload receipts and session URLs are saved under the render's ignored `youtube/` directory. Rerunning resumes the saved session or verifies an existing uploaded video rather than creating a duplicate. A failed session initiation can leave an unknown remote session; inspect channel history before retrying. If a process is forcibly killed, inspect for an active upload before removing its `upload.lock`.
+
+The command reports the actual returned visibility and processing state. An upload may still be processing, or Google's project restrictions may keep it private. No change is made to the tutorial catalog or local review approval flags; uploading is separate from publishing in the admin library. Caption and custom thumbnail uploads are not included in this command.
