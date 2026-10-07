@@ -35,7 +35,12 @@ async function perform(page: Page, action: Action, values: Record<string, string
     const path = substitute(action.path, values);
     if (!path.startsWith("/admin/") || path.startsWith("//")) throw new Error(`Unsafe tutorial route: ${path}`);
     await page.goto(path, { waitUntil: "domcontentloaded" });
-    await page.locator("main").waitFor();
+    await page.locator("main").first().waitFor();
+    return;
+  }
+  if (action.kind === "wait") {
+    if (!Number.isFinite(action.durationMs) || action.durationMs < 0 || action.durationMs > 30_000) throw new Error("Invalid tutorial pause");
+    await page.waitForTimeout(action.durationMs);
     return;
   }
   if (action.kind === "key") { await page.keyboard.press(action.key); return; }
@@ -121,7 +126,7 @@ export async function recordTutorial(directory: string): Promise<void> {
     viewport: { width: 1440, height: 900 }, colorScheme: "light", reducedMotion: "reduce",
     recordVideo: { dir: runDirectory, size: { width: 1440, height: 900 } } });
   await installCursor(context);
-  await context.addInitScript(() => {
+  if (!plan.showTutorialControls) await context.addInitScript(() => {
     document.addEventListener("DOMContentLoaded", () => {
       const style = document.createElement("style");
       style.textContent = "[data-tutorial-control] { visibility: hidden !important; }";
@@ -143,17 +148,28 @@ export async function recordTutorial(directory: string): Promise<void> {
   let succeeded = false;
   try {
     for (const scene of plan.scenes) {
+      const videoStart = performance.now();
       const page = await context.newPage();
       page.setDefaultTimeout(15_000);
-      const start = performance.now();
       try {
-        for (const action of scene.actions) await perform(page, action, values);
+        const first = scene.actions[0];
+        let actions = scene.actions;
+        if (first?.kind === "goto") {
+          await perform(page, first, values);
+          await page.locator("main").last().getByRole("heading").first().waitFor();
+          await page.evaluate(() => document.fonts.ready);
+          await page.waitForTimeout(500);
+          actions = scene.actions.slice(1);
+        }
+        const leadInSec = (performance.now() - videoStart) / 1000;
+        const start = performance.now();
+        for (const action of actions) await perform(page, action, values);
         const actionDurationSec = (performance.now() - start) / 1000;
         await page.waitForTimeout(1_000);
         const video = page.video();
         await page.close();
         if (!video) throw new Error("Playwright did not create a scene video");
-        manifest.scenes.push({ id: scene.id, title: scene.title, rawVideo: await video.path(), actionDurationSec });
+        manifest.scenes.push({ id: scene.id, title: scene.title, rawVideo: await video.path(), leadInSec, actionDurationSec });
       } catch (error) {
         await page.screenshot({ path: resolve(runDirectory, `${scene.id}-failure.png`) }).catch(() => undefined);
         throw error;

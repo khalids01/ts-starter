@@ -15,6 +15,7 @@ export type Action =
   | { kind: "fill"; target: Target; value: string }
   | { kind: "select"; target: Target; option: string }
   | { kind: "key"; key: string }
+  | { kind: "wait"; durationMs: number }
   | { kind: "submit"; target: Target; capture: { key: string; responsePath: string; field: string } };
 export type Scene = {
   id: string;
@@ -27,6 +28,7 @@ export type RecordingPlan = {
   title: string;
   mode: "walkthrough" | "workflow";
   prerequisites: string[];
+  showTutorialControls?: boolean;
   scenes: Scene[];
 };
 export type FixtureCheck = { path: string; field: string; equals: string | number | boolean; find?: { field: string; equals: string }; property?: string };
@@ -45,5 +47,5 @@ export type RecordingManifest = {
   recordedAt: string;
   complete: boolean;
   planHash: string;
-  scenes: Array<{ id: string; title: string; rawVideo: string; actionDurationSec: number }>;
+  scenes: Array<{ id: string; title: string; rawVideo: string; leadInSec?: number; actionDurationSec: number }>;
 };

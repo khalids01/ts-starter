@@ -1,6 +1,6 @@
 # Find your way around the admin panel
 
-Status: prepared script and recording plan; audio, fixture review, capture and publication pending.
+Status: Heart/Kokoro scene audio generated and real browser capture/render produced locally. Playback review and publication pending.
 
 ## Prerequisites
 
@@ -17,4 +17,6 @@ bun run tutorial:record admin-overview
 bun run tutorial:render admin-overview
 ```
 
-The shared recorder captures four independent real browser scenes. The renderer requires supplied audio and rejects action footage longer than its narration section. Review the draft video before publication.
+The shared recorder captures four independent real browser scenes, removes their measured initial page-loading lead-in, and leaves contextual help visible for this tutorial. The renderer uses `audio/01.wav` through `audio/04.wav` and rejects action footage longer than its narration section. Captions use the measured scene durations. Review the draft video with audio before publication.
+
+The latest output directory is recorded in `artifacts/last-render.json`. Audio and generated outputs stay local and are ignored by Git. See [Voicebox narration](../voicebox.readme.md) for generation commands.

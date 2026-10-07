@@ -62,7 +62,9 @@ export async function renderTutorial(directory: string): Promise<void> {
     if (!file) throw new Error(`Audio missing: audio/${scene.id}.wav (or narration.wav plus cues.json). Supply audio before rendering.`);
     const cue = singleAudio ? cues[i] : undefined;
     const audioDuration = cue ? cue.end - cue.start : await duration(file);
-    const rawDuration = await duration(recording.rawVideo);
+    const leadInSec = recording.leadInSec ?? 0;
+    if (!Number.isFinite(leadInSec) || leadInSec < 0) throw new Error("Invalid recording lead-in");
+    const rawDuration = await duration(recording.rawVideo) - leadInSec;
     if (rawDuration > audioDuration + 0.1) {
       throw new Error(`Scene ${scene.id}: footage ${rawDuration.toFixed(1)}s exceeds audio ${audioDuration.toFixed(1)}s. Shorten the recording actions or provide a longer narrated section; no action is silently cut.`);
     }
@@ -76,7 +78,7 @@ export async function renderTutorial(directory: string): Promise<void> {
   for (const input of inputs) {
     const output = resolve(outputDirectory, `${input.scene.id}.mp4`);
     const audioInput = input.cue ? ["-ss", String(input.cue.start), "-t", String(input.audioDuration), "-i", input.file] : ["-i", input.file];
-    await run(["ffmpeg", "-y", "-i", input.recording.rawVideo, ...audioInput,
+    await run(["ffmpeg", "-y", "-ss", String(input.recording.leadInSec ?? 0), "-i", input.recording.rawVideo, ...audioInput,
       "-filter_complex", `[0:v]scale=1440:900:force_original_aspect_ratio=decrease,pad=1440:900:(ow-iw)/2:(oh-ih)/2,tpad=stop_mode=clone:stop_duration=${input.audioDuration},trim=duration=${input.audioDuration},setpts=PTS-STARTPTS[v];[1:a]loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000,apad,atrim=duration=${input.audioDuration},asetpts=PTS-STARTPTS[a]`,
       "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-r", "30", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", output]);
     clips.push(output);

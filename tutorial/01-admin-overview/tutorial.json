@@ -8,7 +8,7 @@
   "scenes": [
     {
       "id": "01",
-      "title": "Find the workflow",
+      "title": "Understand the admin panel",
       "narration": "Welcome. This tutorial introduces the admin panel so you can find the right place for everyday work. The menu groups related tasks together. Your account permissions determine which pages and actions are available.",
       "actions": [
         {
@@ -26,12 +26,16 @@
     },
     {
       "id": "02",
-      "title": "Understand the controls",
+      "title": "Explore Shop Management",
       "narration": "Overview shows a summary of the application. Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images. Catalog defines how products are organized; Products contains the items you sell.",
       "actions": [
         {
           "kind": "goto",
           "path": "/admin/overview"
+        },
+        {
+          "kind": "wait",
+          "durationMs": 3000
         },
         {
           "kind": "click",
@@ -48,12 +52,44 @@
             "name": "Products",
             "within": "page"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Catalog",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Inventory",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Discounts",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Images",
+            "within": "page"
+          }
         }
       ]
     },
     {
       "id": "03",
-      "title": "Perform the task",
+      "title": "Find the other menu groups",
       "narration": "Sales contains Orders and Customers. Delivery contains shipping methods, while Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics and Administration contain reporting and account controls.",
       "actions": [
         {
@@ -77,6 +113,30 @@
           }
         },
         {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Customers",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Sales",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Delivery",
+            "within": "page"
+          }
+        },
+        {
           "kind": "click",
           "target": {
             "role": "button",
@@ -91,12 +151,44 @@
             "name": "Connections",
             "within": "page"
           }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Couriers",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Storefront",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Analytics",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Administration",
+            "within": "page"
+          }
         }
       ]
     },
     {
       "id": "04",
-      "title": "Verify and continue",
+      "title": "Open contextual help",
       "narration": "Open Tutorials whenever you need instructions, or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once.",
       "actions": [
         {
@@ -110,8 +202,45 @@
             "name": "Tutorials",
             "within": "page"
           }
+        },
+        {
+          "kind": "wait",
+          "durationMs": 2500
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open tutorials for this page",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Find your way around the admin panel",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "wait",
+          "durationMs": 5000
+        },
+        {
+          "kind": "key",
+          "key": "Escape"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Overview",
+            "within": "page"
+          }
         }
       ]
     }
-  ]
+  ],
+  "showTutorialControls": true
 }
