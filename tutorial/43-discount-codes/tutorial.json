@@ -1,0 +1,88 @@
+{
+  "id": "discount-codes",
+  "title": "Create and manage discount codes",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A fictional code and an eligible supervised checkout."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Discount codes apply supported promotional rules at checkout. Open Discounts and create a code that your team can recognize. Define the actual offer before entering values, including eligibility and usage limits.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/discounts"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Discounts"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Choose percentage or fixed amount and enter its value. Fixed discounts need the correct currency. Configure a minimum order amount, start and end dates, total usage limit and per-customer limit when the offer requires them.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/discounts"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Discount"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Code"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Review active state and save the discount. An active code can still be ineligible because of its dates, order amount, currency or usage rules. Test an eligible fictional checkout and an ineligible case before announcing a promotion.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/discounts"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Discounts"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Check the accepted order total and retained discount information. Disable a code when it should no longer be offered. Do not assume that editing a promotion retroactively changes orders that have already been accepted.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/discounts"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Discounts"
+          }
+        }
+      ]
+    }
+  ]
+}

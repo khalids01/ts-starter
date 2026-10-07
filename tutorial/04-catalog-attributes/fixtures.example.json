@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-catalog-attributes",
+  "values": {
+    "attributeName": "REPLACE_WITH_OWNED_ATTRIBUTE_NAME"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

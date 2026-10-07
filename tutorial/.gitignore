@@ -1,0 +1,10 @@
+# Local fixtures can contain account state and runtime IDs.
+**/fixtures.local.json
+**/media.local.json
+**/artifacts/
+# New audio/video inputs are local until deliberately accepted into version control.
+**/audio/*.wav
+**/audio/*.mp3
+**/audio/*.m4a
+**/audio/cues.json
+**/audio/captions.vtt

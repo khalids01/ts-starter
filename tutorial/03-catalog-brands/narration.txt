@@ -1,0 +1,7 @@
+Brands identify who makes or owns a product. Open Catalog, then Brands. Use accurate brand names and owned or approved logo images. A brand is a catalog record; it does not change the deployment brand or the shop itself.
+
+Select Brand. Enter its name and slug. You can add a logo, website URL and description when those details are known. Active and featured control the record state and presentation. Leave optional facts empty rather than inventing them.
+
+Save the brand and check that it appears in the list. When editing a product, its category brand policy decides whether a brand is optional, required or unavailable. Selecting a brand does not create inventory or activate the product.
+
+Use the row actions to edit a brand. Archive and restore belong to the catalog lifecycle workflow. Permanent deletion is guarded by dependencies; a brand already referenced by other records may need to remain available as history.

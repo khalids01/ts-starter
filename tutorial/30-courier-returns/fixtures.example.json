@@ -1,0 +1,10 @@
+{
+  "marker": "tutorial-courier-returns",
+  "values": {
+    "returnReference": "REPLACE_WITH_SIMULATED_RETURN_REFERENCE",
+    "orderId": "REPLACE_WITH_RETURN_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

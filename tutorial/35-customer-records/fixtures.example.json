@@ -1,0 +1,10 @@
+{
+  "marker": "tutorial-customer-records",
+  "values": {
+    "customerId": "REPLACE_WITH_OWNED_CUSTOMER_ID",
+    "customerName": "REPLACE_WITH_FICTIONAL_CUSTOMER_NAME"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

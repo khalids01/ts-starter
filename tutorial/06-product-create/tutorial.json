@@ -1,0 +1,116 @@
+{
+  "id": "product-create",
+  "title": "Create a product draft",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "One active fictional category with an appropriate template."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "A product begins as a draft. Open Products and select Product to start the builder. This tutorial covers category selection and basic information. Stock, variants and activation are separate steps, so saving a draft does not make it purchasable.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Products"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Choose the category that matches the product. Read the field summary and brand policy before continuing. Open Basics and enter an accurate name and description. The slug forms the readable part of its address and must be suitable for this item.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/new"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "1 Category",
+            "exact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Choose a brand when allowed or required, and add an approved cover image. Featured, Trending and search keywords are optional presentation choices. SEO title and description are optional overrides. Select Save basics and wait for the success message.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Slug"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "The builder now opens the saved product. Confirm the name and category, then continue with specifications, highlights and variants. The product remains a draft until its readiness checks pass and you activate it.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save basics"
+          }
+        }
+      ]
+    }
+  ]
+}

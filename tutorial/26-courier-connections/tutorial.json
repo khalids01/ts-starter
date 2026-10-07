@@ -1,0 +1,94 @@
+{
+  "id": "courier-connections",
+  "title": "Configure and review a courier connection",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A supported provider and local simulator; never put live credentials in a video."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "A courier connection links your shop to a supported provider account. Open Connections. Check existing records before adding another account, because duplicate configuration can make routing harder to understand.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Courier connections"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select Add connection. Enter a connection name, choose the provider, configuration source and environment, and set priority. Lower nonnegative priority numbers run first. Use the supported credential source for your deployment.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Add connection"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Connection name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Priority"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "When credentials are entered, keep them private and off the recording. The server does not return saved secrets. Save the connection and use the supported connection test only against the intended provider environment; in tutorials, that means the local simulator.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Courier connections"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Review health and enabled state before using the account for dispatch. Credential rotation, archive and recovery are separate actions. A successful account test does not establish that a parcel has been booked or a collection has settled.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Courier connections"
+          }
+        }
+      ]
+    }
+  ]
+}

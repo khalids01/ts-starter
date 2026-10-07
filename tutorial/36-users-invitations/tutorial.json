@@ -1,0 +1,82 @@
+{
+  "id": "users-invitations",
+  "title": "Manage users and invitations",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Fictional user accounts and a local mail sink for any separately authorized invitation send."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "User Management controls application accounts, while Customers represents shop customer records. Open Users. Your permissions determine whether you can inspect details, invite someone, change a role or manage sessions.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/users"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "User Management"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Use the Users tab to find an account and inspect its details through the row actions. Review the current role before changing access. A role change can grant sensitive capabilities, so choose the minimum role needed for the person's work.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/users"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Users"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Use Invites to review invitation state. Creating an invitation can send email; a tutorial must use fictional addresses and the isolated mail sink. Revoking sessions and banning or archiving accounts are deliberate security actions, not ordinary profile edits.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/users"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Invites"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Verify the saved account or invitation state after any action. Role permissions are configured in Roles. Keep credentials, tokens and verification links out of screen recordings, and never demonstrate user deletion against a real account.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/users"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Users"
+          }
+        }
+      ]
+    }
+  ]
+}

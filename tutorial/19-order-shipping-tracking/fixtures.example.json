@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-order-shipping-tracking",
+  "values": {
+    "orderId": "REPLACE_WITH_SHIPPABLE_OWNED_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

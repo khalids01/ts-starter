@@ -1,0 +1,82 @@
+{
+  "id": "store-page-seo",
+  "title": "Save and publish home and about page SEO",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Provisioned SEO storage and approved metadata; isolate changes and preserve prior revisions."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Page SEO controls metadata for the home and about pages. Open Store settings and locate Website SEO. These fields change titles, descriptions and social images; they do not edit the body content of those pages.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Store settings"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Choose the relevant page and enter a concise title and description based on approved facts. Select an appropriate image when needed. Review the current revision and state so you do not overwrite someone else's changes without noticing.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Home page SEO",
+            "exact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Save the draft first. A saved draft is separate from the published metadata. Review it before using the publish control, and resolve any revision conflict by reloading and comparing the changes.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "About page SEO",
+            "exact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "After publication, inspect the public page metadata and preview where supported. Publishing code or building the app does not establish that the storage prerequisite exists. If persistence fails, resolve that prerequisite before describing the metadata as published.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Store settings"
+          }
+        }
+      ]
+    }
+  ]
+}

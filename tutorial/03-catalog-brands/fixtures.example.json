@@ -1,0 +1,54 @@
+{
+  "marker": "tutorial-catalog-brands",
+  "values": {
+    "brandName": "tutorial-catalog-brands-demo",
+    "brandSlug": "tutorial-catalog-brands-demo"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [
+    {
+      "path": "/admin/catalog/brands?search={{brandName}}&limit=100",
+      "field": "items.0.name",
+      "equals": "{{brandName}}"
+    },
+    {
+      "path": "/admin/catalog/brands?search={{brandName}}&limit=100",
+      "field": "items.0.id",
+      "equals": "{{brandId}}"
+    }
+  ],
+  "cleanup": [
+    {
+      "method": "POST",
+      "path": "/admin/catalog/lifecycle/brand/{{brandId}}/archive",
+      "verify": [
+        {
+          "path": "/admin/catalog/brands?search={{brandName}}&limit=100",
+          "field": "items.0.name",
+          "equals": "{{brandName}}"
+        },
+        {
+          "path": "/admin/catalog/brands?search={{brandName}}&limit=100",
+          "field": "items.0.id",
+          "equals": "{{brandId}}"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/admin/catalog/lifecycle/brand/{{brandId}}/delete",
+      "verify": [
+        {
+          "path": "/admin/catalog/lifecycle/brand?limit=100",
+          "field": "items",
+          "find": {
+            "field": "id",
+            "equals": "{{brandId}}"
+          },
+          "property": "name",
+          "equals": "{{brandName}}"
+        }
+      ]
+    }
+  ]
+}

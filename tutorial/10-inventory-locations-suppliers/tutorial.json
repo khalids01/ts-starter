@@ -1,0 +1,120 @@
+{
+  "id": "inventory-locations-suppliers",
+  "title": "Manage inventory locations and suppliers",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Fictional location and supplier records; no real contact details."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Inventory locations identify where stock is held. Suppliers record where it comes from. Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Inventory"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "In Locations, select Location and enter a recognizable name, a unique code and the address when needed. Save, then confirm that the location is listed. Choose a location that matches the physical stock, rather than assigning everything to an unrelated warehouse.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Location"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Code"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "In Suppliers, select Supplier and enter the known business and contact details. Save and verify the record. A supplier is optional when receiving stock, but an inventory location is required. Keep fictional contact details in demonstration recordings.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Suppliers"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Supplier"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Use the edit and disable controls deliberately. Disabling a location or supplier does not erase historical movements. Review any stock or dependency restrictions before changing a record that is already in use.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{locationName}}"
+          }
+        }
+      ]
+    }
+  ]
+}

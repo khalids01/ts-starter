@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-inventory-locations-suppliers",
+  "values": {
+    "locationName": "REPLACE_WITH_OWNED_LOCATION_NAME"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

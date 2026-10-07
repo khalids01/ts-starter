@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-order-delivery-completion",
+  "values": {
+    "orderId": "REPLACE_WITH_DELIVERABLE_OWNED_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

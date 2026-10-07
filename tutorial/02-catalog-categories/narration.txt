@@ -1,0 +1,7 @@
+Categories organize your catalog and determine the fields and handling rules used by products. Open Catalog and stay on Categories. Plan the category before adding products, because food, clothing and gadgets have different requirements.
+
+Select Category. Enter a clear name and readable slug. A parent creates a hierarchy. Choose the brand policy and product handling deliberately: standard, packaged food, fresh food, gadget or clothing. Handling is configured on each category and is not inherited from its parent.
+
+For a gadget category, configure unit tracking and warranty days when they apply. Food and clothing cannot have a warranty. Use the active and featured choices to control availability and presentation, then save the category.
+
+Return to the category list and confirm the saved name and handling. Category template fields are configured through the category controls and determine what appears in the product builder. Changing a template is a catalog decision; review existing products before changing required fields.

@@ -1,0 +1,110 @@
+{
+  "id": "order-payment-evidence",
+  "title": "Record and correct payment evidence",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "An order with an outstanding balance and fictional payment reference."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Payment evidence records money that has actually been received. It does not move money between accounts. Open the order and check Payment evidence, Totals and the outstanding amount before choosing Record confirmed payment.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Payment evidence"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Enter only the amount received. Choose the real collection method, provide the transaction or receipt reference and add a clear evidence note. Partial receipts can be recorded separately until the outstanding amount reaches zero.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Record confirmed payment"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Collection reference"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Evidence / correction reason"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Select Record evidence after reviewing the details, then verify the receipt and totals. For courier-collected cash on delivery, use the courier collection workflow with actual collection evidence. Do not invent a manual receipt to make an unpaid order appear paid.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Totals"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "If a receipt was recorded by mistake, use Correct mistaken receipt and explain the correction. Preserve the receipt history. Check the updated net received and outstanding values before fulfilment or completion.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Payment evidence"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -20,3 +20,7 @@ playwright-report
 test-results
 tmp
 temp
+
+# Authoring tools and unpublished tutorial media are not application runtime files.
+tutorial/**
+!tutorial/catalog.json

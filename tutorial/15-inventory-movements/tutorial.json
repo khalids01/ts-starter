@@ -1,0 +1,94 @@
+{
+  "id": "inventory-movements",
+  "title": "Trace inventory movement history",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Fictional receipts, adjustments and order-related movements."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Movement history explains how recorded stock changed. Open Inventory and choose Movements. Use the SKU, location, quantity and event details to connect each movement to a receipt, order or adjustment.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Start with the event you are investigating. Identify whether it received, committed, released or otherwise changed stock. Read its quantity and any reason or reference. A list of movements is evidence of recorded operations, not proof that a physical count is correct.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{sku}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Compare the movement with the related stock row and order timeline. Reservations and commitments have different effects. A return or cancellation does not always mean that goods are physically back in a sellable location.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{sku}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "If the history and physical stock disagree, investigate first. Record a justified adjustment or recovery through the appropriate controls. Preserve the existing history so another operator can understand what happened.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ]
+    }
+  ]
+}

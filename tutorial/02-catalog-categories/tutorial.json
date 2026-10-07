@@ -1,0 +1,126 @@
+{
+  "id": "catalog-categories",
+  "title": "Create categories and configure handling",
+  "mode": "workflow",
+  "prerequisites": [
+    "A fictional category name; use the isolated environment for recording."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Categories organize your catalog and determine the fields and handling rules used by products. Open Catalog and stay on Categories. Plan the category before adding products, because food, clothing and gadgets have different requirements.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Catalog"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select Category. Enter a clear name and readable slug. A parent creates a hierarchy. Choose the brand policy and product handling deliberately: standard, packaged food, fresh food, gadget or clothing. Handling is configured on each category and is not inherited from its parent.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Category"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Product handling"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "For a gadget category, configure unit tracking and warranty days when they apply. Food and clothing cannot have a warranty. Use the active and featured choices to control availability and presentation, then save the category.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Category"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name"
+          },
+          "value": "{{categoryName}}"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug"
+          },
+          "value": "{{categorySlug}}"
+        },
+        {
+          "kind": "submit",
+          "target": {
+            "role": "button",
+            "name": "Save"
+          },
+          "capture": {
+            "key": "categoryId",
+            "responsePath": "/admin/catalog/categories",
+            "field": "id"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Category saved",
+            "within": "page"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Return to the category list and confirm the saved name and handling. Category template fields are configured through the category controls and determine what appears in the product builder. Changing a template is a catalog decision; review existing products before changing required fields.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{categoryName}}"
+          }
+        }
+      ]
+    }
+  ]
+}

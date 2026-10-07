@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-order-review",
+  "values": {
+    "orderId": "REPLACE_WITH_OWNED_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

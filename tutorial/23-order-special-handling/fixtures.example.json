@@ -1,0 +1,10 @@
+{
+  "marker": "tutorial-order-special-handling",
+  "values": {
+    "orderId": "REPLACE_WITH_FOOD_ORDER_ID",
+    "gadgetOrderId": "REPLACE_WITH_GADGET_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

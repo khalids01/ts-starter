@@ -1,0 +1,117 @@
+{
+  "id": "admin-overview",
+  "title": "Find your way around the admin panel",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "An admin account with access to the relevant sections."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Welcome. This tutorial introduces the admin panel so you can find the right place for everyday work. The menu groups related tasks together. Your account permissions determine which pages and actions are available.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/overview"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Overview"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Overview shows a summary of the application. Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images. Catalog defines how products are organized; Products contains the items you sell.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/overview"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Shop Management",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Products",
+            "within": "page"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Sales contains Orders and Customers. Delivery contains shipping methods, while Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics and Administration contain reporting and account controls.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/overview"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Sales",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Orders",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Couriers",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Connections",
+            "within": "page"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Open Tutorials whenever you need instructions, or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/overview"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Tutorials",
+            "within": "page"
+          }
+        }
+      ]
+    }
+  ]
+}

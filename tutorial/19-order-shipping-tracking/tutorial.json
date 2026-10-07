@@ -1,0 +1,110 @@
+{
+  "id": "order-shipping-tracking",
+  "title": "Mark an order shipped and update tracking",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "An eligible confirmed order with its product-specific fulfilment prerequisites met."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Mark shipped records a real parcel handoff. Open the confirmed order and check Fulfillment. Complete any required preparation, delivery window or serialized unit assignment first. Recording a shipment does not automatically book a courier.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select Mark shipped. Enter the actual carrier and tracking number, and add a useful note. Check the parcel and address against the order. Save the action only when the parcel has actually left your control.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Mark shipped"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Carrier"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Tracking number"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Verify that the order now shows shipped delivery evidence, carrier and tracking. Check Timeline for the event. Courier-integrated bookings have their own workflow and may impose additional routing or consignment requirements.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "If tracking details change, use Edit tracking rather than inventing another shipment. Record the corrected details and reason, then review the history. A shipped state is not delivery confirmation and does not establish that payment has been collected.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
+          }
+        }
+      ]
+    }
+  ]
+}

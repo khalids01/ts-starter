@@ -1,0 +1,39 @@
+{
+  "marker": "tutorial-catalog-categories",
+  "values": {
+    "categoryName": "tutorial-catalog-categories-demo",
+    "categorySlug": "tutorial-catalog-categories-demo"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [
+    {
+      "path": "/admin/catalog/categories/{{categoryId}}",
+      "field": "name",
+      "equals": "{{categoryName}}"
+    }
+  ],
+  "cleanup": [
+    {
+      "method": "POST",
+      "path": "/admin/catalog/lifecycle/category/{{categoryId}}/archive",
+      "verify": [
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "name",
+          "equals": "{{categoryName}}"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/admin/catalog/lifecycle/category/{{categoryId}}/delete",
+      "verify": [
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "name",
+          "equals": "{{categoryName}}"
+        }
+      ]
+    }
+  ]
+}

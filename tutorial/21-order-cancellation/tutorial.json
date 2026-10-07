@@ -1,0 +1,98 @@
+{
+  "id": "order-cancellation",
+  "title": "Cancel an order with the correct stock outcome",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A cancellable fictional order; understand whether its stock is reserved, committed or dispatched."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Cancellation must match what actually happened to the order. Open its details and inspect inventory, payment and delivery states. Goods still reserved and goods already handed to a courier need different follow-up actions.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Cancellation and refunds"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Open the cancellation control in Cancellation and refunds. Read the dialog, enter a clear reason and add an internal note when needed. Check the consequences before confirming. A cancelled status does not prove that dispatched stock has physically returned.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Cancel order",
+            "exact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "After cancellation, review the timeline and inventory state. A reservation may be released when allowed; committed or dispatched goods can require physical recovery. Payment that was actually received may need a separate refund record.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Follow the recovery controls when stock is not safely back in inventory. Retain the cancellation reason and evidence. Do not make quantity adjustments simply to hide an unresolved return or unpaid refund.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
+        }
+      ]
+    }
+  ]
+}

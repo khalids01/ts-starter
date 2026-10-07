@@ -1,0 +1,80 @@
+{
+  "id": "courier-shipments",
+  "title": "Review shipment booking and parcel handoff",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Simulator-owned shipment fixtures; workers disabled except during a separately authorized simulator run."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Shipments tracks courier submission and parcel progress. Open Shipments and identify the order and dispatch you intend to handle. Check routing and the customer address before creating a provider request.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Shipments"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Queue a shipment through the supported dispatch controls only when its prerequisites are met. Submission can be asynchronous. Review queued, processing and error states instead of assuming that clicking once means a consignment exists.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{shipmentReference}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "When booking succeeds, inspect the provider consignment reference and tracking evidence. Record handoff only when the parcel leaves your control. Pickup and provider operations can create external work and should be used deliberately.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{shipmentReference}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Investigate failures using their recorded cause. Follow supported retry or review controls rather than making duplicate bookings. This tutorial uses simulator evidence; a local successful example is not proof of a live provider booking.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Shipments"
+          }
+        }
+      ]
+    }
+  ]
+}

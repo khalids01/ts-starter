@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-catalog-lifecycle",
+  "values": {
+    "categoryName": "REPLACE_WITH_UNUSED_OWNED_CATEGORY"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

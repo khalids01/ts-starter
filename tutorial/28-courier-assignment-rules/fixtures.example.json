@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-courier-assignment-rules",
+  "values": {
+    "orderId": "REPLACE_WITH_ROUTING_FIXTURE_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

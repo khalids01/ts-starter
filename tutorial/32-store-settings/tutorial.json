@@ -1,0 +1,86 @@
+{
+  "id": "store-settings",
+  "title": "Configure store details and checkout defaults",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Approved store identity and support details; snapshot original settings before an isolated demonstration."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Store settings contains the core values used by checkout and new orders. Open Store settings. Use approved store and support details so customer-facing information is accurate and your team can receive enquiries.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Store settings"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Review store name, support email and support phone. Configure a three-letter currency code and the supported order-number prefix. The reservation duration controls how long a new checkout can hold stock; choose a value that fits your operation.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Store details"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Orders"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Enable checkout when the store is ready to accept orders. If pausing it, write a clear checkout notice. Disabling checkout does not hide the entire storefront. Save settings and wait for confirmation.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Checkout"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Reload the page to confirm persistence, and verify a supervised checkout where relevant. Core settings are not editable home-page body content. Page SEO has its own draft and publication workflow below these settings.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Store settings"
+          }
+        }
+      ]
+    }
+  ]
+}

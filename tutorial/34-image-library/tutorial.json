@@ -1,0 +1,89 @@
+{
+  "id": "image-library",
+  "title": "Upload, find and reuse images",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Configured isolated file server and approved fictional image assets."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "The image library lets you upload and reuse assets across the admin panel. Open Images. Use files you own or have permission to publish, and keep sensitive documents out of the product image library.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/images"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Images"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Choose Upload images and select the intended files. Check the previews and add useful tags where supported. Wait for upload success before assuming an image is available. The file server must be configured and reachable.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/images"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Upload images"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Upload images"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Use search, filters and the table or grid view to find assets. Preview an image and copy its public URL when appropriate. Product and category image pickers can reuse library assets instead of uploading the same file repeatedly.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/images"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Images"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Before deleting an image, check where it is used. Removing an asset can affect existing product presentation. Verify the storefront image after changing a reference, and retain the approved source file for future revisions.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/images"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Images"
+          }
+        }
+      ]
+    }
+  ]
+}

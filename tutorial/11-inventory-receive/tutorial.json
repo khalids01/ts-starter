@@ -1,0 +1,113 @@
+{
+  "id": "inventory-receive",
+  "title": "Receive stock into inventory",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A saved product/SKU, active location and appropriate batch or tracking policy."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Receive records stock that has physically arrived. Open Inventory and choose Receive. Check the product, SKU and location against the goods in front of you. Receiving the wrong selling option can make stock appear available for an item you do not actually hold.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Receive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select the product, its SKU and location, then enter the quantity received. Add the supplier, batch number, unit cost and reorder level when relevant. Unavailable-from is a local date and time after which that stock must not be offered.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Receive"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Product"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Location"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Quantity"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Complete any inventory fields required by the category. For serialized gadgets, receiving quantity and registering identifiable units are separate requirements. Select Receive stock only after checking the details, and wait for the success state.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Receive"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Batch number"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Receive stock"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Open Stock and Movements to verify the receipt. The expected row should show the received quantity at the correct location, with the movement retained in history. Product activation and checkout eligibility are separate from this inventory receipt.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ]
+    }
+  ]
+}

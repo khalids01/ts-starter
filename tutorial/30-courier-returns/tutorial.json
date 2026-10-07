@@ -1,0 +1,89 @@
+{
+  "id": "courier-returns",
+  "title": "Track courier returns and recover received goods",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A fictional return linked to a simulated consignment."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Courier returns track parcels coming back through a provider. Open Returns and review the original order, consignment and return state. A provider return notification does not by itself mean the goods are back in your stock location.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Courier returns"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Use supported return actions only for the real parcel outcome and the provider integration in use. Keep the return reference and reason. Cancellation of an order and initiation of a courier return are different operations.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{returnReference}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "When the parcel physically arrives, inspect the goods through the order recovery workflow. Record receipt and condition before considering restock. Damaged, expired or otherwise unsafe items must not become sellable merely because the return is complete.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Compare the return history, order timeline, recovery evidence and payment outcome. Refunds and courier collections require their own records. Resolve disagreements before closing the operational case.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
+        }
+      ]
+    }
+  ]
+}

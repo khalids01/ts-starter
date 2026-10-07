@@ -1,0 +1,154 @@
+{
+  "id": "catalog-brands",
+  "title": "Create and manage product brands",
+  "mode": "workflow",
+  "prerequisites": [
+    "A category that permits brands, if demonstrating a product association."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Brands identify who makes or owns a product. Open Catalog, then Brands. Use accurate brand names and owned or approved logo images. A brand is a catalog record; it does not change the deployment brand or the shop itself.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Brands"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Catalog"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select Brand. Enter its name and slug. You can add a logo, website URL and description when those details are known. Active and featured control the record state and presentation. Leave optional facts empty rather than inventing them.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Brands"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Website URL"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Save the brand and check that it appears in the list. When editing a product, its category brand policy decides whether a brand is optional, required or unavailable. Selecting a brand does not create inventory or activate the product.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Brands"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Brand"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name"
+          },
+          "value": "{{brandName}}"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug"
+          },
+          "value": "{{brandSlug}}"
+        },
+        {
+          "kind": "submit",
+          "target": {
+            "role": "button",
+            "name": "Save"
+          },
+          "capture": {
+            "key": "brandId",
+            "responsePath": "/admin/catalog/brands",
+            "field": "id"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Brand saved",
+            "within": "page"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Use the row actions to edit a brand. Archive and restore belong to the catalog lifecycle workflow. Permanent deletion is guarded by dependencies; a brand already referenced by other records may need to remain available as history.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Brands"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{brandName}}"
+          }
+        }
+      ]
+    }
+  ]
+}

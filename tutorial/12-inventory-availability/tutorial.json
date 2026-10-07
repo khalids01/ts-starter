@@ -1,0 +1,94 @@
+{
+  "id": "inventory-availability",
+  "title": "Understand on-hand, reserved and available stock",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A fictional stock row and an order showing a reservation or commitment."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Stock quantities describe different things. On-hand is physical inventory recorded at a location. Reserved stock is held for an order. Available stock is the quantity still eligible to sell. Open Inventory and use Stock to inspect these values together.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Check the SKU, location and batch before reading a quantity. Expiry or unavailable-from rules and serialized unit eligibility can affect what is sellable. Do not treat every physical unit as available to a new customer.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{sku}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "A checkout reservation holds the requested quantity. Confirming an order commits the inventory for fulfilment. Releasing a reservation and physically returning committed stock are different operations and must follow the corresponding order controls.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Use Movements to investigate a discrepancy before making an adjustment. Compare the order history with the SKU and location. This screen is a view of recorded state; changing a product price or active status does not correct a physical stock count.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{sku}}"
+          }
+        }
+      ]
+    }
+  ]
+}

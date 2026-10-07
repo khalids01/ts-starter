@@ -1,0 +1,5 @@
+{
+  "videoUrl": "https://YOUR_MEDIA_HOST/tutorials/product-content/video.mp4",
+  "posterUrl": "https://YOUR_MEDIA_HOST/tutorials/product-content/poster.webp",
+  "captionsUrl": "https://YOUR_MEDIA_HOST/tutorials/product-content/captions.vtt"
+}

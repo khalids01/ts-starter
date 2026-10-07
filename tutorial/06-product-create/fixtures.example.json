@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-product-create",
+  "values": {
+    "productId": "REPLACE_WITH_OWNED_DRAFT_PRODUCT_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

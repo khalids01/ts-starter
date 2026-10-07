@@ -1,0 +1,7 @@
+Delivery and completion record different milestones. Open the shipped order and verify delivery evidence from the actual handoff. Use Mark delivered only after delivery is confirmed; a tracking number by itself is not proof.
+
+Select Mark delivered and record a factual note. Wait for the saved state, then check delivery status and timestamp. If a courier integration supplies delivery information, review its evidence and supported controls before adding a conflicting manual action.
+
+Check that payment is fully collected, delivery is delivered, inventory remains committed and no operational issue blocks completion. Then choose Completed in Order status and select Update order. Read any guard message and resolve its cause.
+
+Review Timeline and Totals after the update. The order should show the recorded delivery and completion events. Completing an order does not replace missing money or physical evidence. Use the appropriate recovery or refund workflow when the real outcome is different.

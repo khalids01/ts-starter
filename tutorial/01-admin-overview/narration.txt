@@ -1,0 +1,7 @@
+Welcome. This tutorial introduces the admin panel so you can find the right place for everyday work. The menu groups related tasks together. Your account permissions determine which pages and actions are available.
+
+Overview shows a summary of the application. Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images. Catalog defines how products are organized; Products contains the items you sell.
+
+Sales contains Orders and Customers. Delivery contains shipping methods, while Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics and Administration contain reporting and account controls.
+
+Open Tutorials whenever you need instructions, or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once.

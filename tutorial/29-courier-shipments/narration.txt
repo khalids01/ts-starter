@@ -1,0 +1,7 @@
+Shipments tracks courier submission and parcel progress. Open Shipments and identify the order and dispatch you intend to handle. Check routing and the customer address before creating a provider request.
+
+Queue a shipment through the supported dispatch controls only when its prerequisites are met. Submission can be asynchronous. Review queued, processing and error states instead of assuming that clicking once means a consignment exists.
+
+When booking succeeds, inspect the provider consignment reference and tracking evidence. Record handoff only when the parcel leaves your control. Pickup and provider operations can create external work and should be used deliberately.
+
+Investigate failures using their recorded cause. Follow supported retry or review controls rather than making duplicate bookings. This tutorial uses simulator evidence; a local successful example is not proof of a live provider booking.

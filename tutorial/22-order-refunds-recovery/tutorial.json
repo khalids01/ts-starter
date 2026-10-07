@@ -1,0 +1,98 @@
+{
+  "id": "order-refunds-recovery",
+  "title": "Record refunds and recover physical inventory",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A refund-eligible owned order; separate returned goods and money evidence."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "A refund records money returned, while inventory recovery records what happened to the goods. Open the order and inspect Cancellation and refunds together with Physical inventory recovery. Neither event should be assumed from the other.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Cancellation and refunds"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Use Record manual refund only for a real refund you can support with evidence. Enter the amount and reason, and read the restock choice carefully. Partial refunds must reflect the actual money returned, not an arbitrary adjustment to the total.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Record manual refund",
+            "exact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "For goods returned after dispatch, record physical receipt first. Inspect every returned item and choose its condition. Unsafe or unsellable goods must not be made available merely because a customer was refunded.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Restock only when the recovery controls confirm eligibility and every required inspection is complete. Review payment totals, timeline and inventory history afterward. A refund, receipt, inspection and restock are distinct evidence events.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "id": "product-variants",
+  "title": "Configure SKUs, variants and pricing",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A saved fictional product with its category template configured."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "A variant is the sellable option customers purchase. Even a simple product needs a valid SKU. Open the product builder and choose Variants. Create separate variants when size, weight, colour or another selling option changes the item being sold.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Add a variant and enter a unique SKU, customer-facing name, selling price and currency. A compare-at price is optional and must be higher than the selling price when used. Use prices you can justify, and choose the options required by the category.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Add variant"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "SKU"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Price"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Add an image and weight when appropriate. Keep eligible variants active and choose the intended default. Select Save variants, then wait for confirmation. Editing a price does not create physical stock; receive inventory separately.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save variants"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Reopen Variants and check the saved SKU, price, currency and default selection. Validate the product before activation. Serialized items and expiring stock have extra inventory requirements, so variant setup alone is not enough to make every product purchasable.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        }
+      ]
+    }
+  ]
+}

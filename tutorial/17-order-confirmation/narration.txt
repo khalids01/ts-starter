@@ -1,0 +1,7 @@
+Confirmation accepts the order for fulfilment and commits its reserved inventory. Open the pending order and review the customer, line items, totals and reservation first. Confirm only when the order is ready for your team to handle.
+
+Use Order status to choose Confirmed. Review the pending change and select Update order. Wait for the success state instead of clicking repeatedly. A reservation that is no longer valid may require investigation before confirmation can succeed.
+
+After confirmation, verify the order status and inventory status together. Inventory should show the committed state for the accepted goods. Confirmation does not collect payment and does not prove that a parcel has been shipped.
+
+Continue with payment evidence and the correct fulfilment controls. Use cancellation and physical recovery workflows if circumstances change. Do not use a status change as a substitute for releasing or recovering stock correctly.

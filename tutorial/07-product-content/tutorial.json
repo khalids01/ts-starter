@@ -1,0 +1,129 @@
+{
+  "id": "product-content",
+  "title": "Edit specifications, highlights and images",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A draft product with prepared category-specific fields and image assets."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Product content helps customers understand what they are buying. Open the product builder for the item. Specifications come from the category template; highlights are short factual selling points; images show the product itself.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Open Specs and complete required fields using accurate values. Save specs before moving on. If there are no configured specification fields, review the category template rather than inventing unrelated details.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "3 Specs",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save specs"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Open Highlights, add a concise title and description, then save. Use facts such as material, origin or storage guidance. In Basics, choose a clean cover image through the image picker. Variant images are configured separately when selling options need different pictures.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "4 Highlights",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save highlights"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Reopen the product to confirm the saved content. Check readability and the image preview. Content changes do not replace stock or readiness checks. Validate the product after meaningful changes, and review its storefront presentation when it is active.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics",
+            "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save basics"
+          }
+        }
+      ]
+    }
+  ]
+}

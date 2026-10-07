@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-order-payment-evidence",
+  "values": {
+    "orderId": "REPLACE_WITH_UNPAID_OWNED_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

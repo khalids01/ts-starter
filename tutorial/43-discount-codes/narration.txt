@@ -1,0 +1,7 @@
+Discount codes apply supported promotional rules at checkout. Open Discounts and create a code that your team can recognize. Define the actual offer before entering values, including eligibility and usage limits.
+
+Choose percentage or fixed amount and enter its value. Fixed discounts need the correct currency. Configure a minimum order amount, start and end dates, total usage limit and per-customer limit when the offer requires them.
+
+Review active state and save the discount. An active code can still be ineligible because of its dates, order amount, currency or usage rules. Test an eligible fictional checkout and an ineligible case before announcing a promotion.
+
+Check the accepted order total and retained discount information. Disable a code when it should no longer be offered. Do not assume that editing a promotion retroactively changes orders that have already been accepted.

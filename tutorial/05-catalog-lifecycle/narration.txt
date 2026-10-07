@@ -1,0 +1,7 @@
+Archive moves a catalog record out of the current working list while preserving its history. In Catalog, choose Categories, Attributes or Brands. Current and Archived are separate views; changing an active flag is not the same operation as archiving.
+
+Find the intended record and open its row menu. Choose Archive and read the confirmation before accepting. Check that the record disappears from Current and appears in Archived. Dependencies and permissions are still enforced by the server.
+
+To bring a record back, open Archived and use Restore. Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed. Return to Current to confirm the result.
+
+Permanent deletion is for eligible records that can be safely removed. Read the dependency checks instead of repeatedly forcing the action. A record used by products or historical data may be blocked. Preserve history whenever deleting would break a valid reference.

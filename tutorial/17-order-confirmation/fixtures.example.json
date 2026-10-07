@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-order-confirmation",
+  "values": {
+    "orderId": "REPLACE_WITH_PENDING_OWNED_ORDER_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

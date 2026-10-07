@@ -1,0 +1,7 @@
+A refund records money returned, while inventory recovery records what happened to the goods. Open the order and inspect Cancellation and refunds together with Physical inventory recovery. Neither event should be assumed from the other.
+
+Use Record manual refund only for a real refund you can support with evidence. Enter the amount and reason, and read the restock choice carefully. Partial refunds must reflect the actual money returned, not an arbitrary adjustment to the total.
+
+For goods returned after dispatch, record physical receipt first. Inspect every returned item and choose its condition. Unsafe or unsellable goods must not be made available merely because a customer was refunded.
+
+Restock only when the recovery controls confirm eligibility and every required inspection is complete. Review payment totals, timeline and inventory history afterward. A refund, receipt, inspection and restock are distinct evidence events.

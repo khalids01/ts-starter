@@ -1,0 +1,1065 @@
+[
+  {
+    "id": "product-to-completed-order",
+    "folder": "00-product-to-completed-order",
+    "title": "From product setup to a completed order",
+    "description": "The existing complete workflow recording, retained for review.",
+    "category": "Complete workflows",
+    "routes": [
+      "/admin/products",
+      "/admin/inventory",
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.products.manage",
+      "admin.inventory.manage",
+      "admin.orders.manage",
+      "admin.orders.fulfill",
+      "admin.orders.payments"
+    ],
+    "prerequisites": [
+      "Prepared isolated runtime and fixtures."
+    ],
+    "steps": [
+      "Create a product draft and valid SKU.",
+      "Receive stock, validate and activate.",
+      "Place a fictional order, record collection, fulfil and complete."
+    ],
+    "status": "review",
+    "media": null
+  },
+  {
+    "id": "admin-overview",
+    "folder": "01-admin-overview",
+    "title": "Find your way around the admin panel",
+    "description": "Welcome. This tutorial introduces the admin panel so you can find the right place for everyday work. The menu groups related tasks together. Your account permissions determine which pages and actions are available.",
+    "category": "Getting started",
+    "routes": [
+      "/admin/overview"
+    ],
+    "requiredPermissions": [
+      "admin.access"
+    ],
+    "prerequisites": [
+      "An admin account with access to the relevant sections."
+    ],
+    "steps": [
+      "Welcome. This tutorial introduces the admin panel so you can find the right place for everyday work. The menu groups related tasks together. Your account permissions determine which pages and actions are available.",
+      "Overview shows a summary of the application. Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images. Catalog defines how products are organized; Products contains the items you sell.",
+      "Sales contains Orders and Customers. Delivery contains shipping methods, while Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics and Administration contain reporting and account controls.",
+      "Open Tutorials whenever you need instructions, or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "catalog-categories",
+    "folder": "02-catalog-categories",
+    "title": "Create categories and configure handling",
+    "description": "Categories organize your catalog and determine the fields and handling rules used by products. Open Catalog and stay on Categories. Plan the category before adding products, because food, clothing and gadgets have different requirements.",
+    "category": "Catalog",
+    "routes": [
+      "/admin/catalog"
+    ],
+    "requiredPermissions": [
+      "admin.catalog.manage"
+    ],
+    "prerequisites": [
+      "Catalog management permission and a planned category policy."
+    ],
+    "steps": [
+      "Categories organize your catalog and determine the fields and handling rules used by products. Open Catalog and stay on Categories. Plan the category before adding products, because food, clothing and gadgets have different requirements.",
+      "Select Category. Enter a clear name and readable slug. A parent creates a hierarchy. Choose the brand policy and product handling deliberately: standard, packaged food, fresh food, gadget or clothing. Handling is configured on each category and is not inherited from its parent.",
+      "For a gadget category, configure unit tracking and warranty days when they apply. Food and clothing cannot have a warranty. Use the active and featured choices to control availability and presentation, then save the category.",
+      "Return to the category list and confirm the saved name and handling. Category template fields are configured through the category controls and determine what appears in the product builder. Changing a template is a catalog decision; review existing products before changing required fields."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "catalog-brands",
+    "folder": "03-catalog-brands",
+    "title": "Create and manage product brands",
+    "description": "Brands identify who makes or owns a product. Open Catalog, then Brands. Use accurate brand names and owned or approved logo images. A brand is a catalog record; it does not change the deployment brand or the shop itself.",
+    "category": "Catalog",
+    "routes": [
+      "/admin/catalog"
+    ],
+    "requiredPermissions": [
+      "admin.catalog.manage"
+    ],
+    "prerequisites": [
+      "Catalog management permission and approved brand details."
+    ],
+    "steps": [
+      "Brands identify who makes or owns a product. Open Catalog, then Brands. Use accurate brand names and owned or approved logo images. A brand is a catalog record; it does not change the deployment brand or the shop itself.",
+      "Select Brand. Enter its name and slug. You can add a logo, website URL and description when those details are known. Active and featured control the record state and presentation. Leave optional facts empty rather than inventing them.",
+      "Save the brand and check that it appears in the list. When editing a product, its category brand policy decides whether a brand is optional, required or unavailable. Selecting a brand does not create inventory or activate the product.",
+      "Use the row actions to edit a brand. Archive and restore belong to the catalog lifecycle workflow. Permanent deletion is guarded by dependencies; a brand already referenced by other records may need to remain available as history."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "catalog-attributes",
+    "folder": "04-catalog-attributes",
+    "title": "Configure product attributes and options",
+    "description": "Attributes describe product details and selectable options. Open Catalog, then Attributes. Reuse a well-defined field instead of creating several fields that mean the same thing. The category template decides where and how the field is used.",
+    "category": "Catalog",
+    "routes": [
+      "/admin/catalog"
+    ],
+    "requiredPermissions": [
+      "admin.catalog.manage"
+    ],
+    "prerequisites": [
+      "A category with its template requirements decided."
+    ],
+    "steps": [
+      "Attributes describe product details and selectable options. Open Catalog, then Attributes. Reuse a well-defined field instead of creating several fields that mean the same thing. The category template decides where and how the field is used.",
+      "Select Attribute and enter a name, slug and field type. Choose a type that matches the information: text, number or a supported choice type. Assign relevant categories and decide whether customers should be able to filter by it.",
+      "Save the attribute, then configure its supported values and template placement through the catalog controls. Product details, variant options and inventory fields serve different purposes. A size option for a SKU is different from a descriptive specification.",
+      "Open a prepared product to check the resulting fields. Required values must be present before readiness validation succeeds. Review existing category templates before removing values or making fields required; historical product data must remain understandable."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "catalog-lifecycle",
+    "folder": "05-catalog-lifecycle",
+    "title": "Archive, restore and safely delete catalog records",
+    "description": "Archive moves a catalog record out of the current working list while preserving its history. In Catalog, choose Categories, Attributes or Brands. Current and Archived are separate views; changing an active flag is not the same operation as archiving.",
+    "category": "Catalog",
+    "routes": [
+      "/admin/catalog"
+    ],
+    "requiredPermissions": [
+      "admin.catalog.manage"
+    ],
+    "prerequisites": [
+      "The intended catalog record and an understanding of its dependencies."
+    ],
+    "steps": [
+      "Archive moves a catalog record out of the current working list while preserving its history. In Catalog, choose Categories, Attributes or Brands. Current and Archived are separate views; changing an active flag is not the same operation as archiving.",
+      "Find the intended record and open its row menu. Choose Archive and read the confirmation before accepting. Check that the record disappears from Current and appears in Archived. Dependencies and permissions are still enforced by the server.",
+      "To bring a record back, open Archived and use Restore. Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed. Return to Current to confirm the result.",
+      "Permanent deletion is for eligible records that can be safely removed. Read the dependency checks instead of repeatedly forcing the action. A record used by products or historical data may be blocked. Preserve history whenever deleting would break a valid reference."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "product-create",
+    "folder": "06-product-create",
+    "title": "Create a product draft",
+    "description": "A product begins as a draft. Open Products and select Product to start the builder. This tutorial covers category selection and basic information. Stock, variants and activation are separate steps, so saving a draft does not make it purchasable.",
+    "category": "Products",
+    "routes": [
+      "/admin/products",
+      "/admin/products/new"
+    ],
+    "requiredPermissions": [
+      "admin.products.manage"
+    ],
+    "prerequisites": [
+      "An active category with the correct template and approved product information."
+    ],
+    "steps": [
+      "A product begins as a draft. Open Products and select Product to start the builder. This tutorial covers category selection and basic information. Stock, variants and activation are separate steps, so saving a draft does not make it purchasable.",
+      "Choose the category that matches the product. Read the field summary and brand policy before continuing. Open Basics and enter an accurate name and description. The slug forms the readable part of its address and must be suitable for this item.",
+      "Choose a brand when allowed or required, and add an approved cover image. Featured, Trending and search keywords are optional presentation choices. SEO title and description are optional overrides. Select Save basics and wait for the success message.",
+      "The builder now opens the saved product. Confirm the name and category, then continue with specifications, highlights and variants. The product remains a draft until its readiness checks pass and you activate it."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "product-content",
+    "folder": "07-product-content",
+    "title": "Edit specifications, highlights and images",
+    "description": "Product content helps customers understand what they are buying. Open the product builder for the item. Specifications come from the category template; highlights are short factual selling points; images show the product itself.",
+    "category": "Products",
+    "routes": [
+      "/admin/products"
+    ],
+    "requiredPermissions": [
+      "admin.products.manage"
+    ],
+    "prerequisites": [
+      "A saved product and accurate specifications, highlights and images."
+    ],
+    "steps": [
+      "Product content helps customers understand what they are buying. Open the product builder for the item. Specifications come from the category template; highlights are short factual selling points; images show the product itself.",
+      "Open Specs and complete required fields using accurate values. Save specs before moving on. If there are no configured specification fields, review the category template rather than inventing unrelated details.",
+      "Open Highlights, add a concise title and description, then save. Use facts such as material, origin or storage guidance. In Basics, choose a clean cover image through the image picker. Variant images are configured separately when selling options need different pictures.",
+      "Reopen the product to confirm the saved content. Check readability and the image preview. Content changes do not replace stock or readiness checks. Validate the product after meaningful changes, and review its storefront presentation when it is active."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "product-variants",
+    "folder": "08-product-variants",
+    "title": "Configure SKUs, variants and pricing",
+    "description": "A variant is the sellable option customers purchase. Even a simple product needs a valid SKU. Open the product builder and choose Variants. Create separate variants when size, weight, colour or another selling option changes the item being sold.",
+    "category": "Products",
+    "routes": [
+      "/admin/products"
+    ],
+    "requiredPermissions": [
+      "admin.products.manage"
+    ],
+    "prerequisites": [
+      "A saved product, unique SKU and reviewed prices/options."
+    ],
+    "steps": [
+      "A variant is the sellable option customers purchase. Even a simple product needs a valid SKU. Open the product builder and choose Variants. Create separate variants when size, weight, colour or another selling option changes the item being sold.",
+      "Add a variant and enter a unique SKU, customer-facing name, selling price and currency. A compare-at price is optional and must be higher than the selling price when used. Use prices you can justify, and choose the options required by the category.",
+      "Add an image and weight when appropriate. Keep eligible variants active and choose the intended default. Select Save variants, then wait for confirmation. Editing a price does not create physical stock; receive inventory separately.",
+      "Reopen Variants and check the saved SKU, price, currency and default selection. Validate the product before activation. Serialized items and expiring stock have extra inventory requirements, so variant setup alone is not enough to make every product purchasable."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "product-activation",
+    "folder": "09-product-activation",
+    "title": "Validate, activate and manage product visibility",
+    "description": "A saved product is not automatically ready to sell. Open the product builder and choose Validate. This step checks the configured requirements before activation. Resolve the actual errors instead of assuming that a saved form means the product is ready.",
+    "category": "Products",
+    "routes": [
+      "/admin/products"
+    ],
+    "requiredPermissions": [
+      "admin.products.manage"
+    ],
+    "prerequisites": [
+      "Required content, valid active variants and eligible stock."
+    ],
+    "steps": [
+      "A saved product is not automatically ready to sell. Open the product builder and choose Validate. This step checks the configured requirements before activation. Resolve the actual errors instead of assuming that a saved form means the product is ready.",
+      "Select Validate and read the result. Required product fields, valid variants and inventory requirements can affect readiness. Use the relevant builder or inventory screen to fix each issue, then validate again.",
+      "When readiness succeeds, select Activate product. Confirm the state change and open its storefront page to check what customers see. A product still needs available, eligible inventory and enabled checkout before a customer can complete an order.",
+      "Use the product list and lifecycle actions to manage visibility over time. Archive preserves a record separately from the active status. Restore and permanent deletion have server checks. After important edits, review readiness and storefront presentation again."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "inventory-locations-suppliers",
+    "folder": "10-inventory-locations-suppliers",
+    "title": "Manage inventory locations and suppliers",
+    "description": "Inventory locations identify where stock is held. Suppliers record where it comes from. Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.",
+    "category": "Inventory",
+    "routes": [
+      "/admin/inventory"
+    ],
+    "requiredPermissions": [
+      "admin.inventory.manage"
+    ],
+    "prerequisites": [
+      "Verified warehouse/location and supplier information."
+    ],
+    "steps": [
+      "Inventory locations identify where stock is held. Suppliers record where it comes from. Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.",
+      "In Locations, select Location and enter a recognizable name, a unique code and the address when needed. Save, then confirm that the location is listed. Choose a location that matches the physical stock, rather than assigning everything to an unrelated warehouse.",
+      "In Suppliers, select Supplier and enter the known business and contact details. Save and verify the record. A supplier is optional when receiving stock, but an inventory location is required. Keep fictional contact details in demonstration recordings.",
+      "Use the edit and disable controls deliberately. Disabling a location or supplier does not erase historical movements. Review any stock or dependency restrictions before changing a record that is already in use."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "inventory-receive",
+    "folder": "11-inventory-receive",
+    "title": "Receive stock into inventory",
+    "description": "Receive records stock that has physically arrived. Open Inventory and choose Receive. Check the product, SKU and location against the goods in front of you. Receiving the wrong selling option can make stock appear available for an item you do not actually hold.",
+    "category": "Inventory",
+    "routes": [
+      "/admin/inventory"
+    ],
+    "requiredPermissions": [
+      "admin.inventory.manage"
+    ],
+    "prerequisites": [
+      "A saved product/SKU, active location and physically received goods."
+    ],
+    "steps": [
+      "Receive records stock that has physically arrived. Open Inventory and choose Receive. Check the product, SKU and location against the goods in front of you. Receiving the wrong selling option can make stock appear available for an item you do not actually hold.",
+      "Select the product, its SKU and location, then enter the quantity received. Add the supplier, batch number, unit cost and reorder level when relevant. Unavailable-from is a local date and time after which that stock must not be offered.",
+      "Complete any inventory fields required by the category. For serialized gadgets, receiving quantity and registering identifiable units are separate requirements. Select Receive stock only after checking the details, and wait for the success state.",
+      "Open Stock and Movements to verify the receipt. The expected row should show the received quantity at the correct location, with the movement retained in history. Product activation and checkout eligibility are separate from this inventory receipt."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "inventory-availability",
+    "folder": "12-inventory-availability",
+    "title": "Understand on-hand, reserved and available stock",
+    "description": "Stock quantities describe different things. On-hand is physical inventory recorded at a location. Reserved stock is held for an order. Available stock is the quantity still eligible to sell. Open Inventory and use Stock to inspect these values together.",
+    "category": "Inventory",
+    "routes": [
+      "/admin/inventory"
+    ],
+    "requiredPermissions": [
+      "admin.inventory.read"
+    ],
+    "prerequisites": [
+      "A stock row for the SKU and location you are investigating."
+    ],
+    "steps": [
+      "Stock quantities describe different things. On-hand is physical inventory recorded at a location. Reserved stock is held for an order. Available stock is the quantity still eligible to sell. Open Inventory and use Stock to inspect these values together.",
+      "Check the SKU, location and batch before reading a quantity. Expiry or unavailable-from rules and serialized unit eligibility can affect what is sellable. Do not treat every physical unit as available to a new customer.",
+      "A checkout reservation holds the requested quantity. Confirming an order commits the inventory for fulfilment. Releasing a reservation and physically returning committed stock are different operations and must follow the corresponding order controls.",
+      "Use Movements to investigate a discrepancy before making an adjustment. Compare the order history with the SKU and location. This screen is a view of recorded state; changing a product price or active status does not correct a physical stock count."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "inventory-adjustments",
+    "folder": "13-inventory-adjustments",
+    "title": "Record an inventory adjustment",
+    "description": "An adjustment records a verified change to a stock quantity. Use it after counting stock or investigating a discrepancy, not to hide an unexplained order or movement. Open Inventory and choose Adjustments.",
+    "category": "Inventory",
+    "routes": [
+      "/admin/inventory"
+    ],
+    "requiredPermissions": [
+      "admin.inventory.manage"
+    ],
+    "prerequisites": [
+      "A verified count discrepancy and permission to adjust inventory."
+    ],
+    "steps": [
+      "An adjustment records a verified change to a stock quantity. Use it after counting stock or investigating a discrepancy, not to hide an unexplained order or movement. Open Inventory and choose Adjustments.",
+      "Select the exact stock row. Check its SKU, location and current availability. Enter Delta as the change: a positive value adds quantity, and a negative value removes quantity. Delta is not the new total you want to display.",
+      "Enter unit cost when it applies and give a clear reason explaining the evidence behind the change. Review the numbers, then submit the adjustment. Server checks may block changes that would make stock invalid or conflict with reserved or tracked inventory.",
+      "Return to Stock and Movements. Confirm the resulting quantity and the adjustment record, including its reason. If it is wrong, investigate and record a justified correction rather than making repeated unexplained changes."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "inventory-serialized-units",
+    "folder": "14-inventory-serialized-units",
+    "title": "Register gadget serial numbers and IMEIs",
+    "description": "Serialized inventory connects a physical gadget to its unique identifiers. The category decides whether serial numbers, IMEIs or both are required. Receive the stock first, then open Inventory and use the gadget unit registration section.",
+    "category": "Inventory",
+    "routes": [
+      "/admin/inventory"
+    ],
+    "requiredPermissions": [
+      "admin.inventory.manage"
+    ],
+    "prerequisites": [
+      "A tracked gadget category, received stock and identifiers from each unit."
+    ],
+    "steps": [
+      "Serialized inventory connects a physical gadget to its unique identifiers. The category decides whether serial numbers, IMEIs or both are required. Receive the stock first, then open Inventory and use the gadget unit registration section.",
+      "Choose the correct stock row. Enter the identifiers exactly as recorded on the unit and check them against the physical unit. Use fictional identifiers in a tutorial environment. An identifier must not be reused for a different unit.",
+      "Register each required unit and check the resulting inventory information. Receiving a quantity alone does not prove that eligible identifiable units exist. Assignment to an order must use the units that will actually be handed over.",
+      "Keep the unit history when a gadget is shipped, returned or inspected. Warranty depends on the gadget policy and delivery evidence. Never duplicate the same physical item by adding aggregate stock after it has already been received and registered."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "inventory-movements",
+    "folder": "15-inventory-movements",
+    "title": "Trace inventory movement history",
+    "description": "Movement history explains how recorded stock changed. Open Inventory and choose Movements. Use the SKU, location, quantity and event details to connect each movement to a receipt, order or adjustment.",
+    "category": "Inventory",
+    "routes": [
+      "/admin/inventory"
+    ],
+    "requiredPermissions": [
+      "admin.inventory.read"
+    ],
+    "prerequisites": [
+      "The relevant SKU, location and related order or receipt."
+    ],
+    "steps": [
+      "Movement history explains how recorded stock changed. Open Inventory and choose Movements. Use the SKU, location, quantity and event details to connect each movement to a receipt, order or adjustment.",
+      "Start with the event you are investigating. Identify whether it received, committed, released or otherwise changed stock. Read its quantity and any reason or reference. A list of movements is evidence of recorded operations, not proof that a physical count is correct.",
+      "Compare the movement with the related stock row and order timeline. Reservations and commitments have different effects. A return or cancellation does not always mean that goods are physically back in a sellable location.",
+      "If the history and physical stock disagree, investigate first. Record a justified adjustment or recovery through the appropriate controls. Preserve the existing history so another operator can understand what happened."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-review",
+    "folder": "16-order-review",
+    "title": "Review a new customer order",
+    "description": "Review an order before accepting it for fulfilment. Open Orders and locate the intended order using search and status filters. Open its details and confirm that the order number belongs to the customer request you are handling.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.read"
+    ],
+    "prerequisites": [
+      "An order to review and order read permission."
+    ],
+    "steps": [
+      "Review an order before accepting it for fulfilment. Open Orders and locate the intended order using search and status filters. Open its details and confirm that the order number belongs to the customer request you are handling.",
+      "Review Customer, Addresses and Line items. Check contact details, the delivery address, SKU, quantity and any special handling. A customer profile and an order address can have different purposes; use the order details for this shipment.",
+      "Review Totals, payment method, delivery state and inventory state. Look at the outstanding amount and reservation information. An order marked pending is not automatically paid or shipped. Investigate unexpected prices or missing operational details before proceeding.",
+      "Read Timeline to see the recorded sequence. When everything is correct, follow the confirmation workflow. If it is not, use the supported operational actions and retain a clear reason. Do not casually edit status fields to make inconsistent states appear resolved."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-confirmation",
+    "folder": "17-order-confirmation",
+    "title": "Confirm an order and commit its stock",
+    "description": "Confirmation accepts the order for fulfilment and commits its reserved inventory. Open the pending order and review the customer, line items, totals and reservation first. Confirm only when the order is ready for your team to handle.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.manage"
+    ],
+    "prerequisites": [
+      "An eligible pending order with a valid reservation."
+    ],
+    "steps": [
+      "Confirmation accepts the order for fulfilment and commits its reserved inventory. Open the pending order and review the customer, line items, totals and reservation first. Confirm only when the order is ready for your team to handle.",
+      "Use Order status to choose Confirmed. Review the pending change and select Update order. Wait for the success state instead of clicking repeatedly. A reservation that is no longer valid may require investigation before confirmation can succeed.",
+      "After confirmation, verify the order status and inventory status together. Inventory should show the committed state for the accepted goods. Confirmation does not collect payment and does not prove that a parcel has been shipped.",
+      "Continue with payment evidence and the correct fulfilment controls. Use cancellation and physical recovery workflows if circumstances change. Do not use a status change as a substitute for releasing or recovering stock correctly."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-payment-evidence",
+    "folder": "18-order-payment-evidence",
+    "title": "Record and correct payment evidence",
+    "description": "Payment evidence records money that has actually been received. It does not move money between accounts. Open the order and check Payment evidence, Totals and the outstanding amount before choosing Record confirmed payment.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.payments"
+    ],
+    "prerequisites": [
+      "An outstanding order and evidence of money actually received."
+    ],
+    "steps": [
+      "Payment evidence records money that has actually been received. It does not move money between accounts. Open the order and check Payment evidence, Totals and the outstanding amount before choosing Record confirmed payment.",
+      "Enter only the amount received. Choose the real collection method, provide the transaction or receipt reference and add a clear evidence note. Partial receipts can be recorded separately until the outstanding amount reaches zero.",
+      "Select Record evidence after reviewing the details, then verify the receipt and totals. For courier-collected cash on delivery, use the courier collection workflow with actual collection evidence. Do not invent a manual receipt to make an unpaid order appear paid.",
+      "If a receipt was recorded by mistake, use Correct mistaken receipt and explain the correction. Preserve the receipt history. Check the updated net received and outstanding values before fulfilment or completion."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-shipping-tracking",
+    "folder": "19-order-shipping-tracking",
+    "title": "Mark an order shipped and update tracking",
+    "description": "Mark shipped records a real parcel handoff. Open the confirmed order and check Fulfillment. Complete any required preparation, delivery window or serialized unit assignment first. Recording a shipment does not automatically book a courier.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.fulfill"
+    ],
+    "prerequisites": [
+      "An eligible confirmed order with handling requirements complete."
+    ],
+    "steps": [
+      "Mark shipped records a real parcel handoff. Open the confirmed order and check Fulfillment. Complete any required preparation, delivery window or serialized unit assignment first. Recording a shipment does not automatically book a courier.",
+      "Select Mark shipped. Enter the actual carrier and tracking number, and add a useful note. Check the parcel and address against the order. Save the action only when the parcel has actually left your control.",
+      "Verify that the order now shows shipped delivery evidence, carrier and tracking. Check Timeline for the event. Courier-integrated bookings have their own workflow and may impose additional routing or consignment requirements.",
+      "If tracking details change, use Edit tracking rather than inventing another shipment. Record the corrected details and reason, then review the history. A shipped state is not delivery confirmation and does not establish that payment has been collected."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-delivery-completion",
+    "folder": "20-order-delivery-completion",
+    "title": "Record delivery and complete an order",
+    "description": "Delivery and completion record different milestones. Open the shipped order and verify delivery evidence from the actual handoff. Use Mark delivered only after delivery is confirmed; a tracking number by itself is not proof.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.fulfill",
+      "admin.orders.manage"
+    ],
+    "prerequisites": [
+      "Confirmed delivery evidence; full collection is required for completion."
+    ],
+    "steps": [
+      "Delivery and completion record different milestones. Open the shipped order and verify delivery evidence from the actual handoff. Use Mark delivered only after delivery is confirmed; a tracking number by itself is not proof.",
+      "Select Mark delivered and record a factual note. Wait for the saved state, then check delivery status and timestamp. If a courier integration supplies delivery information, review its evidence and supported controls before adding a conflicting manual action.",
+      "Check that payment is fully collected, delivery is delivered, inventory remains committed and no operational issue blocks completion. Then choose Completed in Order status and select Update order. Read any guard message and resolve its cause.",
+      "Review Timeline and Totals after the update. The order should show the recorded delivery and completion events. Completing an order does not replace missing money or physical evidence. Use the appropriate recovery or refund workflow when the real outcome is different."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-cancellation",
+    "folder": "21-order-cancellation",
+    "title": "Cancel an order with the correct stock outcome",
+    "description": "Cancellation must match what actually happened to the order. Open its details and inspect inventory, payment and delivery states. Goods still reserved and goods already handed to a courier need different follow-up actions.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.cancel"
+    ],
+    "prerequisites": [
+      "The order and its actual payment, inventory and delivery state."
+    ],
+    "steps": [
+      "Cancellation must match what actually happened to the order. Open its details and inspect inventory, payment and delivery states. Goods still reserved and goods already handed to a courier need different follow-up actions.",
+      "Open the cancellation control in Cancellation and refunds. Read the dialog, enter a clear reason and add an internal note when needed. Check the consequences before confirming. A cancelled status does not prove that dispatched stock has physically returned.",
+      "After cancellation, review the timeline and inventory state. A reservation may be released when allowed; committed or dispatched goods can require physical recovery. Payment that was actually received may need a separate refund record.",
+      "Follow the recovery controls when stock is not safely back in inventory. Retain the cancellation reason and evidence. Do not make quantity adjustments simply to hide an unresolved return or unpaid refund."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-refunds-recovery",
+    "folder": "22-order-refunds-recovery",
+    "title": "Record refunds and recover physical inventory",
+    "description": "A refund records money returned, while inventory recovery records what happened to the goods. Open the order and inspect Cancellation and refunds together with Physical inventory recovery. Neither event should be assumed from the other.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.refund"
+    ],
+    "prerequisites": [
+      "Refund eligibility and separate evidence for returned money and goods."
+    ],
+    "steps": [
+      "A refund records money returned, while inventory recovery records what happened to the goods. Open the order and inspect Cancellation and refunds together with Physical inventory recovery. Neither event should be assumed from the other.",
+      "Use Record manual refund only for a real refund you can support with evidence. Enter the amount and reason, and read the restock choice carefully. Partial refunds must reflect the actual money returned, not an arbitrary adjustment to the total.",
+      "For goods returned after dispatch, record physical receipt first. Inspect every returned item and choose its condition. Unsafe or unsellable goods must not be made available merely because a customer was refunded.",
+      "Restock only when the recovery controls confirm eligibility and every required inspection is complete. Review payment totals, timeline and inventory history afterward. A refund, receipt, inspection and restock are distinct evidence events."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "order-special-handling",
+    "folder": "23-order-special-handling",
+    "title": "Handle food preparation, tracked gadgets and warranty",
+    "description": "Some products need extra fulfilment evidence. The category handling policy determines the required controls. Open the order and review Preparation and tracked units before shipping. Use the controls appropriate to the actual goods.",
+    "category": "Orders",
+    "routes": [
+      "/admin/orders"
+    ],
+    "requiredPermissions": [
+      "admin.orders.fulfill"
+    ],
+    "prerequisites": [
+      "The product handling policy and relevant food or gadget evidence."
+    ],
+    "steps": [
+      "Some products need extra fulfilment evidence. The category handling policy determines the required controls. Open the order and review Preparation and tracked units before shipping. Use the controls appropriate to the actual goods.",
+      "For fresh or prepared food, review the delivery window and preparation requirements. Record the supported preparation evidence as work happens. Do not mark a parcel ready simply because a generic order status allows an update.",
+      "For tracked gadgets, assign the serial number or IMEI of the physical unit being sent. Verify the unit and condition against the parcel. Gadget warranty follows its configured policy and delivery evidence; food and clothing have no warranty.",
+      "Use the supported claim and recovery controls when an eligible gadget later needs attention. Keep identifiers and inspection evidence connected to the order. Check the order timeline so preparation, unit assignment and subsequent recovery remain traceable."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "shipping-methods",
+    "folder": "24-shipping-methods",
+    "title": "Configure checkout shipping methods",
+    "description": "Shipping methods are the delivery choices offered at checkout. Open Shipping methods from Delivery. Decide the method name, price and eligibility before creating a rate. A checkout rate is separate from a courier provider account.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/shipping"
+    ],
+    "requiredPermissions": [
+      "admin.shipping.manage"
+    ],
+    "prerequisites": [
+      "Approved delivery choices, charges and service areas."
+    ],
+    "steps": [
+      "Shipping methods are the delivery choices offered at checkout. Open Shipping methods from Delivery. Decide the method name, price and eligibility before creating a rate. A checkout rate is separate from a courier provider account.",
+      "Select Shipping rate and enter its code, label, currency and amount. Configure supported free-shipping and location rules when needed. Set the intended default and active state deliberately; customers should see choices you can actually fulfil.",
+      "Save the method and review it in the list. Courier delivery options can map a method to a provider connection. Creating the shipping method alone does not book a parcel or prove that the provider serves the customer address.",
+      "Check a supervised checkout with an eligible address to verify the displayed choice and charge. Archive, restore and deletion preserve server dependency checks. Review existing delivery option mappings before removing a method used by operations."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-overview",
+    "folder": "25-courier-overview",
+    "title": "Understand courier operations and exceptions",
+    "description": "The courier overview summarizes delivery configuration and operations. Open Couriers, then Overview. Connections identify provider accounts; delivery options map service levels; assignment rules decide how orders are routed.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.read"
+    ],
+    "prerequisites": [
+      "Configured courier accounts and access to delivery operations."
+    ],
+    "steps": [
+      "The courier overview summarizes delivery configuration and operations. Open Couriers, then Overview. Connections identify provider accounts; delivery options map service levels; assignment rules decide how orders are routed.",
+      "Review connection health and configuration before dispatching. A healthy connection is one prerequisite, not a guarantee that every shipment will succeed. Shipping methods and delivery options must match the service you intend to offer.",
+      "Use Shipments to investigate bookings and parcel progress. Courier returns and COD payouts are separate operational sections. Open the relevant record rather than interpreting a count as evidence that a parcel was delivered or money was paid.",
+      "Resolve authentication, routing, retry and collection exceptions using the specific workflow. A tutorial demonstration must use the local simulator and fictional data. Live bookings, pickup requests and provider actions require deliberate operator authorization."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-connections",
+    "folder": "26-courier-connections",
+    "title": "Configure and review a courier connection",
+    "description": "A courier connection links your shop to a supported provider account. Open Connections. Check existing records before adding another account, because duplicate configuration can make routing harder to understand.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers/connections"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.settings"
+    ],
+    "prerequisites": [
+      "A supported provider account and a secure credential configuration."
+    ],
+    "steps": [
+      "A courier connection links your shop to a supported provider account. Open Connections. Check existing records before adding another account, because duplicate configuration can make routing harder to understand.",
+      "Select Add connection. Enter a connection name, choose the provider, configuration source and environment, and set priority. Lower nonnegative priority numbers run first. Use the supported credential source for your deployment.",
+      "When credentials are entered, keep them private and off the recording. The server does not return saved secrets. Save the connection and use the supported connection test only against the intended provider environment; in tutorials, that means the local simulator.",
+      "Review health and enabled state before using the account for dispatch. Credential rotation, archive and recovery are separate actions. A successful account test does not establish that a parcel has been booked or a collection has settled."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-delivery-options",
+    "folder": "27-courier-delivery-options",
+    "title": "Map courier delivery options to shipping methods",
+    "description": "A delivery option connects a checkout shipping method to a courier account and service level. Open Delivery options and review the current mappings. Keep customer-facing choices consistent with services that the provider can actually fulfil.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers/delivery-options"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.settings"
+    ],
+    "prerequisites": [
+      "A courier connection and checkout shipping method."
+    ],
+    "steps": [
+      "A delivery option connects a checkout shipping method to a courier account and service level. Open Delivery options and review the current mappings. Keep customer-facing choices consistent with services that the provider can actually fulfil.",
+      "Choose the intended connection and shipping method in the option controls. Configure the supported provider service level and enabled state. Use descriptive names so another operator can identify the mapping without reading credentials.",
+      "Save and check the resulting option. An enabled mapping is configuration; it does not submit an order. Review assignment rules to understand which orders will use this connection and option.",
+      "When a service is retired, review dependent rules and shipments before archiving or removing it. Use a simulated order to verify routing. Do not infer successful booking from the existence of a delivery option."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-assignment-rules",
+    "folder": "28-courier-assignment-rules",
+    "title": "Configure and verify courier assignment rules",
+    "description": "Assignment rules determine how eligible orders are routed to courier connections and options. Open Assignment rules. Plan the conditions and priority so an order has a predictable outcome instead of relying on an accidental overlap.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers/assignment-rules"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.settings"
+    ],
+    "prerequisites": [
+      "Delivery options and clearly defined routing conditions."
+    ],
+    "steps": [
+      "Assignment rules determine how eligible orders are routed to courier connections and options. Open Assignment rules. Plan the conditions and priority so an order has a predictable outcome instead of relying on an accidental overlap.",
+      "Review each rule condition against the addresses, payment choices and product handling you support. Choose the intended connection and delivery option. Use clear rule names and the supported priority and enabled settings.",
+      "Save the configuration and test representative fictional orders. Inspect the routing decision on the order before submission. A matching rule does not guarantee provider acceptance; booking and address validation remain separate steps.",
+      "Review rules when shipping methods or courier accounts change. Keep an understandable fallback where supported, and investigate orders with no eligible route. Do not repeatedly submit an unroutable order to make the error disappear."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-shipments",
+    "folder": "29-courier-shipments",
+    "title": "Review shipment booking and parcel handoff",
+    "description": "Shipments tracks courier submission and parcel progress. Open Shipments and identify the order and dispatch you intend to handle. Check routing and the customer address before creating a provider request.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers/shipments"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.dispatch"
+    ],
+    "prerequisites": [
+      "An eligible order with correct routing and address information."
+    ],
+    "steps": [
+      "Shipments tracks courier submission and parcel progress. Open Shipments and identify the order and dispatch you intend to handle. Check routing and the customer address before creating a provider request.",
+      "Queue a shipment through the supported dispatch controls only when its prerequisites are met. Submission can be asynchronous. Review queued, processing and error states instead of assuming that clicking once means a consignment exists.",
+      "When booking succeeds, inspect the provider consignment reference and tracking evidence. Record handoff only when the parcel leaves your control. Pickup and provider operations can create external work and should be used deliberately.",
+      "Investigate failures using their recorded cause. Follow supported retry or review controls rather than making duplicate bookings. This tutorial uses simulator evidence; a local successful example is not proof of a live provider booking."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-returns",
+    "folder": "30-courier-returns",
+    "title": "Track courier returns and recover received goods",
+    "description": "Courier returns track parcels coming back through a provider. Open Returns and review the original order, consignment and return state. A provider return notification does not by itself mean the goods are back in your stock location.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers/returns"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.returns"
+    ],
+    "prerequisites": [
+      "A consignment and verified return information."
+    ],
+    "steps": [
+      "Courier returns track parcels coming back through a provider. Open Returns and review the original order, consignment and return state. A provider return notification does not by itself mean the goods are back in your stock location.",
+      "Use supported return actions only for the real parcel outcome and the provider integration in use. Keep the return reference and reason. Cancellation of an order and initiation of a courier return are different operations.",
+      "When the parcel physically arrives, inspect the goods through the order recovery workflow. Record receipt and condition before considering restock. Damaged, expired or otherwise unsafe items must not become sellable merely because the return is complete.",
+      "Compare the return history, order timeline, recovery evidence and payment outcome. Refunds and courier collections require their own records. Resolve disagreements before closing the operational case."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "courier-cod-collections",
+    "folder": "31-courier-cod-collections",
+    "title": "Record courier COD collection evidence",
+    "description": "COD collection evidence concerns money collected from the customer by the courier. Open COD payouts. Distinguish booked COD, gross customer collection, courier fees and net payout: these values are related but they are not interchangeable.",
+    "category": "Shipping and couriers",
+    "routes": [
+      "/admin/couriers/cod-payouts"
+    ],
+    "requiredPermissions": [
+      "admin.delivery.reconcile"
+    ],
+    "prerequisites": [
+      "A booked COD consignment and gross collection evidence."
+    ],
+    "steps": [
+      "COD collection evidence concerns money collected from the customer by the courier. Open COD payouts. Distinguish booked COD, gross customer collection, courier fees and net payout: these values are related but they are not interchangeable.",
+      "Find the intended consignment or collection record. Verify the provider reference, currency and gross amount collected. Enter the collection reference and a factual evidence note through the supported controls.",
+      "Record only evidence you actually have. A net bank payout after fees is not the same as gross customer collection. Review mismatches instead of inventing a manual payment to make the customer order appear fully paid.",
+      "Check the order payment totals and collection history after reconciliation. Keep fees and payout evidence distinct. This demonstration uses fictional simulator records; it does not request or confirm a real provider payout."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "store-settings",
+    "folder": "32-store-settings",
+    "title": "Configure store details and checkout defaults",
+    "description": "Store settings contains the core values used by checkout and new orders. Open Store settings. Use approved store and support details so customer-facing information is accurate and your team can receive enquiries.",
+    "category": "Store settings",
+    "routes": [
+      "/admin/store-settings"
+    ],
+    "requiredPermissions": [
+      "admin.store_settings.manage"
+    ],
+    "prerequisites": [
+      "Approved store and support details and reviewed checkout defaults."
+    ],
+    "steps": [
+      "Store settings contains the core values used by checkout and new orders. Open Store settings. Use approved store and support details so customer-facing information is accurate and your team can receive enquiries.",
+      "Review store name, support email and support phone. Configure a three-letter currency code and the supported order-number prefix. The reservation duration controls how long a new checkout can hold stock; choose a value that fits your operation.",
+      "Enable checkout when the store is ready to accept orders. If pausing it, write a clear checkout notice. Disabling checkout does not hide the entire storefront. Save settings and wait for confirmation.",
+      "Reload the page to confirm persistence, and verify a supervised checkout where relevant. Core settings are not editable home-page body content. Page SEO has its own draft and publication workflow below these settings."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "store-page-seo",
+    "folder": "33-store-page-seo",
+    "title": "Save and publish home and about page SEO",
+    "description": "Page SEO controls metadata for the home and about pages. Open Store settings and locate Website SEO. These fields change titles, descriptions and social images; they do not edit the body content of those pages.",
+    "category": "Store settings",
+    "routes": [
+      "/admin/store-settings"
+    ],
+    "requiredPermissions": [
+      "admin.store_settings.manage"
+    ],
+    "prerequisites": [
+      "Approved home/about metadata and working SEO storage."
+    ],
+    "steps": [
+      "Page SEO controls metadata for the home and about pages. Open Store settings and locate Website SEO. These fields change titles, descriptions and social images; they do not edit the body content of those pages.",
+      "Choose the relevant page and enter a concise title and description based on approved facts. Select an appropriate image when needed. Review the current revision and state so you do not overwrite someone else's changes without noticing.",
+      "Save the draft first. A saved draft is separate from the published metadata. Review it before using the publish control, and resolve any revision conflict by reloading and comparing the changes.",
+      "After publication, inspect the public page metadata and preview where supported. Publishing code or building the app does not establish that the storage prerequisite exists. If persistence fails, resolve that prerequisite before describing the metadata as published."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "image-library",
+    "folder": "34-image-library",
+    "title": "Upload, find and reuse images",
+    "description": "The image library lets you upload and reuse assets across the admin panel. Open Images. Use files you own or have permission to publish, and keep sensitive documents out of the product image library.",
+    "category": "Administration",
+    "routes": [
+      "/admin/images"
+    ],
+    "requiredPermissions": [
+      "admin.images.manage"
+    ],
+    "prerequisites": [
+      "Working image storage and assets you have permission to publish."
+    ],
+    "steps": [
+      "The image library lets you upload and reuse assets across the admin panel. Open Images. Use files you own or have permission to publish, and keep sensitive documents out of the product image library.",
+      "Choose Upload images and select the intended files. Check the previews and add useful tags where supported. Wait for upload success before assuming an image is available. The file server must be configured and reachable.",
+      "Use search, filters and the table or grid view to find assets. Preview an image and copy its public URL when appropriate. Product and category image pickers can reuse library assets instead of uploading the same file repeatedly.",
+      "Before deleting an image, check where it is used. Removing an asset can affect existing product presentation. Verify the storefront image after changing a reference, and retain the approved source file for future revisions."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "customer-records",
+    "folder": "35-customer-records",
+    "title": "Review and maintain customer records",
+    "description": "Customer records connect contact information with the shop's order history. Open Customers and find the intended customer. Use the available search rather than choosing a similarly named person.",
+    "category": "Administration",
+    "routes": [
+      "/admin/customers"
+    ],
+    "requiredPermissions": [
+      "admin.customers.read"
+    ],
+    "prerequisites": [
+      "The customer record and permission to view its information."
+    ],
+    "steps": [
+      "Customer records connect contact information with the shop's order history. Open Customers and find the intended customer. Use the available search rather than choosing a similarly named person.",
+      "Open the record and review its contact details and order history. Completed spend and order counts describe the recorded orders; they do not replace payment evidence on an individual order.",
+      "When your role permits editing, update only verified customer facts through the supported controls. An order retains its own delivery details, so editing a profile should not be assumed to rewrite historical order addresses.",
+      "Open the relevant order for payment, shipment or refund work. Keep personal information private when sharing screenshots or recordings. Tutorial fixtures use fictional customers and addresses in the isolated environment."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "users-invitations",
+    "folder": "36-users-invitations",
+    "title": "Manage users and invitations",
+    "description": "User Management controls application accounts, while Customers represents shop customer records. Open Users. Your permissions determine whether you can inspect details, invite someone, change a role or manage sessions.",
+    "category": "Administration",
+    "routes": [
+      "/admin/users"
+    ],
+    "requiredPermissions": [
+      "admin.users.list"
+    ],
+    "prerequisites": [
+      "The intended account/role and permission for the account action."
+    ],
+    "steps": [
+      "User Management controls application accounts, while Customers represents shop customer records. Open Users. Your permissions determine whether you can inspect details, invite someone, change a role or manage sessions.",
+      "Use the Users tab to find an account and inspect its details through the row actions. Review the current role before changing access. A role change can grant sensitive capabilities, so choose the minimum role needed for the person's work.",
+      "Use Invites to review invitation state. Creating an invitation can send email; a tutorial must use fictional addresses and the isolated mail sink. Revoking sessions and banning or archiving accounts are deliberate security actions, not ordinary profile edits.",
+      "Verify the saved account or invitation state after any action. Role permissions are configured in Roles. Keep credentials, tokens and verification links out of screen recordings, and never demonstrate user deletion against a real account."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "roles-permissions",
+    "folder": "37-roles-permissions",
+    "title": "Configure roles and permission boundaries",
+    "description": "Roles group permissions for people doing similar work. Open Roles and review the existing roles before creating another. The owner role has special authority; ordinary staff should receive only the capabilities their job requires.",
+    "category": "Administration",
+    "routes": [
+      "/admin/roles"
+    ],
+    "requiredPermissions": [
+      "admin.roles.list"
+    ],
+    "prerequisites": [
+      "A clear staff responsibility and reviewed permission requirements."
+    ],
+    "steps": [
+      "Roles group permissions for people doing similar work. Open Roles and review the existing roles before creating another. The owner role has special authority; ordinary staff should receive only the capabilities their job requires.",
+      "Create a custom role when the built-in choices do not fit. Use a clear name and description. Permission groups distinguish reading data from managing it, and order fulfilment, payment, refund and courier reconciliation are separate capabilities.",
+      "Open the role detail page to inspect or edit supported permissions. Save deliberately and review the result. Resetting or deleting roles has separate controls and may be restricted for built-in or referenced roles.",
+      "Verify access using a suitable isolated account, including a denied action as well as an allowed one. Hiding a navigation item is not the whole access boundary: server authorization must still apply. Keep the role understandable to the next administrator."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "feedback-moderation",
+    "folder": "38-feedback-moderation",
+    "title": "Review and moderate submitted feedback",
+    "description": "Feedback collects submitted messages that need operator attention. Open Feedback and identify the message you intend to review. Read the actual content and context before changing its state.",
+    "category": "Administration",
+    "routes": [
+      "/admin/feedback"
+    ],
+    "requiredPermissions": [
+      "feedback.moderate"
+    ],
+    "prerequisites": [
+      "Submitted feedback and moderation permission."
+    ],
+    "steps": [
+      "Feedback collects submitted messages that need operator attention. Open Feedback and identify the message you intend to review. Read the actual content and context before changing its state.",
+      "Use the available status controls to represent what your team has done. A status should not imply that the customer received a reply unless that communication actually happened. Keep private contact details out of shared recordings.",
+      "Review the updated item and use pagination to find older submissions. Handle abusive or irrelevant content according to your store's policy. Do not remove a valid report simply because it describes an inconvenient problem.",
+      "For an order issue, use the order and customer workflows to investigate the underlying facts. Feedback moderation does not change inventory, issue a refund or resolve a shipment. Record operational actions in their proper sections."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "visitor-analytics",
+    "folder": "39-visitor-analytics",
+    "title": "Read visitor trends and filters",
+    "description": "Visitors summarizes recorded site activity. Open Visitors and select the period you want to inspect. Read each metric according to its label: visits, unique visitors and returning visitors describe different measurements.",
+    "category": "Administration",
+    "routes": [
+      "/admin/visitors"
+    ],
+    "requiredPermissions": [
+      "admin.visitors.read"
+    ],
+    "prerequisites": [
+      "Recorded traffic and the reporting period you want to inspect."
+    ],
+    "steps": [
+      "Visitors summarizes recorded site activity. Open Visitors and select the period you want to inspect. Read each metric according to its label: visits, unique visitors and returning visitors describe different measurements.",
+      "Use the available filters to separate human and bot activity and compare periods where supported. Check the active dates before interpreting a rise or fall. A filtered result is not necessarily the total traffic for the shop.",
+      "Inspect the trend chart and breakdowns together. Traffic counts do not prove revenue, successful checkout or delivery. Use order records for those outcomes, and avoid presenting a visitor count as a conversion rate without the correct denominator.",
+      "Treat analytics as a guide for investigation. Missing events, privacy choices and classification rules can affect the recorded data. Keep personal details private when showing reports and state the actual period when sharing a finding."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "activity-audit",
+    "folder": "40-activity-audit",
+    "title": "Use the activity log to trace admin changes",
+    "description": "The activity log helps you understand recorded administrative actions. Open Activity and choose the relevant filters or period. Start with the account, resource or event you are investigating.",
+    "category": "Administration",
+    "routes": [
+      "/admin/activity"
+    ],
+    "requiredPermissions": [
+      "admin.activity.read"
+    ],
+    "prerequisites": [
+      "The event, account or resource you want to investigate."
+    ],
+    "steps": [
+      "The activity log helps you understand recorded administrative actions. Open Activity and choose the relevant filters or period. Start with the account, resource or event you are investigating.",
+      "Read the event time, actor and action together. Where details are available, compare them with the affected record. An audit entry shows what was recorded by the application; it is not a substitute for checking the current operational state.",
+      "Use the log to trace a configuration, role or data change. Order timeline and inventory movement history provide additional evidence for sales workflows. Different histories answer different questions, so compare the relevant sources.",
+      "Keep log details private and avoid putting credentials in notes. If an event looks unexpected, investigate its actor and related records before taking corrective action. Preserve useful history instead of deleting evidence to hide a mistake."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "rate-limit-settings",
+    "folder": "41-rate-limit-settings",
+    "title": "Review and configure request rate limits",
+    "description": "Rate limits protect the application from excessive requests. Open Rate Limits and review the configured groups. Public, authentication, protected and administrative endpoints have different purposes and may need different thresholds.",
+    "category": "Administration",
+    "routes": [
+      "/admin/rate-limits"
+    ],
+    "requiredPermissions": [
+      "admin.rate_limit.manage"
+    ],
+    "prerequisites": [
+      "Reviewed traffic requirements and a known previous configuration."
+    ],
+    "steps": [
+      "Rate limits protect the application from excessive requests. Open Rate Limits and review the configured groups. Public, authentication, protected and administrative endpoints have different purposes and may need different thresholds.",
+      "Each group exposes a time window and maximum request count. Understand the units before editing. A smaller threshold can block legitimate use, while a larger threshold may weaken protection. Choose values using evidence from your actual traffic.",
+      "Save only a reviewed configuration change. Verify both ordinary permitted requests and the expected rejection behavior in a supervised environment. Authentication limits deserve special care because an incorrect setting can interfere with sign-in.",
+      "Do not interpret a saved setting as proof of production capacity or security acceptance. Monitor latency, errors and rejected requests after deployment. Keep a known previous configuration so an operator can restore it when a reviewed change causes trouble."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "webhook-events",
+    "folder": "42-webhook-events",
+    "title": "Inspect webhook events and failures",
+    "description": "Webhooks reports inbound integration events recorded by the application. Open Webhooks and find the event by provider, status, time or reference. Check the intended integration before interpreting the event.",
+    "category": "Administration",
+    "routes": [
+      "/admin/webhooks"
+    ],
+    "requiredPermissions": [
+      "admin.webhooks.read"
+    ],
+    "prerequisites": [
+      "The integration event and access to the related business record."
+    ],
+    "steps": [
+      "Webhooks reports inbound integration events recorded by the application. Open Webhooks and find the event by provider, status, time or reference. Check the intended integration before interpreting the event.",
+      "Review its processing state and supported details. An inbound event and its resulting business action are different evidence. A received event does not automatically prove that a payment, delivery or collection was successfully applied.",
+      "Compare the event with the relevant order or integration record. Investigate failed processing using the recorded cause. Replays can repeat business effects, so use only supported recovery controls with deliberate authorization.",
+      "Keep payloads and secrets out of tutorials and shared screenshots. Demonstrations use fictional events. Resolve the underlying error and verify the resulting state rather than treating a green webhook status as the complete operational outcome."
+    ],
+    "status": "prepared",
+    "media": null
+  },
+  {
+    "id": "discount-codes",
+    "folder": "43-discount-codes",
+    "title": "Create and manage discount codes",
+    "description": "Discount codes apply supported promotional rules at checkout. Open Discounts and create a code that your team can recognize. Define the actual offer before entering values, including eligibility and usage limits.",
+    "category": "Shop management",
+    "routes": [
+      "/admin/discounts"
+    ],
+    "requiredPermissions": [
+      "admin.discounts.manage"
+    ],
+    "prerequisites": [
+      "An approved offer with dates, eligibility and usage limits."
+    ],
+    "steps": [
+      "Discount codes apply supported promotional rules at checkout. Open Discounts and create a code that your team can recognize. Define the actual offer before entering values, including eligibility and usage limits.",
+      "Choose percentage or fixed amount and enter its value. Fixed discounts need the correct currency. Configure a minimum order amount, start and end dates, total usage limit and per-customer limit when the offer requires them.",
+      "Review active state and save the discount. An active code can still be ineligible because of its dates, order amount, currency or usage rules. Test an eligible fictional checkout and an ineligible case before announcing a promotion.",
+      "Check the accepted order total and retained discount information. Disable a code when it should no longer be offered. Do not assume that editing a promotion retroactively changes orders that have already been accepted."
+    ],
+    "status": "prepared",
+    "media": null
+  }
+]

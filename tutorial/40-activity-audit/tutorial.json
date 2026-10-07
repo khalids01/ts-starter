@@ -1,0 +1,82 @@
+{
+  "id": "activity-audit",
+  "title": "Use the activity log to trace admin changes",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Fictional admin events with no secrets in notes or payloads."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "The activity log helps you understand recorded administrative actions. Open Activity and choose the relevant filters or period. Start with the account, resource or event you are investigating.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/activity"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Activity"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Read the event time, actor and action together. Where details are available, compare them with the affected record. An audit entry shows what was recorded by the application; it is not a substitute for checking the current operational state.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/activity"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Activity"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Use the log to trace a configuration, role or data change. Order timeline and inventory movement history provide additional evidence for sales workflows. Different histories answer different questions, so compare the relevant sources.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/activity"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Activity"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Keep log details private and avoid putting credentials in notes. If an event looks unexpected, investigate its actor and related records before taking corrective action. Preserve useful history instead of deleting evidence to hide a mistake.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/activity"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Activity"
+          }
+        }
+      ]
+    }
+  ]
+}

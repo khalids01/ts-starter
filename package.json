@@ -50,10 +50,15 @@
     "test:ecommerce:coverage": "bun --cwd apps/server test --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=../../tests/artifacts/coverage ./tests",
     "test:security:secrets": "bun tests/security/scan-secrets.ts",
     "e2e": "DISPLAY=${DISPLAY:-:1} E2E_MANAGED_SERVER=true bun --env-file=tests/env/.env ./node_modules/.bin/playwright test",
-    "tutorial:record": "bun --env-file=tests/env/.env tests/tutorials/record-product-to-order.ts",
-    "tutorial:render": "bun tests/tutorials/render-tutorial.ts",
+    "tutorial:record": "bun --env-file=tests/env/.env tutorial/shared/cli.ts record",
+    "tutorial:render": "bun tutorial/shared/cli.ts render",
     "view-archi": "bun scripts/serve-architecture.ts",
-    "images:publish": "bash scripts/publish-images.sh"
+    "images:publish": "bash scripts/publish-images.sh",
+    "tutorial:list": "bun tutorial/shared/cli.ts list",
+    "tutorial:publish": "bun tutorial/shared/cli.ts publish",
+    "tutorial:record:legacy": "bun --env-file=tests/env/.env tutorial/00-product-to-completed-order/record.legacy.ts",
+    "tutorial:render:legacy": "bun tutorial/00-product-to-completed-order/render.legacy.ts",
+    "tutorial:check": "bun tutorial/shared/validate.ts"
   },
   "dependencies": {
     "@env": "workspace:*",

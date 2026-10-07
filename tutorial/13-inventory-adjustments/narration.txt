@@ -1,0 +1,7 @@
+An adjustment records a verified change to a stock quantity. Use it after counting stock or investigating a discrepancy, not to hide an unexplained order or movement. Open Inventory and choose Adjustments.
+
+Select the exact stock row. Check its SKU, location and current availability. Enter Delta as the change: a positive value adds quantity, and a negative value removes quantity. Delta is not the new total you want to display.
+
+Enter unit cost when it applies and give a clear reason explaining the evidence behind the change. Review the numbers, then submit the adjustment. Server checks may block changes that would make stock invalid or conflict with reserved or tracked inventory.
+
+Return to Stock and Movements. Confirm the resulting quantity and the adjustment record, including its reason. If it is wrong, investigate and record a justified correction rather than making repeated unexplained changes.

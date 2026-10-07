@@ -1,0 +1,98 @@
+{
+  "id": "order-special-handling",
+  "title": "Handle food preparation, tracked gadgets and warranty",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Separate fictional food and gadget orders with relevant handling policies."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Some products need extra fulfilment evidence. The category handling policy determines the required controls. Open the order and review Preparation and tracked units before shipping. Use the controls appropriate to the actual goods.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Preparation and tracked units"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "For fresh or prepared food, review the delivery window and preparation requirements. Record the supported preparation evidence as work happens. Do not mark a parcel ready simply because a generic order status allows an update.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Line items"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "For tracked gadgets, assign the serial number or IMEI of the physical unit being sent. Verify the unit and condition against the parcel. Gadget warranty follows its configured policy and delivery evidence; food and clothing have no warranty.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{gadgetOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Preparation and tracked units"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Use the supported claim and recovery controls when an eligible gadget later needs attention. Keep identifiers and inspection evidence connected to the order. Check the order timeline so preparation, unit assignment and subsequent recovery remain traceable.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{gadgetOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
+        }
+      ]
+    }
+  ]
+}

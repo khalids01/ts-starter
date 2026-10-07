@@ -1,0 +1,7 @@
+User Management controls application accounts, while Customers represents shop customer records. Open Users. Your permissions determine whether you can inspect details, invite someone, change a role or manage sessions.
+
+Use the Users tab to find an account and inspect its details through the row actions. Review the current role before changing access. A role change can grant sensitive capabilities, so choose the minimum role needed for the person's work.
+
+Use Invites to review invitation state. Creating an invitation can send email; a tutorial must use fictional addresses and the isolated mail sink. Revoking sessions and banning or archiving accounts are deliberate security actions, not ordinary profile edits.
+
+Verify the saved account or invitation state after any action. Role permissions are configured in Roles. Keep credentials, tokens and verification links out of screen recordings, and never demonstrate user deletion against a real account.

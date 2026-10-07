@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-courier-shipments",
+  "values": {
+    "shipmentReference": "REPLACE_WITH_SIMULATED_SHIPMENT_REFERENCE"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

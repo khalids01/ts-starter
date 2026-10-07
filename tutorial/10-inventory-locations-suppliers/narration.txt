@@ -1,0 +1,7 @@
+Inventory locations identify where stock is held. Suppliers record where it comes from. Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.
+
+In Locations, select Location and enter a recognizable name, a unique code and the address when needed. Save, then confirm that the location is listed. Choose a location that matches the physical stock, rather than assigning everything to an unrelated warehouse.
+
+In Suppliers, select Supplier and enter the known business and contact details. Save and verify the record. A supplier is optional when receiving stock, but an inventory location is required. Keep fictional contact details in demonstration recordings.
+
+Use the edit and disable controls deliberately. Disabling a location or supplier does not erase historical movements. Review any stock or dependency restrictions before changing a record that is already in use.

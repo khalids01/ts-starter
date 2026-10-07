@@ -1,0 +1,10 @@
+{
+  "marker": "tutorial-product-activation",
+  "values": {
+    "productId": "REPLACE_WITH_READY_PRODUCT_ID",
+    "productName": "REPLACE_WITH_READY_PRODUCT_NAME"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

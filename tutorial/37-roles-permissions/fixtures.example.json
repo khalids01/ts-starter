@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-roles-permissions",
+  "values": {
+    "roleId": "REPLACE_WITH_OWNED_ROLE_ID"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

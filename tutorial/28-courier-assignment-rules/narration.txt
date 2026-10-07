@@ -1,0 +1,7 @@
+Assignment rules determine how eligible orders are routed to courier connections and options. Open Assignment rules. Plan the conditions and priority so an order has a predictable outcome instead of relying on an accidental overlap.
+
+Review each rule condition against the addresses, payment choices and product handling you support. Choose the intended connection and delivery option. Use clear rule names and the supported priority and enabled settings.
+
+Save the configuration and test representative fictional orders. Inspect the routing decision on the order before submission. A matching rule does not guarantee provider acceptance; booking and address validation remain separate steps.
+
+Review rules when shipping methods or courier accounts change. Keep an understandable fallback where supported, and investigate orders with no eligible route. Do not repeatedly submit an unroutable order to make the error disappear.

@@ -1,0 +1,79 @@
+{
+  "id": "courier-overview",
+  "title": "Understand courier operations and exceptions",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Local simulator or fictional provider records; no live courier requests."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "The courier overview summarizes delivery configuration and operations. Open Couriers, then Overview. Connections identify provider accounts; delivery options map service levels; assignment rules decide how orders are routed.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Courier overview"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Review connection health and configuration before dispatching. A healthy connection is one prerequisite, not a guarantee that every shipment will succeed. Shipping methods and delivery options must match the service you intend to offer.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/connections\"]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Use Shipments to investigate bookings and parcel progress. Courier returns and COD payouts are separate operational sections. Open the relevant record rather than interpreting a count as evidence that a parcel was delivered or money was paid.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/shipments\"]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Resolve authentication, routing, retry and collection exceptions using the specific workflow. A tutorial demonstration must use the local simulator and fictional data. Live bookings, pickup requests and provider actions require deliberate operator authorization.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/cod-payouts\"]"
+          }
+        }
+      ]
+    }
+  ]
+}

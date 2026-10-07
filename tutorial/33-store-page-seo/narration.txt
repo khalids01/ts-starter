@@ -1,0 +1,7 @@
+Page SEO controls metadata for the home and about pages. Open Store settings and locate Website SEO. These fields change titles, descriptions and social images; they do not edit the body content of those pages.
+
+Choose the relevant page and enter a concise title and description based on approved facts. Select an appropriate image when needed. Review the current revision and state so you do not overwrite someone else's changes without noticing.
+
+Save the draft first. A saved draft is separate from the published metadata. Review it before using the publish control, and resolve any revision conflict by reloading and comparing the changes.
+
+After publication, inspect the public page metadata and preview where supported. Publishing code or building the app does not establish that the storage prerequisite exists. If persistence fails, resolve that prerequisite before describing the metadata as published.

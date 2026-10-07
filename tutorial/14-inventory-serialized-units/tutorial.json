@@ -1,0 +1,102 @@
+{
+  "id": "inventory-serialized-units",
+  "title": "Register gadget serial numbers and IMEIs",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A gadget category with tracking enabled, received stock and fictional unique identifiers."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Serialized inventory connects a physical gadget to its unique identifiers. The category decides whether serial numbers, IMEIs or both are required. Receive the stock first, then open Inventory and use the gadget unit registration section.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Register gadget unit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Choose the correct stock row. Enter the identifiers exactly as recorded on the unit and check them against the physical unit. Use fictional identifiers in a tutorial environment. An identifier must not be reused for a different unit.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Received stock"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Register each required unit and check the resulting inventory information. Receiving a quantity alone does not prove that eligible identifiable units exist. Assignment to an order must use the units that will actually be handed over.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Register gadget unit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Keep the unit history when a gadget is shipped, returned or inspected. Warranty depends on the gadget policy and delivery evidence. Never duplicate the same physical item by adding aggregate stock after it has already been received and registered.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ]
+    }
+  ]
+}

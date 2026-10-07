@@ -1,0 +1,7 @@
+The courier overview summarizes delivery configuration and operations. Open Couriers, then Overview. Connections identify provider accounts; delivery options map service levels; assignment rules decide how orders are routed.
+
+Review connection health and configuration before dispatching. A healthy connection is one prerequisite, not a guarantee that every shipment will succeed. Shipping methods and delivery options must match the service you intend to offer.
+
+Use Shipments to investigate bookings and parcel progress. Courier returns and COD payouts are separate operational sections. Open the relevant record rather than interpreting a count as evidence that a parcel was delivered or money was paid.
+
+Resolve authentication, routing, retry and collection exceptions using the specific workflow. A tutorial demonstration must use the local simulator and fictional data. Live bookings, pickup requests and provider actions require deliberate operator authorization.

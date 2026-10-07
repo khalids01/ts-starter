@@ -1,0 +1,100 @@
+{
+  "id": "inventory-adjustments",
+  "title": "Record an inventory adjustment",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A disposable stock row and documented fictional count discrepancy."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "An adjustment records a verified change to a stock quantity. Use it after counting stock or investigating a discrepancy, not to hide an unexplained order or movement. Open Inventory and choose Adjustments.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Adjustments"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select the exact stock row. Check its SKU, location and current availability. Enter Delta as the change: a positive value adds quantity, and a negative value removes quantity. Delta is not the new total you want to display.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Adjustments"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Stock row"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Delta"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Enter unit cost when it applies and give a clear reason explaining the evidence behind the change. Review the numbers, then submit the adjustment. Server checks may block changes that would make stock invalid or conflict with reserved or tracked inventory.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Adjustments"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Reason"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Return to Stock and Movements. Confirm the resulting quantity and the adjustment record, including its reason. If it is wrong, investigate and record a justified correction rather than making repeated unexplained changes.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ]
+    }
+  ]
+}

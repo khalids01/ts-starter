@@ -1,0 +1,88 @@
+{
+  "id": "webhook-events",
+  "title": "Inspect webhook events and failures",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "Fictional webhook records; no provider secrets or live replay."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Webhooks reports inbound integration events recorded by the application. Open Webhooks and find the event by provider, status, time or reference. Check the intended integration before interpreting the event.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Webhooks"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Review its processing state and supported details. An inbound event and its resulting business action are different evidence. A received event does not automatically prove that a payment, delivery or collection was successfully applied.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Webhooks"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "input[placeholder=\"Filter event type\"]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Compare the event with the relevant order or integration record. Investigate failed processing using the recorded cause. Replays can repeat business effects, so use only supported recovery controls with deliberate authorization.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Webhooks"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Keep payloads and secrets out of tutorials and shared screenshots. Demonstrations use fictional events. Resolve the underlying error and verify the resulting state rather than treating a green webhook status as the complete operational outcome.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Webhooks"
+          }
+        }
+      ]
+    }
+  ]
+}

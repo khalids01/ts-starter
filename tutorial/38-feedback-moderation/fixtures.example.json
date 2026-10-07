@@ -1,0 +1,9 @@
+{
+  "marker": "tutorial-feedback-moderation",
+  "values": {
+    "feedbackText": "REPLACE_WITH_FICTIONAL_FEEDBACK_TEXT"
+  },
+  "ownershipChecks": [],
+  "outcomeChecks": [],
+  "cleanup": []
+}

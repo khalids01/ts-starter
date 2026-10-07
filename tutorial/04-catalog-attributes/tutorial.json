@@ -1,0 +1,126 @@
+{
+  "id": "catalog-attributes",
+  "title": "Configure product attributes and options",
+  "mode": "walkthrough",
+  "prerequisites": [
+    "A prepared fictional category/template and attribute for the recording."
+  ],
+  "scenes": [
+    {
+      "id": "01",
+      "title": "Find the workflow",
+      "narration": "Attributes describe product details and selectable options. Open Catalog, then Attributes. Reuse a well-defined field instead of creating several fields that mean the same thing. The category template decides where and how the field is used.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Attributes"
+          }
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Understand the controls",
+      "narration": "Select Attribute and enter a name, slug and field type. Choose a type that matches the information: text, number or a supported choice type. Assign relevant categories and decide whether customers should be able to filter by it.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Attributes"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Attribute"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Type"
+          }
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Perform the task",
+      "narration": "Save the attribute, then configure its supported values and template placement through the catalog controls. Product details, variant options and inventory fields serve different purposes. A size option for a SKU is different from a descriptive specification.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Attributes"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Attribute"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Slug"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Sort order"
+          }
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Verify and continue",
+      "narration": "Open a prepared product to check the resulting fields. Required values must be present before readiness validation succeeds. Review existing category templates before removing values or making fields required; historical product data must remain understandable.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Attributes"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{attributeName}}"
+          }
+        }
+      ]
+    }
+  ]
+}

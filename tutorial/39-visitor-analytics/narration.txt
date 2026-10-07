@@ -1,0 +1,7 @@
+Visitors summarizes recorded site activity. Open Visitors and select the period you want to inspect. Read each metric according to its label: visits, unique visitors and returning visitors describe different measurements.
+
+Use the available filters to separate human and bot activity and compare periods where supported. Check the active dates before interpreting a rise or fall. A filtered result is not necessarily the total traffic for the shop.
+
+Inspect the trend chart and breakdowns together. Traffic counts do not prove revenue, successful checkout or delivery. Use order records for those outcomes, and avoid presenting a visitor count as a conversion rate without the correct denominator.
+
+Treat analytics as a guide for investigation. Missing events, privacy choices and classification rules can affect the recorded data. Keep personal details private when showing reports and state the actual period when sharing a finding.
