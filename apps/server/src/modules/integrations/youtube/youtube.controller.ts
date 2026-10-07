@@ -23,7 +23,7 @@ export const youtubeController = new Elysia({ prefix: "/integrations/youtube" })
     let outcome = "connected";
     try { await youtubeCallback(current.user.id, current.session.id, query.state ?? "", query.code); }
     catch { outcome = "error"; }
-    const destination = new URL("/admin/tutorials", env.CORS_ORIGIN);
+    const destination = new URL("/admin/guide", env.CORS_ORIGIN);
     destination.searchParams.set("youtube", outcome);
     return redirect(destination.href, 303);
   }, { query: t.Object({ state: t.Optional(t.String({ maxLength: 128 })), code: t.Optional(t.String({ maxLength: 4096 })), error: t.Optional(t.String()) }, { additionalProperties: true }) })

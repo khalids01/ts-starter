@@ -2,7 +2,7 @@
 
 All tutorial content lives here, outside `docs/`. There are **43 focused tutorial packages**, plus the existing complete-workflow reference in `00-product-to-completed-order/`.
 
-The admin UI reads the public metadata in `catalog.json`. `/admin/tutorials` provides search/category filters and permission-filtered written guides. The small help button within each admin page opens its related topics without navigating away. No new video is published: the audio, recordings and final review come next.
+The admin UI reads the public metadata in `catalog.json`. `/admin/guide` provides search/category filters and permission-filtered written guides. The small help button within each admin page opens its related topics without navigating away. No new video is published: the audio, recordings and final review come next.
 
 ## Folder structure
 

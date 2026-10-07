@@ -17,7 +17,7 @@ export function AdminTutorialsPage() {
   const categories = ["All", ...new Set(available.map(item => item.category))];
   const matches = available.filter(item => (category === "All" || item.category === category) && `${item.title} ${item.description} ${item.category}`.toLowerCase().includes(search.trim().toLowerCase()));
   return <div className="space-y-6">
-    <div><h1 className="text-2xl font-semibold tracking-tight">Tutorials</h1><p className="mt-1 text-sm text-muted-foreground">Learn one admin task at a time. Find a guide here or use the help button on a page.</p></div>
+    <div><h1 className="text-2xl font-semibold tracking-tight">Guide</h1><p className="mt-1 text-sm text-muted-foreground">Learn one admin task at a time. Find a guide here or use the help button on a page.</p></div>
     {session?.primaryRoleSlug === "platform.owner" && <YoutubeConnection />}
     <div className="max-w-xl space-y-2"><Label htmlFor="tutorial-search">Search tutorials</Label><div className="relative"><Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" /><Input id="tutorial-search" className="pl-9" placeholder="Search products, stock, orders…" value={search} onChange={event => setSearch(event.target.value)} /></div></div>
     <div className="flex flex-wrap gap-2" aria-label="Tutorial categories">{categories.map(item => <Button key={item} type="button" size="sm" variant={category === item ? "default" : "outline"} aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</Button>)}</div>

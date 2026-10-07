@@ -117,7 +117,7 @@ const NAV_STATE_KEY = "admin-sidebar-groups";
 
 function getAdminNavigation(session: ClientSession | null | undefined) {
   const overview: AdminNavItem = { title: "Overview", icon: LayoutDashboard, url: "/admin/overview", show: true };
-  const tutorials: AdminNavItem = { title: "Tutorials", icon: BookOpen, url: "/admin/tutorials", show: true };
+  const tutorials: AdminNavItem = { title: "Guide", icon: BookOpen, url: "/admin/guide", show: true };
   const groups: AdminNavGroup[] = [
     {
       title: "Shop Management",
