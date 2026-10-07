@@ -1,3 +1,4 @@
+import { PageTutorialButton } from "@/features/admin/tutorials/tutorial-button";
 import { noIndexHead } from "@/features/seo/metadata";
 import {
   createFileRoute,
@@ -25,6 +26,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
+  BookOpen,
   LayoutDashboard,
   Users,
   ChevronRight,
@@ -115,6 +117,7 @@ const NAV_STATE_KEY = "admin-sidebar-groups";
 
 function getAdminNavigation(session: ClientSession | null | undefined) {
   const overview: AdminNavItem = { title: "Overview", icon: LayoutDashboard, url: "/admin/overview", show: true };
+  const tutorials: AdminNavItem = { title: "Tutorials", icon: BookOpen, url: "/admin/tutorials", show: true };
   const groups: AdminNavGroup[] = [
     {
       title: "Shop Management",
@@ -184,6 +187,7 @@ function getAdminNavigation(session: ClientSession | null | undefined) {
   ];
   return {
     overview,
+    tutorials,
     groups: groups.map((group) => ({ ...group, items: group.items.filter((item) => item.show) })).filter((group) => group.items.length > 0),
   };
 }
@@ -192,7 +196,7 @@ function AdminLayout() {
   const location = useLocation();
   const { session } = useSession();
   const navigation = useMemo(() => getAdminNavigation(session), [session]);
-  const visibleNavItems = [navigation.overview, ...navigation.groups.flatMap((group) => group.items)];
+  const visibleNavItems = [navigation.overview, navigation.tutorials, ...navigation.groups.flatMap((group) => group.items)];
   const currentNavItem = [...visibleNavItems].sort((a, b) => b.url.length - a.url.length).find((item) => routeIsActive(location.pathname, item.url));
   const activeGroup = navigation.groups.find((group) => group.items.some((item) => routeIsActive(location.pathname, item.url)))?.title;
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(activeGroup ? [activeGroup] : []));
@@ -236,6 +240,7 @@ function AdminLayout() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <AdminNavLink item={navigation.overview} pathname={location.pathname} />
+                  <AdminNavLink item={navigation.tutorials} pathname={location.pathname} />
                   {navigation.groups.map((group) => (
                     <AdminNavCategory
                       key={group.title}
@@ -277,6 +282,7 @@ function AdminLayout() {
             </div>
           </header>
           <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-6">
+            <PageTutorialButton key={location.pathname} />
             <Outlet />
           </main>
         </SidebarInset>
