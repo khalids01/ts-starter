@@ -24,8 +24,8 @@ export function AdminTutorialsPage() {
     <p className="text-sm text-muted-foreground" aria-live="polite">{matches.length} {matches.length === 1 ? "tutorial" : "tutorials"}</p>
     {matches.length === 0 ? <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">No tutorials match. Try another search or category.</div> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{matches.map(item => <article key={item.id} className="flex flex-col rounded-lg border bg-card p-5">
       <p className="text-xs font-medium text-muted-foreground">{item.category}</p><h2 className="mt-2 font-semibold">{item.title}</h2><p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-      <p className="mt-4 text-xs text-muted-foreground">{hasPublishedVideo(item) ? `Video · ${Math.ceil(item.media!.durationSec / 60)} min` : "Written guide · video coming soon"}</p>
-      <Button type="button" variant="outline" className="mt-3 w-fit" onClick={() => setSelected(item)}>{hasPublishedVideo(item) ? <PlayCircle className="size-4" /> : <BookOpen className="size-4" />}{hasPublishedVideo(item) ? "Watch tutorial" : "Read guide"}</Button>
+      <p className="mt-4 text-xs text-muted-foreground">{hasPublishedVideo(item) ? `Video · ${Math.ceil(item.media!.durationSec / 60)} min` : "Guide · video coming soon"}</p>
+      <Button type="button" variant="outline" className="mt-3 w-fit" onClick={() => setSelected(item)}>{hasPublishedVideo(item) ? <PlayCircle className="size-4" /> : <BookOpen className="size-4" />}{hasPublishedVideo(item) ? "Watch tutorial" : "Open guide"}</Button>
     </article>)}</div>}
     <TutorialDialog open={selected !== null} onOpenChange={open => !open && setSelected(null)} topics={selected ? [selected] : []} />
   </div>;

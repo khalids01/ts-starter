@@ -49,8 +49,19 @@
       "Sales contains Orders and Customers. Delivery contains shipping methods. Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics contains visitor reports. Administration contains users, roles, activity, and other account controls.",
       "Open Guide whenever you need instructions. Or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once."
     ],
-    "status": "prepared",
-    "media": null
+    "status": "published",
+    "media": {
+      "provider": "youtube",
+      "videoId": "LM2vteWRHIU",
+      "durationSec": 69.421029,
+      "reviewedCommit": "03cd2154f535830e40a1e0cb8ee472b77f860710"
+    },
+    "instructions": [
+      "Start at Overview for a summary of the application.",
+      "Expand the sidebar group that matches your task: Shop Management, Sales, Delivery, Couriers, Storefront, Analytics or Administration.",
+      "Use Guide for the complete library, or the help button on a page for its related topics.",
+      "Open a topic, watch its video when available, and follow its prerequisites and steps."
+    ]
   },
   {
     "id": "catalog-categories",
@@ -243,7 +254,69 @@
       "Use the product list and lifecycle actions to manage visibility over time. Archive preserves a record separately from the active status. Restore and permanent deletion have server checks. After important edits, review readiness and storefront presentation again."
     ],
     "status": "prepared",
-    "media": null
+    "media": null,
+    "instructions": [
+      "Save the product and its valid variants, then choose Validate in the builder.",
+      "Read each readiness issue and fix the corresponding product or inventory details. Validate again.",
+      "When validation passes, activate the product and check its storefront page.",
+      "Confirm eligible inventory and checkout settings separately before taking orders."
+    ],
+    "diagram": {
+      "title": "From product draft to storefront",
+      "description": "Validation checks readiness. Available stock and enabled checkout still determine whether customers can order.",
+      "rows": [
+        [
+          {
+            "id": "draft",
+            "label": "Save the product",
+            "description": "Complete product details and variants.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "validate",
+            "label": "Readiness checks pass?",
+            "description": "Choose Validate and read the result.",
+            "kind": "decision"
+          }
+        ],
+        [
+          {
+            "id": "fix",
+            "label": "Fix reported issues",
+            "description": "Correct the details, then validate again.",
+            "kind": "step"
+          },
+          {
+            "id": "activate",
+            "label": "Activate and check",
+            "description": "Activate the product and inspect its storefront page.",
+            "kind": "success"
+          }
+        ]
+      ],
+      "edges": [
+        {
+          "from": "draft",
+          "to": "validate"
+        },
+        {
+          "from": "validate",
+          "to": "fix",
+          "label": "No"
+        },
+        {
+          "from": "validate",
+          "to": "activate",
+          "label": "Yes"
+        },
+        {
+          "from": "fix",
+          "to": "validate"
+        }
+      ]
+    }
   },
   {
     "id": "inventory-locations-suppliers",
@@ -291,7 +364,61 @@
       "Open Stock and Movements to verify the receipt. The expected row should show the received quantity at the correct location, with the movement retained in history. Product activation and checkout eligibility are separate from this inventory receipt."
     ],
     "status": "prepared",
-    "media": null
+    "media": null,
+    "instructions": [
+      "Check the arrived goods against the product, SKU and storage location.",
+      "Enter quantity and any required batch, expiry, supplier or category details.",
+      "Receive the stock; register identifiable units separately when serial tracking applies.",
+      "Verify the quantity in Stock and the receipt event in Movements."
+    ],
+    "diagram": {
+      "title": "Receive and verify stock",
+      "description": "Receiving stock records physical arrival. Product activation is a separate task.",
+      "rows": [
+        [
+          {
+            "id": "identify",
+            "label": "Identify the goods",
+            "description": "Match product, SKU and location.",
+            "kind": "step"
+          },
+          {
+            "id": "details",
+            "label": "Enter receipt details",
+            "description": "Quantity and required batch or category fields.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "receive",
+            "label": "Receive stock",
+            "description": "Save the receipt; register serialized units when required.",
+            "kind": "step"
+          },
+          {
+            "id": "verify",
+            "label": "Verify stock and history",
+            "description": "Check the stock row and retained movement.",
+            "kind": "success"
+          }
+        ]
+      ],
+      "edges": [
+        {
+          "from": "identify",
+          "to": "details"
+        },
+        {
+          "from": "details",
+          "to": "receive"
+        },
+        {
+          "from": "receive",
+          "to": "verify"
+        }
+      ]
+    }
   },
   {
     "id": "inventory-availability",
@@ -435,7 +562,61 @@
       "Continue with payment evidence and the correct fulfilment controls. Use cancellation and physical recovery workflows if circumstances change. Do not use a status change as a substitute for releasing or recovering stock correctly."
     ],
     "status": "prepared",
-    "media": null
+    "media": null,
+    "instructions": [
+      "Open the pending order and check the customer, items, totals and reservation.",
+      "Choose Confirmed in Order status and save with Update order.",
+      "Check that the order is confirmed and its inventory is committed.",
+      "Continue with payment evidence and fulfillment; confirmation alone records neither collection nor shipping."
+    ],
+    "diagram": {
+      "title": "Confirm an order",
+      "description": "Confirmation accepts the order and commits its reserved inventory. Payment and delivery are separate milestones.",
+      "rows": [
+        [
+          {
+            "id": "review",
+            "label": "Review the pending order",
+            "description": "Check items, totals and the reservation.",
+            "kind": "step"
+          },
+          {
+            "id": "confirm",
+            "label": "Confirm and save",
+            "description": "Choose Confirmed, then Update order.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "verify",
+            "label": "Verify committed inventory",
+            "description": "Check the saved order and inventory states.",
+            "kind": "step"
+          },
+          {
+            "id": "continue",
+            "label": "Continue fulfillment",
+            "description": "Record payment and use the fulfillment controls.",
+            "kind": "success"
+          }
+        ]
+      ],
+      "edges": [
+        {
+          "from": "review",
+          "to": "confirm"
+        },
+        {
+          "from": "confirm",
+          "to": "verify"
+        },
+        {
+          "from": "verify",
+          "to": "continue"
+        }
+      ]
+    }
   },
   {
     "id": "order-payment-evidence",
@@ -508,7 +689,69 @@
       "Review Timeline and Totals after the update. The order should show the recorded delivery and completion events. Completing an order does not replace missing money or physical evidence. Use the appropriate recovery or refund workflow when the real outcome is different."
     ],
     "status": "prepared",
-    "media": null
+    "media": null,
+    "instructions": [
+      "Verify actual delivery evidence, then use Mark delivered and save the factual note.",
+      "Confirm payment is fully collected and inventory remains committed.",
+      "Resolve any recovery or reconciliation issue before completing the order.",
+      "Choose Completed, save the update, and review Timeline and Totals."
+    ],
+    "diagram": {
+      "title": "Delivered is a step toward completed",
+      "description": "Completion requires delivered goods, full collection, committed inventory, and no blocking recovery or reconciliation.",
+      "rows": [
+        [
+          {
+            "id": "delivered",
+            "label": "Record delivery evidence",
+            "description": "Use Mark delivered after the actual handoff.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "ready",
+            "label": "Completion conditions met?",
+            "description": "Check collection, inventory and operational issues.",
+            "kind": "decision"
+          }
+        ],
+        [
+          {
+            "id": "resolve",
+            "label": "Resolve the blocker",
+            "description": "Fix the actual issue, then check again.",
+            "kind": "step"
+          },
+          {
+            "id": "complete",
+            "label": "Complete the order",
+            "description": "Save Completed and review Timeline and Totals.",
+            "kind": "success"
+          }
+        ]
+      ],
+      "edges": [
+        {
+          "from": "delivered",
+          "to": "ready"
+        },
+        {
+          "from": "ready",
+          "to": "resolve",
+          "label": "No"
+        },
+        {
+          "from": "ready",
+          "to": "complete",
+          "label": "Yes"
+        },
+        {
+          "from": "resolve",
+          "to": "ready"
+        }
+      ]
+    }
   },
   {
     "id": "order-cancellation",
@@ -556,7 +799,75 @@
       "Restock only when the recovery controls confirm eligibility and every required inspection is complete. Review payment totals, timeline and inventory history afterward. A refund, receipt, inspection and restock are distinct evidence events."
     ],
     "status": "prepared",
-    "media": null
+    "media": null,
+    "instructions": [
+      "Inspect the order\u2019s payment totals, cancellation and physical recovery state.",
+      "Record a manual refund only for money actually returned, with the correct amount and reason.",
+      "For returned goods, record receipt and inspect each item\u2019s condition.",
+      "Restock only eligible goods after required inspection; review financial totals and inventory history independently."
+    ],
+    "diagram": {
+      "title": "Track money and goods separately",
+      "description": "Refunding money does not prove that goods were returned. Physical receipt and inspection determine stock recovery.",
+      "rows": [
+        [
+          {
+            "id": "review",
+            "label": "Review the order",
+            "description": "Check cancellation, paid amounts and recovery status.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "money",
+            "label": "Record the refund",
+            "description": "Use the actual returned amount and supporting reason.",
+            "kind": "step"
+          },
+          {
+            "id": "goods",
+            "label": "Receive and inspect goods",
+            "description": "Record physical return and inspect each item.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "totals",
+            "label": "Verify financial totals",
+            "description": "Check the refund and remaining collected money.",
+            "kind": "success"
+          },
+          {
+            "id": "stock",
+            "label": "Recover eligible stock",
+            "description": "Restock only when the recovery controls permit it.",
+            "kind": "success"
+          }
+        ]
+      ],
+      "edges": [
+        {
+          "from": "review",
+          "to": "money",
+          "label": "Money"
+        },
+        {
+          "from": "review",
+          "to": "goods",
+          "label": "Goods"
+        },
+        {
+          "from": "money",
+          "to": "totals"
+        },
+        {
+          "from": "goods",
+          "to": "stock"
+        }
+      ]
+    }
   },
   {
     "id": "order-special-handling",
@@ -724,7 +1035,77 @@
       "Investigate failures using their recorded cause. Follow supported retry or review controls rather than making duplicate bookings. This tutorial uses simulator evidence; a local successful example is not proof of a live provider booking."
     ],
     "status": "prepared",
-    "media": null
+    "media": null,
+    "instructions": [
+      "Identify the order and dispatch; check routing, address and shipment prerequisites.",
+      "Queue the supported shipment request and inspect its asynchronous status.",
+      "If it fails, investigate the recorded cause before using supported retry controls.",
+      "When booking succeeds, verify the consignment reference. Record handoff only when the parcel physically leaves your control."
+    ],
+    "diagram": {
+      "title": "Queue, verify and hand off",
+      "description": "A queued request is not yet a booked shipment. Track its result before handing off the parcel.",
+      "rows": [
+        [
+          {
+            "id": "review",
+            "label": "Check dispatch details",
+            "description": "Verify prerequisites, routing and address.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "queue",
+            "label": "Queue the shipment",
+            "description": "Submission may finish asynchronously.",
+            "kind": "step"
+          }
+        ],
+        [
+          {
+            "id": "booked",
+            "label": "Booking succeeded?",
+            "description": "Inspect the recorded submission status.",
+            "kind": "decision"
+          }
+        ],
+        [
+          {
+            "id": "failure",
+            "label": "Investigate the failure",
+            "description": "Use supported retry controls after reviewing the cause.",
+            "kind": "step"
+          },
+          {
+            "id": "handoff",
+            "label": "Verify booking and hand off",
+            "description": "Check the consignment; record the actual parcel handoff.",
+            "kind": "success"
+          }
+        ]
+      ],
+      "edges": [
+        {
+          "from": "review",
+          "to": "queue"
+        },
+        {
+          "from": "queue",
+          "to": "booked"
+        },
+        {
+          "from": "booked",
+          "to": "failure",
+          "label": "No"
+        },
+        {
+          "from": "booked",
+          "to": "handoff",
+          "label": "Yes"
+        }
+      ]
+    }
   },
   {
     "id": "courier-returns",

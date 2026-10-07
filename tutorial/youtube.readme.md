@@ -50,7 +50,7 @@ Stay signed in through the flow. The callback requires the same owner session th
 
 ## Next stage: uploading and playback
 
-The local uploader below can refresh the token and upload a rendered video. Saving YouTube IDs in the tutorial catalog and YouTube iframe support in the current player are still pending. Connecting the channel does not publish a video or change existing tutorial media.
+The local uploader below can refresh the token and upload a rendered video. The Guide player supports YouTube IDs in the catalog and privacy-enhanced iframe playback. Connecting the channel does not publish a video or change existing tutorial media.
 
 Google restricts uploads from unaudited API projects created after 28 July 2020 to private viewing until the API project passes its compliance audit. An unlisted tutorial workflow therefore depends on completing that audit where applicable.
 

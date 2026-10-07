@@ -2,7 +2,7 @@
 
 All tutorial content lives here, outside `docs/`. There are **43 focused tutorial packages**, plus the existing complete-workflow reference in `00-product-to-completed-order/`.
 
-The admin UI reads the public metadata in `catalog.json`. `/admin/guide` provides search/category filters and permission-filtered written guides. The small help button within each admin page opens its related topics without navigating away. No new video is published: the audio, recordings and final review come next.
+The admin UI reads the public metadata in `catalog.json`. `/admin/guide` provides search/category filters and permission-filtered videos, workflow diagrams and concise instructions. The small help button within each admin page opens its related topics without navigating away. Tutorial 01 uses the reviewed YouTube upload; future videos are added after review.
 
 ## Folder structure
 
@@ -38,7 +38,7 @@ Every focused folder has this structure. Local fixtures, supplied audio and reco
 
 Ready: the 43 narration scripts, explicit storyboards/action plans, folder entry points, shared capture/render/review tools, library page and contextual help UI.
 
-Not yet verified: any new recording plan against a running browser, new narrated videos, or the new UI in a browser. Audio has not been generated. A script or TypeScript build is not workflow acceptance.
+Tutorial 01 has a generated, reviewed and uploaded narrated video. Other recording plans still need their own runtime review. A script or TypeScript build is not workflow acceptance.
 
 Plans declare either `walkthrough` (explain and show controls without submitting business writes) or `workflow` (perform a real write and verify its persisted outcome). The category and brand creation packages contain submit/capture/cleanup plans. The other packages currently provide control walkthroughs. Before turning one into a full state-transition demonstration, extend its reviewed actions, prepare owned fixtures and add persisted checks/cleanup. Do not claim a walkthrough proved a saved payment, shipment, refund or other state transition.
 
@@ -122,3 +122,16 @@ The legacy recorder still uses the old fixed narration timing and performs its e
 ## Production image packaging
 
 Only `tutorial/catalog.json` is included in Docker's build context. Recorder scripts, fixtures, unpublished audio and artifacts are excluded. Large videos are served from media storage rather than bundled into the web image.
+
+## Videos and workflow diagrams in Guide
+
+The Guide library and contextual help popup use the same metadata in `catalog.json`.
+
+- YouTube media: `provider: "youtube"`, `videoId`, measured `durationSec`, and the full `reviewedCommit` hash. The popup uses the privacy-enhanced YouTube iframe and a permanent Watch on YouTube fallback link. It mounts only while the topic is open and does not autoplay.
+- File media: keep HTTPS `videoUrl`, `posterUrl` and `captionsUrl` (optional `provider: "file"`). Existing MP4 playback remains supported.
+- Optional `instructions`: short practical steps for the popup. `steps` retains canonical narration paragraphs so authoring drift checks continue to work.
+- Optional `diagram`: a title, description, rows of nodes, and named edges. Nodes have stable IDs, labels, short descriptions, and an optional `step`, `decision` or `success` kind. Every edge references two node IDs; branch labels such as Yes/No explain decisions. Diagrams use theme-aware native SVG, no external renderer or dependency. Scroll horizontally on small screens when a branch needs more room.
+
+Add diagrams when a sequence, decision or independent money/stock path benefits from a visual. Simple guides do not need a diagram. Initial flows cover product activation, stock receipt, order confirmation, delivery/completion, refunds/recovery and courier shipments.
+
+`shared/content.ts` defines public media/diagram types and validation. Docker includes this file alongside `catalog.json`, while authoring scripts and local media stay excluded. Publishing accepts the YouTube shape in `media.local.json`; its existing exact-artifact review checks remain required for future publications.

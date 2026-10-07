@@ -1,5 +1,4 @@
 {
-  "videoUrl": "https://YOUR_MEDIA_HOST/tutorials/admin-overview/video.mp4",
-  "posterUrl": "https://YOUR_MEDIA_HOST/tutorials/admin-overview/poster.webp",
-  "captionsUrl": "https://YOUR_MEDIA_HOST/tutorials/admin-overview/captions.vtt"
+  "provider": "youtube",
+  "videoId": "LM2vteWRHIU"
 }

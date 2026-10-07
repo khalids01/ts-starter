@@ -1,3 +1,4 @@
+import { isValidTutorialMedia, type TutorialMedia, type FlowDiagram } from "../../../../../../tutorial/shared/content";
 import catalog from "../../../../../../tutorial/catalog.json";
 import type { Permission } from "@rbac";
 import type { ClientSession } from "@auth/client";
@@ -14,7 +15,9 @@ export type Tutorial = {
   prerequisites: string[];
   steps: string[];
   status: "prepared" | "review" | "published";
-  media: null | { videoUrl: string; posterUrl: string; captionsUrl: string; durationSec: number; reviewedCommit: string };
+  media: TutorialMedia | null;
+  diagram?: FlowDiagram;
+  instructions?: string[];
 };
 export const tutorials = catalog as Tutorial[];
 
@@ -26,7 +29,5 @@ export function tutorialsForPage(pathname: string, session: ClientSession | null
   return availableTutorials(session).filter(tutorial => tutorial.routes.some(route => pathname === route || pathname.startsWith(`${route}/`)));
 }
 export function hasPublishedVideo(tutorial: Tutorial) {
-  return tutorial.status === "published" && tutorial.media !== null && [tutorial.media.videoUrl, tutorial.media.posterUrl, tutorial.media.captionsUrl].every(value => {
-    try { return new URL(value).protocol === "https:"; } catch { return false; }
-  });
+  return tutorial.status === "published" && isValidTutorialMedia(tutorial.media);
 }
