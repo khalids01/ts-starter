@@ -24,3 +24,6 @@ temp
 # Authoring tools and unpublished tutorial media are not application runtime files.
 tutorial/**
 !tutorial/catalog.json
+!tutorial/shared/
+tutorial/shared/**
+!tutorial/shared/content.ts

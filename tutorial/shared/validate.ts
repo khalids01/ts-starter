@@ -1,6 +1,7 @@
 import { readFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
 import { AllPermissions } from "../../packages/rbac/src/permissions";
+import { isValidTutorialMedia, isValidFlowDiagram } from "./content";
 import type { RecordingPlan } from "./types";
 
 const root = resolve(import.meta.dir, "..");
@@ -13,6 +14,9 @@ for (const entry of catalog) {
   if (!/^(\d{2})-[a-z0-9-]+$/.test(entry.folder)) throw new Error(`Invalid folder: ${entry.folder}`);
   for (const permission of entry.requiredPermissions) if (!(AllPermissions as readonly string[]).includes(permission)) throw new Error(`Unknown permission: ${permission}`);
   if (!entry.routes.every((route: string) => route.startsWith("/admin/"))) throw new Error(`Invalid admin route: ${entry.id}`);
+  if (entry.media !== null && !isValidTutorialMedia(entry.media)) throw new Error(`Invalid video metadata: ${entry.id}`);
+  if (entry.diagram !== undefined && !isValidFlowDiagram(entry.diagram)) throw new Error(`Invalid flow diagram: ${entry.id}`);
+  if (entry.instructions !== undefined && (!Array.isArray(entry.instructions) || !entry.instructions.length || !entry.instructions.every((item: unknown) => typeof item === "string" && item.trim()))) throw new Error(`Invalid instructions: ${entry.id}`);
   if (entry.status === "published" && !entry.media) throw new Error(`Published tutorial has no media: ${entry.id}`);
   if (entry.id === "product-to-completed-order") continue;
   const directory = resolve(root, entry.folder);
