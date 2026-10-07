@@ -15,7 +15,11 @@ if (command === "list") {
   if (!tutorial || !["record", "render", "publish"].includes(command ?? "")) throw new Error("Usage: tutorial:list, tutorial:record <id>, tutorial:render <id>, tutorial:publish <id>");
   const directory = resolve(root, tutorial.folder);
   if (tutorial.id === "product-to-completed-order") throw new Error("Use tutorial:record:legacy / tutorial:render:legacy for the retained continuous recorder. Its timing still needs review.");
-  if (command === "record") await recordTutorial(directory);
+  const producer = resolve(directory, "produce.ts");
+  if (["record", "render"].includes(command!) && await Bun.file(producer).exists()) {
+    const child = Bun.spawn(["bun", producer, command === "record" ? "capture" : "render"], { stdout: "inherit", stderr: "inherit", env: process.env });
+    if (await child.exited !== 0) throw new Error(`Tutorial ${command} failed`);
+  } else if (command === "record") await recordTutorial(directory);
   else if (command === "render") await renderTutorial(directory);
   else await publishTutorial(directory, catalogPath);
 }

@@ -1,22 +1,30 @@
 # Find your way around the admin panel
 
-Status: Heart/Kokoro scene audio generated and real browser capture/render produced locally. Playback review and publication pending.
+Tutorial 01 now uses 15 synchronized narration sections, defined in `production.json`. The canonical four paragraphs remain in `narration.txt` and `tutorial.json`.
 
-## Prerequisites
+## Produce the corrected video
 
-- An admin account with access to the relevant sections.
-
-## Recording
-
-Mode: **walkthrough**. This plan presents the controls and explains the workflow. It does not submit state-changing actions. Do not describe its recording as persisted workflow acceptance. For a full action demonstration, review and extend the explicit actions and add owned fixture/outcome/cleanup evidence first.
-
-Copy `fixtures.example.json` to `fixtures.local.json`, prepare its isolated fictional records and fill every `REPLACE` value. Do not use real accounts or provider credentials. See [shared instructions](../README.md).
+Keep the Mac Voicebox tunnel available. Use the existing Heart/Kokoro preset:
 
 ```bash
-bun run tutorial:record admin-overview
+bun tutorial/01-admin-overview/produce.ts audio
+```
+
+Serve the API and frontend from their builds against the configured isolated E2E environment. The frontend must use `apps/web/scripts/production-server.ts` and its built assets. Use loopback ports 3000/3001, the fictional owner session, disabled courier workers/payment integrations, and `TUTORIAL_RECORD_APPROVED=true`. Do not run migrations, resets, seeds, or live provider operations for this navigation walkthrough.
+
+```bash
+TUTORIAL_RECORD_APPROVED=true COURIER_WORKERS_ENABLED=false ENABLE_POLAR=false bun run tutorial:record admin-overview
 bun run tutorial:render admin-overview
 ```
 
-The shared recorder captures four independent real browser scenes, removes their measured initial page-loading lead-in, and leaves contextual help visible for this tutorial. The renderer uses `audio/01.wav` through `audio/04.wav` and rejects action footage longer than its narration section. Captions use the measured scene durations. Review the draft video with audio before publication.
+The capture requires built CSS to be loaded, rejects Vite development scripts, and captures fully settled browser frames after preparing each menu group or help dialog. The rendered video holds each real UI frame and its highlight throughout the corresponding section's exact WAV duration, with a short pause before the next section. It is a narrated sequence of screenshots; navigation/loading transitions are excluded. There are no guessed word timestamps or fixed highlight timeouts.
 
-The latest output directory is recorded in `artifacts/last-render.json`. Audio and generated outputs stay local and are ignored by Git. See [Voicebox narration](../voicebox.readme.md) for generation commands.
+`artifacts/last-render.json` points to the latest video, captions, poster, and review file. `render/timeline.json` records speech boundaries and visual targets. Audio jobs are cached by text and settings and reused on reruns; capture records hash the exact PNG and WAV inputs. Generated media remains local and ignored by Git.
+
+Review the final playback, then upload:
+
+```bash
+bun --env-file=apps/server/.env tutorial/shared/youtube-upload.ts admin-overview --visibility=unlisted --upload
+```
+
+Each new render has its own upload receipts; rerunning the command for the same render checks or resumes that video without creating a duplicate. A corrected render uploads as a new YouTube video. This command does not delete or change visibility of the previous upload.

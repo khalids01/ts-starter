@@ -1,9 +1,24 @@
 {
   "extends": "../packages/config/tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@env/server": [
+        "../packages/env/src/env.server.ts"
+      ],
+      "@redis/server": [
+        "../packages/redis/src/index.server.ts"
+      ]
+    }
   },
-  "include": ["shared/**/*.ts", "*/record.ts", "*/render.ts"]
+  "include": [
+    "shared/**/*.ts",
+    "*/record.ts",
+    "*/render.ts"
+  ]
 }

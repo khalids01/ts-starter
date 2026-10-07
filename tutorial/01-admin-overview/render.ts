@@ -1,3 +1,3 @@
-import { renderTutorial } from "../shared/render";
-
-await renderTutorial(import.meta.dir);
+process.argv[2] = "render";
+await import("./produce");
+export {};

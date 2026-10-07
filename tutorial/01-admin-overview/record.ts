@@ -1,3 +1,3 @@
-import { recordTutorial } from "../shared/record";
-
-await recordTutorial(import.meta.dir);
+process.argv[2] = "capture";
+await import("./produce");
+export {};

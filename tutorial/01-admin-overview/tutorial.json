@@ -27,7 +27,7 @@
     {
       "id": "02",
       "title": "Explore Shop Management",
-      "narration": "Overview shows a summary of the application. Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images. Catalog defines how products are organized; Products contains the items you sell.",
+      "narration": "Overview shows a summary of the application. Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images. Catalog defines how products are organized. Products contains the items you sell.",
       "actions": [
         {
           "kind": "goto",
@@ -90,7 +90,7 @@
     {
       "id": "03",
       "title": "Find the other menu groups",
-      "narration": "Sales contains Orders and Customers. Delivery contains shipping methods, while Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics and Administration contain reporting and account controls.",
+      "narration": "Sales contains Orders and Customers. Delivery contains shipping methods. Couriers contains provider connections and parcel operations. Storefront contains store settings and feedback. Analytics contains visitor reports. Administration contains users, roles, activity, and other account controls.",
       "actions": [
         {
           "kind": "goto",
@@ -189,7 +189,7 @@
     {
       "id": "04",
       "title": "Open contextual help",
-      "narration": "Open Tutorials whenever you need instructions, or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once.",
+      "narration": "Open Guide whenever you need instructions. Or use the tutorial button within a page to see topics for that screen. Opening a tutorial keeps your working page in place. Choose the task you need rather than following every section at once.",
       "actions": [
         {
           "kind": "goto",
@@ -199,7 +199,7 @@
           "kind": "show",
           "target": {
             "role": "link",
-            "name": "Tutorials",
+            "name": "Guide",
             "within": "page"
           }
         },

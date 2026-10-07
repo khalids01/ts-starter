@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "segments": [
+    { "id": "01", "scene": "01", "text": "Welcome. This tutorial introduces the admin panel so you can find the right place for everyday work. The menu groups related tasks together. Your account permissions determine which pages and actions are available.", "groups": [], "target": { "role": "heading", "name": "Overview" } },
+    { "id": "02", "scene": "02", "text": "Overview shows a summary of the application.", "groups": [], "target": { "role": "heading", "name": "Overview" } },
+    { "id": "03", "scene": "02", "text": "Expand Shop Management to find Products, Catalog, Inventory, Discounts and Images.", "groups": ["Shop Management"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Shop Management'))" } },
+    { "id": "04", "scene": "02", "text": "Catalog defines how products are organized.", "groups": ["Shop Management"], "target": { "role": "link", "name": "Catalog" } },
+    { "id": "05", "scene": "02", "text": "Products contains the items you sell.", "groups": ["Shop Management"], "target": { "role": "link", "name": "Products" } },
+    { "id": "06", "scene": "03", "text": "Sales contains Orders and Customers.", "groups": ["Sales"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Sales'))" } },
+    { "id": "07", "scene": "03", "text": "Delivery contains shipping methods.", "groups": ["Delivery"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Delivery'))" } },
+    { "id": "08", "scene": "03", "text": "Couriers contains provider connections and parcel operations.", "groups": ["Couriers"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Couriers'))" } },
+    { "id": "09", "scene": "03", "text": "Storefront contains store settings and feedback.", "groups": ["Storefront"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Storefront'))" } },
+    { "id": "10", "scene": "03", "text": "Analytics contains visitor reports.", "groups": ["Analytics"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Analytics'))" } },
+    { "id": "11", "scene": "03", "text": "Administration contains users, roles, activity, and other account controls.", "groups": ["Administration"], "target": { "css": "[data-slot=collapsible]:has(button:has-text('Administration'))" } },
+    { "id": "12", "scene": "04", "text": "Open Guide whenever you need instructions.", "groups": [], "target": { "role": "link", "name": "Guide" } },
+    { "id": "13", "scene": "04", "text": "Or use the tutorial button within a page to see topics for that screen.", "groups": [], "target": { "role": "button", "name": "Open tutorials for this page" } },
+    { "id": "14", "scene": "04", "text": "Opening a tutorial keeps your working page in place.", "groups": [], "dialog": true, "target": { "role": "dialog", "name": "Find your way around the admin panel" } },
+    { "id": "15", "scene": "04", "text": "Choose the task you need rather than following every section at once.", "groups": [], "dialog": true, "target": { "role": "heading", "name": "Step by step" } }
+  ]
+}
