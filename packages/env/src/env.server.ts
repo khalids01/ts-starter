@@ -22,6 +22,8 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
+    YOUTUBE_ENABLED: z.enum(["true", "false"]).default("false"),
+    YOUTUBE_CHANNEL_ID: z.string().min(1).optional(),
     DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_CLIENT_SECRET: z.string().min(1),
     AUTH_SESSION_COOKIE_NAME: z.string().min(1).default("better-auth.session_token"),

@@ -29,7 +29,10 @@ import { authSettingsController } from "./admin/auth-settings/auth-settings.cont
 import { adminDeliveryController } from "./admin/delivery/delivery.controller";
 import { courierWebhookController } from "./delivery/webhook.controller";
 
+import { youtubeController } from "./integrations/youtube/youtube.controller";
+
 export const app = new Elysia()
+  .use(youtubeController)
   .use(authController)
   .use(sessionController)
   .use(ownerController)
