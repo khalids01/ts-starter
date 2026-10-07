@@ -1,5 +1,5 @@
 import { chromium, request, type Locator, type Page, type APIRequestContext } from "@playwright/test";
-import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
+import { mkdir, readFile, writeFile, rename, realpath } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { assertTestEnvironment } from "../../tests/setup/assert-test-environment";
@@ -8,13 +8,13 @@ import { TEST_USERS } from "../../tests/users-config";
 import { cursorClick, cursorFill, installCursor, highlight, clearHighlight } from "./cursor";
 import type { Action, Fixtures, FixtureCheck, RecordingManifest, RecordingPlan, Target } from "./types";
 
-function substitute(value: string, values: Record<string, string>): string {
+export function substitute(value: string, values: Record<string, string>): string {
   return value.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_, key: string) => {
     if (!values[key] || values[key].includes("REPLACE")) throw new Error(`Supply fixture value: ${key}`);
     return values[key];
   });
 }
-function resolveTarget(page: Page, target: Target, values: Record<string, string>): Locator {
+export function resolveTarget(page: Page, target: Target, values: Record<string, string>): Locator {
   let scope: Page | Locator = target.within === "page" ? page : page.locator('main, [role="dialog"]');
   if (target.role === "dialog") scope = page;
   if (target.dialog) scope = page.getByRole("dialog", { name: substitute(target.dialog, values), exact: true });
@@ -26,11 +26,11 @@ function resolveTarget(page: Page, target: Target, values: Record<string, string
     const name = substitute(target.field, values);
     // Some existing forms use a visual Label without an associated input ID.
     return scope.locator("label").filter({ hasText: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) })
-      .locator("..").locator('input,textarea,button[role="combobox"],select').first();
+      .locator("..").locator('input,textarea,button[role="combobox"],select');
   }
   throw new Error("A recording target must specify a role, field, text or CSS selector");
 }
-async function perform(page: Page, action: Action, values: Record<string, string>): Promise<void> {
+export async function perform(page: Page, action: Action, values: Record<string, string>): Promise<void> {
   if (action.kind === "goto") {
     const path = substitute(action.path, values);
     if (!path.startsWith("/admin/") || path.startsWith("//")) throw new Error(`Unsafe tutorial route: ${path}`);
@@ -45,11 +45,19 @@ async function perform(page: Page, action: Action, values: Record<string, string
   }
   if (action.kind === "key") { await page.keyboard.press(action.key); return; }
   const target = resolveTarget(page, action.target, values);
+  if (action.kind === "file") {
+    const assetRoot = await realpath(resolve(import.meta.dir, ".."));
+    const asset = await realpath(resolve(action.path));
+    if (!asset.startsWith(assetRoot + "/") || !/\.(svg|png|jpe?g|webp)$/i.test(asset)) throw new Error("File selection must use a tutorial-owned image asset");
+    if (await target.count() !== 1) throw new Error("Ambiguous tutorial file input");
+    await target.setInputFiles(asset);
+    return;
+  }
   await target.waitFor({ state: "visible" });
   if (await target.count() !== 1) throw new Error(`Ambiguous tutorial target: ${JSON.stringify(action.target)}`);
   if (action.kind === "submit") {
     const [response] = await Promise.all([
-      page.waitForResponse(response => new URL(response.url()).pathname === action.capture.responsePath && response.request().method() === "POST"),
+      page.waitForResponse(response => new URL(response.url()).pathname === substitute(action.capture.responsePath, values) && response.request().method() === "POST"),
       cursorClick(page, target),
     ]);
     if (!response.ok()) throw new Error(`Tutorial submission failed: ${response.status()}`);
@@ -72,7 +80,7 @@ async function perform(page: Page, action: Action, values: Record<string, string
     await clearHighlight(page);
   }
 }
-async function check(api: APIRequestContext, checks: FixtureCheck[], values: Record<string, string>) {
+export async function check(api: APIRequestContext, checks: FixtureCheck[], values: Record<string, string>) {
   for (const item of checks) {
     const path = substitute(item.path, values);
     if (!path.startsWith("/admin/") || path.startsWith("//")) throw new Error("Only admin fixture checks are allowed");

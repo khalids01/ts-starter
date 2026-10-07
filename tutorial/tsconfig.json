@@ -18,6 +18,7 @@
   },
   "include": [
     "shared/**/*.ts",
+    "*/produce.ts",
     "*/record.ts",
     "*/render.ts"
   ]

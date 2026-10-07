@@ -12,6 +12,7 @@ export type Target = {
 export type Action =
   | { kind: "goto"; path: string }
   | { kind: "click" | "show" | "assert"; target: Target }
+  | { kind: "file"; target: Target; path: string }
   | { kind: "fill"; target: Target; value: string }
   | { kind: "select"; target: Target; option: string }
   | { kind: "key"; key: string }
