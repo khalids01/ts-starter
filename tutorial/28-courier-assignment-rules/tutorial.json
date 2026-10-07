@@ -34,10 +34,31 @@
           "path": "/admin/couriers/assignment-rules"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Add assignment rule"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Assignment rules"
+            "field": "Rule name",
+            "dialog": "Add assignment rule"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Delivery option",
+            "dialog": "Add assignment rule"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Priority",
+            "dialog": "Add assignment rule"
           }
         }
       ]
@@ -58,8 +79,7 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Fulfillment"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Courier routing\")"
           }
         }
       ]

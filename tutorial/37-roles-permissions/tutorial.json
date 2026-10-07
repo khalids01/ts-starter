@@ -46,6 +46,20 @@
             "role": "dialog",
             "name": "Create custom role"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name",
+            "dialog": "Create custom role"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Create custom role"
+          }
         }
       ]
     },

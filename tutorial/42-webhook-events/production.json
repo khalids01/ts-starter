@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "tutorialId": "webhook-events",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Webhooks reports inbound integration events recorded by the application.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Webhooks"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open Webhooks and find the event by provider, status, time or reference.",
+      "actions": [],
+      "target": {
+        "css": "input[placeholder=\"Filter event type\"]"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Check the intended integration before interpreting the event.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Webhook Events\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Review its processing state and supported details.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        }
+      ],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "An inbound event and its resulting business action are different evidence.",
+      "actions": [],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "A received event does not automatically prove that a payment, delivery or collection was successfully applied.",
+      "actions": [],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Compare the event with the relevant order or integration record.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        }
+      ],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Investigate failed processing using the recorded cause.",
+      "actions": [],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Replays can repeat business effects, so use only supported recovery controls with deliberate authorization.",
+      "actions": [],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Keep payloads and secrets out of tutorials and shared screenshots.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/webhooks"
+        }
+      ],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Demonstrations use fictional events.",
+      "actions": [],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "12",
+      "scene": "04",
+      "text": "Resolve the underlying error and verify the resulting state rather than treating a green webhook status as the complete operational outcome.",
+      "actions": [],
+      "target": {
+        "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

@@ -1,9 +1,21 @@
 {
   "marker": "tutorial-order-payment-evidence",
   "values": {
-    "orderId": "REPLACE_WITH_UNPAID_OWNED_ORDER_ID"
+    "orderId": "REPLACE_WITH_UNPAID_OWNED_ORDER_ID",
+    "paidOrderId": "REPLACE_WITH_OWNED_PAID_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-payment-evidence-order"
+    },
+    {
+      "path": "/admin/orders/{{paidOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-payment-evidence-paidOrder"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

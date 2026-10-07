@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "tutorialId": "order-confirmation",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "After-operation frames are separately prepared, API-checked fictional examples and carry a visible example label. This walkthrough never performs those state transitions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Confirmation accepts the order for fulfilment and commits its reserved inventory.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Line items"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open the pending order and review the customer, line items, totals and reservation first.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Customer"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Confirm only when the order is ready for your team to handle.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Use Order status to choose Confirmed.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "select",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+          },
+          "option": "Confirmed"
+        }
+      ],
+      "target": {
+        "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Review the pending change and select Update order. Wait for the success state instead of clicking repeatedly.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Update order"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "A reservation that is no longer valid may require investigation before confirmation can succeed.",
+      "actions": [],
+      "target": {
+        "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "reserved"
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "After confirmation, verify the order status and inventory status together.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{confirmedOrderId}}"
+        }
+      ],
+      "target": {
+        "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Confirmed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Inventory should show the committed state for the accepted goods.",
+      "actions": [],
+      "target": {
+        "css": "p:text-is(\"Inventory\")"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Confirmed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Confirmation does not collect payment and does not prove that a parcel has been shipped.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Payment evidence"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Confirmed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Continue with payment evidence and the correct fulfilment controls.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{confirmedOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Payment evidence"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Confirmed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Use cancellation and physical recovery workflows if circumstances change. Do not use a status change as a substitute for releasing or recovering stock correctly.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Physical inventory recovery"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Confirmed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{confirmedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    }
+  ]
+}

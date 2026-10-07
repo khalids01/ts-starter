@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "tutorialId": "courier-connections",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "A courier connection links your shop to a supported provider account. Open Connections. Check existing records before adding another account, because duplicate configuration can make routing harder to understand.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Courier connections"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Select Add connection.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Add connection"
+          }
+        }
+      ],
+      "target": {
+        "field": "Connection name",
+        "dialog": "Add courier connection"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Enter a connection name, choose the provider, configuration source and environment, and set priority.",
+      "actions": [],
+      "target": {
+        "field": "Courier provider",
+        "dialog": "Add courier connection"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Lower nonnegative priority numbers run first.",
+      "actions": [],
+      "target": {
+        "field": "Priority",
+        "dialog": "Add courier connection"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Use the supported credential source for your deployment.",
+      "actions": [],
+      "target": {
+        "field": "Configuration source",
+        "dialog": "Add courier connection"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "When credentials are entered, keep them private and off the recording. The server does not return saved secrets. Save the connection and use the supported connection test only against the intended provider environment; in tutorials, that means the local simulator.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Courier connections"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "04",
+      "text": "Review health and enabled state before using the account for dispatch.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/connections"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Courier connections"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Credential rotation, archive and recovery are separate actions.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Archived"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "A successful account test does not establish that a parcel has been booked or a collection has settled.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Courier connections"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

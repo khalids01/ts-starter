@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "tutorialId": "rate-limit-settings",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Rate limits protect the application from excessive requests. Open Rate Limits and review the configured groups. Public, authentication, protected and administrative endpoints have different purposes and may need different thresholds.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/rate-limits"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Rate Limits"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Each group exposes a time window and maximum request count. Understand the units before editing.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/rate-limits"
+        }
+      ],
+      "target": {
+        "css": "#public-window"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "A smaller threshold can block legitimate use, while a larger threshold may weaken protection. Choose values using evidence from your actual traffic.",
+      "actions": [],
+      "target": {
+        "css": "#public-max"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "03",
+      "text": "Save only a reviewed configuration change.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/rate-limits"
+        }
+      ],
+      "target": {
+        "role": "button",
+        "name": "Save Changes"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Verify both ordinary permitted requests and the expected rejection behavior in a supervised environment.",
+      "actions": [],
+      "target": {
+        "css": "#auth-window"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Authentication limits deserve special care because an incorrect setting can interfere with sign-in.",
+      "actions": [],
+      "target": {
+        "css": "#auth-max"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "04",
+      "text": "Do not interpret a saved setting as proof of production capacity or security acceptance. Monitor latency, errors and rejected requests after deployment.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/rate-limits"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Rate Limits"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Keep a known previous configuration so an operator can restore it when a reviewed change causes trouble.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Change Metadata\")"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "version": 1,
+  "tutorialId": "product-variants",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "Prepare exactly one saved variant. Scene 02 adds and expands a second unsaved variant; scenes 03\u201304 reopen the original saved SKU. No variant save is submitted."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "A variant is the sellable option customers purchase. Even a simple product needs a valid SKU.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Variants"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open the product builder and choose Variants.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "5 Variants"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Create separate variants when size, weight, colour or another selling option changes the item being sold.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Variants"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Add a variant and enter a unique SKU, customer-facing name, selling price and currency.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Variant"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "[data-slot=\"accordion-item\"]:last-child [data-slot=\"accordion-trigger\"]"
+          }
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"accordion-item\"]:last-child label:text-is(\"SKU\") + input"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "A compare-at price is optional and must be higher than the selling price when used.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"accordion-item\"]:last-child label:text-is(\"Compare at price\") + input"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "Use prices you can justify, and choose the options required by the category.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"accordion-item\"]:last-child label:text-is(\"Price\") + input"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Add an image and weight when appropriate.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        }
+      ],
+      "target": {
+        "text": "Variant images"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Keep eligible variants active and choose the intended default.",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"Default variant\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Select Save variants, then wait for confirmation. Editing a price does not create physical stock; receive inventory separately.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Save variants"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Reopen Variants and check the saved SKU, price, currency and default selection.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants",
+            "exact": true
+          }
+        }
+      ],
+      "target": {
+        "field": "SKU"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Validate the product before activation.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "7 Validate"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "12",
+      "scene": "04",
+      "text": "Serialized items and expiring stock have extra inventory requirements, so variant setup alone is not enough to make every product purchasable.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "6 Inventory"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

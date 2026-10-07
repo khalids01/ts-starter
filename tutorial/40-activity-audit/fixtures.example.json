@@ -1,6 +1,8 @@
 {
   "marker": "tutorial-activity-audit",
-  "values": {},
+  "values": {
+    "activityMessage": "tutorial-activity-audit-configuration-updated"
+  },
   "ownershipChecks": [],
   "outcomeChecks": [],
   "cleanup": []

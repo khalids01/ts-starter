@@ -43,13 +43,22 @@
         {
           "kind": "show",
           "target": {
-            "field": "Code"
+            "field": "Code",
+            "dialog": "Create shipping rate"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "field": "Free over amount",
+            "dialog": "Create shipping rate"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Currency",
+            "dialog": "Create shipping rate"
           }
         }
       ]
@@ -86,6 +95,34 @@
           "target": {
             "role": "heading",
             "name": "Shipping"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Current"
           }
         }
       ]

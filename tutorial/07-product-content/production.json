@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "tutorialId": "product-content",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Product content helps customers understand what they are buying. Open the product builder for the item. Specifications come from the category template; highlights are short factual selling points; images show the product itself.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics",
+            "exact": true
+          }
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Basics"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Open Specs and complete required fields using accurate values.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "3 Specs",
+            "exact": true
+          }
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Specs"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Save specs before moving on.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Save specs"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "If there are no configured specification fields, review the category template rather than inventing unrelated details.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Specs"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Open Highlights, add a concise title and description, then save.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "4 Highlights",
+            "exact": true
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Highlight"
+          }
+        }
+      ],
+      "target": {
+        "field": "Title"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Use facts such as material, origin or storage guidance.",
+      "actions": [],
+      "target": {
+        "field": "Description"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "In Basics, choose a clean cover image through the image picker.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics"
+          }
+        }
+      ],
+      "target": {
+        "text": "Cover image"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Variant images are configured separately when selling options need different pictures.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants"
+          }
+        }
+      ],
+      "target": {
+        "role": "button",
+        "name": "5 Variants"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "Reopen the product to confirm the saved content.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/products"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/products/{{productId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics",
+            "exact": true
+          }
+        }
+      ],
+      "target": {
+        "field": "Name"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Check readability and the image preview.",
+      "actions": [],
+      "target": {
+        "text": "Cover image"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Content changes do not replace stock or readiness checks. Validate the product after meaningful changes, and review its storefront presentation when it is active.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "7 Validate"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

@@ -1,40 +1,7 @@
-# Configure store details and checkout defaults — storyboard
+# Configure store details and checkout defaults
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-Store settings contains the core values used by checkout and new orders. Open Store settings. Use approved store and support details so customer-facing information is accurate and your team can receive enquiries.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Store settings**.
-
-## 02. Understand the controls
-
-Review store name, support email and support phone. Configure a three-letter currency code and the supported order-number prefix. The reservation duration controls how long a new checkout can hold stock; choose a value that fits your operation.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Store details**.
-- Show and check **Orders**.
-
-## 03. Perform the task
-
-Enable checkout when the store is ready to accept orders. If pausing it, write a clear checkout notice. Disabling checkout does not hide the entire storefront. Save settings and wait for confirmation.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Checkout**.
-
-## 04. Verify and continue
-
-Reload the page to confirm persistence, and verify a supervised checkout where relevant. Core settings are not editable home-page body content. Page SEO has its own draft and publication workflow below these settings.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Store settings**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

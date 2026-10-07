@@ -1,9 +1,27 @@
 {
   "marker": "tutorial-order-cancellation",
   "values": {
-    "orderId": "REPLACE_WITH_CANCELLABLE_OWNED_ORDER_ID"
+    "orderId": "REPLACE_WITH_CANCELLABLE_OWNED_ORDER_ID",
+    "cancelledOrderId": "REPLACE_WITH_OWNED_CANCELLED_ORDER_ID",
+    "dispatchedCancelledOrderId": "REPLACE_WITH_OWNED_DISPATCHED_CANCELLED_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{cancelledOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-cancellation-cancelledOrder"
+    },
+    {
+      "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-cancellation-dispatchedCancelledOrder"
+    },
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-cancellation-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

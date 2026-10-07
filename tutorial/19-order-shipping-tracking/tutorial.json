@@ -25,6 +25,20 @@
             "role": "heading",
             "name": "Fulfillment"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Preparation and tracked units"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
+          }
         }
       ]
     },
@@ -51,13 +65,30 @@
         {
           "kind": "show",
           "target": {
-            "field": "Carrier"
+            "role": "dialog",
+            "name": "Mark order shipped"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Tracking number"
+            "field": "Carrier",
+            "dialog": "Mark order shipped"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Tracking number",
+            "dialog": "Mark order shipped"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Mark shipped",
+            "dialog": "Mark order shipped"
           }
         }
       ]
@@ -73,13 +104,27 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{shippedOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
+          }
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
             "name": "Timeline"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
           }
         }
       ]
@@ -95,7 +140,7 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{shippedOrderId}}"
         },
         {
           "kind": "show",

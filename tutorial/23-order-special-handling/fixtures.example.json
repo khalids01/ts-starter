@@ -4,7 +4,18 @@
     "orderId": "REPLACE_WITH_FOOD_ORDER_ID",
     "gadgetOrderId": "REPLACE_WITH_GADGET_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{gadgetOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-special-handling-gadgetOrder"
+    },
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-special-handling-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

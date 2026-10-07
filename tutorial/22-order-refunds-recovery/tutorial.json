@@ -25,6 +25,13 @@
             "role": "heading",
             "name": "Cancellation and refunds"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
         }
       ]
     },
@@ -42,10 +49,24 @@
           "path": "/admin/orders/{{orderId}}"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Record refund"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "Record manual refund",
-            "exact": false
+            "role": "dialog",
+            "name": "Record manual refund"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#refund-amount",
+            "dialog": "Record manual refund"
           }
         }
       ]
@@ -61,7 +82,7 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{returnedOrderId}}"
         },
         {
           "kind": "show",
@@ -83,13 +104,27 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{recoveredOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
             "name": "Timeline"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
           }
         }
       ]

@@ -21,6 +21,12 @@
             "role": "heading",
             "name": "Customers"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "input[placeholder=\"Search name, email, or phone\"]"
+          }
         }
       ]
     },
@@ -40,7 +46,13 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{customerName}}"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Customer details\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Order history\")"
           }
         }
       ]
@@ -61,7 +73,13 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{customerName}}"
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Latest addresses\")"
           }
         }
       ]
@@ -76,10 +94,25 @@
           "path": "/admin/customers"
         },
         {
+          "kind": "goto",
+          "path": "/admin/customers/{{customerId}}"
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Customers"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Order history\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Email"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Customer details\")"
           }
         }
       ]

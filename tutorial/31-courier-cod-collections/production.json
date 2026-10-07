@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "tutorialId": "courier-cod-collections",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "shipmentReference is the fictional order number displayed as the Shipments card title, not a raw provider consignment ID. Prepare its booked COD consignment and an orderId with reconciled collection evidence for the final example."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "COD collection evidence concerns money collected from the customer by the courier. Open COD payouts. Distinguish booked COD, gross customer collection, courier fees and net payout: these values are related but they are not interchangeable.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/cod-payouts"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "COD collections"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Find the intended consignment or collection record.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{shipmentReference}}\")) button:text-is(\"Record settlement\")"
+          }
+        }
+      ],
+      "target": {
+        "role": "dialog",
+        "name": "Record gross COD collection evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Verify the provider reference, currency and gross amount collected.",
+      "actions": [],
+      "target": {
+        "field": "Amount",
+        "dialog": "Record gross COD collection evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Enter the collection reference and a factual evidence note through the supported controls.",
+      "actions": [],
+      "target": {
+        "field": "Collection/reference ID",
+        "dialog": "Record gross COD collection evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Record only evidence you actually have.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{shipmentReference}}\")) button:text-is(\"Record settlement\")"
+          }
+        }
+      ],
+      "target": {
+        "field": "Evidence note",
+        "dialog": "Record gross COD collection evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "A net bank payout after fees is not the same as gross customer collection.",
+      "actions": [],
+      "target": {
+        "field": "Amount",
+        "dialog": "Record gross COD collection evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Review mismatches instead of inventing a manual payment to make the customer order appear fully paid.",
+      "actions": [],
+      "target": {
+        "field": "Evidence note",
+        "dialog": "Record gross COD collection evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Check the order payment totals and collection history after reconciliation.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/cod-payouts"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Payment evidence"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Reconciled COD order example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "Keep fees and payout evidence distinct.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Reconciled COD order example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "This demonstration uses fictional simulator records; it does not request or confirm a real provider payout.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Reconciled COD order example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        }
+      ]
+    }
+  ]
+}

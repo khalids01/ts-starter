@@ -1,39 +1,7 @@
-# Review shipment booking and parcel handoff — storyboard
+# Review shipment booking and parcel handoff
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-Shipments tracks courier submission and parcel progress. Open Shipments and identify the order and dispatch you intend to handle. Check routing and the customer address before creating a provider request.
-
-Screen actions:
-
-- Open `/admin/couriers/shipments`.
-- Show and check **Shipments**.
-
-## 02. Understand the controls
-
-Queue a shipment through the supported dispatch controls only when its prerequisites are met. Submission can be asynchronous. Review queued, processing and error states instead of assuming that clicking once means a consignment exists.
-
-Screen actions:
-
-- Open `/admin/couriers/shipments`.
-- Show and check **{{shipmentReference}}**.
-
-## 03. Perform the task
-
-When booking succeeds, inspect the provider consignment reference and tracking evidence. Record handoff only when the parcel leaves your control. Pickup and provider operations can create external work and should be used deliberately.
-
-Screen actions:
-
-- Open `/admin/couriers/shipments`.
-- Show and check **{{shipmentReference}}**.
-
-## 04. Verify and continue
-
-Investigate failures using their recorded cause. Follow supported retry or review controls rather than making duplicate bookings. This tutorial uses simulator evidence; a local successful example is not proof of a live provider booking.
-
-Screen actions:
-
-- Open `/admin/couriers/shipments`.
-- Show and check **Shipments**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

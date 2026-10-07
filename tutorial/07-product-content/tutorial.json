@@ -30,7 +30,8 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "role": "heading",
+            "name": "Basics"
           }
         }
       ]
@@ -59,8 +60,22 @@
         {
           "kind": "show",
           "target": {
+            "role": "heading",
+            "name": "Specs"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
             "role": "button",
             "name": "Save specs"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Specs"
           }
         }
       ]
@@ -87,10 +102,49 @@
           }
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Highlight"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Title"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Description"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "2 Basics"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Cover image"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "5 Variants"
+          }
+        },
+        {
           "kind": "show",
           "target": {
             "role": "button",
-            "name": "Save highlights"
+            "name": "5 Variants"
           }
         }
       ]
@@ -119,8 +173,20 @@
         {
           "kind": "show",
           "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Cover image"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
             "role": "button",
-            "name": "Save basics"
+            "name": "7 Validate"
           }
         }
       ]

@@ -34,11 +34,31 @@
           "path": "/admin/couriers/delivery-options"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Add delivery option"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Delivery options",
-            "exact": true
+            "field": "Connection",
+            "dialog": "Add delivery option"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Service code",
+            "dialog": "Add delivery option"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Display name",
+            "dialog": "Add delivery option"
           }
         }
       ]
@@ -53,10 +73,25 @@
           "path": "/admin/couriers/delivery-options"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Add delivery option"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Delivery options"
+            "role": "button",
+            "name": "Save delivery option",
+            "dialog": "Add delivery option"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Add delivery option"
           }
         }
       ]
@@ -69,6 +104,13 @@
         {
           "kind": "goto",
           "path": "/admin/couriers/delivery-options"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
         },
         {
           "kind": "show",

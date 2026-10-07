@@ -36,7 +36,7 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{returnReference}}"
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{returnReference}}\"))"
           }
         }
       ]
@@ -75,6 +75,20 @@
         {
           "kind": "goto",
           "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Payment evidence"
+          }
         },
         {
           "kind": "show",

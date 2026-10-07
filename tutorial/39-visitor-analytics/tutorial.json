@@ -21,6 +21,18 @@
             "role": "heading",
             "name": "Visitors"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#visitors-date-from"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "section:has([data-slot=\"card-title\"]:text-is(\"Total visits\")):has([data-slot=\"card-title\"]:text-is(\"Returning visitors\"))"
+          }
         }
       ]
     },
@@ -36,14 +48,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Visitors"
+            "css": "#visitors-segment"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Date from"
+            "css": "#visitors-date-to"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#visitors-type"
           }
         }
       ]
@@ -60,20 +77,7 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Visitors"
-          }
-        },
-        {
-          "kind": "show",
-          "target": {
-            "field": "Segment"
-          }
-        },
-        {
-          "kind": "show",
-          "target": {
-            "field": "Visitor type"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Visitors Trend\")"
           }
         }
       ]
@@ -92,6 +96,12 @@
           "target": {
             "role": "heading",
             "name": "Visitors"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#visitors-date-from"
           }
         }
       ]

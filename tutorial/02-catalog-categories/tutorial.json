@@ -18,6 +18,13 @@
         {
           "kind": "show",
           "target": {
+            "role": "tab",
+            "name": "Categories"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
             "role": "heading",
             "name": "Catalog"
           }
@@ -43,13 +50,29 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "role": "dialog",
+            "name": "Create category"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Product handling"
+            "field": "Name",
+            "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Parent",
+            "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
           }
         }
       ]
@@ -71,18 +94,50 @@
           }
         },
         {
+          "kind": "select",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
+          },
+          "option": "Gadget"
+        },
+        {
           "kind": "fill",
           "target": {
-            "field": "Name"
+            "field": "Name",
+            "dialog": "Create category"
           },
           "value": "{{categoryName}}"
         },
         {
           "kind": "fill",
           "target": {
-            "field": "Slug"
+            "field": "Slug",
+            "dialog": "Create category"
           },
           "value": "{{categorySlug}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Unit tracking",
+            "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "select",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
+          },
+          "option": "Clothing"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
+          }
         },
         {
           "kind": "submit",
@@ -97,10 +152,13 @@
           }
         },
         {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "Category saved",
-            "within": "page"
+            "text": "{{categoryName}}"
           }
         }
       ]
@@ -118,6 +176,22 @@
           "kind": "show",
           "target": {
             "text": "{{categoryName}}"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open category actions",
+            "row": "{{categoryName}}"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "menuitem",
+            "name": "Template",
+            "within": "page"
           }
         }
       ]

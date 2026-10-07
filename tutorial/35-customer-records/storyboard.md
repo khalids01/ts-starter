@@ -1,41 +1,7 @@
-# Review and maintain customer records — storyboard
+# Review and maintain customer records
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-Customer records connect contact information with the shop's order history. Open Customers and find the intended customer. Use the available search rather than choosing a similarly named person.
-
-Screen actions:
-
-- Open `/admin/customers`.
-- Show and check **Customers**.
-
-## 02. Understand the controls
-
-Open the record and review its contact details and order history. Completed spend and order counts describe the recorded orders; they do not replace payment evidence on an individual order.
-
-Screen actions:
-
-- Open `/admin/customers`.
-- Open `/admin/customers/{{customerId}}`.
-- Show and check **{{customerName}}**.
-
-## 03. Perform the task
-
-When your role permits editing, update only verified customer facts through the supported controls. An order retains its own delivery details, so editing a profile should not be assumed to rewrite historical order addresses.
-
-Screen actions:
-
-- Open `/admin/customers`.
-- Open `/admin/customers/{{customerId}}`.
-- Show and check **{{customerName}}**.
-
-## 04. Verify and continue
-
-Open the relevant order for payment, shipment or refund work. Keep personal information private when sharing screenshots or recordings. Tutorial fixtures use fictional customers and addresses in the isolated environment.
-
-Screen actions:
-
-- Open `/admin/customers`.
-- Show and check **Customers**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

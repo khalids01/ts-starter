@@ -18,8 +18,8 @@
         {
           "kind": "show",
           "target": {
-            "text": "Feedback",
-            "exact": false
+            "role": "heading",
+            "name": "User Feedback"
           }
         }
       ]
@@ -36,7 +36,19 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{feedbackText}}"
+            "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\")) button[role=\"combobox\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
           }
         }
       ]
@@ -53,7 +65,20 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{feedbackText}}"
+            "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Next"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
           }
         }
       ]
@@ -70,8 +95,8 @@
         {
           "kind": "show",
           "target": {
-            "text": "Feedback",
-            "exact": false
+            "role": "heading",
+            "name": "User Feedback"
           }
         }
       ]

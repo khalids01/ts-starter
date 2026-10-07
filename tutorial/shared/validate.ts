@@ -2,6 +2,7 @@ import { readFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
 import { AllPermissions } from "../../packages/rbac/src/permissions";
 import { isValidTutorialMedia, isValidFlowDiagram } from "./content";
+import { validateProductionPlan, describeProductionPlan, type ProductionPlan } from "./production-plan";
 import type { RecordingPlan } from "./types";
 
 const root = resolve(import.meta.dir, "..");
@@ -23,6 +24,12 @@ for (const entry of catalog) {
   for (const file of ["narration.txt", "storyboard.md", "tutorial.json", "record.ts", "render.ts", "fixtures.example.json", "media.example.json", "recording-checklist.md", "README.md", "audio/README.md", "audio/cues.example.json"]) await access(resolve(directory, file));
   const plan = JSON.parse(await readFile(resolve(directory, "tutorial.json"), "utf8")) as RecordingPlan;
   if (plan.id !== entry.id || !plan.scenes.length) throw new Error(`Invalid plan: ${entry.id}`);
+  if (entry.folder.slice(0, 2) !== "01") {
+    for (const file of ["production.json", "production.md", "produce.ts"]) await access(resolve(directory, file));
+    const production = JSON.parse(await readFile(resolve(directory, "production.json"), "utf8")) as ProductionPlan;
+    validateProductionPlan(production, plan);
+    if (await readFile(resolve(directory, "production.md"), "utf8") !== describeProductionPlan(production, plan)) throw new Error(`Production storyboard drift: ${entry.id}`);
+  }
   const narration = await readFile(resolve(directory, "narration.txt"), "utf8");
   if (narration !== plan.scenes.map(scene => scene.narration).join("\n\n") + "\n") throw new Error(`Narration drift: ${entry.id}`);
   if (entry.steps.join("\n\n") !== narration.trim()) throw new Error(`Written guide drift: ${entry.id}`);

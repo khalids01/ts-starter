@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "tutorialId": "customer-records",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Customer records connect contact information with the shop's order history.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/customers"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Customers"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open Customers and find the intended customer. Use the available search rather than choosing a similarly named person.",
+      "actions": [],
+      "target": {
+        "css": "input[placeholder=\"Search name, email, or phone\"]"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Open the record and review its contact details and order history.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/customers"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/customers/{{customerId}}"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Customer details\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Completed spend and order counts describe the recorded orders; they do not replace payment evidence on an individual order.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Order history\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "When your role permits editing, update only verified customer facts through the supported controls.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/customers"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/customers/{{customerId}}"
+        }
+      ],
+      "target": {
+        "field": "Name"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "An order retains its own delivery details, so editing a profile should not be assumed to rewrite historical order addresses.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Latest addresses\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "04",
+      "text": "Open the relevant order for payment, shipment or refund work.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/customers"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/customers/{{customerId}}"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Order history\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Keep personal information private when sharing screenshots or recordings.",
+      "actions": [],
+      "target": {
+        "field": "Email"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "Tutorial fixtures use fictional customers and addresses in the isolated environment.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Customer details\")"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

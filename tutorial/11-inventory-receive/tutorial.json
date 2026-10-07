@@ -21,6 +21,25 @@
             "role": "tab",
             "name": "Receive"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Receive"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Product"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "SKU"
+          }
         }
       ]
     },
@@ -49,13 +68,13 @@
         {
           "kind": "show",
           "target": {
-            "field": "Location"
+            "field": "Batch number"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Quantity"
+            "field": "Unavailable from (local date and time)"
           }
         }
       ]
@@ -85,6 +104,12 @@
         {
           "kind": "show",
           "target": {
+            "field": "Quantity"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
             "role": "button",
             "name": "Receive stock"
           }
@@ -102,6 +127,27 @@
         },
         {
           "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
           "target": {
             "role": "tab",
             "name": "Movements"

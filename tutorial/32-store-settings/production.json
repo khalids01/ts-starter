@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "tutorialId": "store-settings",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Store settings contains the core values used by checkout and new orders. Open Store settings.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Store settings"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Use approved store and support details so customer-facing information is accurate and your team can receive enquiries.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Store details\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Review store name, support email and support phone.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "field": "Store name"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Configure a three-letter currency code and the supported order-number prefix.",
+      "actions": [],
+      "target": {
+        "field": "Default currency"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "The reservation duration controls how long a new checkout can hold stock; choose a value that fits your operation.",
+      "actions": [],
+      "target": {
+        "field": "Inventory reservation (minutes)"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Enable checkout when the store is ready to accept orders.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Checkout\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "If pausing it, write a clear checkout notice.",
+      "actions": [],
+      "target": {
+        "field": "Checkout notice"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Disabling checkout does not hide the entire storefront.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Checkout\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Save settings and wait for confirmation.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Save settings"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Reload the page to confirm persistence, and verify a supervised checkout where relevant. Core settings are not editable home-page body content.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Store settings"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Page SEO has its own draft and publication workflow below these settings.",
+      "actions": [],
+      "target": {
+        "css": "section[aria-label=\"Website SEO\"]"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

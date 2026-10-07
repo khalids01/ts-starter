@@ -4,7 +4,13 @@
     "returnReference": "REPLACE_WITH_SIMULATED_RETURN_REFERENCE",
     "orderId": "REPLACE_WITH_RETURN_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-courier-returns-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

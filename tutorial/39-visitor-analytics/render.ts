@@ -1,3 +1,3 @@
-import { renderTutorial } from "../shared/render";
+import { produceTutorial } from "../shared/produce";
 
-await renderTutorial(import.meta.dir);
+await produceTutorial(import.meta.dir, "render");

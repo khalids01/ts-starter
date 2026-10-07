@@ -51,7 +51,15 @@
         {
           "kind": "show",
           "target": {
-            "field": "Note"
+            "field": "Note",
+            "dialog": "Mark order delivered"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Mark order delivered"
           }
         }
       ]
@@ -67,13 +75,33 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{deliveredOrderId}}"
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
             "name": "Totals"
+          }
+        },
+        {
+          "kind": "select",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+          },
+          "option": "Completed"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Update order"
           }
         }
       ]
@@ -89,13 +117,27 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{completedOrderId}}"
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
             "name": "Timeline"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Totals"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
           }
         }
       ]

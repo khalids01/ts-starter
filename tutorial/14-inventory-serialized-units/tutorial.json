@@ -52,6 +52,18 @@
           "target": {
             "field": "Received stock"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "label:has-text(\"Serial\") input"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "label:has-text(\"IMEI\") input"
+          }
         }
       ]
     },
@@ -74,8 +86,21 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Register gadget unit"
+            "role": "button",
+            "name": "Register unit"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Received stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Register unit"
           }
         }
       ]
@@ -91,6 +116,13 @@
         },
         {
           "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
           "target": {
             "role": "tab",
             "name": "Movements"

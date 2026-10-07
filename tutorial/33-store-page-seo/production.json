@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "tutorialId": "store-page-seo",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Page SEO controls metadata for the home and about pages. Open Store settings and locate Website SEO.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Home page SEO\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "These fields change titles, descriptions and social images; they do not edit the body content of those pages.",
+      "actions": [],
+      "target": {
+        "css": "#home-seo-title"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Choose the relevant page and enter a concise title and description based on approved facts.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "css": "#home-seo-title"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Select an appropriate image when needed.",
+      "actions": [],
+      "target": {
+        "css": "#home-seo-image"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Review the current revision and state so you do not overwrite someone else's changes without noticing.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Home page SEO\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Save the draft first.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(#home-seo-title) button:text-is(\"Save draft\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "A saved draft is separate from the published metadata.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(#home-seo-title) button:text-is(\"Publish SEO\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Review it before using the publish control, and resolve any revision conflict by reloading and comparing the changes.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(#home-seo-title) button:text-is(\"Reload saved version\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "After publication, inspect the public page metadata and preview where supported. Publishing code or building the app does not establish that the storage prerequisite exists. If persistence fails, resolve that prerequisite before describing the metadata as published.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/store-settings"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Home page SEO\")"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

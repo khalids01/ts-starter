@@ -31,18 +31,33 @@
       "actions": [
         {
           "kind": "goto",
-          "path": "/admin/couriers/cod-payouts"
+          "path": "/admin/couriers/shipments"
         },
         {
-          "kind": "show",
+          "kind": "click",
           "target": {
-            "field": "Collection/reference ID"
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{shipmentReference}}\")) button:text-is(\"Record settlement\")"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Amount"
+            "role": "dialog",
+            "name": "Record gross COD collection evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Amount",
+            "dialog": "Record gross COD collection evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Collection/reference ID",
+            "dialog": "Record gross COD collection evidence"
           }
         }
       ]
@@ -54,12 +69,33 @@
       "actions": [
         {
           "kind": "goto",
-          "path": "/admin/couriers/cod-payouts"
+          "path": "/admin/couriers/shipments"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{shipmentReference}}\")) button:text-is(\"Record settlement\")"
+          }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Evidence note"
+            "field": "Evidence note",
+            "dialog": "Record gross COD collection evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Amount",
+            "dialog": "Record gross COD collection evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Evidence note",
+            "dialog": "Record gross COD collection evidence"
           }
         }
       ]
@@ -74,10 +110,28 @@
           "path": "/admin/couriers/cod-payouts"
         },
         {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
           "kind": "show",
           "target": {
             "role": "heading",
-            "name": "COD collections"
+            "name": "Payment evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Totals"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
           }
         }
       ]

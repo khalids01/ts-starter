@@ -38,6 +38,12 @@
           "target": {
             "css": "#public-window"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#public-max"
+          }
         }
       ]
     },
@@ -53,7 +59,20 @@
         {
           "kind": "show",
           "target": {
-            "css": "#public-max"
+            "role": "button",
+            "name": "Save Changes"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#auth-window"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#auth-max"
           }
         }
       ]
@@ -72,6 +91,12 @@
           "target": {
             "role": "heading",
             "name": "Rate Limits"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Change Metadata\")"
           }
         }
       ]

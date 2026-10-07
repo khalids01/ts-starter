@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "tutorialId": "order-delivery-completion",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "After-operation frames are separately prepared, API-checked fictional examples and carry a visible example label. This walkthrough never performs those state transitions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Delivery and completion record different milestones. Open the shipped order and verify delivery evidence from the actual handoff. Use Mark delivered only after delivery is confirmed; a tracking number by itself is not proof.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Select Mark delivered and record a factual note.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Mark delivered"
+          }
+        }
+      ],
+      "target": {
+        "field": "Note",
+        "dialog": "Mark order delivered"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Wait for the saved state, then check delivery status and timestamp. If a courier integration supplies delivery information, review its evidence and supported controls before adding a conflicting manual action.",
+      "actions": [],
+      "target": {
+        "role": "dialog",
+        "name": "Mark order delivered"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "scene": "03",
+      "text": "Check that payment is fully collected, delivery is delivered, inventory remains committed and no operational issue blocks completion.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{deliveredOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Delivered and paid example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "delivered"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Then choose Completed in Order status and select Update order.",
+      "actions": [
+        {
+          "kind": "select",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+          },
+          "option": "Completed"
+        }
+      ],
+      "target": {
+        "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Delivered and paid example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "delivered"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Read any guard message and resolve its cause.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Update order"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Delivered and paid example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "delivered"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{deliveredOrderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "scene": "04",
+      "text": "Review Timeline and Totals after the update. The order should show the recorded delivery and completion events.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{completedOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Completed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "orderStatus",
+          "equals": "completed"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "delivered"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Completing an order does not replace missing money or physical evidence.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Completed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "orderStatus",
+          "equals": "completed"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "delivered"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "Use the appropriate recovery or refund workflow when the real outcome is different.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Physical inventory recovery"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Completed example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "orderStatus",
+          "equals": "completed"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "delivered"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "paymentStatus",
+          "equals": "paid"
+        },
+        {
+          "path": "/admin/orders/{{completedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    }
+  ]
+}

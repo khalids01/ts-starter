@@ -21,6 +21,20 @@
             "role": "heading",
             "name": "Discounts"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Discount"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Discounts"
+          }
         }
       ]
     },
@@ -43,7 +57,30 @@
         {
           "kind": "show",
           "target": {
-            "field": "Code"
+            "text": "Type",
+            "dialog": "Create discount"
+          }
+        },
+        {
+          "kind": "select",
+          "target": {
+            "field": "Type",
+            "dialog": "Create discount"
+          },
+          "option": "Fixed amount"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Currency",
+            "dialog": "Create discount"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Minimum order amount",
+            "dialog": "Create discount"
           }
         }
       ]
@@ -58,10 +95,32 @@
           "path": "/admin/discounts"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Discount"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Discounts"
+            "role": "button",
+            "name": "Save discount",
+            "dialog": "Create discount"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Starts on",
+            "dialog": "Create discount"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Minimum order amount",
+            "dialog": "Create discount"
           }
         }
       ]

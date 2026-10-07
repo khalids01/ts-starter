@@ -1,0 +1,346 @@
+{
+  "version": 1,
+  "tutorialId": "order-shipping-tracking",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "After-operation frames are separately prepared, API-checked fictional examples and carry a visible example label. This walkthrough never performs those state transitions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Mark shipped records a real parcel handoff. Open the confirmed order and check Fulfillment.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Complete any required preparation, delivery window or serialized unit assignment first.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Preparation and tracked units"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Recording a shipment does not automatically book a courier.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Select Mark shipped.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Mark shipped"
+          }
+        }
+      ],
+      "target": {
+        "role": "dialog",
+        "name": "Mark order shipped"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Enter the actual carrier and tracking number, and add a useful note.",
+      "actions": [],
+      "target": {
+        "field": "Carrier",
+        "dialog": "Mark order shipped"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "Check the parcel and address against the order.",
+      "actions": [],
+      "target": {
+        "field": "Tracking number",
+        "dialog": "Mark order shipped"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "scene": "02",
+      "text": "Save the action only when the parcel has actually left your control.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Mark shipped",
+        "dialog": "Mark order shipped"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "confirmed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "deliveryStatus",
+          "equals": "unfulfilled"
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Verify that the order now shows shipped delivery evidence, carrier and tracking.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{shippedOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Shipped example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        },
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Check Timeline for the event.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Shipped example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        },
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "scene": "03",
+      "text": "Courier-integrated bookings have their own workflow and may impose additional routing or consignment requirements.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Shipped example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        },
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "If tracking details change, use Edit tracking rather than inventing another shipment. Record the corrected details and reason, then review the history. A shipped state is not delivery confirmation and does not establish that payment has been collected.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{shippedOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Shipped tracking example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{shippedOrderId}}",
+          "field": "deliveryStatus",
+          "equals": "shipped"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "tutorialId": "feedback-moderation",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Feedback collects submitted messages that need operator attention. Open Feedback and identify the message you intend to review. Read the actual content and context before changing its state.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/feedback"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "User Feedback"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Use the available status controls to represent what your team has done.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/feedback"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\")) button[role=\"combobox\"]"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "A status should not imply that the customer received a reply unless that communication actually happened.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Keep private contact details out of shared recordings.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Review the updated item and use pagination to find older submissions.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/feedback"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Handle abusive or irrelevant content according to your store's policy.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Next"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Do not remove a valid report simply because it describes an inconvenient problem.",
+      "actions": [],
+      "target": {
+        "css": "[data-slot=\"card\"]:has(p:text-is(\"{{feedbackText}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "For an order issue, use the order and customer workflows to investigate the underlying facts. Feedback moderation does not change inventory, issue a refund or resolve a shipment. Record operational actions in their proper sections.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/feedback"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "User Feedback"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

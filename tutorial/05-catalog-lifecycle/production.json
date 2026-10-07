@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "tutorialId": "catalog-lifecycle",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Archive moves a catalog record out of the current working list while preserving its history.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Categories"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Current"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "In Catalog, choose Categories, Attributes or Brands.",
+      "actions": [],
+      "target": {
+        "role": "tab",
+        "name": "Categories"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Current and Archived are separate views; changing an active flag is not the same operation as archiving.",
+      "actions": [],
+      "target": {
+        "role": "tab",
+        "name": "Archived"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Find the intended record and open its row menu. Choose Archive and read the confirmation before accepting.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Categories"
+          }
+        }
+      ],
+      "target": {
+        "text": "{{categoryName}}"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Check that the record disappears from Current and appears in Archived. Dependencies and permissions are still enforced by the server.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Archived"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "To bring a record back, open Archived and use Restore. Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Categories"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Archived"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Return to Current to confirm the result.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Current"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Permanent deletion is for eligible records that can be safely removed. Read the dependency checks instead of repeatedly forcing the action. A record used by products or historical data may be blocked. Preserve history whenever deleting would break a valid reference.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Categories"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Current"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

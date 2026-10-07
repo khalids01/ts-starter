@@ -43,13 +43,29 @@
         {
           "kind": "show",
           "target": {
-            "field": "Connection name"
+            "field": "Connection name",
+            "dialog": "Add courier connection"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Priority"
+            "field": "Courier provider",
+            "dialog": "Add courier connection"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Priority",
+            "dialog": "Add courier connection"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Configuration source",
+            "dialog": "Add courier connection"
           }
         }
       ]
@@ -80,6 +96,34 @@
         {
           "kind": "goto",
           "path": "/admin/couriers/connections"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Courier connections"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
         },
         {
           "kind": "show",

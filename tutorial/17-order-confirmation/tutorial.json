@@ -25,6 +25,20 @@
             "role": "heading",
             "name": "Line items"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Customer"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Totals"
+          }
         }
       ]
     },
@@ -42,10 +56,16 @@
           "path": "/admin/orders/{{orderId}}"
         },
         {
+          "kind": "select",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+          },
+          "option": "Confirmed"
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "Order status",
-            "exact": false
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
           }
         },
         {
@@ -53,6 +73,12 @@
           "target": {
             "role": "button",
             "name": "Update order"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
           }
         }
       ]
@@ -68,13 +94,25 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{confirmedOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div:has(> div > p:text-is(\"Order status\")) > button[role=\"combobox\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "p:text-is(\"Inventory\")"
+          }
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
-            "name": "Totals"
+            "name": "Payment evidence"
           }
         }
       ]
@@ -90,13 +128,20 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{confirmedOrderId}}"
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
-            "name": "Timeline"
+            "name": "Payment evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
           }
         }
       ]

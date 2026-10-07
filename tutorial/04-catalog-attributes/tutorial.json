@@ -21,6 +21,13 @@
             "role": "tab",
             "name": "Attributes"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Attributes"
+          }
         }
       ]
     },
@@ -50,13 +57,22 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "field": "Name",
+            "dialog": "Create attribute"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Type"
+            "field": "Type",
+            "dialog": "Create attribute"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Product categories",
+            "dialog": "Create attribute"
           }
         }
       ]
@@ -87,13 +103,16 @@
         {
           "kind": "show",
           "target": {
-            "field": "Slug"
+            "role": "button",
+            "name": "Save",
+            "dialog": "Create attribute"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Sort order"
+            "text": "Product categories",
+            "dialog": "Create attribute"
           }
         }
       ]

@@ -1,9 +1,21 @@
 {
   "marker": "tutorial-order-shipping-tracking",
   "values": {
-    "orderId": "REPLACE_WITH_SHIPPABLE_OWNED_ORDER_ID"
+    "orderId": "REPLACE_WITH_SHIPPABLE_OWNED_ORDER_ID",
+    "shippedOrderId": "REPLACE_WITH_OWNED_SHIPPED_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-shipping-tracking-order"
+    },
+    {
+      "path": "/admin/orders/{{shippedOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-shipping-tracking-shippedOrder"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

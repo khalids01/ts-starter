@@ -3,7 +3,13 @@
   "values": {
     "productId": "REPLACE_WITH_OWNED_PRODUCT_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/products/{{productId}}",
+      "field": "name",
+      "equals": "tutorial-product-variants-product"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

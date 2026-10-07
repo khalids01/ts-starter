@@ -1,9 +1,37 @@
 {
   "marker": "tutorial-product-create",
   "values": {
-    "productId": "REPLACE_WITH_OWNED_DRAFT_PRODUCT_ID"
+    "productId": "REPLACE_WITH_OWNED_DRAFT_PRODUCT_ID",
+    "categoryName": "tutorial-product-create-category",
+    "productName": "tutorial-product-create-product"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/catalog/categories?limit=100",
+      "field": "items",
+      "find": {
+        "field": "name",
+        "equals": "{{categoryName}}"
+      },
+      "property": "name",
+      "equals": "{{categoryName}}"
+    },
+    {
+      "path": "/admin/products/{{productId}}",
+      "field": "name",
+      "equals": "tutorial-product-create-product"
+    },
+    {
+      "path": "/admin/catalog/categories?limit=100",
+      "field": "items",
+      "find": {
+        "field": "name",
+        "equals": "{{categoryName}}"
+      },
+      "property": "brandPolicy",
+      "equals": "optional"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

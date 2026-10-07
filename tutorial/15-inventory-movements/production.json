@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "tutorialId": "inventory-movements",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Movement history explains how recorded stock changed. Open Inventory and choose Movements.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Movements"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Use the SKU, location, quantity and event details to connect each movement to a receipt, order or adjustment.",
+      "actions": [],
+      "target": {
+        "css": "thead th:text-is(\"Delta\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Start with the event you are investigating.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ],
+      "target": {
+        "css": "tr:has(td:text-is(\"{{sku}}\")) td:text-is(\"{{sku}}\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Identify whether it received, committed, released or otherwise changed stock.",
+      "actions": [],
+      "target": {
+        "css": "thead th:text-is(\"Type\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Read its quantity and any reason or reference.",
+      "actions": [],
+      "target": {
+        "css": "thead th:text-is(\"Delta\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "A list of movements is evidence of recorded operations, not proof that a physical count is correct.",
+      "actions": [],
+      "target": {
+        "css": "thead th:text-is(\"Type\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Compare the movement with the related stock row and order timeline.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        }
+      ],
+      "target": {
+        "css": "tr:has(td:text-is(\"{{sku}}\")) td:text-is(\"{{sku}}\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Reservations and commitments have different effects.",
+      "actions": [],
+      "target": {
+        "css": "thead th:text-is(\"Reserved\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "A return or cancellation does not always mean that goods are physically back in a sellable location.",
+      "actions": [],
+      "target": {
+        "css": "thead th:text-is(\"Available\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "If the history and physical stock disagree, investigate first. Record a justified adjustment or recovery through the appropriate controls. Preserve the existing history so another operator can understand what happened.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Movements"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "tutorialId": "order-special-handling",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Some products need extra fulfilment evidence. The category handling policy determines the required controls. Open the order and review Preparation and tracked units before shipping.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Preparation and tracked units"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Use the controls appropriate to the actual goods.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Line items"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "For fresh or prepared food, review the delivery window and preparation requirements. Record the supported preparation evidence as work happens. Do not mark a parcel ready simply because a generic order status allows an update.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Preparation and tracked units"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "03",
+      "text": "For tracked gadgets, assign the serial number or IMEI of the physical unit being sent.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{gadgetOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Preparation and tracked units"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Verify the unit and condition against the parcel.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Line items"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Gadget warranty follows its configured policy and delivery evidence; food and clothing have no warranty.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Preparation and tracked units"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "04",
+      "text": "Use the supported claim and recovery controls when an eligible gadget later needs attention. Keep identifiers and inspection evidence connected to the order.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{gadgetOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Preparation and tracked units"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Check the order timeline so preparation, unit assignment and subsequent recovery remain traceable.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

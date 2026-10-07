@@ -1,47 +1,7 @@
-# Configure SKUs, variants and pricing — storyboard
+# Configure SKUs, variants and pricing
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-A variant is the sellable option customers purchase. Even a simple product needs a valid SKU. Open the product builder and choose Variants. Create separate variants when size, weight, colour or another selling option changes the item being sold.
-
-Screen actions:
-
-- Open `/admin/products`.
-- Open `/admin/products/{{productId}}`.
-- Select **5 Variants**.
-
-## 02. Understand the controls
-
-Add a variant and enter a unique SKU, customer-facing name, selling price and currency. A compare-at price is optional and must be higher than the selling price when used. Use prices you can justify, and choose the options required by the category.
-
-Screen actions:
-
-- Open `/admin/products`.
-- Open `/admin/products/{{productId}}`.
-- Select **5 Variants**.
-- Select **Add variant**.
-- Show and check **SKU**.
-- Show and check **Price**.
-
-## 03. Perform the task
-
-Add an image and weight when appropriate. Keep eligible variants active and choose the intended default. Select Save variants, then wait for confirmation. Editing a price does not create physical stock; receive inventory separately.
-
-Screen actions:
-
-- Open `/admin/products`.
-- Open `/admin/products/{{productId}}`.
-- Select **5 Variants**.
-- Show and check **Save variants**.
-
-## 04. Verify and continue
-
-Reopen Variants and check the saved SKU, price, currency and default selection. Validate the product before activation. Serialized items and expiring stock have extra inventory requirements, so variant setup alone is not enough to make every product purchasable.
-
-Screen actions:
-
-- Open `/admin/products`.
-- Open `/admin/products/{{productId}}`.
-- Select **5 Variants**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

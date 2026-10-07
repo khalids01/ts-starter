@@ -3,7 +3,13 @@
   "values": {
     "orderId": "REPLACE_WITH_OWNED_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-review-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

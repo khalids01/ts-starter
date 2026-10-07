@@ -1,7 +1,16 @@
 {
   "marker": "tutorial-courier-cod-collections",
-  "values": {},
-  "ownershipChecks": [],
+  "values": {
+    "orderId": "REPLACE_WITH_OWNED_ORDER_ID",
+    "shipmentReference": "REPLACE_WITH_OWNED_SHIPMENT_REFERENCE"
+  },
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-courier-cod-collections-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

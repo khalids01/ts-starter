@@ -4,7 +4,13 @@
     "productId": "REPLACE_WITH_READY_PRODUCT_ID",
     "productName": "REPLACE_WITH_READY_PRODUCT_NAME"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/products/{{productId}}",
+      "field": "name",
+      "equals": "tutorial-product-activation-product"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

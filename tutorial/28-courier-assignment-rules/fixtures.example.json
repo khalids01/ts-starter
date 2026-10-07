@@ -3,7 +3,13 @@
   "values": {
     "orderId": "REPLACE_WITH_ROUTING_FIXTURE_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-courier-assignment-rules-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

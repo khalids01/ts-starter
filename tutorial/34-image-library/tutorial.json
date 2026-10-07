@@ -46,6 +46,35 @@
             "role": "dialog",
             "name": "Upload images"
           }
+        },
+        {
+          "kind": "file",
+          "target": {
+            "css": "input[type=\"file\"]",
+            "dialog": "Upload images"
+          },
+          "path": "tutorial/shared/assets/tutorial-product.svg"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Tags",
+            "dialog": "Upload images"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Upload images"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Upload images"
+          }
         }
       ]
     },
@@ -61,8 +90,34 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Images"
+            "css": "input[placeholder=\"Search images\"]"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "button[title=\"List view\"]"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "tr:has(:text-is(\"{{imageName}}\")) button[title=\"Preview\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Copy URL",
+            "dialog": "{{imageName}}"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "{{imageName}}"
           }
         }
       ]

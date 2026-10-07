@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "tutorialId": "order-review",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Review an order before accepting it for fulfilment.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Orders"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open Orders and locate the intended order using search and status filters.",
+      "actions": [],
+      "target": {
+        "field": "Search"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Open its details and confirm that the order number belongs to the customer request you are handling.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Orders"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Review Customer, Addresses and Line items.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Customer"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Check contact details, the delivery address, SKU, quantity and any special handling.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Line items"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "A customer profile and an order address can have different purposes; use the order details for this shipment.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Addresses"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Review Totals, payment method, delivery state and inventory state. Look at the outstanding amount and reservation information.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "An order marked pending is not automatically paid or shipped.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Investigate unexpected prices or missing operational details before proceeding.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Read Timeline to see the recorded sequence. When everything is correct, follow the confirmation workflow. If it is not, use the supported operational actions and retain a clear reason. Do not casually edit status fields to make inconsistent states appear resolved.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

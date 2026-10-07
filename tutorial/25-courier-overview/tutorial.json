@@ -21,6 +21,12 @@
             "role": "heading",
             "name": "Courier overview"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/connections\"]"
+          }
         }
       ]
     },
@@ -37,6 +43,12 @@
           "kind": "show",
           "target": {
             "css": "a[href=\"/admin/couriers/connections\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/delivery-options\"]"
           }
         }
       ]
@@ -55,6 +67,18 @@
           "target": {
             "css": "a[href=\"/admin/couriers/shipments\"]"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/returns\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "a[href=\"/admin/couriers/cod-payouts\"]"
+          }
         }
       ]
     },
@@ -70,7 +94,8 @@
         {
           "kind": "show",
           "target": {
-            "css": "a[href=\"/admin/couriers/cod-payouts\"]"
+            "role": "heading",
+            "name": "Courier overview"
           }
         }
       ]

@@ -21,6 +21,12 @@
             "role": "heading",
             "name": "Store settings"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Store details\")"
+          }
         }
       ]
     },
@@ -36,13 +42,19 @@
         {
           "kind": "show",
           "target": {
-            "text": "Store details"
+            "field": "Store name"
           }
         },
         {
           "kind": "show",
           "target": {
-            "text": "Orders"
+            "field": "Default currency"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Inventory reservation (minutes)"
           }
         }
       ]
@@ -59,7 +71,26 @@
         {
           "kind": "show",
           "target": {
-            "text": "Checkout"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Checkout\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Checkout notice"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Checkout\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save settings"
           }
         }
       ]
@@ -78,6 +109,12 @@
           "target": {
             "role": "heading",
             "name": "Store settings"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "section[aria-label=\"Website SEO\"]"
           }
         }
       ]

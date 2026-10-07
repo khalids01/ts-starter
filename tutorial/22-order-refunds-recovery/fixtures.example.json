@@ -1,9 +1,27 @@
 {
   "marker": "tutorial-order-refunds-recovery",
   "values": {
-    "orderId": "REPLACE_WITH_REFUND_ELIGIBLE_OWNED_ORDER_ID"
+    "orderId": "REPLACE_WITH_REFUND_ELIGIBLE_OWNED_ORDER_ID",
+    "recoveredOrderId": "REPLACE_WITH_OWNED_RECOVERED_ORDER_ID",
+    "returnedOrderId": "REPLACE_WITH_OWNED_RETURNED_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-refunds-recovery-order"
+    },
+    {
+      "path": "/admin/orders/{{recoveredOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-refunds-recovery-recoveredOrder"
+    },
+    {
+      "path": "/admin/orders/{{returnedOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-refunds-recovery-returnedOrder"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

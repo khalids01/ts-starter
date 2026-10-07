@@ -1,6 +1,8 @@
 {
   "marker": "tutorial-webhook-events",
-  "values": {},
+  "values": {
+    "webhookReference": "tutorial-webhook-events-event"
+  },
   "ownershipChecks": [],
   "outcomeChecks": [],
   "cleanup": []

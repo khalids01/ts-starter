@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "tutorialId": "courier-returns",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "returnReference is the fictional order number displayed as the Courier returns card title. Use the matching consignment/order recovery example."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Courier returns track parcels coming back through a provider. Open Returns and review the original order, consignment and return state. A provider return notification does not by itself mean the goods are back in your stock location.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Courier returns"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Use supported return actions only for the real parcel outcome and the provider integration in use. Keep the return reference and reason. Cancellation of an order and initiation of a courier return are different operations.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{returnReference}}\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "03",
+      "text": "When the parcel physically arrives, inspect the goods through the order recovery workflow. Record receipt and condition before considering restock. Damaged, expired or otherwise unsafe items must not become sellable merely because the return is complete.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Physical inventory recovery"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "04",
+      "text": "Compare the return history, order timeline, recovery evidence and payment outcome.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/couriers/returns"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "04",
+      "text": "Refunds and courier collections require their own records.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Payment evidence"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "04",
+      "text": "Resolve disagreements before closing the operational case.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

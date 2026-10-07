@@ -1,9 +1,21 @@
 {
   "marker": "tutorial-order-confirmation",
   "values": {
-    "orderId": "REPLACE_WITH_PENDING_OWNED_ORDER_ID"
+    "orderId": "REPLACE_WITH_PENDING_OWNED_ORDER_ID",
+    "confirmedOrderId": "REPLACE_WITH_OWNED_CONFIRMED_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{confirmedOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-confirmation-confirmedOrder"
+    },
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-confirmation-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

@@ -26,6 +26,27 @@
             "name": "5 Variants",
             "exact": true
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Variants"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "5 Variants"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Variants"
+          }
         }
       ]
     },
@@ -54,19 +75,31 @@
           "kind": "click",
           "target": {
             "role": "button",
-            "name": "Add variant"
+            "name": "Variant"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "css": "[data-slot=\"accordion-item\"]:last-child [data-slot=\"accordion-trigger\"]"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "SKU"
+            "css": "[data-slot=\"accordion-item\"]:last-child label:text-is(\"SKU\") + input"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Price"
+            "css": "[data-slot=\"accordion-item\"]:last-child label:text-is(\"Compare at price\") + input"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"accordion-item\"]:last-child label:text-is(\"Price\") + input"
           }
         }
       ]
@@ -90,6 +123,18 @@
             "role": "button",
             "name": "5 Variants",
             "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "Variant images"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "label:has-text(\"Default variant\")"
           }
         },
         {
@@ -120,6 +165,26 @@
             "role": "button",
             "name": "5 Variants",
             "exact": true
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "SKU"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "7 Validate"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "6 Inventory"
           }
         }
       ]

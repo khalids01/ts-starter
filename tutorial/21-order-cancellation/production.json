@@ -1,0 +1,310 @@
+{
+  "version": 1,
+  "tutorialId": "order-cancellation",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions.",
+    "After-operation frames are separately prepared, API-checked fictional examples and carry a visible example label. This walkthrough never performs those state transitions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Cancellation must match what actually happened to the order.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Cancellation and refunds"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open its details and inspect inventory, payment and delivery states.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Totals"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Goods still reserved and goods already handed to a courier need different follow-up actions.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Fulfillment"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Open the cancellation control in Cancellation and refunds.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Cancel order"
+          }
+        }
+      ],
+      "target": {
+        "role": "dialog",
+        "name": "Cancel order?"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Read the dialog, enter a clear reason and add an internal note when needed.",
+      "actions": [],
+      "target": {
+        "field": "Reason",
+        "dialog": "Cancel order?"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "Check the consequences before confirming. A cancelled status does not prove that dispatched stock has physically returned.",
+      "actions": [],
+      "target": {
+        "role": "dialog",
+        "name": "Cancel order?"
+      },
+      "evidence": "controls",
+      "checks": [
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "orderStatus",
+          "equals": "pending"
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "After cancellation, review the timeline and inventory state.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{cancelledOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Cancelled reservation example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{cancelledOrderId}}",
+          "field": "orderStatus",
+          "equals": "cancelled"
+        },
+        {
+          "path": "/admin/orders/{{cancelledOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "released"
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "A reservation may be released when allowed; committed or dispatched goods can require physical recovery.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Physical inventory recovery"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Cancelled reservation example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{cancelledOrderId}}",
+          "field": "orderStatus",
+          "equals": "cancelled"
+        },
+        {
+          "path": "/admin/orders/{{cancelledOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "released"
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Payment that was actually received may need a separate refund record.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Payment evidence"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Cancelled reservation example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{cancelledOrderId}}",
+          "field": "orderStatus",
+          "equals": "cancelled"
+        },
+        {
+          "path": "/admin/orders/{{cancelledOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "released"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Follow the recovery controls when stock is not safely back in inventory.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders"
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Physical inventory recovery"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Cancelled dispatched example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+          "field": "orderStatus",
+          "equals": "cancelled"
+        },
+        {
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Retain the cancellation reason and evidence.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Timeline"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Cancelled dispatched example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+          "field": "orderStatus",
+          "equals": "cancelled"
+        },
+        {
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "scene": "04",
+      "text": "Do not make quantity adjustments simply to hide an unresolved return or unpaid refund.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Physical inventory recovery"
+      },
+      "evidence": "persisted-example",
+      "frameLabel": "Cancelled dispatched example",
+      "checks": [
+        {
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+          "field": "orderStatus",
+          "equals": "cancelled"
+        },
+        {
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}",
+          "field": "inventoryStatus",
+          "equals": "committed"
+        }
+      ]
+    }
+  ]
+}

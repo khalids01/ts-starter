@@ -21,6 +21,13 @@
             "role": "heading",
             "name": "User Management"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Users"
+          }
         }
       ]
     },
@@ -38,6 +45,24 @@
           "target": {
             "role": "tab",
             "name": "Users"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "input[placeholder=\"Filter users...\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Role\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Role\")"
           }
         }
       ]
@@ -57,6 +82,24 @@
             "role": "tab",
             "name": "Invites"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#invitation-status"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#invitation-search"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Status\")"
+          }
         }
       ]
     },
@@ -71,6 +114,13 @@
         },
         {
           "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Users"
+          }
+        },
+        {
+          "kind": "show",
           "target": {
             "role": "tab",
             "name": "Users"

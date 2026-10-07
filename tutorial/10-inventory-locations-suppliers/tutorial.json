@@ -18,8 +18,22 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Inventory"
+            "role": "tab",
+            "name": "Locations"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Suppliers"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
           }
         }
       ]
@@ -50,13 +64,23 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "field": "Name",
+            "dialog": "Create location"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Code"
+            "role": "button",
+            "name": "Save",
+            "dialog": "Create location"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Code",
+            "dialog": "Create location"
           }
         }
       ]
@@ -87,7 +111,23 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "field": "Name",
+            "dialog": "Create supplier"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save",
+            "dialog": "Create supplier"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name",
+            "dialog": "Create supplier"
           }
         }
       ]

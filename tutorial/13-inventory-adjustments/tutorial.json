@@ -21,6 +21,13 @@
             "role": "tab",
             "name": "Adjustments"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Adjustments"
+          }
         }
       ]
     },
@@ -75,6 +82,19 @@
           "target": {
             "field": "Reason"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Adjust stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Delta"
+          }
         }
       ]
     },
@@ -89,6 +109,34 @@
         },
         {
           "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
           "target": {
             "role": "tab",
             "name": "Movements"

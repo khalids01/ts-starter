@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "tutorialId": "inventory-serialized-units",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Serialized inventory connects a physical gadget to its unique identifiers. The category decides whether serial numbers, IMEIs or both are required. Receive the stock first, then open Inventory and use the gadget unit registration section.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Register gadget unit"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "02",
+      "text": "Choose the correct stock row.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        }
+      ],
+      "target": {
+        "field": "Received stock"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Enter the identifiers exactly as recorded on the unit and check them against the physical unit. Use fictional identifiers in a tutorial environment.",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"Serial\") input"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "An identifier must not be reused for a different unit.",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"IMEI\") input"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "03",
+      "text": "Register each required unit and check the resulting inventory information.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        }
+      ],
+      "target": {
+        "role": "button",
+        "name": "Register unit"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "03",
+      "text": "Receiving a quantity alone does not prove that eligible identifiable units exist.",
+      "actions": [],
+      "target": {
+        "field": "Received stock"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Assignment to an order must use the units that will actually be handed over.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Register unit"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Keep the unit history when a gadget is shipped, returned or inspected. Warranty depends on the gadget policy and delivery evidence. Never duplicate the same physical item by adding aggregate stock after it has already been received and registered.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Movements"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

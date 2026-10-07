@@ -3,7 +3,13 @@
   "values": {
     "roleId": "REPLACE_WITH_OWNED_ROLE_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/roles/{{roleId}}",
+      "field": "name",
+      "equals": "tutorial-roles-permissions-role"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

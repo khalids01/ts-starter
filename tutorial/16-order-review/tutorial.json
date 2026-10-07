@@ -21,6 +21,19 @@
             "role": "heading",
             "name": "Orders"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Search"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Orders"
+          }
         }
       ]
     },
@@ -42,6 +55,13 @@
           "target": {
             "role": "heading",
             "name": "Customer"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Line items"
           }
         },
         {
@@ -70,7 +90,14 @@
           "kind": "show",
           "target": {
             "role": "heading",
-            "name": "Line items"
+            "name": "Totals"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
           }
         },
         {

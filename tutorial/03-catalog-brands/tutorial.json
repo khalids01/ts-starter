@@ -25,8 +25,8 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Catalog"
+            "role": "tab",
+            "name": "Brands"
           }
         }
       ]
@@ -57,13 +57,36 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "role": "dialog",
+            "name": "Create brand"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Website URL"
+            "field": "Name",
+            "dialog": "Create brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Website URL",
+            "dialog": "Create brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "label:has-text(\"Active\")",
+            "dialog": "Create brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Website URL",
+            "dialog": "Create brand"
           }
         }
       ]
@@ -118,10 +141,20 @@
           }
         },
         {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Brands"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "Brand saved",
-            "within": "page"
+            "text": "{{brandName}}"
           }
         }
       ]
@@ -140,6 +173,33 @@
           "target": {
             "role": "tab",
             "name": "Brands"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{brandName}}"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
           }
         },
         {

@@ -1,9 +1,27 @@
 {
   "marker": "tutorial-order-delivery-completion",
   "values": {
-    "orderId": "REPLACE_WITH_DELIVERABLE_OWNED_ORDER_ID"
+    "orderId": "REPLACE_WITH_DELIVERABLE_OWNED_ORDER_ID",
+    "completedOrderId": "REPLACE_WITH_OWNED_COMPLETED_ORDER_ID",
+    "deliveredOrderId": "REPLACE_WITH_OWNED_DELIVERED_ORDER_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/orders/{{completedOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-delivery-completion-completedOrder"
+    },
+    {
+      "path": "/admin/orders/{{deliveredOrderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-delivery-completion-deliveredOrder"
+    },
+    {
+      "path": "/admin/orders/{{orderId}}",
+      "field": "customerName",
+      "equals": "tutorial-order-delivery-completion-order"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

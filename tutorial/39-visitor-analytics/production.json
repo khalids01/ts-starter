@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "tutorialId": "visitor-analytics",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Visitors summarizes recorded site activity.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/visitors"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Visitors"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Open Visitors and select the period you want to inspect.",
+      "actions": [],
+      "target": {
+        "css": "#visitors-date-from"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Read each metric according to its label: visits, unique visitors and returning visitors describe different measurements.",
+      "actions": [],
+      "target": {
+        "css": "section:has([data-slot=\"card-title\"]:text-is(\"Total visits\")):has([data-slot=\"card-title\"]:text-is(\"Returning visitors\"))"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Use the available filters to separate human and bot activity and compare periods where supported.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/visitors"
+        }
+      ],
+      "target": {
+        "css": "#visitors-segment"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Check the active dates before interpreting a rise or fall.",
+      "actions": [],
+      "target": {
+        "css": "#visitors-date-to"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "A filtered result is not necessarily the total traffic for the shop.",
+      "actions": [],
+      "target": {
+        "css": "#visitors-type"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "Inspect the trend chart and breakdowns together. Traffic counts do not prove revenue, successful checkout or delivery. Use order records for those outcomes, and avoid presenting a visitor count as a conversion rate without the correct denominator.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/visitors"
+        }
+      ],
+      "target": {
+        "css": "[data-slot=\"card-title\"]:text-is(\"Visitors Trend\")"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "04",
+      "text": "Treat analytics as a guide for investigation. Missing events, privacy choices and classification rules can affect the recorded data.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/visitors"
+        }
+      ],
+      "target": {
+        "role": "heading",
+        "name": "Visitors"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "04",
+      "text": "Keep personal details private when showing reports and state the actual period when sharing a finding.",
+      "actions": [],
+      "target": {
+        "css": "#visitors-date-from"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

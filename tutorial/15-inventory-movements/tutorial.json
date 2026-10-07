@@ -21,6 +21,19 @@
             "role": "tab",
             "name": "Movements"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Delta\")"
+          }
         }
       ]
     },
@@ -43,7 +56,25 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{sku}}"
+            "css": "tr:has(td:text-is(\"{{sku}}\")) td:text-is(\"{{sku}}\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Type\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Delta\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Type\")"
           }
         }
       ]
@@ -65,9 +96,28 @@
           }
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Stock"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "{{sku}}"
+            "css": "tr:has(td:text-is(\"{{sku}}\")) td:text-is(\"{{sku}}\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Reserved\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "thead th:text-is(\"Available\")"
           }
         }
       ]
@@ -83,6 +133,13 @@
         },
         {
           "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Movements"
+          }
+        },
+        {
+          "kind": "show",
           "target": {
             "role": "tab",
             "name": "Movements"

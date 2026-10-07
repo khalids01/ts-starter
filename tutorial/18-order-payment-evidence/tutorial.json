@@ -25,6 +25,13 @@
             "role": "heading",
             "name": "Payment evidence"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Record confirmed payment"
+          }
         }
       ]
     },
@@ -51,13 +58,22 @@
         {
           "kind": "show",
           "target": {
-            "field": "Collection reference"
+            "css": "#payment-amount",
+            "dialog": "Record confirmed payment"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Evidence / correction reason"
+            "field": "Collection reference",
+            "dialog": "Record confirmed payment"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#payment-amount",
+            "dialog": "Record confirmed payment"
           }
         }
       ]
@@ -74,6 +90,32 @@
         {
           "kind": "goto",
           "path": "/admin/orders/{{orderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Record confirmed payment"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Record evidence",
+            "dialog": "Record confirmed payment"
+          }
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{paidOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Payment evidence"
+          }
         },
         {
           "kind": "show",
@@ -95,13 +137,20 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{paidOrderId}}"
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
             "name": "Payment evidence"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Totals"
           }
         }
       ]

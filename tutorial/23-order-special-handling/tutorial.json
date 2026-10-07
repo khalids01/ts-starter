@@ -25,6 +25,13 @@
             "role": "heading",
             "name": "Preparation and tracked units"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Line items"
+          }
         }
       ]
     },
@@ -45,7 +52,7 @@
           "kind": "show",
           "target": {
             "role": "heading",
-            "name": "Line items"
+            "name": "Preparation and tracked units"
           }
         }
       ]
@@ -69,6 +76,20 @@
             "role": "heading",
             "name": "Preparation and tracked units"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Line items"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Preparation and tracked units"
+          }
         }
       ]
     },
@@ -84,6 +105,13 @@
         {
           "kind": "goto",
           "path": "/admin/orders/{{gadgetOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Preparation and tracked units"
+          }
         },
         {
           "kind": "show",

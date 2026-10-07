@@ -21,6 +21,19 @@
             "role": "heading",
             "name": "Activity"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "button[role=\"combobox\"]:has-text(\"All events\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Activity"
+          }
         }
       ]
     },
@@ -36,8 +49,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Activity"
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
           }
         }
       ]
@@ -54,8 +78,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Activity"
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
           }
         }
       ]
@@ -72,8 +107,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Activity"
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{activityMessage}}\"))"
           }
         }
       ]

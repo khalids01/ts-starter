@@ -36,7 +36,7 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{shipmentReference}}"
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{shipmentReference}}\"))"
           }
         }
       ]
@@ -53,7 +53,7 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{shipmentReference}}"
+            "css": "[data-slot=\"card\"]:has([data-slot=\"card-title\"]:text-is(\"{{shipmentReference}}\"))"
           }
         }
       ]

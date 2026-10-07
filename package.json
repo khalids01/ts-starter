@@ -58,6 +58,9 @@
     "tutorial:publish": "bun tutorial/shared/cli.ts publish",
     "tutorial:record:legacy": "bun --env-file=tests/env/.env tutorial/00-product-to-completed-order/record.legacy.ts",
     "tutorial:render:legacy": "bun tutorial/00-product-to-completed-order/render.legacy.ts",
+    "tutorial:storyboards": "bun tutorial/shared/storyboards.ts",
+    "tutorial:prepare": "bun tutorial/shared/cli.ts prepare",
+    "tutorial:audio": "bun tutorial/shared/cli.ts audio",
     "tutorial:check": "bun tutorial/shared/validate.ts"
   },
   "dependencies": {

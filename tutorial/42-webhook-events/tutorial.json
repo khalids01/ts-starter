@@ -21,6 +21,18 @@
             "role": "heading",
             "name": "Webhooks"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "input[placeholder=\"Filter event type\"]"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Webhook Events\")"
+          }
         }
       ]
     },
@@ -36,14 +48,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Webhooks"
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
           }
         },
         {
           "kind": "show",
           "target": {
-            "css": "input[placeholder=\"Filter event type\"]"
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
           }
         }
       ]
@@ -60,8 +77,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Webhooks"
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
           }
         }
       ]
@@ -78,8 +106,19 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Webhooks"
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "div.px-6.py-4:has(:text-is(\"{{webhookReference}}\"))"
           }
         }
       ]

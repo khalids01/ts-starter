@@ -21,6 +21,20 @@
             "role": "heading",
             "name": "Products"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "link",
+            "name": "Product"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Products"
+          }
         }
       ]
     },
@@ -38,11 +52,56 @@
           "path": "/admin/products/new"
         },
         {
+          "kind": "select",
+          "target": {
+            "field": "Category"
+          },
+          "option": "{{categoryName}}"
+        },
+        {
           "kind": "show",
           "target": {
+            "field": "Category"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
             "role": "button",
-            "name": "1 Category",
-            "exact": true
+            "name": "2 Basics"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name"
+          },
+          "value": "{{productName}}"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Description"
+          },
+          "value": "Fictional product for the admin guide."
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug"
+          },
+          "value": "{{productName}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Slug"
           }
         }
       ]
@@ -71,13 +130,26 @@
         {
           "kind": "show",
           "target": {
-            "field": "Name"
+            "text": "Brand"
           }
         },
         {
           "kind": "show",
           "target": {
-            "field": "Slug"
+            "css": "label:has-text(\"Featured\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "SEO title"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "Save basics"
           }
         }
       ]
@@ -106,8 +178,14 @@
         {
           "kind": "show",
           "target": {
+            "field": "Name"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
             "role": "button",
-            "name": "Save basics"
+            "name": "7 Validate"
           }
         }
       ]

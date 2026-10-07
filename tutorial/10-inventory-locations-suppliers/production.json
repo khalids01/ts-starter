@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "tutorialId": "inventory-locations-suppliers",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Inventory locations identify where stock is held.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Locations"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Suppliers record where it comes from.",
+      "actions": [],
+      "target": {
+        "role": "tab",
+        "name": "Suppliers"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "01",
+      "text": "Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.",
+      "actions": [],
+      "target": {
+        "role": "tab",
+        "name": "Locations"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "In Locations, select Location and enter a recognizable name, a unique code and the address when needed.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Location"
+          }
+        }
+      ],
+      "target": {
+        "field": "Name",
+        "dialog": "Create location"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "Save, then confirm that the location is listed.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Save",
+        "dialog": "Create location"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "Choose a location that matches the physical stock, rather than assigning everything to an unrelated warehouse.",
+      "actions": [],
+      "target": {
+        "field": "Code",
+        "dialog": "Create location"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "In Suppliers, select Supplier and enter the known business and contact details.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Suppliers"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Supplier"
+          }
+        }
+      ],
+      "target": {
+        "field": "Name",
+        "dialog": "Create supplier"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Save and verify the record.",
+      "actions": [],
+      "target": {
+        "role": "button",
+        "name": "Save",
+        "dialog": "Create supplier"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "A supplier is optional when receiving stock, but an inventory location is required. Keep fictional contact details in demonstration recordings.",
+      "actions": [],
+      "target": {
+        "field": "Name",
+        "dialog": "Create supplier"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Use the edit and disable controls deliberately. Disabling a location or supplier does not erase historical movements. Review any stock or dependency restrictions before changing a record that is already in use.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
+          }
+        }
+      ],
+      "target": {
+        "text": "{{locationName}}"
+      },
+      "evidence": "controls"
+    }
+  ]
+}

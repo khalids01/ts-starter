@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "tutorialId": "catalog-categories",
+  "profileId": "32138317-6b28-46d7-b611-66365ca94587",
+  "notes": [
+    "Capture only settled production-build frames at 1440 x 900; do not film navigation or loading.",
+    "Each frame holds its one spotlight for the entire measured narration section, followed by 0.2 seconds of silence.",
+    "Walkthrough frames explain controls. They do not establish that an unsubmitted operation succeeded.",
+    "Prepare fictional marker-owned fixtures with the states specified in the recording checklist; capture refuses missing, ambiguous or ineligible controls.",
+    "Audio, capture, full playback review and upload require separate authorization. No batch production or live provider actions."
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "scene": "01",
+      "text": "Categories organize your catalog and determine the fields and handling rules used by products. Open Catalog and stay on Categories.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        }
+      ],
+      "target": {
+        "role": "tab",
+        "name": "Categories"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "02",
+      "scene": "01",
+      "text": "Plan the category before adding products, because food, clothing and gadgets have different requirements.",
+      "actions": [],
+      "target": {
+        "role": "heading",
+        "name": "Catalog"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "Select Category.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Category"
+          }
+        }
+      ],
+      "target": {
+        "role": "dialog",
+        "name": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "04",
+      "scene": "02",
+      "text": "Enter a clear name and readable slug.",
+      "actions": [],
+      "target": {
+        "field": "Name",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "A parent creates a hierarchy.",
+      "actions": [],
+      "target": {
+        "field": "Parent",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "Choose the brand policy and product handling deliberately: standard, packaged food, fresh food, gadget or clothing. Handling is configured on each category and is not inherited from its parent.",
+      "actions": [],
+      "target": {
+        "field": "Product handling",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "03",
+      "text": "For a gadget category, configure unit tracking and warranty days when they apply.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Category"
+          }
+        },
+        {
+          "kind": "select",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
+          },
+          "option": "Gadget"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name",
+            "dialog": "Create category"
+          },
+          "value": "{{categoryName}}"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create category"
+          },
+          "value": "{{categorySlug}}"
+        }
+      ],
+      "target": {
+        "field": "Unit tracking",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "03",
+      "text": "Food and clothing cannot have a warranty.",
+      "actions": [
+        {
+          "kind": "select",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
+          },
+          "option": "Clothing"
+        }
+      ],
+      "target": {
+        "field": "Product handling",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "03",
+      "text": "Use the active and featured choices to control availability and presentation, then save the category.",
+      "actions": [
+        {
+          "kind": "submit",
+          "target": {
+            "role": "button",
+            "name": "Save"
+          },
+          "capture": {
+            "key": "categoryId",
+            "responsePath": "/admin/catalog/categories",
+            "field": "id"
+          }
+        },
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        }
+      ],
+      "target": {
+        "text": "{{categoryName}}"
+      },
+      "evidence": "persisted-result",
+      "checks": [
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "name",
+          "equals": "{{categoryName}}"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "scene": "04",
+      "text": "Return to the category list and confirm the saved name and handling.",
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/catalog"
+        }
+      ],
+      "target": {
+        "text": "{{categoryName}}"
+      },
+      "evidence": "persisted-result",
+      "checks": [
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "name",
+          "equals": "{{categoryName}}"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "scene": "04",
+      "text": "Category template fields are configured through the category controls and determine what appears in the product builder. Changing a template is a catalog decision; review existing products before changing required fields.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open category actions",
+            "row": "{{categoryName}}"
+          }
+        }
+      ],
+      "target": {
+        "role": "menuitem",
+        "name": "Template",
+        "within": "page"
+      },
+      "evidence": "persisted-result",
+      "checks": [
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "name",
+          "equals": "{{categoryName}}"
+        }
+      ]
+    }
+  ]
+}

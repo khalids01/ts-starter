@@ -1,41 +1,7 @@
-# Configure and review a courier connection — storyboard
+# Configure and review a courier connection
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-A courier connection links your shop to a supported provider account. Open Connections. Check existing records before adding another account, because duplicate configuration can make routing harder to understand.
-
-Screen actions:
-
-- Open `/admin/couriers/connections`.
-- Show and check **Courier connections**.
-
-## 02. Understand the controls
-
-Select Add connection. Enter a connection name, choose the provider, configuration source and environment, and set priority. Lower nonnegative priority numbers run first. Use the supported credential source for your deployment.
-
-Screen actions:
-
-- Open `/admin/couriers/connections`.
-- Select **Add connection**.
-- Show and check **Connection name**.
-- Show and check **Priority**.
-
-## 03. Perform the task
-
-When credentials are entered, keep them private and off the recording. The server does not return saved secrets. Save the connection and use the supported connection test only against the intended provider environment; in tutorials, that means the local simulator.
-
-Screen actions:
-
-- Open `/admin/couriers/connections`.
-- Show and check **Courier connections**.
-
-## 04. Verify and continue
-
-Review health and enabled state before using the account for dispatch. Credential rotation, archive and recovery are separate actions. A successful account test does not establish that a parcel has been booked or a collection has settled.
-
-Screen actions:
-
-- Open `/admin/couriers/connections`.
-- Show and check **Courier connections**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

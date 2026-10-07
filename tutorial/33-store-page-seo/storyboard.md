@@ -1,39 +1,7 @@
-# Save and publish home and about page SEO — storyboard
+# Save and publish home and about page SEO
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-Page SEO controls metadata for the home and about pages. Open Store settings and locate Website SEO. These fields change titles, descriptions and social images; they do not edit the body content of those pages.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Store settings**.
-
-## 02. Understand the controls
-
-Choose the relevant page and enter a concise title and description based on approved facts. Select an appropriate image when needed. Review the current revision and state so you do not overwrite someone else's changes without noticing.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Home page SEO**.
-
-## 03. Perform the task
-
-Save the draft first. A saved draft is separate from the published metadata. Review it before using the publish control, and resolve any revision conflict by reloading and comparing the changes.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **About page SEO**.
-
-## 04. Verify and continue
-
-After publication, inspect the public page metadata and preview where supported. Publishing code or building the app does not establish that the storage prerequisite exists. If persistence fails, resolve that prerequisite before describing the metadata as published.
-
-Screen actions:
-
-- Open `/admin/store-settings`.
-- Show and check **Store settings**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

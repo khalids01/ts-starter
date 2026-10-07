@@ -1,39 +1,7 @@
-# Map courier delivery options to shipping methods — storyboard
+# Map courier delivery options to shipping methods
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-A delivery option connects a checkout shipping method to a courier account and service level. Open Delivery options and review the current mappings. Keep customer-facing choices consistent with services that the provider can actually fulfil.
-
-Screen actions:
-
-- Open `/admin/couriers/delivery-options`.
-- Show and check **Delivery options**.
-
-## 02. Understand the controls
-
-Choose the intended connection and shipping method in the option controls. Configure the supported provider service level and enabled state. Use descriptive names so another operator can identify the mapping without reading credentials.
-
-Screen actions:
-
-- Open `/admin/couriers/delivery-options`.
-- Show and check **Delivery options**.
-
-## 03. Perform the task
-
-Save and check the resulting option. An enabled mapping is configuration; it does not submit an order. Review assignment rules to understand which orders will use this connection and option.
-
-Screen actions:
-
-- Open `/admin/couriers/delivery-options`.
-- Show and check **Delivery options**.
-
-## 04. Verify and continue
-
-When a service is retired, review dependent rules and shipments before archiving or removing it. Use a simulated order to verify routing. Do not infer successful booking from the existence of a delivery option.
-
-Screen actions:
-
-- Open `/admin/couriers/delivery-options`.
-- Show and check **Delivery options**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

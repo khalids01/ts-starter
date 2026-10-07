@@ -26,6 +26,27 @@
             "name": "7 Validate",
             "exact": true
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Validate"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "7 Validate"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Validate"
+          }
         }
       ]
     },
@@ -54,8 +75,14 @@
           "kind": "show",
           "target": {
             "role": "button",
-            "name": "Validate",
-            "exact": true
+            "name": "Validate"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Validate"
           }
         }
       ]
@@ -87,6 +114,13 @@
             "role": "button",
             "name": "Activate product"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "button",
+            "name": "6 Inventory"
+          }
         }
       ]
     },
@@ -102,6 +136,40 @@
         {
           "kind": "goto",
           "path": "/admin/products"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{productName}}"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Current"
+          }
         },
         {
           "kind": "show",

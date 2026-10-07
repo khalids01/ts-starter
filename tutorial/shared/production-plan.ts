@@ -68,5 +68,5 @@ export function describeProductionPlan(production: ProductionPlan, plan: Recordi
     output += `Evidence: ${segment.evidence}.${segment.frameLabel ? ` Visible label: ${segment.frameLabel}.` : ""}\n\n`;
     if (segment.checks?.length) output += `Required API checks: \`${JSON.stringify(segment.checks)}\`\n\n`;
   }
-  return output;
+  return output.trimEnd() + "\n";
 }

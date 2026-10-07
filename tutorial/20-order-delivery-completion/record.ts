@@ -1,3 +1,3 @@
-import { recordTutorial } from "../shared/record";
+import { produceTutorial } from "../shared/produce";
 
-await recordTutorial(import.meta.dir);
+await produceTutorial(import.meta.dir, "capture");

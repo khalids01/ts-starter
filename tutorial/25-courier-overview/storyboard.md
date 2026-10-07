@@ -1,39 +1,7 @@
-# Understand courier operations and exceptions — storyboard
+# Understand courier operations and exceptions
 
-Status: authored; audio and recording review pending.
+The active, sentence-aligned storyboard is [production.md](./production.md), generated from [production.json](./production.json).
 
-## 01. Find the workflow
+Scene narration remains canonical in tutorial.json and narration.txt. The scene action lists mirror the synchronized plan for reference; produce.ts is the generation entry point.
 
-The courier overview summarizes delivery configuration and operations. Open Couriers, then Overview. Connections identify provider accounts; delivery options map service levels; assignment rules decide how orders are routed.
-
-Screen actions:
-
-- Open `/admin/couriers`.
-- Show and check **Courier overview**.
-
-## 02. Understand the controls
-
-Review connection health and configuration before dispatching. A healthy connection is one prerequisite, not a guarantee that every shipment will succeed. Shipping methods and delivery options must match the service you intend to offer.
-
-Screen actions:
-
-- Open `/admin/couriers`.
-- Show and check **a[href="/admin/couriers/connections"]**.
-
-## 03. Perform the task
-
-Use Shipments to investigate bookings and parcel progress. Courier returns and COD payouts are separate operational sections. Open the relevant record rather than interpreting a count as evidence that a parcel was delivered or money was paid.
-
-Screen actions:
-
-- Open `/admin/couriers`.
-- Show and check **a[href="/admin/couriers/shipments"]**.
-
-## 04. Verify and continue
-
-Resolve authentication, routing, retry and collection exceptions using the specific workflow. A tutorial demonstration must use the local simulator and fictional data. Live bookings, pickup requests and provider actions require deliberate operator authorization.
-
-Screen actions:
-
-- Open `/admin/couriers`.
-- Show and check **a[href="/admin/couriers/cod-payouts"]**.
+Refresh static storyboards after editing a production plan with `bun run tutorial:storyboards` from the project root. This command creates no media and does not access running services.

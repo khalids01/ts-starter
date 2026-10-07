@@ -25,6 +25,20 @@
             "role": "heading",
             "name": "Cancellation and refunds"
           }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Totals"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Fulfillment"
+          }
         }
       ]
     },
@@ -42,10 +56,31 @@
           "path": "/admin/orders/{{orderId}}"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Cancel order"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "Cancel order",
-            "exact": false
+            "role": "dialog",
+            "name": "Cancel order?"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Reason",
+            "dialog": "Cancel order?"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Cancel order?"
           }
         }
       ]
@@ -61,13 +96,27 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{cancelledOrderId}}"
         },
         {
           "kind": "show",
           "target": {
             "role": "heading",
             "name": "Timeline"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Payment evidence"
           }
         }
       ]
@@ -83,7 +132,21 @@
         },
         {
           "kind": "goto",
-          "path": "/admin/orders/{{orderId}}"
+          "path": "/admin/orders/{{dispatchedCancelledOrderId}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Physical inventory recovery"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "heading",
+            "name": "Timeline"
+          }
         },
         {
           "kind": "show",

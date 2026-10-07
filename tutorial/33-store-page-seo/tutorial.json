@@ -18,8 +18,13 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Store settings"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Home page SEO\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#home-seo-title"
           }
         }
       ]
@@ -36,8 +41,19 @@
         {
           "kind": "show",
           "target": {
-            "text": "Home page SEO",
-            "exact": false
+            "css": "#home-seo-title"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "#home-seo-image"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card-title\"]:text-is(\"Home page SEO\")"
           }
         }
       ]
@@ -54,8 +70,19 @@
         {
           "kind": "show",
           "target": {
-            "text": "About page SEO",
-            "exact": false
+            "css": "[data-slot=\"card\"]:has(#home-seo-title) button:text-is(\"Save draft\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card\"]:has(#home-seo-title) button:text-is(\"Publish SEO\")"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[data-slot=\"card\"]:has(#home-seo-title) button:text-is(\"Reload saved version\")"
           }
         }
       ]
@@ -72,8 +99,7 @@
         {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Store settings"
+            "css": "[data-slot=\"card-title\"]:text-is(\"Home page SEO\")"
           }
         }
       ]
