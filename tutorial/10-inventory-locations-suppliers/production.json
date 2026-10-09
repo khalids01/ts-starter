@@ -18,6 +18,13 @@
         {
           "kind": "goto",
           "path": "/admin/inventory"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
+          }
         }
       ],
       "target": {
@@ -30,7 +37,15 @@
       "id": "02",
       "scene": "01",
       "text": "Suppliers record where it comes from.",
-      "actions": [],
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Suppliers"
+          }
+        }
+      ],
       "target": {
         "role": "tab",
         "name": "Suppliers"
@@ -41,7 +56,15 @@
       "id": "03",
       "scene": "01",
       "text": "Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.",
-      "actions": [],
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
+          }
+        }
+      ],
       "target": {
         "role": "tab",
         "name": "Locations"

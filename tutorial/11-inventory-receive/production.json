@@ -151,7 +151,7 @@
           "kind": "click",
           "target": {
             "role": "tab",
-            "name": "Movements"
+            "name": "Stock"
           }
         }
       ],

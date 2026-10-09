@@ -152,7 +152,7 @@
           "kind": "click",
           "target": {
             "role": "tab",
-            "name": "Stock"
+            "name": "Movements"
           }
         }
       ],

@@ -51,7 +51,7 @@
         }
       ],
       "target": {
-        "field": "Received stock"
+        "css": "label:text-is(\"Received stock\") + select"
       },
       "evidence": "controls"
     },
@@ -104,7 +104,7 @@
       "text": "Receiving a quantity alone does not prove that eligible identifiable units exist.",
       "actions": [],
       "target": {
-        "field": "Received stock"
+        "css": "label:text-is(\"Received stock\") + select"
       },
       "evidence": "controls"
     },

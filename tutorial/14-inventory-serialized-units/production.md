@@ -22,7 +22,7 @@ Evidence: controls.
 
 Choose the correct stock row.
 
-Focus: `{"field":"Received stock"}`
+Focus: `{"css":"label:text-is(\"Received stock\") + select"}`
 
 Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`; `{"kind":"click","target":{"role":"tab","name":"Stock"}}`.
 
@@ -58,7 +58,7 @@ Evidence: controls.
 
 Receiving a quantity alone does not prove that eligible identifiable units exist.
 
-Focus: `{"field":"Received stock"}`
+Focus: `{"css":"label:text-is(\"Received stock\") + select"}`
 
 Evidence: controls.
 

@@ -92,7 +92,7 @@ Open Stock and Movements to verify the receipt.
 
 Focus: `{"role":"tab","name":"Stock"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`; `{"kind":"click","target":{"role":"tab","name":"Movements"}}`.
+Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`; `{"kind":"click","target":{"role":"tab","name":"Stock"}}`.
 
 Evidence: controls.
 

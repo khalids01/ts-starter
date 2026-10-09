@@ -92,6 +92,6 @@ Use Movements to investigate a discrepancy before making an adjustment. Compare 
 
 Focus: `{"role":"tab","name":"Movements"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`; `{"kind":"click","target":{"role":"tab","name":"Stock"}}`.
+Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`; `{"kind":"click","target":{"role":"tab","name":"Movements"}}`.
 
 Evidence: controls.

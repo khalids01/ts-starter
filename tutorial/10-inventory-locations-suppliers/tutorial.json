@@ -16,7 +16,7 @@
           "path": "/admin/inventory"
         },
         {
-          "kind": "show",
+          "kind": "click",
           "target": {
             "role": "tab",
             "name": "Locations"
@@ -26,7 +26,28 @@
           "kind": "show",
           "target": {
             "role": "tab",
+            "name": "Locations"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
             "name": "Suppliers"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "tab",
+            "name": "Suppliers"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "tab",
+            "name": "Locations"
           }
         },
         {

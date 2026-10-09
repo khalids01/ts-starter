@@ -50,7 +50,7 @@
         {
           "kind": "show",
           "target": {
-            "field": "Received stock"
+            "css": "label:text-is(\"Received stock\") + select"
           }
         },
         {
@@ -93,7 +93,7 @@
         {
           "kind": "show",
           "target": {
-            "field": "Received stock"
+            "css": "label:text-is(\"Received stock\") + select"
           }
         },
         {

@@ -14,7 +14,7 @@ Inventory locations identify where stock is held.
 
 Focus: `{"role":"tab","name":"Locations"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`.
+Prepare frame: `{"kind":"goto","path":"/admin/inventory"}`; `{"kind":"click","target":{"role":"tab","name":"Locations"}}`.
 
 Evidence: controls.
 
@@ -24,6 +24,8 @@ Suppliers record where it comes from.
 
 Focus: `{"role":"tab","name":"Suppliers"}`
 
+Prepare frame: `{"kind":"click","target":{"role":"tab","name":"Suppliers"}}`.
+
 Evidence: controls.
 
 ## 03 · Scene 01
@@ -31,6 +33,8 @@ Evidence: controls.
 Open Inventory and choose Locations or Suppliers. Prepare these records before receiving stock so inventory movements have the correct operational context.
 
 Focus: `{"role":"tab","name":"Locations"}`
+
+Prepare frame: `{"kind":"click","target":{"role":"tab","name":"Locations"}}`.
 
 Evidence: controls.
 
