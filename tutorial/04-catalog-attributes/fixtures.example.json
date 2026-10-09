@@ -1,9 +1,18 @@
 {
   "marker": "tutorial-catalog-attributes",
   "values": {
-    "attributeName": "REPLACE_WITH_OWNED_ATTRIBUTE_NAME"
+    "attributeName": "tutorial-catalog-attributes-material",
+    "attributeSlug": "tutorial-catalog-attributes-material-finish",
+    "productName": "tutorial-catalog-attributes-demo-product",
+    "productId": "REPLACE_WITH_OWNED_PRODUCT_ID"
   },
-  "ownershipChecks": [],
+  "ownershipChecks": [
+    {
+      "path": "/admin/products/{{productId}}",
+      "field": "name",
+      "equals": "{{productName}}"
+    }
+  ],
   "outcomeChecks": [],
   "cleanup": []
 }

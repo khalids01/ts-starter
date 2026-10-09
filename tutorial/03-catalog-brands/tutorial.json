@@ -62,6 +62,14 @@
           }
         },
         {
+          "kind": "fill",
+          "target": {
+            "field": "Name",
+            "dialog": "Create brand"
+          },
+          "value": "{{brandName}}"
+        },
+        {
           "kind": "show",
           "target": {
             "field": "Name",
@@ -69,9 +77,38 @@
           }
         },
         {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create brand"
+          },
+          "value": "{{brandSlug}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Logo image",
+            "dialog": "Create brand"
+          }
+        },
+        {
           "kind": "show",
           "target": {
             "field": "Website URL",
+            "dialog": "Create brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Description",
             "dialog": "Create brand"
           }
         },
@@ -85,8 +122,15 @@
         {
           "kind": "show",
           "target": {
-            "field": "Website URL",
+            "css": "label:has-text(\"Featured\")",
             "dialog": "Create brand"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "role": "dialog",
+            "name": "Create brand"
           }
         }
       ]
@@ -117,14 +161,16 @@
         {
           "kind": "fill",
           "target": {
-            "field": "Name"
+            "field": "Name",
+            "dialog": "Create brand"
           },
           "value": "{{brandName}}"
         },
         {
           "kind": "fill",
           "target": {
-            "field": "Slug"
+            "field": "Slug",
+            "dialog": "Create brand"
           },
           "value": "{{brandSlug}}"
         },
@@ -132,7 +178,8 @@
           "kind": "submit",
           "target": {
             "role": "button",
-            "name": "Save"
+            "name": "Save",
+            "dialog": "Create brand"
           },
           "capture": {
             "key": "brandId",
@@ -178,7 +225,9 @@
         {
           "kind": "show",
           "target": {
-            "text": "{{brandName}}"
+            "role": "button",
+            "name": "Open brand actions",
+            "row": "{{brandName}}"
           }
         },
         {

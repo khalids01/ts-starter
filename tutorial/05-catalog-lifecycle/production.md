@@ -36,50 +36,78 @@ Evidence: controls.
 
 ## 04 · Scene 02
 
-Find the intended record and open its row menu. Choose Archive and read the confirmation before accepting.
+Find the intended record and open its row menu.
 
-Focus: `{"text":"{{categoryName}}"}`
+Focus: `{"css":"[role=\"menu\"]","within":"page"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Categories"}}`.
+Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Categories"}}`; `{"kind":"click","target":{"role":"button","name":"Open category actions","row":"{{categoryName}}"}}`.
 
 Evidence: controls.
 
 ## 05 · Scene 02
 
-Check that the record disappears from Current and appears in Archived. Dependencies and permissions are still enforced by the server.
+Choose Archive and read the confirmation before accepting.
 
-Focus: `{"role":"tab","name":"Archived"}`
+Focus: `{"css":"[role=\"alertdialog\"]","within":"page"}`
 
-Prepare frame: `{"kind":"click","target":{"role":"tab","name":"Archived"}}`.
+Prepare frame: `{"kind":"click","target":{"role":"menuitem","name":"Archive","within":"page"}}`.
 
 Evidence: controls.
 
-## 06 · Scene 03
+## 06 · Scene 02
 
-To bring a record back, open Archived and use Restore. Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed.
+Check that the record disappears from Current and appears in Archived.
+
+Focus: `{"text":"{{archivedCategoryName}}"}`
+
+Prepare frame: `{"kind":"key","key":"Escape"}`; `{"kind":"click","target":{"role":"tab","name":"Archived"}}`.
+
+Evidence: controls.
+
+## 07 · Scene 02
+
+Dependencies and permissions are still enforced by the server.
 
 Focus: `{"role":"tab","name":"Archived"}`
+
+Evidence: controls.
+
+## 08 · Scene 03
+
+To bring a record back, open Archived and use Restore.
+
+Focus: `{"role":"button","name":"Restore {{archivedCategoryName}}","within":"page"}`
 
 Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Categories"}}`; `{"kind":"click","target":{"role":"tab","name":"Archived"}}`.
 
 Evidence: controls.
 
-## 07 · Scene 03
+## 09 · Scene 03
+
+Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed.
+
+Focus: `{"css":"[role=\"alertdialog\"]","within":"page"}`
+
+Prepare frame: `{"kind":"click","target":{"role":"button","name":"Restore {{archivedCategoryName}}","within":"page"}}`.
+
+Evidence: controls.
+
+## 10 · Scene 03
 
 Return to Current to confirm the result.
 
 Focus: `{"role":"tab","name":"Current"}`
 
-Prepare frame: `{"kind":"click","target":{"role":"tab","name":"Current"}}`.
+Prepare frame: `{"kind":"key","key":"Escape"}`; `{"kind":"click","target":{"role":"tab","name":"Current"}}`.
 
 Evidence: controls.
 
-## 08 · Scene 04
+## 11 · Scene 04
 
 Permanent deletion is for eligible records that can be safely removed. Read the dependency checks instead of repeatedly forcing the action. A record used by products or historical data may be blocked. Preserve history whenever deleting would break a valid reference.
 
-Focus: `{"role":"tab","name":"Current"}`
+Focus: `{"css":"[role=\"alertdialog\"]","within":"page"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Categories"}}`; `{"kind":"click","target":{"role":"tab","name":"Current"}}`.
+Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Categories"}}`; `{"kind":"click","target":{"role":"tab","name":"Archived"}}`; `{"kind":"click","target":{"role":"button","name":"Delete {{archivedCategoryName}}","within":"page"}}`.
 
 Evidence: controls.

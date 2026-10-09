@@ -20,9 +20,9 @@ Evidence: controls.
 
 ## 02 · Scene 02
 
-Select Attribute and enter a name, slug and field type.
+Select Attribute
 
-Focus: `{"field":"Name","dialog":"Create attribute"}`
+Focus: `{"role":"dialog","name":"Create attribute"}`
 
 Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Attributes"}}`; `{"kind":"click","target":{"role":"button","name":"Attribute"}}`.
 
@@ -30,21 +30,57 @@ Evidence: controls.
 
 ## 03 · Scene 02
 
+and enter a name,
+
+Focus: `{"field":"Name","dialog":"Create attribute"}`
+
+Prepare frame: `{"kind":"fill","target":{"field":"Name","dialog":"Create attribute"},"value":"{{attributeName}}"}`.
+
+Evidence: controls.
+
+## 04 · Scene 02
+
+slug
+
+Focus: `{"field":"Slug","dialog":"Create attribute"}`
+
+Prepare frame: `{"kind":"fill","target":{"field":"Slug","dialog":"Create attribute"},"value":"{{attributeSlug}}"}`.
+
+Evidence: controls.
+
+## 05 · Scene 02
+
+and field type.
+
+Focus: `{"field":"Type","dialog":"Create attribute"}`
+
+Evidence: controls.
+
+## 06 · Scene 02
+
 Choose a type that matches the information: text, number or a supported choice type.
 
 Focus: `{"field":"Type","dialog":"Create attribute"}`
 
 Evidence: controls.
 
-## 04 · Scene 02
+## 07 · Scene 02
 
-Assign relevant categories and decide whether customers should be able to filter by it.
+Assign relevant categories
 
 Focus: `{"text":"Product categories","dialog":"Create attribute"}`
 
 Evidence: controls.
 
-## 05 · Scene 03
+## 08 · Scene 02
+
+and decide whether customers should be able to filter by it.
+
+Focus: `{"css":"label:has-text(\"Filterable\")","dialog":"Create attribute"}`
+
+Evidence: controls.
+
+## 09 · Scene 03
 
 Save the attribute, then configure its supported values and template placement through the catalog controls.
 
@@ -54,20 +90,22 @@ Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","targ
 
 Evidence: controls.
 
-## 06 · Scene 03
+## 10 · Scene 03
 
 Product details, variant options and inventory fields serve different purposes. A size option for a SKU is different from a descriptive specification.
 
-Focus: `{"text":"Product categories","dialog":"Create attribute"}`
+Focus: `{"text":"{{attributeName}}"}`
+
+Prepare frame: `{"kind":"key","key":"Escape"}`.
 
 Evidence: controls.
 
-## 07 · Scene 04
+## 11 · Scene 04
 
 Open a prepared product to check the resulting fields. Required values must be present before readiness validation succeeds. Review existing category templates before removing values or making fields required; historical product data must remain understandable.
 
-Focus: `{"text":"{{attributeName}}"}`
+Focus: `{"css":"label:has-text(\"{{attributeName}}\") >> .."}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Attributes"}}`.
+Prepare frame: `{"kind":"goto","path":"/admin/products/{{productId}}"}`; `{"kind":"click","target":{"role":"button","name":"3 Specs"}}`.
 
 Evidence: controls.

@@ -66,8 +66,17 @@
     {
       "id": "03",
       "scene": "02",
-      "text": "Enter its name and slug.",
-      "actions": [],
+      "text": "Enter its name",
+      "actions": [
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name",
+            "dialog": "Create brand"
+          },
+          "value": "{{brandName}}"
+        }
+      ],
       "target": {
         "field": "Name",
         "dialog": "Create brand"
@@ -77,10 +86,19 @@
     {
       "id": "04",
       "scene": "02",
-      "text": "You can add a logo, website URL and description when those details are known.",
-      "actions": [],
+      "text": "and slug.",
+      "actions": [
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create brand"
+          },
+          "value": "{{brandSlug}}"
+        }
+      ],
       "target": {
-        "field": "Website URL",
+        "field": "Slug",
         "dialog": "Create brand"
       },
       "evidence": "controls"
@@ -88,10 +106,10 @@
     {
       "id": "05",
       "scene": "02",
-      "text": "Active and featured control the record state and presentation.",
+      "text": "You can add a logo,",
       "actions": [],
       "target": {
-        "css": "label:has-text(\"Active\")",
+        "field": "Logo image",
         "dialog": "Create brand"
       },
       "evidence": "controls"
@@ -99,7 +117,7 @@
     {
       "id": "06",
       "scene": "02",
-      "text": "Leave optional facts empty rather than inventing them.",
+      "text": "website URL",
       "actions": [],
       "target": {
         "field": "Website URL",
@@ -109,6 +127,50 @@
     },
     {
       "id": "07",
+      "scene": "02",
+      "text": "and description when those details are known.",
+      "actions": [],
+      "target": {
+        "field": "Description",
+        "dialog": "Create brand"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "08",
+      "scene": "02",
+      "text": "Active",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"Active\")",
+        "dialog": "Create brand"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
+      "scene": "02",
+      "text": "and featured control the record state and presentation.",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"Featured\")",
+        "dialog": "Create brand"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
+      "scene": "02",
+      "text": "Leave optional facts empty rather than inventing them.",
+      "actions": [],
+      "target": {
+        "role": "dialog",
+        "name": "Create brand"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "11",
       "scene": "03",
       "text": "Save the brand and check that it appears in the list. When editing a product, its category brand policy decides whether a brand is optional, required or unavailable. Selecting a brand does not create inventory or activate the product.",
       "actions": [
@@ -133,14 +195,16 @@
         {
           "kind": "fill",
           "target": {
-            "field": "Name"
+            "field": "Name",
+            "dialog": "Create brand"
           },
           "value": "{{brandName}}"
         },
         {
           "kind": "fill",
           "target": {
-            "field": "Slug"
+            "field": "Slug",
+            "dialog": "Create brand"
           },
           "value": "{{brandSlug}}"
         },
@@ -148,7 +212,8 @@
           "kind": "submit",
           "target": {
             "role": "button",
-            "name": "Save"
+            "name": "Save",
+            "dialog": "Create brand"
           },
           "capture": {
             "key": "brandId",
@@ -186,7 +251,7 @@
       ]
     },
     {
-      "id": "08",
+      "id": "12",
       "scene": "04",
       "text": "Use the row actions to edit a brand.",
       "actions": [
@@ -203,12 +268,14 @@
         }
       ],
       "target": {
-        "text": "{{brandName}}"
+        "role": "button",
+        "name": "Open brand actions",
+        "row": "{{brandName}}"
       },
       "evidence": "controls"
     },
     {
-      "id": "09",
+      "id": "13",
       "scene": "04",
       "text": "Archive and restore belong to the catalog lifecycle workflow.",
       "actions": [
@@ -227,7 +294,7 @@
       "evidence": "controls"
     },
     {
-      "id": "10",
+      "id": "14",
       "scene": "04",
       "text": "Permanent deletion is guarded by dependencies; a brand already referenced by other records may need to remain available as history.",
       "actions": [

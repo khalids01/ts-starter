@@ -30,59 +30,95 @@ Evidence: controls.
 
 ## 03 · Scene 02
 
-Enter its name and slug.
+Enter its name
 
 Focus: `{"field":"Name","dialog":"Create brand"}`
+
+Prepare frame: `{"kind":"fill","target":{"field":"Name","dialog":"Create brand"},"value":"{{brandName}}"}`.
 
 Evidence: controls.
 
 ## 04 · Scene 02
 
-You can add a logo, website URL and description when those details are known.
+and slug.
 
-Focus: `{"field":"Website URL","dialog":"Create brand"}`
+Focus: `{"field":"Slug","dialog":"Create brand"}`
+
+Prepare frame: `{"kind":"fill","target":{"field":"Slug","dialog":"Create brand"},"value":"{{brandSlug}}"}`.
 
 Evidence: controls.
 
 ## 05 · Scene 02
 
-Active and featured control the record state and presentation.
+You can add a logo,
 
-Focus: `{"css":"label:has-text(\"Active\")","dialog":"Create brand"}`
+Focus: `{"field":"Logo image","dialog":"Create brand"}`
 
 Evidence: controls.
 
 ## 06 · Scene 02
 
-Leave optional facts empty rather than inventing them.
+website URL
 
 Focus: `{"field":"Website URL","dialog":"Create brand"}`
 
 Evidence: controls.
 
-## 07 · Scene 03
+## 07 · Scene 02
+
+and description when those details are known.
+
+Focus: `{"field":"Description","dialog":"Create brand"}`
+
+Evidence: controls.
+
+## 08 · Scene 02
+
+Active
+
+Focus: `{"css":"label:has-text(\"Active\")","dialog":"Create brand"}`
+
+Evidence: controls.
+
+## 09 · Scene 02
+
+and featured control the record state and presentation.
+
+Focus: `{"css":"label:has-text(\"Featured\")","dialog":"Create brand"}`
+
+Evidence: controls.
+
+## 10 · Scene 02
+
+Leave optional facts empty rather than inventing them.
+
+Focus: `{"role":"dialog","name":"Create brand"}`
+
+Evidence: controls.
+
+## 11 · Scene 03
 
 Save the brand and check that it appears in the list. When editing a product, its category brand policy decides whether a brand is optional, required or unavailable. Selecting a brand does not create inventory or activate the product.
 
 Focus: `{"text":"{{brandName}}"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Brands"}}`; `{"kind":"click","target":{"role":"button","name":"Brand"}}`; `{"kind":"fill","target":{"field":"Name"},"value":"{{brandName}}"}`; `{"kind":"fill","target":{"field":"Slug"},"value":"{{brandSlug}}"}`; `{"kind":"submit","target":{"role":"button","name":"Save"},"capture":{"key":"brandId","responsePath":"/admin/catalog/brands","field":"id"}}`; `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Brands"}}`.
+Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Brands"}}`; `{"kind":"click","target":{"role":"button","name":"Brand"}}`; `{"kind":"fill","target":{"field":"Name","dialog":"Create brand"},"value":"{{brandName}}"}`; `{"kind":"fill","target":{"field":"Slug","dialog":"Create brand"},"value":"{{brandSlug}}"}`; `{"kind":"submit","target":{"role":"button","name":"Save","dialog":"Create brand"},"capture":{"key":"brandId","responsePath":"/admin/catalog/brands","field":"id"}}`; `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Brands"}}`.
 
 Evidence: persisted-result.
 
 Required API checks: `[{"path":"/admin/catalog/brands?search={{brandName}}&limit=100","field":"items.0.name","equals":"{{brandName}}"},{"path":"/admin/catalog/brands?search={{brandName}}&limit=100","field":"items.0.id","equals":"{{brandId}}"}]`
 
-## 08 · Scene 04
+## 12 · Scene 04
 
 Use the row actions to edit a brand.
 
-Focus: `{"text":"{{brandName}}"}`
+Focus: `{"role":"button","name":"Open brand actions","row":"{{brandName}}"}`
 
 Prepare frame: `{"kind":"goto","path":"/admin/catalog"}`; `{"kind":"click","target":{"role":"tab","name":"Brands"}}`.
 
 Evidence: controls.
 
-## 09 · Scene 04
+## 13 · Scene 04
 
 Archive and restore belong to the catalog lifecycle workflow.
 
@@ -92,7 +128,7 @@ Prepare frame: `{"kind":"click","target":{"role":"tab","name":"Archived"}}`.
 
 Evidence: controls.
 
-## 10 · Scene 04
+## 14 · Scene 04
 
 Permanent deletion is guarded by dependencies; a brand already referenced by other records may need to remain available as history.
 

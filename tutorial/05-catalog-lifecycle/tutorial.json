@@ -62,16 +62,50 @@
           }
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open category actions",
+            "row": "{{categoryName}}"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "{{categoryName}}"
+            "css": "[role=\"menu\"]",
+            "within": "page"
           }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "menuitem",
+            "name": "Archive",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[role=\"alertdialog\"]",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "key",
+          "key": "Escape"
         },
         {
           "kind": "click",
           "target": {
             "role": "tab",
             "name": "Archived"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "text": "{{archivedCategoryName}}"
           }
         },
         {
@@ -109,9 +143,29 @@
         {
           "kind": "show",
           "target": {
-            "role": "tab",
-            "name": "Archived"
+            "role": "button",
+            "name": "Restore {{archivedCategoryName}}",
+            "within": "page"
           }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Restore {{archivedCategoryName}}",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[role=\"alertdialog\"]",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "key",
+          "key": "Escape"
         },
         {
           "kind": "click",
@@ -149,14 +203,22 @@
           "kind": "click",
           "target": {
             "role": "tab",
-            "name": "Current"
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Delete {{archivedCategoryName}}",
+            "within": "page"
           }
         },
         {
           "kind": "show",
           "target": {
-            "role": "tab",
-            "name": "Current"
+            "css": "[role=\"alertdialog\"]",
+            "within": "page"
           }
         }
       ]

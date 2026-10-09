@@ -58,7 +58,7 @@
     {
       "id": "04",
       "scene": "02",
-      "text": "Find the intended record and open its row menu. Choose Archive and read the confirmation before accepting.",
+      "text": "Find the intended record and open its row menu.",
       "actions": [
         {
           "kind": "goto",
@@ -70,18 +70,51 @@
             "role": "tab",
             "name": "Categories"
           }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open category actions",
+            "row": "{{categoryName}}"
+          }
         }
       ],
       "target": {
-        "text": "{{categoryName}}"
+        "css": "[role=\"menu\"]",
+        "within": "page"
       },
       "evidence": "controls"
     },
     {
       "id": "05",
       "scene": "02",
-      "text": "Check that the record disappears from Current and appears in Archived. Dependencies and permissions are still enforced by the server.",
+      "text": "Choose Archive and read the confirmation before accepting.",
       "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "menuitem",
+            "name": "Archive",
+            "within": "page"
+          }
+        }
+      ],
+      "target": {
+        "css": "[role=\"alertdialog\"]",
+        "within": "page"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
+      "scene": "02",
+      "text": "Check that the record disappears from Current and appears in Archived.",
+      "actions": [
+        {
+          "kind": "key",
+          "key": "Escape"
+        },
         {
           "kind": "click",
           "target": {
@@ -91,15 +124,25 @@
         }
       ],
       "target": {
+        "text": "{{archivedCategoryName}}"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "07",
+      "scene": "02",
+      "text": "Dependencies and permissions are still enforced by the server.",
+      "actions": [],
+      "target": {
         "role": "tab",
         "name": "Archived"
       },
       "evidence": "controls"
     },
     {
-      "id": "06",
+      "id": "08",
       "scene": "03",
-      "text": "To bring a record back, open Archived and use Restore. Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed.",
+      "text": "To bring a record back, open Archived and use Restore.",
       "actions": [
         {
           "kind": "goto",
@@ -121,16 +164,41 @@
         }
       ],
       "target": {
-        "role": "tab",
-        "name": "Archived"
+        "role": "button",
+        "name": "Restore {{archivedCategoryName}}",
+        "within": "page"
       },
       "evidence": "controls"
     },
     {
-      "id": "07",
+      "id": "09",
+      "scene": "03",
+      "text": "Read any dependency message: a referenced category, brand or option may need attention before recovery is allowed.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Restore {{archivedCategoryName}}",
+            "within": "page"
+          }
+        }
+      ],
+      "target": {
+        "css": "[role=\"alertdialog\"]",
+        "within": "page"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "10",
       "scene": "03",
       "text": "Return to Current to confirm the result.",
       "actions": [
+        {
+          "kind": "key",
+          "key": "Escape"
+        },
         {
           "kind": "click",
           "target": {
@@ -146,7 +214,7 @@
       "evidence": "controls"
     },
     {
-      "id": "08",
+      "id": "11",
       "scene": "04",
       "text": "Permanent deletion is for eligible records that can be safely removed. Read the dependency checks instead of repeatedly forcing the action. A record used by products or historical data may be blocked. Preserve history whenever deleting would break a valid reference.",
       "actions": [
@@ -165,13 +233,21 @@
           "kind": "click",
           "target": {
             "role": "tab",
-            "name": "Current"
+            "name": "Archived"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Delete {{archivedCategoryName}}",
+            "within": "page"
           }
         }
       ],
       "target": {
-        "role": "tab",
-        "name": "Current"
+        "css": "[role=\"alertdialog\"]",
+        "within": "page"
       },
       "evidence": "controls"
     }

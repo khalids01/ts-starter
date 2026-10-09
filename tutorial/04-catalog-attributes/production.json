@@ -36,7 +36,7 @@
     {
       "id": "02",
       "scene": "02",
-      "text": "Select Attribute and enter a name, slug and field type.",
+      "text": "Select Attribute",
       "actions": [
         {
           "kind": "goto",
@@ -58,13 +58,64 @@
         }
       ],
       "target": {
+        "role": "dialog",
+        "name": "Create attribute"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "03",
+      "scene": "02",
+      "text": "and enter a name,",
+      "actions": [
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name",
+            "dialog": "Create attribute"
+          },
+          "value": "{{attributeName}}"
+        }
+      ],
+      "target": {
         "field": "Name",
         "dialog": "Create attribute"
       },
       "evidence": "controls"
     },
     {
-      "id": "03",
+      "id": "04",
+      "scene": "02",
+      "text": "slug",
+      "actions": [
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create attribute"
+          },
+          "value": "{{attributeSlug}}"
+        }
+      ],
+      "target": {
+        "field": "Slug",
+        "dialog": "Create attribute"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "05",
+      "scene": "02",
+      "text": "and field type.",
+      "actions": [],
+      "target": {
+        "field": "Type",
+        "dialog": "Create attribute"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "06",
       "scene": "02",
       "text": "Choose a type that matches the information: text, number or a supported choice type.",
       "actions": [],
@@ -75,9 +126,9 @@
       "evidence": "controls"
     },
     {
-      "id": "04",
+      "id": "07",
       "scene": "02",
-      "text": "Assign relevant categories and decide whether customers should be able to filter by it.",
+      "text": "Assign relevant categories",
       "actions": [],
       "target": {
         "text": "Product categories",
@@ -86,7 +137,18 @@
       "evidence": "controls"
     },
     {
-      "id": "05",
+      "id": "08",
+      "scene": "02",
+      "text": "and decide whether customers should be able to filter by it.",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"Filterable\")",
+        "dialog": "Create attribute"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "09",
       "scene": "03",
       "text": "Save the attribute, then configure its supported values and template placement through the catalog controls.",
       "actions": [
@@ -117,35 +179,39 @@
       "evidence": "controls"
     },
     {
-      "id": "06",
+      "id": "10",
       "scene": "03",
       "text": "Product details, variant options and inventory fields serve different purposes. A size option for a SKU is different from a descriptive specification.",
-      "actions": [],
+      "actions": [
+        {
+          "kind": "key",
+          "key": "Escape"
+        }
+      ],
       "target": {
-        "text": "Product categories",
-        "dialog": "Create attribute"
+        "text": "{{attributeName}}"
       },
       "evidence": "controls"
     },
     {
-      "id": "07",
+      "id": "11",
       "scene": "04",
       "text": "Open a prepared product to check the resulting fields. Required values must be present before readiness validation succeeds. Review existing category templates before removing values or making fields required; historical product data must remain understandable.",
       "actions": [
         {
           "kind": "goto",
-          "path": "/admin/catalog"
+          "path": "/admin/products/{{productId}}"
         },
         {
           "kind": "click",
           "target": {
-            "role": "tab",
-            "name": "Attributes"
+            "role": "button",
+            "name": "3 Specs"
           }
         }
       ],
       "target": {
-        "text": "{{attributeName}}"
+        "css": "label:has-text(\"{{attributeName}}\") >> .."
       },
       "evidence": "controls"
     }

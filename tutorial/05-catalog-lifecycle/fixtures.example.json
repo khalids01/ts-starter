@@ -1,7 +1,8 @@
 {
   "marker": "tutorial-catalog-lifecycle",
   "values": {
-    "categoryName": "REPLACE_WITH_UNUSED_OWNED_CATEGORY"
+    "categoryName": "tutorial-catalog-lifecycle-unused",
+    "archivedCategoryName": "tutorial-catalog-lifecycle-archived"
   },
   "ownershipChecks": [],
   "outcomeChecks": [],

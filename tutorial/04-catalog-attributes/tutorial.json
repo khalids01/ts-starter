@@ -57,7 +57,44 @@
         {
           "kind": "show",
           "target": {
+            "role": "dialog",
+            "name": "Create attribute"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
             "field": "Name",
+            "dialog": "Create attribute"
+          },
+          "value": "{{attributeName}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Name",
+            "dialog": "Create attribute"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create attribute"
+          },
+          "value": "{{attributeSlug}}"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create attribute"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Type",
             "dialog": "Create attribute"
           }
         },
@@ -72,6 +109,13 @@
           "kind": "show",
           "target": {
             "text": "Product categories",
+            "dialog": "Create attribute"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "label:has-text(\"Filterable\")",
             "dialog": "Create attribute"
           }
         }
@@ -109,10 +153,13 @@
           }
         },
         {
+          "kind": "key",
+          "key": "Escape"
+        },
+        {
           "kind": "show",
           "target": {
-            "text": "Product categories",
-            "dialog": "Create attribute"
+            "text": "{{attributeName}}"
           }
         }
       ]
@@ -124,19 +171,19 @@
       "actions": [
         {
           "kind": "goto",
-          "path": "/admin/catalog"
+          "path": "/admin/products/{{productId}}"
         },
         {
           "kind": "click",
           "target": {
-            "role": "tab",
-            "name": "Attributes"
+            "role": "button",
+            "name": "3 Specs"
           }
         },
         {
           "kind": "show",
           "target": {
-            "text": "{{attributeName}}"
+            "css": "label:has-text(\"{{attributeName}}\") >> .."
           }
         }
       ]
