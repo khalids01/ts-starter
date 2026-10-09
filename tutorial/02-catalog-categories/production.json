@@ -64,7 +64,24 @@
       "id": "04",
       "scene": "02",
       "text": "Enter a clear name and readable slug.",
-      "actions": [],
+      "actions": [
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Name",
+            "dialog": "Create category"
+          },
+          "value": "{{categoryName}}"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create category"
+          },
+          "value": "{{categorySlug}}"
+        }
+      ],
       "target": {
         "field": "Name",
         "dialog": "Create category"
@@ -85,18 +102,37 @@
     {
       "id": "06",
       "scene": "02",
-      "text": "Choose the brand policy and product handling deliberately: standard, packaged food, fresh food, gadget or clothing. Handling is configured on each category and is not inherited from its parent.",
+      "text": "Choose the brand policy",
       "actions": [],
       "target": {
-        "field": "Product handling",
+        "field": "Brand policy",
         "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "060",
+      "scene": "02",
+      "text": "and product handling deliberately: standard, packaged food, fresh food, gadget or clothing. Handling is configured on each category and is not inherited from its parent.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Create category"
+          }
+        }
+      ],
+      "target": {
+        "css": "[role=listbox]",
+        "within": "page"
       },
       "evidence": "controls"
     },
     {
       "id": "07",
       "scene": "03",
-      "text": "For a gadget category, configure unit tracking and warranty days when they apply.",
+      "text": "For a gadget category, configure unit tracking",
       "actions": [
         {
           "kind": "goto",
@@ -132,10 +168,38 @@
             "dialog": "Create category"
           },
           "value": "{{categorySlug}}"
+        },
+        {
+          "kind": "select",
+          "target": {
+            "field": "Unit tracking",
+            "dialog": "Create category"
+          },
+          "option": "Serial"
         }
       ],
       "target": {
         "field": "Unit tracking",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "070",
+      "scene": "03",
+      "text": "and warranty days when they apply.",
+      "actions": [
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Warranty days from delivery (0 disables)",
+            "dialog": "Create category"
+          },
+          "value": "365"
+        }
+      ],
+      "target": {
+        "field": "Warranty days from delivery (0 disables)",
         "dialog": "Create category"
       },
       "evidence": "controls"
@@ -163,7 +227,18 @@
     {
       "id": "09",
       "scene": "03",
-      "text": "Use the active and featured choices to control availability and presentation, then save the category.",
+      "text": "Use the active and featured choices to control availability and presentation,",
+      "actions": [],
+      "target": {
+        "css": "label:has-text(\"Active\") >> ..",
+        "dialog": "Create category"
+      },
+      "evidence": "controls"
+    },
+    {
+      "id": "090",
+      "scene": "03",
+      "text": "then save the category.",
       "actions": [
         {
           "kind": "submit",
@@ -197,7 +272,7 @@
     {
       "id": "10",
       "scene": "04",
-      "text": "Return to the category list and confirm the saved name and handling.",
+      "text": "Return to the category list and confirm the saved name",
       "actions": [
         {
           "kind": "goto",
@@ -217,10 +292,54 @@
       ]
     },
     {
+      "id": "100",
+      "scene": "04",
+      "text": "and handling.",
+      "actions": [
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open category actions",
+            "row": "{{categoryName}}"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "menuitem",
+            "name": "Edit",
+            "within": "page"
+          }
+        }
+      ],
+      "target": {
+        "field": "Product handling",
+        "dialog": "Edit category"
+      },
+      "evidence": "persisted-result",
+      "checks": [
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "name",
+          "equals": "{{categoryName}}"
+        },
+        {
+          "path": "/admin/catalog/categories/{{categoryId}}",
+          "field": "fulfillmentKind",
+          "equals": "clothing"
+        }
+      ]
+    },
+    {
       "id": "11",
       "scene": "04",
       "text": "Category template fields are configured through the category controls and determine what appears in the product builder. Changing a template is a catalog decision; review existing products before changing required fields.",
       "actions": [
+        {
+          "kind": "key",
+          "key": "Escape"
+        },
         {
           "kind": "click",
           "target": {

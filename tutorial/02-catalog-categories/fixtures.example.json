@@ -2,7 +2,7 @@
   "marker": "tutorial-catalog-categories",
   "values": {
     "categoryName": "tutorial-catalog-categories-demo",
-    "categorySlug": "tutorial-catalog-categories-demo"
+    "categorySlug": "tutorial-catalog-categories-clothing"
   },
   "ownershipChecks": [],
   "outcomeChecks": [
@@ -29,8 +29,13 @@
       "path": "/admin/catalog/lifecycle/category/{{categoryId}}/delete",
       "verify": [
         {
-          "path": "/admin/catalog/categories/{{categoryId}}",
-          "field": "name",
+          "path": "/admin/catalog/lifecycle/category?limit=100",
+          "field": "items",
+          "find": {
+            "field": "id",
+            "equals": "{{categoryId}}"
+          },
+          "property": "name",
           "equals": "{{categoryName}}"
         }
       ]

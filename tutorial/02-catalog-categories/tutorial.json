@@ -55,6 +55,22 @@
           }
         },
         {
+          "kind": "fill",
+          "target": {
+            "field": "Name",
+            "dialog": "Create category"
+          },
+          "value": "{{categoryName}}"
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Slug",
+            "dialog": "Create category"
+          },
+          "value": "{{categorySlug}}"
+        },
+        {
           "kind": "show",
           "target": {
             "field": "Name",
@@ -71,8 +87,22 @@
         {
           "kind": "show",
           "target": {
+            "field": "Brand policy",
+            "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
             "field": "Product handling",
             "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "[role=listbox]",
+            "within": "page"
           }
         }
       ]
@@ -118,9 +148,32 @@
           "value": "{{categorySlug}}"
         },
         {
+          "kind": "select",
+          "target": {
+            "field": "Unit tracking",
+            "dialog": "Create category"
+          },
+          "option": "Serial"
+        },
+        {
           "kind": "show",
           "target": {
             "field": "Unit tracking",
+            "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "fill",
+          "target": {
+            "field": "Warranty days from delivery (0 disables)",
+            "dialog": "Create category"
+          },
+          "value": "365"
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Warranty days from delivery (0 disables)",
             "dialog": "Create category"
           }
         },
@@ -136,6 +189,13 @@
           "kind": "show",
           "target": {
             "field": "Product handling",
+            "dialog": "Create category"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "css": "label:has-text(\"Active\") >> ..",
             "dialog": "Create category"
           }
         },
@@ -177,6 +237,33 @@
           "target": {
             "text": "{{categoryName}}"
           }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Open category actions",
+            "row": "{{categoryName}}"
+          }
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "menuitem",
+            "name": "Edit",
+            "within": "page"
+          }
+        },
+        {
+          "kind": "show",
+          "target": {
+            "field": "Product handling",
+            "dialog": "Edit category"
+          }
+        },
+        {
+          "kind": "key",
+          "key": "Escape"
         },
         {
           "kind": "click",
