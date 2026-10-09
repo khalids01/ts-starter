@@ -18,7 +18,7 @@ const video = await readFile(resolve(output, "video.mp4"));
 const hash = createHash("sha256").update(video).digest("hex");
 const review = JSON.parse(await readFile(resolve(output, "review.json"), "utf8")) as { tutorialId: string; runId: string; videoSha256: string };
 if (review.videoSha256 !== hash || review.tutorialId !== id || review.runId !== pointer.runId) throw new Error("Video differs from its render receipt");
-const metadata = { snippet: { title: entry.title, description: `${entry.description}\n\nAn admin panel walkthrough covering navigation and contextual tutorial help. Narration: Heart (Kokoro).`, categoryId: "28", defaultLanguage: "en", defaultAudioLanguage: "en" }, status: { privacyStatus: privacy, selfDeclaredMadeForKids: false, embeddable: true } };
+const metadata = { snippet: { title: entry.title, description: `${entry.description}\n\nNarration: Heart (Kokoro).`, categoryId: "28", defaultLanguage: "en", defaultAudioLanguage: "en" }, status: { privacyStatus: privacy, selfDeclaredMadeForKids: false, embeddable: true } };
 const local = resolve(output, "youtube");
 await mkdir(local, { recursive: true });
 await writeFile(resolve(local, "upload-plan.json"), JSON.stringify({ tutorialId: id, videoSha256: hash, bytes: video.length, metadata }, null, 2) + "\n");

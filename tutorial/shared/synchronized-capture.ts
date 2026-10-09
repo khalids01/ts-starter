@@ -119,6 +119,9 @@ export async function captureSections(directory: string, production: ProductionP
         Object.assign(badge.style, { position: "fixed", right: "16px", bottom: "16px", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", color: "#fff", font: "14px system-ui", zIndex: "2147483645" });
         document.body.appendChild(badge);
       }, segment.frameLabel);
+      // Disabled animations leave click ripples mounted; omit these transient
+      // effects from the held frame while retaining the pointer and spotlight.
+      await page.evaluate(() => document.querySelectorAll(".__tutorial_cursor_ripple").forEach(node => node.remove()));
       const image = resolve(output, `${segment.id}.png`);
       await page.screenshot({ path: image, animations: "disabled" });
       const input = audioInputs.get(segment.id)!;
@@ -161,7 +164,7 @@ async function settleProductionPage(page: Page) {
   await page.waitForLoadState("networkidle");
   if (await page.locator('script[src*="/@vite/"], script[src*="@react-refresh"]').count()) throw new Error("Development server detected; use the existing production build");
   await page.evaluate(() => document.fonts.ready);
-  await page.addStyleTag({ content: "*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }" });
+  await page.addStyleTag({ content: "*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; } [data-slot=select-content][data-closed] { visibility: hidden !important; }" });
   const styles = await page.evaluate(() => Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(link => ({ url: link.href, ready: Boolean(link.sheet) })));
   if (!styles.length || styles.some(style => !style.ready || !style.url.includes("/assets/"))) throw new Error("Built CSS not fully loaded");
   await page.waitForFunction(() => !Array.from(document.querySelectorAll('[aria-busy="true"], [data-slot="skeleton"]')).some(el => el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0));

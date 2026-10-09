@@ -26,7 +26,7 @@ export function resolveTarget(page: Page, target: Target, values: Record<string,
     const name = substitute(target.field, values);
     // Some existing forms use a visual Label without an associated input ID.
     return scope.locator("label").filter({ hasText: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) })
-      .locator("..").locator('input,textarea,button[role="combobox"],select');
+      .locator("..").locator('input:not([aria-hidden="true"]):not([type="hidden"]),textarea,button[role="combobox"],select');
   }
   throw new Error("A recording target must specify a role, field, text or CSS selector");
 }
