@@ -1,5 +1,31 @@
 # Connect the tutorial YouTube channel
 
+## Track production and pending uploads
+
+`tutorial/upload-ledger.json` is a generated snapshot of the local video files and saved YouTube receipts. Refresh it after recording or rendering:
+
+```bash
+bun run tutorial:uploads:status
+```
+
+It records the render path, video SHA-256, duration, playback approval flags, Guide status, YouTube ID, saved visibility/processing state and latest upload failure reason. `pendingUploadIds` lists valid rendered videos without matching upload receipts. It does not query YouTube; saved verification timestamps show how old that evidence is. A capture alone does not count as a completed video. A video hash mismatch, changed plan or incomplete latest render keeps it out of the upload queue.
+
+Preview the next pending review copies (no uploads):
+
+```bash
+bun run tutorial:uploads:batch --max=5
+```
+
+After authorizing those uploads, upload up to five unlisted copies:
+
+```bash
+bun run tutorial:uploads:batch --max=5 --visibility=unlisted --upload
+```
+
+Rerun the same command later to continue. It skips matching uploaded videos and reuses the individual uploader's resumable receipts. Upload successes and failures refresh the ledger automatically, including uploads made through the individual uploader. The batch stops on the first failure and records channel upload limits, API quota limits and rate limits separately by their returned reason. There is no unattended retry or assumed reset time. Guide publication still requires the accepted playback review and remains a separate command.
+
+YouTube's channel upload limit is separate from API project quota. See [official API errors](https://developers.google.com/youtube/v3/docs/errors). For a channel daily upload limit, [YouTube Help](https://support.google.com/youtube/answer/10383400) advises trying again in 24 hours.
+
 This integration reuses `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, the existing API server, owner login, and Redis. Channel authorization and the separate local upload client share these credentials.
 
 ## Google setup

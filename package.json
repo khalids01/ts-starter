@@ -61,7 +61,9 @@
     "tutorial:storyboards": "bun tutorial/shared/storyboards.ts",
     "tutorial:prepare": "bun tutorial/shared/cli.ts prepare",
     "tutorial:audio": "bun tutorial/shared/cli.ts audio",
-    "tutorial:check": "bun tutorial/shared/validate.ts"
+    "tutorial:check": "bun tutorial/shared/validate.ts",
+    "tutorial:uploads:status": "bun tutorial/shared/upload-ledger.ts",
+    "tutorial:uploads:batch": "bun tutorial/shared/upload-batch.ts"
   },
   "dependencies": {
     "@env": "workspace:*",

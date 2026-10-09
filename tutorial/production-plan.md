@@ -1,30 +1,30 @@
 # Tutorial production checklist
 
-43 focused topics plus one retained full workflow. Tutorial 01 is accepted and uploaded. Tutorial 02 has accepted Heart narration and a production UI video uploaded unlisted and published in the Guide catalog. Tutorials 03–43 have synchronized generation plans prepared; their audio, capture, rendering and playback review remain pending. See [production instructions](./synchronized-production.readme.md).
+43 focused topics plus one retained full workflow. Tutorial 01 is accepted and uploaded. Tutorial 02 has accepted Heart narration and a production UI video uploaded unlisted and published in the Guide catalog. Tutorials 03–20 now have rendered synchronized videos; 03–11 have saved YouTube upload receipts, while 12–20 await upload. Playback acceptance and Guide publication remain pending for 03–20. Tutorials 21–43 remain prepared for future production. See [production instructions](./synchronized-production.readme.md).
 
 | Folder | Topic | Capture mode (prepared code) | Audio | Review |
 | --- | --- | --- | --- | --- |
 | `00-product-to-completed-order` | From product setup to a completed order | Legacy continuous | Existing | Pending |
 | `01-admin-overview` | Find your way around the admin panel | Accepted synchronized | Existing | Accepted |
 | `02-catalog-categories` | Create categories and configure handling | Accepted synchronized workflow | Generated | Accepted |
-| `03-catalog-brands` | Create and manage product brands | workflow | Pending | Pending |
-| `04-catalog-attributes` | Configure product attributes and options | walkthrough | Pending | Pending |
-| `05-catalog-lifecycle` | Archive, restore and safely delete catalog records | walkthrough | Pending | Pending |
-| `06-product-create` | Create a product draft | walkthrough | Pending | Pending |
-| `07-product-content` | Edit specifications, highlights and images | walkthrough | Pending | Pending |
-| `08-product-variants` | Configure SKUs, variants and pricing | walkthrough | Pending | Pending |
-| `09-product-activation` | Validate, activate and manage product visibility | walkthrough | Pending | Pending |
-| `10-inventory-locations-suppliers` | Manage inventory locations and suppliers | walkthrough | Pending | Pending |
-| `11-inventory-receive` | Receive stock into inventory | walkthrough | Pending | Pending |
-| `12-inventory-availability` | Understand on-hand, reserved and available stock | walkthrough | Pending | Pending |
-| `13-inventory-adjustments` | Record an inventory adjustment | walkthrough | Pending | Pending |
-| `14-inventory-serialized-units` | Register gadget serial numbers and IMEIs | walkthrough | Pending | Pending |
-| `15-inventory-movements` | Trace inventory movement history | walkthrough | Pending | Pending |
-| `16-order-review` | Review a new customer order | walkthrough | Pending | Pending |
-| `17-order-confirmation` | Confirm an order and commit its stock | walkthrough | Pending | Pending |
-| `18-order-payment-evidence` | Record and correct payment evidence | walkthrough | Pending | Pending |
-| `19-order-shipping-tracking` | Mark an order shipped and update tracking | walkthrough | Pending | Pending |
-| `20-order-delivery-completion` | Record delivery and complete an order | walkthrough | Pending | Pending |
+| `03-catalog-brands` | Create and manage product brands | workflow (rendered) | Generated | Pending playback |
+| `04-catalog-attributes` | Configure product attributes and options | walkthrough (rendered) | Generated | Pending playback |
+| `05-catalog-lifecycle` | Archive, restore and safely delete catalog records | walkthrough (rendered) | Generated | Pending playback |
+| `06-product-create` | Create a product draft | walkthrough (rendered) | Generated | Pending playback |
+| `07-product-content` | Edit specifications, highlights and images | walkthrough (rendered) | Generated | Pending playback |
+| `08-product-variants` | Configure SKUs, variants and pricing | walkthrough (rendered) | Generated | Pending playback |
+| `09-product-activation` | Validate, activate and manage product visibility | walkthrough (rendered) | Generated | Pending playback |
+| `10-inventory-locations-suppliers` | Manage inventory locations and suppliers | walkthrough (rendered) | Generated | Pending playback |
+| `11-inventory-receive` | Receive stock into inventory | walkthrough (rendered) | Generated | Pending playback |
+| `12-inventory-availability` | Understand on-hand, reserved and available stock | walkthrough (rendered) | Generated | Pending playback |
+| `13-inventory-adjustments` | Record an inventory adjustment | walkthrough (rendered) | Generated | Pending playback |
+| `14-inventory-serialized-units` | Register gadget serial numbers and IMEIs | walkthrough (rendered) | Generated | Pending playback |
+| `15-inventory-movements` | Trace inventory movement history | walkthrough (rendered) | Generated | Pending playback |
+| `16-order-review` | Review a new customer order | walkthrough (rendered) | Generated | Pending playback |
+| `17-order-confirmation` | Confirm an order and commit its stock | walkthrough (rendered) | Generated | Pending playback |
+| `18-order-payment-evidence` | Record and correct payment evidence | walkthrough (rendered) | Generated | Pending playback |
+| `19-order-shipping-tracking` | Mark an order shipped and update tracking | walkthrough (rendered) | Generated | Pending playback |
+| `20-order-delivery-completion` | Record delivery and complete an order | walkthrough (rendered) | Generated | Pending playback |
 | `21-order-cancellation` | Cancel an order with the correct stock outcome | walkthrough | Pending | Pending |
 | `22-order-refunds-recovery` | Record refunds and recover physical inventory | walkthrough | Pending | Pending |
 | `23-order-special-handling` | Handle food preparation, tracked gadgets and warranty | walkthrough | Pending | Pending |

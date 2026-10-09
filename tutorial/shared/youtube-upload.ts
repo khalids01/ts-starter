@@ -95,8 +95,15 @@ try {
   console.log(`Uploaded: https://www.youtube.com/watch?v=${uploaded.id}`);
   console.log(`Actual visibility: ${actual.status?.privacyStatus}; processing: ${actual.processingDetails?.processingStatus ?? actual.status?.uploadStatus}`);
   if (actual.status?.privacyStatus !== privacy) console.log("YouTube returned different visibility. Check API project restrictions and YouTube Studio.");
+  await writeFile(resolve(local, "last-attempt.json"), JSON.stringify({ at: new Date().toISOString(), state: "uploaded" }, null, 2) + "\n");
+} catch (error) {
+  const reason = error instanceof Error ? error.message.match(/\((uploadLimitExceeded|quotaExceeded|dailyLimitExceeded|rateLimitExceeded|userRateLimitExceeded)\)/)?.[1] : undefined;
+  await writeFile(resolve(local, "last-attempt.json"), JSON.stringify({ at: new Date().toISOString(), state: reason ? "blocked-limit" : "failed", reason: reason ?? "unknown" }, null, 2) + "\n");
+  throw error;
 } finally {
   await disconnectRedis();
   await lock.close();
   await unlink(lockPath);
+  const refresh = Bun.spawn(["bun", resolve(import.meta.dir, "upload-ledger.ts")], { stdout: "ignore", stderr: "inherit" });
+  if (await refresh.exited !== 0) console.error("Upload ledger refresh failed; rerun tutorial:uploads:status.");
 }
