@@ -86,24 +86,29 @@
       "id": "03",
       "scene": "02",
       "text": "Wait for the saved state, then check delivery status and timestamp. If a courier integration supplies delivery information, review its evidence and supported controls before adding a conflicting manual action.",
-      "actions": [],
+      "actions": [
+        {
+          "kind": "goto",
+          "path": "/admin/orders/{{deliveredOrderId}}"
+        }
+      ],
       "target": {
-        "role": "dialog",
-        "name": "Mark order delivered"
+        "css": "section:has(> h2:text-is(\"Fulfillment\"))"
       },
-      "evidence": "controls",
+      "evidence": "persisted-example",
       "checks": [
         {
-          "path": "/admin/orders/{{orderId}}",
+          "path": "/admin/orders/{{deliveredOrderId}}",
           "field": "deliveryStatus",
-          "equals": "shipped"
+          "equals": "delivered"
         },
         {
-          "path": "/admin/orders/{{orderId}}",
+          "path": "/admin/orders/{{deliveredOrderId}}",
           "field": "inventoryStatus",
           "equals": "committed"
         }
-      ]
+      ],
+      "frameLabel": "Saved delivery evidence example"
     },
     {
       "id": "04",

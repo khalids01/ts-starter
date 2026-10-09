@@ -56,10 +56,13 @@
           }
         },
         {
+          "kind": "goto",
+          "path": "/admin/orders/{{deliveredOrderId}}"
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "dialog",
-            "name": "Mark order delivered"
+            "css": "section:has(> h2:text-is(\"Fulfillment\"))"
           }
         }
       ]

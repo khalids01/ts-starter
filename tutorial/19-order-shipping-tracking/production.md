@@ -25,11 +25,11 @@ Required API checks: `[{"path":"/admin/orders/{{orderId}}","field":"orderStatus"
 
 Complete any required preparation, delivery window or serialized unit assignment first.
 
-Focus: `{"role":"heading","name":"Preparation and tracked units"}`
+Focus: `{"role":"heading","name":"Line items"}`
 
-Evidence: controls.
+Evidence: controls. Visible label: Standard order: no food preparation or serialized units.
 
-Required API checks: `[{"path":"/admin/orders/{{orderId}}","field":"orderStatus","equals":"confirmed"},{"path":"/admin/orders/{{orderId}}","field":"inventoryStatus","equals":"committed"},{"path":"/admin/orders/{{orderId}}","field":"deliveryStatus","equals":"unfulfilled"}]`
+Required API checks: `[{"path":"/admin/orders/{{orderId}}","field":"orderStatus","equals":"confirmed"},{"path":"/admin/orders/{{orderId}}","field":"inventoryStatus","equals":"committed"},{"path":"/admin/orders/{{orderId}}","field":"deliveryStatus","equals":"unfulfilled"},{"path":"/admin/orders/{{orderId}}","field":"lineItems.0.fulfillmentKind","equals":"standard"}]`
 
 ## 03 · Scene 01
 
@@ -119,9 +119,9 @@ Required API checks: `[{"path":"/admin/orders/{{shippedOrderId}}","field":"deliv
 
 If tracking details change, use Edit tracking rather than inventing another shipment. Record the corrected details and reason, then review the history. A shipped state is not delivery confirmation and does not establish that payment has been collected.
 
-Focus: `{"role":"heading","name":"Fulfillment"}`
+Focus: `{"role":"dialog","name":"Edit tracking"}`
 
-Prepare frame: `{"kind":"goto","path":"/admin/orders"}`; `{"kind":"goto","path":"/admin/orders/{{shippedOrderId}}"}`.
+Prepare frame: `{"kind":"goto","path":"/admin/orders"}`; `{"kind":"goto","path":"/admin/orders/{{shippedOrderId}}"}`; `{"kind":"click","target":{"role":"button","name":"Edit tracking"}}`.
 
 Evidence: persisted-example. Visible label: Shipped tracking example.
 

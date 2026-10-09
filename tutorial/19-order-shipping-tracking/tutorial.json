@@ -30,7 +30,7 @@
           "kind": "show",
           "target": {
             "role": "heading",
-            "name": "Preparation and tracked units"
+            "name": "Line items"
           }
         },
         {
@@ -143,10 +143,17 @@
           "path": "/admin/orders/{{shippedOrderId}}"
         },
         {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Edit tracking"
+          }
+        },
+        {
           "kind": "show",
           "target": {
-            "role": "heading",
-            "name": "Fulfillment"
+            "role": "dialog",
+            "name": "Edit tracking"
           }
         }
       ]

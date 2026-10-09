@@ -55,7 +55,7 @@
       "actions": [],
       "target": {
         "role": "heading",
-        "name": "Preparation and tracked units"
+        "name": "Line items"
       },
       "evidence": "controls",
       "checks": [
@@ -73,8 +73,14 @@
           "path": "/admin/orders/{{orderId}}",
           "field": "deliveryStatus",
           "equals": "unfulfilled"
+        },
+        {
+          "path": "/admin/orders/{{orderId}}",
+          "field": "lineItems.0.fulfillmentKind",
+          "equals": "standard"
         }
-      ]
+      ],
+      "frameLabel": "Standard order: no food preparation or serialized units"
     },
     {
       "id": "03",
@@ -326,11 +332,18 @@
         {
           "kind": "goto",
           "path": "/admin/orders/{{shippedOrderId}}"
+        },
+        {
+          "kind": "click",
+          "target": {
+            "role": "button",
+            "name": "Edit tracking"
+          }
         }
       ],
       "target": {
-        "role": "heading",
-        "name": "Fulfillment"
+        "role": "dialog",
+        "name": "Edit tracking"
       },
       "evidence": "persisted-example",
       "frameLabel": "Shipped tracking example",

@@ -37,11 +37,13 @@ Required API checks: `[{"path":"/admin/orders/{{orderId}}","field":"deliveryStat
 
 Wait for the saved state, then check delivery status and timestamp. If a courier integration supplies delivery information, review its evidence and supported controls before adding a conflicting manual action.
 
-Focus: `{"role":"dialog","name":"Mark order delivered"}`
+Focus: `{"css":"section:has(> h2:text-is(\"Fulfillment\"))"}`
 
-Evidence: controls.
+Prepare frame: `{"kind":"goto","path":"/admin/orders/{{deliveredOrderId}}"}`.
 
-Required API checks: `[{"path":"/admin/orders/{{orderId}}","field":"deliveryStatus","equals":"shipped"},{"path":"/admin/orders/{{orderId}}","field":"inventoryStatus","equals":"committed"}]`
+Evidence: persisted-example. Visible label: Saved delivery evidence example.
+
+Required API checks: `[{"path":"/admin/orders/{{deliveredOrderId}}","field":"deliveryStatus","equals":"delivered"},{"path":"/admin/orders/{{deliveredOrderId}}","field":"inventoryStatus","equals":"committed"}]`
 
 ## 04 · Scene 03
 
