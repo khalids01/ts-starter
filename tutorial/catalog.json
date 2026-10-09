@@ -84,8 +84,13 @@
       "For a gadget category, configure unit tracking and warranty days when they apply. Food and clothing cannot have a warranty. Use the active and featured choices to control availability and presentation, then save the category.",
       "Return to the category list and confirm the saved name and handling. Category template fields are configured through the category controls and determine what appears in the product builder. Changing a template is a catalog decision; review existing products before changing required fields."
     ],
-    "status": "prepared",
-    "media": null
+    "status": "published",
+    "media": {
+      "provider": "youtube",
+      "videoId": "dWxX6RGObqM",
+      "durationSec": 74.921029,
+      "reviewedCommit": "f995e1a1d968d187eb6bd4fc787cb5a4c1c3120e"
+    }
   },
   {
     "id": "catalog-brands",

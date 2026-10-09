@@ -1,12 +1,12 @@
 # Tutorial production checklist
 
-43 focused topics plus one retained full workflow. Tutorial 01 is accepted and uploaded. Tutorials 02–43 have synchronized generation plans prepared; their audio, capture, rendering and playback review remain pending. See [production instructions](./synchronized-production.readme.md).
+43 focused topics plus one retained full workflow. Tutorial 01 is accepted and uploaded. Tutorial 02 has accepted Heart narration and a production UI video uploaded unlisted and published in the Guide catalog. Tutorials 03–43 have synchronized generation plans prepared; their audio, capture, rendering and playback review remain pending. See [production instructions](./synchronized-production.readme.md).
 
 | Folder | Topic | Capture mode (prepared code) | Audio | Review |
 | --- | --- | --- | --- | --- |
 | `00-product-to-completed-order` | From product setup to a completed order | Legacy continuous | Existing | Pending |
 | `01-admin-overview` | Find your way around the admin panel | Accepted synchronized | Existing | Accepted |
-| `02-catalog-categories` | Create categories and configure handling | workflow | Pending | Pending |
+| `02-catalog-categories` | Create categories and configure handling | Accepted synchronized workflow | Generated | Accepted |
 | `03-catalog-brands` | Create and manage product brands | workflow | Pending | Pending |
 | `04-catalog-attributes` | Configure product attributes and options | walkthrough | Pending | Pending |
 | `05-catalog-lifecycle` | Archive, restore and safely delete catalog records | walkthrough | Pending | Pending |
@@ -48,3 +48,9 @@
 | `41-rate-limit-settings` | Review and configure request rate limits | walkthrough | Pending | Pending |
 | `42-webhook-events` | Inspect webhook events and failures | walkthrough | Pending | Pending |
 | `43-discount-codes` | Create and manage discount codes | walkthrough | Pending | Pending |
+
+## Tutorial 02 accepted video
+
+Produced on 2026-10-09: 15 synchronized sections, 74.921029 seconds, Heart/Kokoro narration. All 30 encoded boundary-frame comparisons passed (minimum SSIM 0.999401). Category creation and saved handling were verified against the isolated API; recording categories were removed and temporary servers stopped.
+
+[Watch the unlisted review copy](https://www.youtube.com/watch?v=dWxX6RGObqM). The user accepted full playback with audio and authorized Guide publication. The Guide catalog now includes this video; rebuild/deploy the web app to expose the updated catalog in an existing production build. Source corrections and canonical plans are tracked; media and upload receipts remain in ignored artifacts. Tutorial 01 is unchanged.
