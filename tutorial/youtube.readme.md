@@ -99,3 +99,16 @@ bun --env-file=apps/server/.env tutorial/shared/youtube-upload.ts admin-overview
 You may choose `private`, `unlisted`, or `public`; the default is `private` if omitted. The command validates the video against its render hash, refreshes the stored token, verifies the target channel, and uses Google's resumable upload protocol. Upload receipts and session URLs are saved under the render's ignored `youtube/` directory. Rerunning resumes the saved session or verifies an existing uploaded video rather than creating a duplicate. A failed session initiation can leave an unknown remote session; inspect channel history before retrying. If a process is forcibly killed, inspect for an active upload before removing its `upload.lock`.
 
 The command reports the actual returned visibility and processing state. An upload may still be processing, or Google's project restrictions may keep it private. No change is made to the tutorial catalog or local review approval flags; uploading is separate from publishing in the admin library. Caption and custom thumbnail uploads are not included in this command.
+
+## Synchronize uploaded videos with Guide
+
+```bash
+bun run tutorial:guides:sync
+```
+
+This validates local upload receipts and writes each matching YouTube ID to its
+`media.local.json`. It uses the existing publisher for videos with completed
+playback approval; all others remain pending review. Batch uploads run this sync
+automatically afterward. Existing matching published links are preserved.
+Rebuild and deploy the web app after publication to update the running Guide.
+The command does not query YouTube processing status or upload additional videos.

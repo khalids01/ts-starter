@@ -44,3 +44,9 @@ for (const item of catalog) {
   uploaded++;
 }
 console.log(`Batch finished: ${args.includes("--upload") ? "uploaded" : "previewed"} ${uploaded}, blocked ${blocked}.`);
+
+if (args.includes("--upload")) {
+  const sync = await run(["bun", "tutorial/shared/sync-guide.ts"]);
+  process.stdout.write(sync.out);
+  if (sync.exit !== 0) { process.exitCode = 1; console.error("Uploads retained, but Guide synchronization needs inspection."); }
+}
