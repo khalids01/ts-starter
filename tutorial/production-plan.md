@@ -1,6 +1,6 @@
 # Tutorial production checklist
 
-43 focused topics plus one retained full workflow. Tutorial 01 is accepted and uploaded. Tutorial 02 has accepted Heart narration and a production UI video uploaded unlisted and published in the Guide catalog. Tutorials 03–20 now have rendered synchronized videos; 03–11 have saved YouTube upload receipts, while 12–20 await upload. Playback acceptance and Guide publication remain pending for 03–20. Tutorial 21 has a rendered synchronized video awaiting playback review and upload. Tutorial 22 has verified marker-owned fixtures prepared; tutorials 22–43 are blocked at audio generation because the Voicebox service at http://127.0.0.1:17493 is unreachable. See [production instructions](./synchronized-production.readme.md).
+43 focused topics plus one retained full workflow. Videos 01–25 are rendered with audio. Upload receipts exist for 01–16; 17–25 await upload. Only 01–02 are published in Guide; 03–25 await full playback review. Tutorials 26–43 remain prepared for future production. See [production instructions](./synchronized-production.readme.md).
 
 | Folder | Topic | Capture mode (prepared code) | Audio | Review |
 | --- | --- | --- | --- | --- |
