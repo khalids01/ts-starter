@@ -4,11 +4,20 @@ This setup publishes two images to the private Docker Hub repository `khalids01/
 
 Each shop has separate application containers, PostgreSQL, Redis, domains, credentials and backups. The production Compose file contains web/API only; provision PostgreSQL and Redis separately in Dokploy.
 
+## Quick start for the current `ecommerce` branch
+
+1. In GitHub Actions settings, set secret `DOCKERHUB_TOKEN` to a Docker Hub read/write token. Set variables `BRAND=foodshop` (or your actual brand) and `VITE_SERVER_URL` to your real public HTTPS API URL.
+2. In Dokploy, connect branch `ecommerce`, select `docker-compose.production.yml`, configure private Docker Hub registry credentials, and supply the service environment described below.
+3. Push the committed release with `git push origin ecommerce` and wait for **Publish Docker images** to succeed.
+4. Copy `IMAGE_TAG=sha-<full-commit>` from the Actions summary into Dokploy and deploy. For a moving tag, use `IMAGE_TAG=ecommerce`, deploying only after the complete workflow succeeds.
+
+This publishes images automatically on push; pulling and deploying remain a Dokploy action. Do not enable Dokploy's GitHub-push deployment trigger: it can run before the new images exist.
+
 ## Files
 
 | File | Purpose |
 | --- | --- |
-| `.github/workflows/publish-images.yml` | Publish images on a push to `main`, or manually from Actions |
+| `.github/workflows/publish-images.yml` | Publish images on a push to `ecommerce` or `main`, or manually from Actions |
 | `docker/web.Dockerfile` | Build and run the SSR web app |
 | `docker/api.Dockerfile` | Generate the Prisma client, build and run the API |
 | `.dockerignore` | Keep local env files, credentials, dependencies and test artifacts out of build context |
@@ -25,7 +34,7 @@ Create a personal access token in Docker Hub account settings with **Read & Writ
 DOCKERHUB_TOKEN=<Docker Hub publishing token>
 ```
 
-The workflow logs in as `khalids01`. The PC's saved login is independent of GitHub Actions. Do not commit tokens or put them in Docker build arguments.
+The workflow logs in as `khalids01`. The PC's saved login is independent of GitHub Actions. Dokploy also needs its own registry login with read access. Do not commit tokens or put them in Docker build arguments.
 
 For local publication, authenticate as this account:
 
@@ -60,7 +69,7 @@ The default target architecture is `linux/amd64`; select a matching target if yo
 Commit your intended changes, then:
 
 ```bash
-git push origin main
+git push origin ecommerce
 ```
 
 The Actions workflow builds and pushes:
@@ -70,7 +79,7 @@ khalids01/ecommerce-shops:web-foodshop-sha-<full-commit>
 khalids01/ecommerce-shops:api-foodshop-sha-<full-commit>
 ```
 
-After both succeed, it updates the moving tags `web-foodshop-main` and `api-foodshop-main`. The Actions summary shows the exact `IMAGE_TAG=sha-<full-commit>` to deploy. Tags include the brand so different shop images can coexist in your single Docker Hub repository. Treat SHA tags as immutable; Docker Hub itself does not enforce that rule with this configuration.
+After both succeed, it updates branch-specific moving tags, such as `web-foodshop-ecommerce` and `api-foodshop-ecommerce` for a push to `ecommerce` (`*-main` for `main`). The Actions summary shows the exact `IMAGE_TAG=sha-<full-commit>` to deploy. Tags include the brand so different shop images can coexist in your single Docker Hub repository. Treat SHA tags as immutable; Docker Hub itself does not enforce that rule with this configuration.
 
 ### Push to GitHub without Docker builds
 
@@ -78,14 +87,14 @@ Include `[skip docker]` in the latest commit message:
 
 ```bash
 git commit -m "docs: update deployment guide [skip docker]"
-git push origin main
+git push origin ecommerce
 ```
 
-Stage the intended files before committing. The publishing job is skipped; other workflows can still run. Only the latest commit message in the push is checked. A push to another branch also does not trigger image publication. No separate repository is required.
+Stage the intended files before committing. The publishing job is skipped; other workflows can still run. Only the latest commit message in the push is checked. A push to a branch other than `ecommerce` or `main` also does not trigger image publication. No separate repository is required.
 
 Correction to the earlier chat proposal: `git push -o skip-docker` is not the supported GitHub mechanism used here. Do not use it.
 
-To build a skipped commit later: open **Actions → Publish Docker images → Run workflow**, select the intended branch and run it. Manual runs bypass `[skip docker]`.
+To build a skipped commit later: open **Actions → Publish Docker images → Run workflow**, select `ecommerce` or `main` and run it. GitHub requires the dispatch workflow to exist on the repository default branch for the Run workflow button. Manual runs bypass `[skip docker]`.
 
 ### Build locally and publish to Docker Hub
 
@@ -111,7 +120,7 @@ Configure OAuth apps, SMTP and file storage as needed. The server currently requ
 ## 5. Configure Dokploy
 
 1. Create a project/environment for the shop and a **Docker Compose** service (regular Compose, not Swarm Stack).
-2. Connect the GitHub repository and select `main`.
+2. Connect the GitHub repository and select `ecommerce` (the current release branch), or `main` if that is your intended release source.
 3. Set the Compose file path to `docker-compose.production.yml` at the repository root.
 4. Configure Docker Hub registry authentication for `khalids01` with a token that can read the private repository. Use Dokploy's registry settings and select/associate the registry where the installed version requires it. Registry host: `docker.io`. The credential must be available on the deployment server.
 5. Disable automatic deployment on the initial GitHub push. Wait for image publication before deploying.
@@ -178,9 +187,9 @@ Then verify sign-in/session behavior, catalog access and a supervised order flow
 
 ## 7. Updates and rollback
 
-For a controlled release: push to `main`, wait for Actions to finish, copy its exact SHA tag into Dokploy `IMAGE_TAG`, then deploy.
+For a controlled release: push to `ecommerce` (or `main`), wait for Actions to finish, copy its exact SHA tag into Dokploy `IMAGE_TAG`, then deploy.
 
-For a moving release: set `IMAGE_TAG=main`, wait for Actions to finish, then deploy. `pull_policy: always` makes Dokploy refresh the tags. Updating the two moving tags is not atomic; deploy only after the entire workflow succeeds. This setup intentionally leaves deployment as a Dokploy action and has no webhook secret or automatic release trigger.
+For a moving release: set `IMAGE_TAG=ecommerce` for this branch (`main` for the main branch), wait for Actions to finish, then deploy. `pull_policy: always` makes Dokploy refresh the tags. Updating the two moving tags is not atomic; deploy only after the entire workflow succeeds. This setup intentionally leaves deployment as a Dokploy action and has no webhook secret or automatic release trigger.
 
 For rollback: set `IMAGE_TAG` to the previous known-good SHA tag and deploy. Confirm its web build variables match the service environment. Application rollback does not undo database changes; confirm schema compatibility first.
 
@@ -196,7 +205,7 @@ For rollback: set `IMAGE_TAG` to the previous known-good SHA tag and deploy. Con
 
 ## Status and references
 
-Configuration has been created. Images have not been built/pushed and no VPS deployment or database change has been performed. The initial runtime images retain development dependencies; production artifact pruning/security review remains a separate prerequisite for a release readiness claim.
+On 2026-10-10, both Dockerfiles were built locally with frozen dependencies (foodshop web build using the placeholder public URL `https://api.example.com`). API compilation, Prisma client generation, and web client/SSR compilation passed. Compose interpolation and the local publishing script syntax were checked. These local check images are not release images: configure your actual public API URL in GitHub before publishing. No registry push/pull, GitHub Actions run, VPS deployment, or database change was performed. Runtime images retain workspace source and development dependencies.
 
 - [Docker Hub login in GitHub Actions](https://github.com/docker/login-action)
 - [Dokploy Compose environment and deployment configuration](https://docs.dokploy.com/docs/core/docker-compose)
