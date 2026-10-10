@@ -1,24 +1,24 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-09T17:14:31.824Z",
+  "generatedAt": "2026-10-10T11:46:53.035Z",
   "evidence": "Local video hashes and saved YouTube receipts; no live YouTube query",
   "uploader": "tutorial/shared/youtube-upload.ts",
   "summary01to20": {
     "rendered": 20,
-    "uploaded": 11,
-    "pendingUpload": 9,
+    "uploaded": 16,
+    "pendingUpload": 4,
     "guidePublished": 2
   },
   "pendingUploadIds": [
-    "inventory-availability",
-    "inventory-adjustments",
-    "inventory-serialized-units",
-    "inventory-movements",
-    "order-review",
     "order-confirmation",
     "order-payment-evidence",
     "order-shipping-tracking",
-    "order-delivery-completion"
+    "order-delivery-completion",
+    "order-cancellation",
+    "order-refunds-recovery",
+    "order-special-handling",
+    "shipping-methods",
+    "courier-overview"
   ],
   "entries": [
     {
@@ -255,8 +255,13 @@
       "id": "inventory-availability",
       "folder": "12-inventory-availability",
       "title": "Understand on-hand, reserved and available stock",
-      "status": "rendered",
+      "status": "uploaded",
       "runId": "2026-10-09T07-41-40-032Z-synchronized",
+      "videoId": "tB5Urg4-9Sg",
+      "url": "https://www.youtube.com/watch?v=tB5Urg4-9Sg",
+      "visibility": "unlisted",
+      "processing": "processing",
+      "verifiedAt": "2026-10-10T08:43:25.971Z",
       "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/12-inventory-availability/artifacts/2026-10-09T07-41-40-032Z-synchronized/render",
       "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/12-inventory-availability/artifacts/2026-10-09T07-41-40-032Z-synchronized/render/video.mp4",
       "videoSha256": "79c40946e01e569674509240f25d463faf8f9a9b749145263222c3011dbb54fc",
@@ -264,14 +269,23 @@
       "reviewApproved": false,
       "watchedWithAudio": false,
       "guideStatus": "prepared",
-      "issues": []
+      "issues": [],
+      "lastUploadAttempt": {
+        "at": "2026-10-10T08:43:25.972Z",
+        "state": "uploaded"
+      }
     },
     {
       "id": "inventory-adjustments",
       "folder": "13-inventory-adjustments",
       "title": "Record an inventory adjustment",
-      "status": "rendered",
+      "status": "uploaded",
       "runId": "2026-10-09T09-27-13-671Z-synchronized",
+      "videoId": "8SGXySXpSvs",
+      "url": "https://www.youtube.com/watch?v=8SGXySXpSvs",
+      "visibility": "unlisted",
+      "processing": "processing",
+      "verifiedAt": "2026-10-10T08:43:30.058Z",
       "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/13-inventory-adjustments/artifacts/2026-10-09T09-27-13-671Z-synchronized/render",
       "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/13-inventory-adjustments/artifacts/2026-10-09T09-27-13-671Z-synchronized/render/video.mp4",
       "videoSha256": "8ddbf0e1eb2df9501c3ded94d8e31ad73b12cd9c3a8e43aa0f227bf595985bd4",
@@ -279,14 +293,23 @@
       "reviewApproved": false,
       "watchedWithAudio": false,
       "guideStatus": "prepared",
-      "issues": []
+      "issues": [],
+      "lastUploadAttempt": {
+        "at": "2026-10-10T08:43:30.059Z",
+        "state": "uploaded"
+      }
     },
     {
       "id": "inventory-serialized-units",
       "folder": "14-inventory-serialized-units",
       "title": "Register gadget serial numbers and IMEIs",
-      "status": "rendered",
+      "status": "uploaded",
       "runId": "2026-10-09T09-32-39-310Z-synchronized",
+      "videoId": "eQ8MlsoeHKM",
+      "url": "https://www.youtube.com/watch?v=eQ8MlsoeHKM",
+      "visibility": "unlisted",
+      "processing": "processing",
+      "verifiedAt": "2026-10-10T08:43:34.246Z",
       "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/14-inventory-serialized-units/artifacts/2026-10-09T09-32-39-310Z-synchronized/render",
       "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/14-inventory-serialized-units/artifacts/2026-10-09T09-32-39-310Z-synchronized/render/video.mp4",
       "videoSha256": "65b3e0bfbde6ab618aab017aecb21043423bea451bee4b4617db82f588ab69bd",
@@ -294,14 +317,23 @@
       "reviewApproved": false,
       "watchedWithAudio": false,
       "guideStatus": "prepared",
-      "issues": []
+      "issues": [],
+      "lastUploadAttempt": {
+        "at": "2026-10-10T08:43:34.247Z",
+        "state": "uploaded"
+      }
     },
     {
       "id": "inventory-movements",
       "folder": "15-inventory-movements",
       "title": "Trace inventory movement history",
-      "status": "rendered",
+      "status": "uploaded",
       "runId": "2026-10-09T09-38-26-821Z-synchronized",
+      "videoId": "45jybuUJyoE",
+      "url": "https://www.youtube.com/watch?v=45jybuUJyoE",
+      "visibility": "unlisted",
+      "processing": "processing",
+      "verifiedAt": "2026-10-10T08:43:38.646Z",
       "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/15-inventory-movements/artifacts/2026-10-09T09-38-26-821Z-synchronized/render",
       "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/15-inventory-movements/artifacts/2026-10-09T09-38-26-821Z-synchronized/render/video.mp4",
       "videoSha256": "7b8573e983ebeebc639a63e984c8d303981b0e2f20223f52dcc9ff7ed5079d28",
@@ -309,14 +341,23 @@
       "reviewApproved": false,
       "watchedWithAudio": false,
       "guideStatus": "prepared",
-      "issues": []
+      "issues": [],
+      "lastUploadAttempt": {
+        "at": "2026-10-10T08:43:38.646Z",
+        "state": "uploaded"
+      }
     },
     {
       "id": "order-review",
       "folder": "16-order-review",
       "title": "Review a new customer order",
-      "status": "rendered",
+      "status": "uploaded",
       "runId": "2026-10-09T09-50-27-091Z-synchronized",
+      "videoId": "9AvEJ3u6uLM",
+      "url": "https://www.youtube.com/watch?v=9AvEJ3u6uLM",
+      "visibility": "unlisted",
+      "processing": "processing",
+      "verifiedAt": "2026-10-10T08:43:43.318Z",
       "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/16-order-review/artifacts/2026-10-09T09-50-27-091Z-synchronized/render",
       "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/16-order-review/artifacts/2026-10-09T09-50-27-091Z-synchronized/render/video.mp4",
       "videoSha256": "91a5e9fd6c73fdb361f6a82b1b9f3f0c10d53fbc28ed9b8d0ff8f60a799de337",
@@ -324,7 +365,11 @@
       "reviewApproved": false,
       "watchedWithAudio": false,
       "guideStatus": "prepared",
-      "issues": []
+      "issues": [],
+      "lastUploadAttempt": {
+        "at": "2026-10-10T08:43:43.318Z",
+        "state": "uploaded"
+      }
     },
     {
       "id": "order-confirmation",
@@ -390,41 +435,76 @@
       "id": "order-cancellation",
       "folder": "21-order-cancellation",
       "title": "Cancel an order with the correct stock outcome",
-      "status": "pending-production",
-      "captureComplete": false,
-      "guideStatus": "prepared"
+      "status": "rendered",
+      "runId": "2026-10-10T05-18-07-059Z-synchronized",
+      "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/21-order-cancellation/artifacts/2026-10-10T05-18-07-059Z-synchronized/render",
+      "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/21-order-cancellation/artifacts/2026-10-10T05-18-07-059Z-synchronized/render/video.mp4",
+      "videoSha256": "a5f9e3df89ca7946ded1fcfb3706232acc3c21494eb663f56476948ea49dd2bf",
+      "durationSec": 64.887696,
+      "reviewApproved": false,
+      "watchedWithAudio": false,
+      "guideStatus": "prepared",
+      "issues": []
     },
     {
       "id": "order-refunds-recovery",
       "folder": "22-order-refunds-recovery",
       "title": "Record refunds and recover physical inventory",
-      "status": "pending-production",
-      "captureComplete": false,
-      "guideStatus": "prepared"
+      "status": "rendered",
+      "runId": "2026-10-10T05-43-43-695Z-synchronized",
+      "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/22-order-refunds-recovery/artifacts/2026-10-10T05-43-43-695Z-synchronized/render",
+      "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/22-order-refunds-recovery/artifacts/2026-10-10T05-43-43-695Z-synchronized/render/video.mp4",
+      "videoSha256": "4060c6d30b8ac3fe2c99e0d3cbae3cde3e2e84bc81f8dc84db26afdfbc250fa7",
+      "durationSec": 65.187696,
+      "reviewApproved": false,
+      "watchedWithAudio": false,
+      "guideStatus": "prepared",
+      "issues": []
     },
     {
       "id": "order-special-handling",
       "folder": "23-order-special-handling",
       "title": "Handle food preparation, tracked gadgets and warranty",
-      "status": "pending-production",
-      "captureComplete": false,
-      "guideStatus": "prepared"
+      "status": "rendered",
+      "runId": "2026-10-10T06-05-58-753Z-synchronized",
+      "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/23-order-special-handling/artifacts/2026-10-10T06-05-58-753Z-synchronized/render",
+      "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/23-order-special-handling/artifacts/2026-10-10T06-05-58-753Z-synchronized/render/video.mp4",
+      "videoSha256": "2b003bcc168fec793ee1a91a87f38a9150aed0d8fb85c46203f50c1e6579d692",
+      "durationSec": 66.387696,
+      "reviewApproved": false,
+      "watchedWithAudio": false,
+      "guideStatus": "prepared",
+      "issues": []
     },
     {
       "id": "shipping-methods",
       "folder": "24-shipping-methods",
       "title": "Configure checkout shipping methods",
-      "status": "pending-production",
-      "captureComplete": false,
-      "guideStatus": "prepared"
+      "status": "rendered",
+      "runId": "2026-10-10T06-27-57-373Z-synchronized",
+      "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/24-shipping-methods/artifacts/2026-10-10T06-27-57-373Z-synchronized/render",
+      "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/24-shipping-methods/artifacts/2026-10-10T06-27-57-373Z-synchronized/render/video.mp4",
+      "videoSha256": "c9f04d3426309da4e57adc3072b3040ea0aeccd4c703d546259196de4f4aa009",
+      "durationSec": 62.387696,
+      "reviewApproved": false,
+      "watchedWithAudio": false,
+      "guideStatus": "prepared",
+      "issues": []
     },
     {
       "id": "courier-overview",
       "folder": "25-courier-overview",
       "title": "Understand courier operations and exceptions",
-      "status": "pending-production",
-      "captureComplete": false,
-      "guideStatus": "prepared"
+      "status": "rendered",
+      "runId": "2026-10-10T09-00-03-279Z-synchronized",
+      "renderDir": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/25-courier-overview/artifacts/2026-10-10T09-00-03-279Z-synchronized/render",
+      "videoPath": "/home/khalid/Desktop/projects/saas/ts-starter/tutorial/25-courier-overview/artifacts/2026-10-10T09-00-03-279Z-synchronized/render/video.mp4",
+      "videoSha256": "2253dabe2890d334d12db03de2ba25ad8312d9a7ca7e9b141566c4be0caff5af",
+      "durationSec": 68.121333,
+      "reviewApproved": false,
+      "watchedWithAudio": false,
+      "guideStatus": "prepared",
+      "issues": []
     },
     {
       "id": "courier-connections",
